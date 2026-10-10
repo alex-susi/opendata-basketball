@@ -23,3 +23,8 @@ notebooks/exploratory/
 # MkDocs
 site/
 .cache/
+
+# Play viewer cache (derived from the competition tracking data)
+outputs/cache/
+.Rproj.user
+.Rproj.user
