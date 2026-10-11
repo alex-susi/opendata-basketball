@@ -23,8 +23,9 @@ RIM_RADIUS <- 10         # ft, rebounding area around the hoop
 LANE_SPEED <- 12         # ft/s a defender is credited with when jumping a passing lane
 LEAD_CAP <- 0.6          # seconds of constant-velocity projection allowed
 LANE_MIN_S <- 0.1        # defenders this close to the passer count as ball pressure, not lane threats
+ARC_MARGIN <- 1          # ft: tracked release positions sit inside the painted line; this balances errors against the event flag
 
-CONTEXT_COLS <- c("dist", "angle", "three", "x", "ay", "def1", "def2", "n6", "between", "rim_def", "closing",
+CONTEXT_COLS <- c("dist", "three", "x", "y", "ay", "def1", "def2", "n6", "between", "rim_def", "closing",
                   "speed", "bound", "off_rim", "def_rim", "ahead", "def_spread")
 
 # ---- small matrix helpers ------------------------------------------------------------------------
@@ -117,8 +118,8 @@ player_context <- function(px, py, pvx, pvy, D, off_x, off_y) {
   beside <- abs(dx * uy - dy * ux)
   def_hoop <- sqrt((D$x - HOOP_X)^2 + D$y^2)
   off_hoop <- sqrt((off_x - HOOP_X)^2 + off_y^2)
-  data.table(dist = hoop, angle = abs(atan2(py, HOOP_X - px)), three = as.integer(hoop > THREE_R | abs(py) > THREE_Y),
-             x = px, ay = abs(py), def1 = row_min(gap), def2 = row_min2(gap), n6 = rowSums(gap < 6),
+  data.table(dist = hoop, three = as.integer(hoop > THREE_R - ARC_MARGIN | abs(py) > THREE_Y - ARC_MARGIN),
+             x = px, y = py, ay = abs(py), def1 = row_min(gap), def2 = row_min2(gap), n6 = rowSums(gap < 6),
              between = rowSums(along > 0 & along < hoop & beside < 3), rim_def = row_min(def_hoop),
              closing = -pick((dx * (D$vx - pvx) + dy * (D$vy - pvy)) / pmax(gap, 0.1), near),
              speed = sqrt(pvx^2 + pvy^2), bound = pmin(HALF_W - abs(py), HALF_L - abs(px)),

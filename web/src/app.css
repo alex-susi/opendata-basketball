@@ -202,6 +202,36 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   background: rgba(18, 24, 38, .8); color: var(--muted); font-size: 15px;
 }
 
+/* The stage and, beside the half court, the steps behind the shot's xFG. */
+.stage-row { display: flex; gap: 10px; flex: 1; min-width: 0; min-height: 320px; }
+.stage-row .stage { min-width: 0; }
+.shot-panel { flex: none; width: 292px; padding: 10px 12px; overflow-y: auto; scrollbar-color: #3A4866 transparent; }
+.shot-panel h2 { font-size: 14px; font-weight: 700; }
+.shot-picks { display: flex; gap: 4px; }
+.shot-picks .text-btn { padding: 1px 8px; }
+.shot-picks .text-btn.on { border-color: var(--off); color: var(--off); }
+.shot-who { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.shot-who .made { color: var(--made); }
+.shot-who .missed { color: var(--missed); }
+.shot-when { display: flex; justify-content: space-between; gap: 8px; margin: 1px 0 8px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* One row per step: the feature, its value at release, and what it adds to xFG in percentage points. */
+.shot-steps { padding: 4px 0; border-radius: 8px; background: #0F1522; font-variant-numeric: tabular-nums; }
+.shot-step { display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; align-items: baseline; gap: 8px; padding: 3px 10px; }
+.shot-step > :not(:first-child) { text-align: right; white-space: nowrap; }
+.shot-step.head { color: var(--muted); font-size: 9.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+.shot-step.anchor, .shot-step.total { font-weight: 700; }
+.shot-step.anchor { padding-bottom: 5px; }
+.shot-step.total { margin-top: 3px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 15px; }
+.shot-step .up { color: var(--made); }
+.shot-step .down { color: var(--missed); }
+.shot-step .flat { color: var(--muted); }
+/* Too narrow for the court and the panel side by side: the panel goes under the court. */
+@container viewer (max-width: 720px) {
+  .stage-row.split { flex-direction: column; flex: none; }
+  .stage-row.split .stage { flex: none; height: min(107cqw, 600px); }
+  .shot-panel { width: auto; overflow: visible; }
+}
+
 .transport {
   display: flex; align-items: center; gap: 8px; padding: 8px 12px;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
@@ -335,6 +365,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .left { order: 3; grid-row: auto; position: static; max-height: none; }
   .plays { flex: none; height: 360px; }
   /* As tall as the court at this width: full court, or the taller half court. */
+  .stage-row { flex-direction: column; flex: none; min-height: 0; }
   .stage { flex: none; height: calc(55vw + 18px); min-height: 0; }
   .stage.half { height: min(calc(106.7vw + 2px), 600px); }
   .transport { flex-wrap: wrap; row-gap: 0; }

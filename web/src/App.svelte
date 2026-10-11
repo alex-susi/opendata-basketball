@@ -6,6 +6,7 @@
   import Archetypes from "./components/Archetypes.svelte";
   import Filters from "./components/Filters.svelte";
   import PlayList from "./components/PlayList.svelte";
+  import ShotPanel from "./components/ShotPanel.svelte";
   import SidePanel from "./components/SidePanel.svelte";
   import Stage from "./components/Stage.svelte";
   import Transport from "./components/Transport.svelte";
@@ -147,7 +148,13 @@
         </div>
       {/if}
     </header>
-    <Stage {play} {seq} {note} />
+    <!-- The half court leaves room beside it: the steps behind the shot's xFG go there. -->
+    <div class="stage-row" class:split={viewer.view === "half"}>
+      <Stage {play} {seq} {note} />
+      {#if viewer.view === "half"}
+        <ShotPanel {play} {seq} />
+      {/if}
+    </div>
     <Transport {play} {seq} />
   </section>
 

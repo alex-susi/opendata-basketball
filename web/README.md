@@ -13,7 +13,7 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/parity_reference.R` | Runs filter cases through the real Shiny server and writes `tests/parity_reference.json` |
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
 | `public/data/` | `meta.json`, `plays.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
-| `src/lib/` | Decoding, filters, playback sequence, EPV lookup, court and scene drawing — no framework code |
+| `src/lib/` | Decoding, filters, playback sequence, EPV lookup, shot steps, court and scene drawing — no framework code |
 | `src/components/`, `src/App.svelte` | The two tabs: the viewer (filters, play list, court, transport bar, side panel) and Archetypes |
 | `tests/parity.test.ts` | Checks the site's filters and decoded plays against the Shiny app |
 
@@ -40,7 +40,7 @@ Rscript web/scripts/parity_reference.R
 ```
 
 The export needs the viewer's caches (`outputs/cache/play_viewer/`, built on the Shiny app's first start) and,
-for the EPV overlay, the prices from `Rscript src/epv/build_epv.R`. The archetype tags beside each player's name
+for the EPV overlay and the shot panel beside the half court, the prices from `Rscript src/epv/build_epv.R`. The archetype tags beside each player's name
 and the Archetypes tab come from `outputs/archetypes/` (`Rscript src/archetypes/build_features.R`, then
 `Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters.
 

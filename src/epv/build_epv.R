@@ -4,8 +4,8 @@
 # 1. Features for all ten games (cached in outputs/cache/epv/tables.rds; --force rebuilds them).
 #    Finished folds are kept, so an interrupted run resumes; --refit (or --force) fits every fold again.
 # 2. Leave-one-game-out: for each game, fit every component on the other nine and price the held-out game.
-# 3. Save per-frame prices to outputs/cache/epv/epv_{gameId}.rds (read by the play viewer) and
-#    held-out validation tables to outputs/epv/.
+# 3. Save per-frame prices and, for every tracked shot, the steps behind its xFG to
+#    outputs/cache/epv/epv_{gameId}.rds (read by the play viewer), and held-out validation tables to outputs/epv/.
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -48,6 +48,7 @@ rows <- bind("rows")
 slots <- bind("slots")
 cands <- bind("cands")
 shots <- bind("shots")
+shots[, three := as.integer(three_ev)]   # real attempts take the scorer's two or three, not court geometry
 passes <- bind("passes")
 orb <- bind("orb")
 ft <- bind("ft")
@@ -74,12 +75,20 @@ score_component <- function(name, model, test, y, base, test_game) {
              auc = if (binary && uniqueN(test[[y]]) == 2L) auc(full, test[[y]]) else NA_real_)
 }
 
-#' Held-out score of the rebound base rate by shot value (two or three) against the single overall rate.
-score_oreb <- function(rates, test, base, test_game) {
-  p <- unname(rates[test$three + 1L])
-  data.table(component = "oreb_base_rate", game_id = test_game, n = nrow(test), events = sum(test$oreb), rounds = 0L,
-             loss_base = log_loss(rep(base, nrow(test)), test$oreb), loss_gam = NA_real_,
-             loss_full = log_loss(p, test$oreb), auc = auc(p, test$oreb))
+#' Held-out score of xFG in one game, overall and by zone. loss_gam is the location GAM alone. The overall
+#' row is scored against the training make rate; a zone row against that zone's training make rate, which is
+#' where its context model starts.
+score_xfg <- function(model, test, base, test_game) {
+  p <- data.table(zone = shot_zone(test$dist, test$three), y = as.numeric(test$made), base = base,
+                  rate = predict_xfg(model, test, "rate"), loc = predict_xfg(model, test, "location"),
+                  full = predict_xfg(model, test))
+  one <- function(name, d, base, rounds) {
+    data.table(component = name, game_id = test_game, n = nrow(d), events = sum(d$y), rounds = rounds,
+               loss_base = log_loss(base, d$y), loss_gam = log_loss(d$loc, d$y), loss_full = log_loss(d$full, d$y),
+               auc = if (uniqueN(d$y) == 2L) auc(d$full, d$y) else NA_real_)
+  }
+  rbind(one("xfg", p, p$base, NA_integer_),
+        rbindlist(lapply(ZONES, function(z) one(paste0("xfg_", z), p[zone == z], p[zone == z]$rate, model$zones[[z]]$rounds))))
 }
 
 #' Fit on every game but `test_game`, then price `test_game`.
@@ -118,14 +127,18 @@ run_fold <- function(test_game) {
                   by = "row", all.x = TRUE)
   players <- merge(sl[game_id == test_game, .(row, pid, sv)], cd[, .(row, pid, pv, ptov)], by = c("row", "pid"), all.x = TRUE)
   players[, frame := frames$frame[match(row, frames$row)]]
-  saveRDS(list(frames = frames[order(frame)], players = players[order(frame, pid), .(frame, pid, sv, pv, ptov)]),
+  # every tracked attempt of the held-out game at its release: the context features and what each adds to xFG
+  held <- te(shots)
+  steps <- cbind(held[, c("shot_id", "poss_id", "frame", "pid", "made", "fouled", "three", "dist",
+                          setdiff(XFG_FEATURES, "loc_xfg")), with = FALSE], explain_xfg(shot_m$xfg, held))
+  stopifnot(isTRUE(all.equal(steps$xfg, predict_xfg(shot_m$xfg, held))))
+  saveRDS(list(frames = frames[order(frame)], players = players[order(frame, pid), .(frame, pid, sv, pv, ptov)],
+               shots = steps[order(frame)]),
           file.path(cache, sprintf("epv_%d.rds", test_game)))
 
   unfouled <- function(dt) dt[fouled == FALSE]
-  misses <- function(dt) dt[fouled == FALSE & made == FALSE & !is.na(oreb)]
-  rbind(score_component("xfg", shot_m$xfg, unfouled(te(shots)), "made", unfouled(tr(shots))[, mean(made)], test_game),
+  rbind(score_xfg(shot_m$xfg, unfouled(te(shots)), unfouled(tr(shots))[, mean(made)], test_game),
         score_component("foul", shot_m$foul, te(shots), "fouled", tr(shots)[, mean(fouled)], test_game),
-        score_oreb(shot_m$oreb, misses(te(shots)), misses(tr(shots))[, mean(oreb)], test_game),
         score_component("pass_turnover", pass_m, te(passes), "turnover", tr(passes)[, mean(turnover)], test_game),
         score_component("turnover_2s", state_m$haz, hh, "haz_y", h[game_id != test_game, mean(haz_y)], test_game),
         score_component("turnover_rest", state_m$rop, hh, "rop_y", h[game_id != test_game, mean(rop_y)], test_game),

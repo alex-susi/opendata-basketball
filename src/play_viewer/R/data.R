@@ -610,6 +610,28 @@ epv_payload <- function(app, play) {
        players = setNames(lapply(pids, option), pids))
 }
 
+# Inputs of the xFG context model in the order the viewer lists them (XFG_FEATURES in src/epv/R/models.R),
+# with the decimals each is sent at.
+SHOT_FEATURES <- c(loc_xfg = 4, def1 = 1, def2 = 1, n6 = 0, between = 0, rim_def = 1, closing = 1, speed = 1, sc = 1,
+                   held = 1, drib = 0)
+
+#' The steps behind xFG for each tracked shot of one possession, in order of release: the baseline for the
+#' shot's zone, each context feature's value at release (`v`) and what it adds to xFG (`e`), and the result.
+#' Empty when the possession has no priced shot or the prices were built before shots were saved.
+shot_payload <- function(app, play) {
+  shots <- get_epv(app, play$game_id)$shots
+  if (is.null(shots)) return(list())
+  sh <- shots[poss_id == play$id][order(frame)]
+  keys <- names(SHOT_FEATURES)
+  lapply(seq_len(nrow(sh)), function(i) {
+    s <- sh[i]
+    list(f = s$frame, pid = s$pid, made = s$made, fouled = s$fouled, three = s$three == 1L, zone = s$zone,
+         dist = round(s$dist, 1), rounds = s$rounds, base = round(s$base, 4), xfg = round(s$xfg, 4),
+         v = lapply(setNames(keys, keys), function(k) round(s[[k]], SHOT_FEATURES[[k]])),
+         e = lapply(setNames(keys, keys), function(k) round(s[[paste0("eff_", k)]], 4)))
+  })
+}
+
 #' Everything the browser needs to animate one possession, as a JSON string.
 #' Tracking is in camera view; possessions.leftHoop says which way the offense attacks. A 180 degree
 #' rotation (not a mirror) puts every offense on the right-hand hoop and keeps left/right handedness.
@@ -639,6 +661,7 @@ play_payload <- function(app, play_id) {
                   frames = I(fr$frame), gc = I(round(fr$gc, 1)), sc = I(round(fr$sc, 1)),
                   stopped = I(as.integer(fr$stopped)),
                   ball = list(x = I(flip * fr$bx), y = I(flip * fr$by), z = I(fr$bz)),
-                  players = players, events = events, touches = touches, epv = epv_payload(app, row))
+                  players = players, events = events, touches = touches, epv = epv_payload(app, row),
+                  shots = shot_payload(app, row))
   jsonlite::toJSON(payload, auto_unbox = TRUE, digits = NA, na = "null", null = "null", dataframe = "rows")
 }

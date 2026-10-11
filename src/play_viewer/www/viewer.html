@@ -9,9 +9,19 @@
     <div class="game-clock" id="game-clock"></div>
   </header>
 
-  <div class="stage" id="stage">
-    <canvas id="court" aria-label="Animated court view of the selected possession"></canvas>
-    <div class="stage-note" id="stage-note" hidden></div>
+  <!-- The half court leaves room beside it: the steps behind the shot's xFG go there. -->
+  <div class="stage-row" id="stage-row">
+    <div class="stage" id="stage">
+      <canvas id="court" aria-label="Animated court view of the selected possession"></canvas>
+      <div class="stage-note" id="stage-note" hidden></div>
+    </div>
+    <aside class="panel shot-panel" id="shot-panel" aria-label="Shot quality" hidden>
+      <div class="panel-head">
+        <h2>Shot quality</h2>
+        <div class="shot-picks" id="shot-picks" title="Shots in this possession: go to a shot's release"></div>
+      </div>
+      <div id="shot-body"></div>
+    </aside>
   </div>
 
   <div class="transport">

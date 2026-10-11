@@ -306,3 +306,144 @@ free-throw rebound. Checked across all 1,564 delivered possessions in the ten ga
   a third overlapping caption was dropped). `layoutTimeline` in `web/src/lib/sequence.ts`, mirrored in `player.js`.
 - The court's layout margin went from 4 ft to 1.5 ft outside the lines; players up to 4 ft out are still drawn.
   A team's hull area is always reported, whether or not the hull is drawn.
+
+## 2026-10-11 — EPV: xFG restructured by location and zone
+
+Status: exploration. Supersedes the xFG, rebound and three-point definitions in the 2026-10-10 EPV entry.
+The other components and the EPV model's form are unchanged. Code: `src/epv/R/models.R` (`fit_xfg`,
+`predict_xfg`, `shot_value`), `src/epv/R/features.R`, `src/epv/build_epv.R`.
+
+### Decisions (owner)
+
+- xFG starts with a location GAM, `made ~ s(x, y)`, on unfouled attempts. Its probability (`loc_xfg`) is
+  then an input to a context model beside `def1`, `def2`, `n6`, `between`, `rim_def`, `closing`, `speed`,
+  `sc`, `held` and `drib`. Distance and the three-point flag are not inputs to the context model.
+- The context model is fitted separately for rim, midrange and three-point attempts.
+- The offensive-rebound rate is one constant (0.314 over the ten games) until it is modelled spatially.
+- EPV is to be improved and is not meant to stay a separate GAM-plus-boosting fit. Its replacement is not
+  yet specified; see "Open choices".
+
+### Definitions added
+
+- **Zones.** Three = the scorer's flag for real shots, court geometry otherwise. Rim = a two within 6 ft of
+  the hoop (the cut already used in `src/archetypes`; make rate falls from about 0.60 to 0.36 between 6 and
+  7 ft). Midrange = every other two. Unfouled attempts: 431 rim, 340 midrange, 506 three.
+- **Geometric three-point flag** now has a 1 ft margin (`ARC_MARGIN`): beyond 21.15 ft from the hoop or
+  20.65 ft from the centre line. Tracked release positions sit inside the painted line; with no margin 83 of
+  1,421 real shots disagreed with the scorer (74 threes read as twos), with the margin 40 do (21 and 19).
+- **Location model.** `s(x, y, k = 30)`, signed y, about 11 effective degrees of freedom. Folding the court
+  (`|y|`) scored the same on held-out games (0.656 against 0.655), so the signed form was kept as specified.
+  Backcourt positions are evaluated at the half-court line.
+- **Zone context model.** Boosting (same settings and round selection as every other component) that starts
+  from the zone's training make rate, monotone increasing in `loc_xfg`, `def1`, `def2` and decreasing in
+  `n6`, `between`.
+- **Shot range.** No shot value is given beyond 30 ft (`SHOT_RANGE`; the value is 0). Only 8 of the 1,278
+  unfouled attempts came from further out, and 59% of priced frames have the holder beyond it. Added because
+  the three-point zone has a constant xFG (below), which priced a backcourt heave at 1.24 points.
+- Signed `y` was added to the context columns; `angle` was dropped (no model uses it now).
+
+### Validation (leave-one-game-out)
+
+| Component | n | Zone or base rate | Location GAM alone | Full | Gain ± SE | Games better | Rounds |
+|---|---|---|---|---|---|---|---|
+| xFG, all unfouled | 1,277 | 0.688 | 0.665 | 0.649 | 0.039 ± 0.005 | 10 | – |
+| xFG, rim | 431 | 0.670 | 0.673 | 0.638 | 0.030 ± 0.009 | 9 | 40 in all folds |
+| xFG, midrange | 340 | 0.662 | 0.679 | 0.670 | −0.007 ± 0.005 | 0 | 40 in 2 folds, 0 in 8 |
+| xFG, three | 506 | 0.643 | 0.650 | 0.643 | 0 | 0 | 0 in all folds |
+| EPV (squared error) | 171,245 | 1.387 | – | 1.383 | 0.003 ± 0.002 | 8 | 0 in all folds |
+
+The all-shots row is scored against the overall make rate; zone rows against the zone's own make rate.
+The previous xFG scored 0.650 (0.037 ± 0.007, 9 games). Foul, pass and turnover components moved only in
+the third decimal. Counts are slightly lower than on 2026-10-10 (171,245 frames, 1,420 shots, 3,700
+passes); the play index was rebuilt after that build and the feature change does not alter row selection.
+
+In a shots-only test with three seeds: three zone make rates alone 0.657; the previous model 0.651;
+context models started from the location model's prediction 0.655; started from the zone make rate 0.646
+(better than starting from the location model in 9 of 10 games, 0.009 ± 0.002). The second form was adopted.
+
+### What the numbers do not support
+
+- **The location smooth alone is worse than three make rates** (0.665 against 0.657). One smooth with about
+  11 degrees of freedom blurs the step in make rate at the edge of the rim area.
+- **Outside the rim nothing beats the zone's make rate.** For threes the context model is empty in every
+  fold; for midrange it is empty in eight folds and worse in the other two. On 846 unfouled jump shots
+  neither location nor any defender feature separates makes from misses on held-out games. The previous
+  pooled model was no better in those zones (three 0.654, midrange 0.661).
+- **Perimeter shot value is therefore nearly flat** (xFG 0.34, value 1.24 to 1.26 for every three in range)
+  and what variation is left comes from the foul model, which rises with defensive pressure. Among holders
+  in range, the top quartile of shot value (mean 1.34) scored 0.97 points in the rest of the possession,
+  against 1.06 to 1.12 for the other three. Shot value does not rank perimeter options by openness.
+- **EPV is unchanged**: held-out quintiles run from 0.97 predicted (1.02 scored) to 1.20 predicted (1.15
+  scored). Its spread is about twice what the outcomes support at the extremes.
+- **Training EPV on the shot model's value of the possession's next shot instead of on points did not help**
+  (same five GAM terms; scratch test run before the shot-range rule): squared error against realized points
+  1.3836 against 1.3831, paired difference −0.0006 ± 0.0019. The label's variance falls from 1.38 to 0.26,
+  so target noise is not what limits EPV; the inputs carry little information about how the possession ends.
+
+### Open choices
+
+- The form of EPV (owner). The possession-level composition "shot value at the shot × survival" can be
+  computed now from the cached shot value and cumulative turnover risk; a per-frame value still needs some
+  forecast of the eventual shot.
+- Whether to impose an openness effect on jump shots as an assumption (fixed boosting rounds under the
+  monotone constraints) when held-out games do not show one.
+- `SHOT_RANGE`, `RIM_ZONE` and `ARC_MARGIN` are fixed assumptions to test for sensitivity.
+- The static site in `web/` still carries the 2026-10-10 prices; it was not re-exported.
+
+## 2026-10-11 — Play viewer: the steps behind a shot's xFG, beside the half court
+
+Asked for by the owner: in half-court view, list the location-only xFG, every feature the context model
+used at the release, how much each one moves xFG, and the total. The panel is hidden in full-court view.
+
+Code: `explain_xfg()` in `src/epv/R/models.R`; `build_epv.R` saves it per held-out game as `shots` in
+`outputs/cache/epv/epv_{gameId}.rds`; `shot_payload()` in `src/play_viewer/R/data.R` sends it with each play.
+Shiny: `www/player.js` (shot panel). Site: `web/src/lib/shots.ts`, `web/src/components/ShotPanel.svelte`.
+
+### Definitions
+
+- **Rows.** All 1,420 tracked attempts (143 fouled), each from the fold that held its game out: the ten
+  context features at release, `loc_xfg`, the zone, the zone's training make rate, the context model's
+  boosting rounds, xFG. A fouled shot is listed with the xFG of an unfouled attempt and a note.
+- **Effect of a feature.** Its Shapley contribution to the zone context model's log-odds (xgboost
+  `predcontrib`), multiplied by `(xfg - base) / (sum of contributions)` so that a shot's effects add up
+  exactly to `xfg - base` in percentage points. The multiplier is positive, so signs are kept.
+- **Baseline** (`base`). The context model's average prediction over its training shots: the zone's make
+  rate plus the mean of the trees. It is within 0.5 points of the make rate (rim), 0.2 (midrange); for a zone
+  whose model has no trees it is the make rate and every effect is zero.
+- **Which shot is shown.** The latest shot released at the playback position, or the possession's first shot
+  before any release. Numbered buttons (two or more shots) and "Go to release" stop playback on a release frame.
+
+### What the saved effects show
+
+- **Rim (519 shots, trees in all ten folds).** Mean absolute effect in points of xFG: closest defender 6.2,
+  rim protector 5.4, time on the ball 4.2, second defender 3.2, location xFG 2.5, shooter speed 1.9,
+  dribbles 1.1, shot clock 1.0, closing speed 0.5, defenders in the path 0.1, defenders within 6 ft 0.0.
+  Closest defender by distance: under 2 ft about -8 points (155 shots), 2 to 3 ft -1.7, 3 to 4 ft +3.9,
+  4 ft or more about +11 (96 shots).
+- **Midrange (387).** Effects exist only for the 85 shots of the two games whose fold kept 40 rounds
+  (114243, 178442); the other 302 are zero.
+- **Three (514).** Zero for every shot: no fold kept a tree.
+
+### What the numbers do not support
+
+- **Effects describe the model, not the play.** They are attributions of a fitted model's prediction, not
+  estimates of what would have happened with the defender elsewhere.
+- **For jump shots there is nothing to show.** A closest defender 2 ft from a three-point shooter moves xFG
+  by 0.0 because the held-out games gave no support for any context effect there (xFG entry above). The
+  panel says so under the table; it does not mean openness is irrelevant to threes.
+- **The two midrange folds with trees scored worse than the make rate on their held-out game**, so the
+  effects shown for those 85 shots are not validated.
+- **The rim-protector effect is not monotone** (defender nearest the hoop 0 to 2 ft from it +0.6, 2 to 4 ft
+  -5.8, 4 to 6 ft +6.6, further +10): `rim_def` has no monotone constraint. Time on the ball switches sign
+  at 2 s (+4 to +5 below, -3.5 above).
+- 68 shots have no time on the ball or dribble count (the shooter was not the tracked holder at release);
+  the trees send them down their default branch, which carries an effect (-4.2 points at the rim).
+
+### Checks
+
+- The refit that added `shots` reproduced the prices: every game's `frames` and `players` tables equal the
+  previous cache and both validation tables are byte-identical. No model, feature or price changed.
+- Effects sum to `xfg - base` to 1e-16 before rounding; the site's test allows 0.001 after rounding to four
+  decimals and checks that the site's feature list is the model's.
+- The static site was re-exported, so it now carries the 2026-10-11 prices (closing that open item above).
+- A recorded video captures the canvas only; the panel is not in it.

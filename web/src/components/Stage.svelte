@@ -38,6 +38,7 @@
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;
     if (info.handler !== live.handler) live.handler = info.handler;
+    if (info.shot !== live.shot) live.shot = info.shot;
     if (info.onCourt.length !== live.onCourt.length || info.onCourt.some((id, i) => id !== live.onCourt[i])) live.onCourt = info.onCourt;
     // Areas and prices change every frame; refresh the text a few times a second, or at once when paused.
     if (drawn++ % 6 === 0 || !viewer.playing) {

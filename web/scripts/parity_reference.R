@@ -80,6 +80,8 @@ payload_sums <- function(play_id) {
        ball = I(c(total(p$ball$x), total(p$ball$y), total(p$ball$z))),
        players = lapply(p$players, function(pl) list(id = pl$id, role = pl$role, arch = pl$arch$name, x = total(pl$x),
                                                      y = total(pl$y), present = present(pl$x), detected = total(pl$d))),
+       shots = lapply(p$shots, function(s) list(f = s$f, pid = s$pid, xfg = s$xfg, values = total(unlist(s$v)),
+                                                effects = total(unlist(s$e)))),
        epv = list(f = total(e$f), to = total(e$to), holder = total(e$holder), v = total(e$v), shot = total(e$shot),
                   pass = total(e$pass), haz = total(e$haz), rop = total(e$rop), cum = total(e$cum),
                   players = lapply(names(e$players), function(k) list(id = as.integer(k), sv = total(e$players[[k]]$sv),
@@ -89,9 +91,11 @@ payload_sums <- function(play_id) {
 }
 
 roster_size <- vapply(plays$id, function(i) length(unique(c(plays[id == i]$off_ids[[1]], plays[id == i]$def_ids[[1]]))), 0L)
+# The possession with the most priced shots, so the steps behind xFG are compared too.
+shots_priced <- vapply(plays$id, function(i) length(a$shot_payload(a$app_data, plays[id == i])), 0L)
 sample_ids <- unique(c(plays$id[1], plays$id[which.max(plays$n_live)], plays$id[which.max(roster_size)],
                        plays[game_id == as.integer(games[6])]$id[40], plays[period == max(period)]$id[1],
-                       plays$id[nrow(plays)]))
+                       plays$id[nrow(plays)], plays$id[which.max(shots_priced)]))
 
 reference <- list(export_generated = meta$generated, filters = filter_cases, payloads = lapply(sample_ids, payload_sums))
 out <- file.path(a$root, "web", "tests", "parity_reference.json")

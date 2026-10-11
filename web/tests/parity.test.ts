@@ -9,6 +9,7 @@ import { decodePlay } from "../src/lib/decode";
 import { filterPlays, type FilterState } from "../src/lib/filters";
 import { convexHull, polygonArea, type Point } from "../src/lib/geometry";
 import { buildSeq, stepAction } from "../src/lib/sequence";
+import { shotIndexAt, shotRows } from "../src/lib/shots";
 import type { Meta, PeriodIndex, PlayRow, Series } from "../src/lib/types";
 
 const DATA = join(__dirname, "..", "public", "data");
@@ -29,6 +30,7 @@ interface OptionSums { id: number; sv: number; pv: number; tov: number; present:
 interface PayloadSums {
   id: string; n: number; m: number; frames: number; gc: number; sc: number; scPresent: number; stopped: number; ball: number[];
   players: { id: number; role: string; arch: string | null; x: number; y: number; present: number; detected: number }[];
+  shots: { f: number; pid: number; xfg: number; values: number; effects: number }[];
   epv: { f: number; to: number; holder: number; v: number; shot: number; pass: number; haz: number; rop: number; cum: number; players: OptionSums[] };
 }
 interface Reference { export_generated: string; filters: FilterCase[]; payloads: PayloadSums[] }
@@ -88,6 +90,31 @@ describe("archetypes", () => {
   });
 });
 
+describe("shots", () => {
+  const headers = readdirSync(DATA).filter((f) => /^g\d+_p\d+\.json$/.test(f)).flatMap((f) => Object.values(json<PeriodIndex>(f).plays));
+  const shots = headers.flatMap((h) => (h.shots ?? []).map((shot) => ({ h, shot })));
+
+  it("every shot is taken by an offensive player of its play, and its effects add up to xFG minus the baseline", () => {
+    expect(shots.length).toBeGreaterThan(1000);
+    for (const { h, shot } of shots) {
+      expect(h.players.find((p) => p.id === shot.pid)?.role).toBe("off");
+      const rows = shotRows(shot);
+      expect(rows.length).toBe(Object.keys(shot.e).length);
+      // Each effect is stored to four decimals.
+      expect(Math.abs(rows.reduce((sum, row) => sum + row.effect, 0) - (shot.xfg - shot.base))).toBeLessThan(1e-3);
+      if (shot.rounds === 0) expect(rows.every((row) => row.effect === 0)).toBe(true);
+    }
+  });
+
+  it("the panel follows playback: the first shot until the next one is released", () => {
+    const { h } = shots.find((s) => (s.h.shots ?? []).length > 1)!, [first, second] = h.shots!;
+    expect(shotIndexAt([], first.f)).toBe(-1);
+    expect(shotIndexAt(h.shots!, first.f - 50)).toBe(0);
+    expect(shotIndexAt(h.shots!, second.f - 1)).toBe(0);
+    expect(shotIndexAt(h.shots!, second.f)).toBe(1);
+  });
+});
+
 describe("filters match the Shiny server", () => {
   for (const c of reference.filters) {
     it(`${c.name}: ${c.ids.length} plays`, () => {
@@ -121,6 +148,11 @@ describe("decoded plays match the Shiny payload", () => {
         close(total(p.y), want.players[i].y);
         expect(present(p.x)).toBe(want.players[i].present);
         close(total(p.d), want.players[i].detected);
+      });
+      expect(play.shots.map((s) => [s.f, s.pid, s.xfg])).toEqual(want.shots.map((s) => [s.f, s.pid, s.xfg]));
+      play.shots.forEach((s, i) => {
+        close(total(Object.values(s.v).map((v) => v ?? NaN)), want.shots[i].values);
+        close(total(Object.values(s.e).map((v) => v ?? NaN)), want.shots[i].effects);
       });
       expect(play.epv?.f.length ?? 0).toBe(want.m);
       if (!play.epv) return;

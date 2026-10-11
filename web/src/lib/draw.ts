@@ -7,6 +7,7 @@ import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, type Co
 import { epvAt, type EpvReading } from "./epv";
 import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
+import { shotIndexAt } from "./shots";
 import type { Play, PlayerTrack, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -38,6 +39,8 @@ export interface FrameInfo {
   shotClock: string;
   /** Readout cells in display order, or null when nothing is priced at this frame. */
   readout: [string, string][] | null;
+  /** Index in play.shots of the shot the panel beside the half court shows, or -1. */
+  shot: number;
 }
 
 interface Dot {
@@ -296,5 +299,6 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   if (header) drawHeader(ctx, L, play, c, ep, o);
   drawCaption(ctx, L, labels);
   return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
-           gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]), readout: ep ? readoutCells(ep) : null };
+           gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]), readout: ep ? readoutCells(ep) : null,
+           shot: shotIndexAt(play.shots, frame) };
 }

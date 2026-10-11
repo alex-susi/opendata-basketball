@@ -27,7 +27,7 @@ export const viewer = $state({
   hidden: false,
 });
 
-/** The frame last drawn, as the page shows it around the canvas: rosters, header clocks and the EPV readout. */
+/** The frame last drawn, as the page shows it around the canvas: rosters, header clocks, the EPV readout and the shot panel. */
 export const live = $state({
   onCourt: [] as number[],
   handler: null as number | null,
@@ -37,4 +37,6 @@ export const live = $state({
   shotClock: "",
   /** Readout cells (label, value); values are dashes where nothing is priced. */
   readout: [] as [string, string][],
+  /** Index in the play's shots of the one the shot panel shows, or -1. */
+  shot: -1,
 });

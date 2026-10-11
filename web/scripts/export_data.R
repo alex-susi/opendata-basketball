@@ -5,7 +5,8 @@
 # Reads the Shiny app's caches through the app's own functions and writes to web/public/data/:
 #   meta.json            filter choices and the export's `generated` stamp
 #   plays.json           one light record per possession: list text plus the fields the filters need
-#   g<game>_p<period>.json   per-play header for one game period: players, events, touches, byte offsets
+#   g<game>_p<period>.json   per-play header for one game period: players, events, touches, the steps behind
+#                            each shot's xFG, byte offsets
 #   g<game>_p<period>.bin    that period's tracking and EPV prices
 #   archetypes.html      the app's Archetypes tab, as the app renders it (needs outputs/archetypes/)
 #
@@ -82,7 +83,7 @@ play_header <- function(p, offset) {
        off = p$off, def = p$def, home = p$home, away = p$away, homeScore = p$homeScore, awayScore = p$awayScore,
        result = p$result, who = p$who, types = I(as.character(p$types)), colors = p$colors,
        players = lapply(p$players, function(pl) c(pl[c("id", "jersey", "name", "last", "role")], list(arch = pl$arch))),
-       priced = I(as.integer(names(p$epv$players))), events = p$events, touches = p$touches)
+       priced = I(as.integer(names(p$epv$players))), events = p$events, touches = p$touches, shots = p$shots)
 }
 
 save_json <- function(x, name) {

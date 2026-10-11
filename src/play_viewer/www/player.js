@@ -1,6 +1,6 @@
-/* Play viewer front end: play list, canvas animation, timeline, rosters and the EPV overlay.
+/* Play viewer front end: play list, canvas animation, timeline, rosters, the EPV overlay and the shot panel.
    Shiny sends two messages: "plays" (the filtered list) and "play" (one possession's tracking, plus
-   EPV prices when src/epv/build_epv.R has been run).
+   EPV prices and the steps behind each shot's xFG when src/epv/build_epv.R has been run).
    Coordinates arrive in feet with the origin at centre court and the offense attacking +x. */
 (function () {
   'use strict';
@@ -50,7 +50,7 @@
                   view: 'full', showDef: true, showOff: true, skipDead: true, loop: true, showArch: true,
                   showEpv: true, showPassValues: true, showPassTov: true, showBallTov: true, showShotPass: true,
                   showBestPass: true,
-                  hoverPid: null, dirty: true, lastTs: 0, recorder: null, rosterKey: '', areaTick: 0,
+                  hoverPid: null, dirty: true, lastTs: 0, recorder: null, rosterKey: '', areaTick: 0, shotKey: '',
                   framed: false };           // the canvas carries its own header while a video is recorded
 
   // ---- small helpers ----
@@ -483,6 +483,7 @@
     updateTimeline();
     updateClocks(c);
     updateRosters(dots, handler, areaOff, areaDef, ep);
+    updateShot(frame);
   }
 
   // ---- timeline ----
@@ -687,6 +688,102 @@
     }
   }
 
+  // ---- shot panel (beside the half court): the steps behind a shot's xFG ----
+  // The baseline for the shot's zone, then every input of the context model as it stood at release with what it
+  // adds to xFG, then the result. Mirrored in the static site's src/lib/shots.ts and ShotPanel.svelte.
+  const ZONE_NAMES = { rim: 'Rim', mid: 'Midrange', three: 'Three-point' };
+  // Inputs of the xFG context model in display order (XFG_FEATURES in src/epv/R/models.R): key, label, unit, hint.
+  const SHOT_FEATURES = [
+    ['loc_xfg', 'Location xFG', 'pct', 'Make chance from court position alone: the location GAM'],
+    ['def1', 'Closest defender', 'ft', 'Distance to the nearest defender'],
+    ['def2', 'Second defender', 'ft', 'Distance to the second-nearest defender'],
+    ['n6', 'Defenders within 6 ft', 'count', 'Defenders within 6 ft of the shooter'],
+    ['between', 'Defenders in the path', 'count', 'Defenders between the shooter and the hoop, within 3 ft of the line to it'],
+    ['rim_def', 'Rim protector', 'ft', 'Distance from the hoop of the defender nearest to it'],
+    ['closing', 'Defender closing', 'ft/s', 'Speed at which the closest defender is closing on the shooter; negative when the gap is opening'],
+    ['speed', 'Shooter speed', 'ft/s', "The shooter's speed over the last quarter second"],
+    ['sc', 'Shot clock', 's', 'Seconds left on the shot clock'],
+    ['held', 'Time on the ball', 's', "Seconds since the shooter's touch began"],
+    ['drib', 'Dribbles', 'count', 'Dribbles the shooter took in this touch']];
+
+  // The shot the panel shows at a frame: the latest one released, or the first while none has been. -1 if there are none.
+  function shotIndexAt(frame) {
+    const shots = state.play.shots || [];
+    let at = shots.length ? 0 : -1;
+    shots.forEach((shot, i) => { if (shot.f <= frame) at = i; });
+    return at;
+  }
+
+  const withUnit = (v, unit) => (v == null ? '–' : unit === 'pct' ? pct(v, 1) : unit === 'count' ? String(v) : `${v.toFixed(1)} ${unit}`);
+  // An effect in percentage points of xFG, signed.
+  function points(effect) {
+    const text = Math.abs(100 * effect).toFixed(1);
+    return text === '0.0' ? text : `${effect > 0 ? '+' : '−'}${text}`;
+  }
+
+  // Stop on the release frame, where the listed values were measured.
+  function goToRelease(shot) {
+    state.pos = seqIndexOfFrame(shot.f);
+    state.playing = false;
+    state.hold = 0;
+    syncPlayButton();
+    state.dirty = true;
+  }
+
+  function stepRow(cls, cells, title) {
+    const row = el('div', `shot-step ${cls}`.trim());
+    if (title) row.title = title;
+    for (const [text, tone] of cells) row.append(el('span', tone, text));
+    return row;
+  }
+
+  function renderShot(index) {
+    const p = state.play, shots = p.shots || [], shot = shots[index], body = $('shot-body'), picks = $('shot-picks');
+    picks.replaceChildren();
+    if (shots.length > 1) {
+      shots.forEach((s, i) => {
+        const pick = el('button', i === index ? 'text-btn on' : 'text-btn', String(i + 1));
+        pick.type = 'button';
+        pick.addEventListener('click', () => goToRelease(s));
+        picks.append(pick);
+      });
+    }
+    if (!shot) {
+      const any = p.events.some((e) => e.kind === 'made' || e.kind === 'missed');
+      const why = !p.epv ? 'No xFG for this play. Run src/epv/build_epv.R to build it.'
+        : any ? "No xFG steps for this possession's shot." : 'No shot in this possession.';
+      return body.replaceChildren(el('p', 'note', why));
+    }
+    const shooter = p.players.find((pl) => pl.id === shot.pid), zone = ZONE_NAMES[shot.zone], at = p.frames.indexOf(shot.f);
+    const who = el('p', 'shot-who'), when = el('p', 'shot-when'), go = el('button', null, 'Go to release'), steps = el('div', 'shot-steps');
+    who.append(el('b', shot.made ? 'made' : 'missed', `${shot.made ? 'Made' : 'Missed'} ${shot.three ? 3 : 2}`), ` · ${shooter ? shooter.name : ''}`);
+    go.type = 'button';
+    go.addEventListener('click', () => goToRelease(shot));
+    when.append(el('span', null, `${at < 0 ? '' : `${quarter(p.period)} ${clock(p.gc[at])} · `}${shot.dist.toFixed(1)} ft`), go);
+    steps.append(stepRow('head', [['', null], ['At release', null], ['Effect', null]], 'Effects are percentage points of xFG'),
+                 stepRow('anchor', [[`${zone} baseline`, null], ['', null], [pct(shot.base, 1), null]],
+                         `The ${zone.toLowerCase()} context model's average over its training shots, close to their make rate. The effects below start from it.`));
+    for (const [key, label, unit, hint] of SHOT_FEATURES) {
+      const effect = shot.e[key] || 0, text = points(effect);
+      steps.append(stepRow('', [[label, null], [withUnit(shot.v[key], unit), null], [text, text === '0.0' ? 'flat' : effect > 0 ? 'up' : 'down']], hint));
+    }
+    steps.append(stepRow('total', [['Shot xFG', null], ['', null], [pct(shot.xfg, 1), null]], 'Baseline plus the effects'));
+    const notes = [];
+    if (shot.rounds === 0) notes.push(`No context effect held up for ${zone.toLowerCase()} shots when this game was left out of the fit, so xFG is their make rate and no feature moves it.`);
+    if (shot.fouled) notes.push('Fouled on the shot. xFG is the make chance of an unfouled attempt.');
+    notes.push('Effects are percentage points of xFG in a model fitted on the other nine games. They describe the model, not cause and effect.');
+    body.replaceChildren(who, when, steps, ...notes.map((text) => el('p', 'note', text)));
+  }
+
+  // The panel is redrawn only when playback reaches another shot, or another play is loaded.
+  function updateShot(frame) {
+    if (state.view !== 'half') return;
+    const index = shotIndexAt(frame), key = `${state.play.id}|${index}`;
+    if (key === state.shotKey) return;
+    state.shotKey = key;
+    renderShot(index);
+  }
+
   // ---- play list ----
   function renderPlays(rows) {
     state.plays = rows;
@@ -734,6 +831,9 @@
     $('scorebug').replaceChildren();
     $('game-clock').replaceChildren();
     $('readout').hidden = true;
+    $('shot-body').replaceChildren();
+    $('shot-picks').replaceChildren();
+    state.shotKey = '';
     state.clockKey = '';
     $('stage-note').textContent = note;
     $('stage-note').hidden = false;
@@ -773,6 +873,7 @@
     bug.replaceChildren(home, el('b', null, `${p.homeScore} – ${p.awayScore}`), away);
     bug.title = `${p.game} · score at the start of the possession`;
     state.clockKey = '';
+    state.shotKey = '';
     renderRosters();
     renderTicks();
     syncPlayButton();
@@ -886,6 +987,9 @@
   });
   $('opt-half').addEventListener('change', (e) => {
     state.view = e.target.checked ? 'half' : 'full';
+    $('shot-panel').hidden = state.view !== 'half';
+    $('stage-row').classList.toggle('split', state.view === 'half');
+    state.shotKey = '';
     state.dirty = true;
   });
   $('speed').addEventListener('change', (e) => { state.speed = Number(e.target.value); });

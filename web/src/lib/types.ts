@@ -92,6 +92,29 @@ export interface Touch {
   f1: number;
 }
 
+/** The steps behind one tracked shot's xFG at its release (explain_xfg() in src/epv/R/models.R). */
+export interface ShotSteps {
+  /** Release frame. */
+  f: number;
+  pid: number;
+  made: boolean;
+  fouled: boolean;
+  three: boolean;
+  /** Which context model priced it. */
+  zone: "rim" | "mid" | "three";
+  /** Feet from the hoop. */
+  dist: number;
+  /** Trees in that zone's context model; 0 means xFG is the zone's make rate. */
+  rounds: number;
+  /** The context model's average for the zone: where the effects start from. */
+  base: number;
+  xfg: number;
+  /** Each context feature at release, by its name in the model; null where it was not measured. */
+  v: Record<string, number | null>;
+  /** What each feature adds to xFG. The effects sum to xfg - base. */
+  e: Record<string, number | null>;
+}
+
 /** One play's entry in g<game>_p<period>.json. `o` is its byte offset in the matching .bin file. */
 export interface PlayHeader {
   id: string;
@@ -114,6 +137,8 @@ export interface PlayHeader {
   priced: number[];
   events: PlayEvent[];
   touches: Touch[];
+  /** Missing from exports made before shots were priced one by one. */
+  shots?: ShotSteps[];
 }
 
 export interface PeriodIndex {
@@ -151,7 +176,7 @@ export interface Epv {
 }
 
 /** Everything needed to animate one possession: the Shiny app's "play" message, decoded. */
-export interface Play extends Omit<PlayHeader, "players" | "o" | "n" | "m" | "priced"> {
+export interface Play extends Omit<PlayHeader, "players" | "o" | "n" | "m" | "priced" | "shots"> {
   frames: Int32Array;
   gc: Series;
   sc: Series;
@@ -159,4 +184,6 @@ export interface Play extends Omit<PlayHeader, "players" | "o" | "n" | "m" | "pr
   ball: { x: Series; y: Series; z: Series };
   players: PlayerTrack[];
   epv: Epv | null;
+  /** Tracked shots of the possession in order of release. */
+  shots: ShotSteps[];
 }
