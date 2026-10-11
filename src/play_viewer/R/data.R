@@ -11,6 +11,15 @@ MAX_GAMES_IN_MEMORY <- 3L
 PLAY_TYPES <- c(pick = "Pick", handoff = "Handoff", off_ball_screen = "Off-ball screen", drive = "Drive",
                 isolation = "Isolation", post = "Post-up", closeout = "Closeout", transition = "Transition")
 
+# Roster tag for each playstyle archetype: short label and colour slot (--arch-* in www/style.css).
+# A defensive role takes the colour of the offensive archetype most of its players have, so a player usually
+# keeps his colour at both ends. An archetype missing here is shown by its full name with a neutral swatch.
+ARCHETYPE_TAGS <- list("Primary Ball Handler" = c("Primary", "primary"), "Slasher" = c("Slasher", "slasher"),
+                       "Secondary Ball Handler" = c("Secondary", "secondary"), "Athletic Finisher" = c("Finisher", "finisher"),
+                       "Floor Spacer" = c("Spacer", "spacer"), "Roll & Cut Big" = c("Roll & Cut", "big"),
+                       "Point of Attack" = c("Point", "primary"), "Chaser" = c("Chaser", "secondary"),
+                       "Helper" = c("Helper", "spacer"), "Anchor Big" = c("Anchor", "big"))
+
 RESULT_LABELS <- c(FGM = "Made 2", FGM3 = "Made 3", FGX = "Missed 2", FGX3 = "Missed 3", TO = "Turnover",
                    FOU = "Foul", VIO = "Violation", JMP = "Jump ball", EPD = "End of period")
 
@@ -366,11 +375,25 @@ ensure_cache <- function(root, force = FALSE) {
 
 # ---- app-facing API ------------------------------------------------------------------------------
 
+#' Each player's most likely playstyle archetype on each side of the ball (built by src/archetypes/), or an
+#' empty table if the archetypes have not been built.
+#' @return data.table(pid = canonical id, side = "off" or "def", archetype, probability).
+load_archetypes <- function(root) {
+  read_side <- function(file, side) {
+    path <- file.path(root, "outputs", "archetypes", file)
+    if (!file.exists(path)) return(NULL)
+    fread(path, select = c("pid", "archetype", "probability"))[, side := side]
+  }
+  out <- rbind(read_side("offense_membership.csv", "off"), read_side("defense_membership.csv", "def"))
+  if (is.null(out)) data.table(pid = integer(), archetype = character(), probability = numeric(), side = character()) else out
+}
+
 #' Load everything the app needs. Tracking is read per game on demand.
 load_app_data <- function(root = find_repo_root()) {
   ensure_cache(root)
   app <- readRDS(index_cache_path(root))
   app$root <- root
+  app$archetypes <- load_archetypes(root)
   app$tracking <- new.env()
   app
 }
@@ -427,11 +450,16 @@ plays_json <- function(app, plays) {
 }
 
 #' One player's track aligned to the possession's frames, rotated so the offense attacks +x.
-player_track <- function(p, pl, frames, flip, info, home_is_off) {
+#' `arch` is his archetype on the side of the ball he is on in this possession (NULL if he has none).
+player_track <- function(p, pl, frames, flip, info, home_is_off, archetypes) {
   rows <- pl[pid == p]
   at <- match(frames, rows$frame)
-  list(id = p, jersey = info$jersey, name = info$name, last = info$last,
-       role = if (rows$home[1] == home_is_off) "off" else "def",
+  role <- if (rows$home[1] == home_is_off) "off" else "def"
+  arch <- archetypes[pid == info$canon & side == role]
+  tag <- if (nrow(arch)) ARCHETYPE_TAGS[[arch$archetype[1]]]
+  if (is.null(tag)) tag <- c(arch$archetype[1], "none")
+  list(id = p, jersey = info$jersey, name = info$name, last = info$last, role = role,
+       arch = if (nrow(arch)) list(name = arch$archetype[1], short = tag[1], slot = tag[2], p = arch$probability[1]),
        x = I(flip * rows$x[at]), y = I(flip * rows$y[at]), d = I(rows$det[at]))
 }
 
@@ -478,11 +506,11 @@ play_payload <- function(app, play_id) {
   pl <- trk$players[frame >= row$start_frame & frame <= row$end_frame]
   flip <- if (row$left_hoop) -1 else 1
   roster <- app$roster[game_id == row$game_id]
-  info <- merge(trk$jerseys[pid %in% pl$pid], roster[, .(pid, name, last)], by = "pid", all.x = TRUE)
-  info[is.na(name), c("name", "last") := .(paste("Player", pid), paste("Player", pid))]
+  info <- merge(trk$jerseys[pid %in% pl$pid], roster[, .(pid, name, last, canon)], by = "pid", all.x = TRUE)
+  info[is.na(name), c("name", "last", "canon") := .(paste("Player", pid), paste("Player", pid), pid)]
   info <- info[order(suppressWarnings(as.integer(jersey)))]
   players <- lapply(seq_len(nrow(info)), function(i) player_track(info$pid[i], pl, fr$frame, flip, info[i],
-                                                                  row$off_team == row$home_team))
+                                                                  row$off_team == row$home_team, app$archetypes))
   in_window <- function(dt, col) dt[game_id == row$game_id & get(col) >= row$start_frame & get(col) <= row$end_frame]
   events <- in_window(app$events, "frame")[order(frame), .(f = frame, kind, label, short, who)]
   touches <- app$touches[game_id == row$game_id & f1 >= row$start_frame & f0 <= row$end_frame, .(pid, f0, f1)]

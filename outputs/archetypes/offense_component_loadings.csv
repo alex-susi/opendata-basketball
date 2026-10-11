@@ -1,0 +1,46 @@
+feature,definition,PC1,PC2,PC3,PC4
+s_fga_per100,Field goal attempts per 100 possessions on court,-0.099,-0.086,-0.298,0.273
+s_rim_share,Share of attempts in the restricted area,0.144,-0.176,0.133,0.073
+s_paint_share,Share of attempts in the paint outside the restricted area,0.051,-0.293,0.083,0.123
+s_mid_share,Share of attempts from mid-range,-0.101,-0.022,-0.34,-0.028
+s_corner3_share,Share of attempts that are corner threes,0.015,0.284,0.133,-0.082
+s_ab3_share,Share of attempts that are above-the-break threes,-0.13,0.215,-0.107,-0.097
+s_cns_share,Share of attempts that are catch-and-shoot (rest are off the dribble),0.213,0.147,-0.062,-0.207
+s_od3_share,Share of attempts that are off-the-dribble threes,-0.213,0.014,-0.088,0.018
+s_dunk_lob_share,Share of attempts that are dunks or lobs,0.128,-0.08,-0.008,-0.045
+s_tip_share,Share of attempts that are tips,0.139,-0.104,-0.034,-0.083
+s_layup_share,Share of attempts that are layups,0.068,-0.218,0.281,0.204
+s_floater_share,Share of attempts that are floaters,-0.09,-0.186,-0.14,-0.137
+s_post_shot_share,Share of attempts that are hooks or post fadeaways,0.136,-0.169,-0.051,0.08
+s_pullup_share,"Share of attempts that are self-created jumpers (pull-up, stepback, shake-and-raise, leaner)",-0.228,0.008,-0.183,0.036
+s_offmove_share,Share of attempts that are jumpers off movement,-0.037,0.261,-0.251,0.012
+s_contested_share,Share of non-blocked attempts taken under an average or heavy contest,-0.051,0.023,-0.041,0.318
+s_drive_per100,Drives per 100 possessions on court,-0.223,-0.105,0.098,0.169
+s_drv_pick_share,Share of drives that start from an on-ball screen,-0.203,-0.12,0.02,-0.077
+s_drv_obs_share,Share of drives that start from an off-ball screen,0.02,0.137,-0.186,0.198
+s_drv_iso_share,Share of drives that start from an isolation,0.015,-0.078,-0.05,0.387
+s_drv_closeout_share,Share of drives that start from attacking a closeout,0.124,0.23,0.075,-0.158
+s_drv_pullup_share,Share of drives ending in a pull-up,-0.072,0.068,-0.384,-0.083
+s_drv_rim_share,Share of drives ending in a shot near the basket,0.077,-0.054,0.194,0.297
+s_pick_bh_per100,Direct picks as ball handler per 100 possessions on court,-0.25,-0.138,-0.017,-0.06
+s_pick_scr_per100,Direct picks as screener per 100 possessions on court,0.167,-0.169,-0.141,-0.072
+s_bh_middle_share,Share of direct picks as handler set in the middle of the floor,-0.079,-0.112,0.017,-0.158
+t_touch_per100,Touches per 100 offensive chances on court,-0.17,-0.14,-0.005,-0.132
+t_drib_per_touch,Dribbles per touch,-0.231,-0.111,0.012,-0.011
+t_sec_per_touch,Seconds per touch,-0.15,-0.088,0.064,0.037
+t_zero_drib_share,Share of touches with no dribble,0.217,0.083,-0.024,-0.061
+t_ball_time_share,Share of his team's on-court offensive clock time with the ball in his hands,-0.178,-0.13,0.062,-0.066
+t_initiate_share,Share of chances (second chances excluded) where he has the ball when it first reaches the frontcourt,-0.216,-0.137,0.081,-0.169
+t_catch_dist,Feet from the hoop where his frontcourt touches start,-0.189,0.072,0.101,-0.052
+t_catch_paint_share,Share of frontcourt touches starting in the paint,0.144,-0.124,-0.071,0.006
+t_pass_len,Feet per completed pass,-0.169,-0.008,0.148,0.047
+t_obs_scr_per100,Off-ball screens set per 100 chances,0.168,-0.102,-0.105,-0.075
+t_obs_cut_per100,Off-ball screens used as cutter per 100 chances,-0.093,0.098,-0.282,0.331
+t_off_corner_share,Share of off-ball half-court time spent in: corner,-0.005,0.277,0.16,0.105
+t_off_wing_share,Share of off-ball half-court time spent in: wing,-0.182,0.124,0.111,0.032
+t_off_top_share,Share of off-ball half-court time spent in: top,-0.051,-0.254,-0.089,-0.263
+t_off_mid_share,Share of off-ball half-court time spent in: mid,0.18,-0.119,-0.138,0.067
+t_off_paint_share,Share of off-ball half-court time spent in: paint,0.139,-0.161,-0.145,0.015
+t_off_still_share,Share of off-ball half-court time moving slower than 2 ft/s,-0.028,0.187,0.178,0.101
+t_off_hoop_dist,"Mean distance from the hoop off the ball in the half court, ft",-0.202,0.045,0.106,-0.1
+t_crash_share,Share of teammates' shots where he is on the glass when the ball reaches the rim,0.176,-0.051,-0.018,-0.089

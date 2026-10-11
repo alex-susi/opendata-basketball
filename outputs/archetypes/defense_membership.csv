@@ -1,0 +1,206 @@
+pid,player,teams,season_possessions,tracked_games,tracked_off_chances,tracked_def_chances,defines_clusters,cluster,archetype,probability,p_point_of_attack,p_helper,p_chaser,p_anchor_big
+59142,Brancou Badio,Valencia BC,1077,1,52,55,TRUE,1,Point of Attack,1,1,0,0,0
+34982,Facundo Campazzo,Real Madrid,1207,1,73,67,TRUE,1,Point of Attack,1,1,0,0,0
+31739,Trae Bell-Haynes,Casademont Zaragoza,1055,2,131,125,TRUE,1,Point of Attack,1,1,0,0,0
+34919,Theo Maledon,Real Madrid,1094,1,51,55,TRUE,1,Point of Attack,0.998,0.998,0,0.002,0
+15394,David Dejulius,CB UCAM Murcia,1518,1,80,74,TRUE,1,Point of Attack,0.997,0.997,0,0.003,0
+59104,Dominik Mavra,Leche Rio Breogan,1296,2,101,96,TRUE,1,Point of Attack,0.996,0.996,0,0.004,0
+34945,Raul Neto,San Pablo Burgos,1227,1,61,56,TRUE,1,Point of Attack,0.994,0.994,0,0.006,0
+34943,Ricky Rubio,Club Joventut Badalona,1248,1,69,71,TRUE,1,Point of Attack,0.993,0.993,0,0.007,0
+59183,Hugo Benitez,BAXI Manresa,593,1,51,67,TRUE,1,Point of Attack,0.987,0.987,0,0.013,0
+35581,Aaron Best,BC MoraBanc Andorra,1193,1,64,70,TRUE,1,Point of Attack,0.986,0.986,0,0.014,0
+58474,DeWayne Russell,Leche Rio Breogan,1244,2,104,114,TRUE,1,Point of Attack,0.985,0.985,0,0.015,0
+59214,Daniel Perez,BAXI Manresa,593,1,42,42,TRUE,1,Point of Attack,0.981,0.981,0,0.019,0
+59120,Bruno Fitipaldo,Lenovo Tenerife,1218,1,41,47,TRUE,1,Point of Attack,0.98,0.98,0,0.02,0
+59233,Micah Speight,Coviran Granada,105,1,51,45,TRUE,1,Point of Attack,0.979,0.979,0,0.021,0
+25431,Andres Feliz Sarita,Real Madrid,918,1,61,53,TRUE,1,Point of Attack,0.974,0.974,0,0.026,0
+59116,Jaime Fernandez Bernabe,Lenovo Tenerife,1045,1,34,39,FALSE,1,Point of Attack,0.97,0.97,0,0.03,0
+59215,Alberto Abalde,Real Madrid,928,1,34,39,FALSE,1,Point of Attack,0.964,0.964,0,0.036,0
+15369,Sir'Jabari Rice,BC MoraBanc Andorra,559,1,79,79,TRUE,1,Point of Attack,0.961,0.961,0,0.039,0
+59123,Alberto Diaz,Malaga,1086,1,53,54,TRUE,1,Point of Attack,0.936,0.936,0,0.064,0
+59151,Melwin Jan Pantzar,Bilbao Basket,1464,1,84,80,TRUE,1,Point of Attack,0.932,0.932,0,0.068,0
+59234,Aaron Ganal,BC MoraBanc Andorra,19,1,2,3,FALSE,1,Point of Attack,0.908,0.908,0,0.092,0
+59146,Margiris Normantas,Bilbao Basket,1245,1,56,59,TRUE,1,Point of Attack,0.893,0.893,0,0.107,0
+59220,Jonathan Rousselle,Coviran Granada,1351,1,65,54,TRUE,1,Point of Attack,0.887,0.887,0,0.113,0
+59207,Marco Spissu,Casademont Zaragoza,1350,2,106,104,TRUE,1,Point of Attack,0.88,0.88,0,0.12,0
+59135,Matteo Spagnolo,Bitci Baskonia,1224,1,61,65,TRUE,1,Point of Attack,0.85,0.85,0,0.15,0
+59099,Ludvig Hakanson,Club Joventut Badalona,1125,1,58,59,TRUE,1,Point of Attack,0.756,0.756,0,0.244,0
+32852,Ruben Lopez,CB UCAM Murcia,65,1,1,1,FALSE,1,Point of Attack,0.748,0.748,0.014,0.238,0
+59295,Carlos Alocen,Dreamland Gran Canaria,371,2,55,58,TRUE,1,Point of Attack,0.735,0.735,0,0.265,0
+59122,Marcelinho Huertas,Lenovo Tenerife,1199,1,65,61,TRUE,1,Point of Attack,0.701,0.701,0,0.299,0
+35475,Isaac Nogues,Valencia BC,269,1,10,12,FALSE,1,Point of Attack,0.678,0.678,0,0.322,0
+59191,Guillem Ferrando Porro,Basquet Girona,352,1,11,13,FALSE,1,Point of Attack,0.674,0.674,0,0.326,0
+24949,Markus Howard,Bitci Baskonia,567,1,53,44,TRUE,1,Point of Attack,0.663,0.663,0,0.337,0
+59098,Guillem Vives,Club Joventut Badalona,681,1,15,16,FALSE,1,Point of Attack,0.652,0.652,0,0.348,0
+59246,Daniel Gonzalez,BC Barcelona,48,1,10,14,FALSE,1,Point of Attack,0.604,0.604,0,0.396,0
+59290,Juan Nunez Garcia,BC Barcelona,241,1,43,44,TRUE,1,Point of Attack,0.559,0.559,0,0.441,0
+59107,Aleksandar Aranitovic,Leche Rio Breogan,1414,2,115,129,TRUE,2,Helper,1,0,1,0,0
+24598,Braxton Key,Valencia BC,656,1,45,44,TRUE,2,Helper,1,0,1,0,0
+31539,Chimezie Metu,Dreamland Gran Canaria,499,1,56,60,TRUE,2,Helper,1,0,1,0,0
+28010,Chuma Okeke,Real Madrid,943,1,46,50,TRUE,2,Helper,1,0,1,0,0
+59137,Clement Frisch,Bitci Baskonia,815,1,40,44,TRUE,2,Helper,1,0,1,0,0
+35376,Darrun Hilliard,Bilbao Basket,1361,1,72,61,TRUE,2,Helper,1,0,1,0,0
+35222,Devin Robinson,Casademont Zaragoza,1608,2,150,147,TRUE,2,Helper,1,0,1,0,0
+59175,Gabriele Procida,Real Madrid,842,1,36,39,FALSE,2,Helper,1,0,1,0,0
+59527,Jaime Fernandez Manzanares,Casademont Zaragoza,518,2,33,35,FALSE,2,Helper,1,0,1,0,0
+59141,Jaime Pradilla,Valencia BC,1193,1,55,56,TRUE,2,Helper,1,0,1,0,0
+18363,Jermaine Samuels,San Pablo Burgos,1408,1,76,71,TRUE,2,Helper,1,0,1,0,0
+59140,Josep Puerto,Valencia BC,831,1,42,38,FALSE,2,Helper,1,0,1,0,0
+11247,Kameron Milton Allante Taylor,Valencia BC,909,1,50,54,TRUE,2,Helper,1,0,1,0,0
+59217,Luka Bozic,Coviran Granada,1894,1,81,64,TRUE,2,Helper,1,0,1,0,0
+28155,Martin Krampelj,Bilbao Basket,1144,1,49,45,TRUE,2,Helper,1,0,1,0,0
+59101,Miguel Allen Montesdeoca,Club Joventut Badalona,332,1,62,60,TRUE,2,Helper,1,0,1,0,0
+59190,Mindaugas Susinskas,Basquet Girona,1107,1,59,50,TRUE,2,Helper,1,0,1,0,0
+35402,Nico Brussino,Dreamland Gran Canaria,1598,2,100,118,TRUE,2,Helper,1,0,1,0,0
+59131,Pablo Almazan Sierra,San Pablo Burgos,547,1,40,40,TRUE,2,Helper,1,0,1,0,0
+59117,Rokas Giedraitis,Lenovo Tenerife,928,1,52,46,TRUE,2,Helper,1,0,1,0,0
+59188,Sergi Martinez Costa,Basquet Girona,1455,1,69,70,TRUE,2,Helper,1,0,1,0,0
+59174,Sergio Llull,Real Madrid,1129,1,41,42,TRUE,2,Helper,1,0,1,0,0
+59114,Tim Abromaitis,Lenovo Tenerife,1066,1,50,45,TRUE,2,Helper,1,0,1,0,0
+34838,Trey Lyles,Real Madrid,989,1,52,48,TRUE,2,Helper,1,0,1,0,0
+59100,Yannick Kraag,Club Joventut Badalona,1344,1,73,77,TRUE,2,Helper,1,0,1,0,0
+59108,Bakary Dibba,Leche Rio Breogan,1077,2,94,93,TRUE,2,Helper,0.999,0,0.999,0,0.001
+59219,Beka Burjanadze,Coviran Granada,462,1,38,35,FALSE,2,Helper,0.999,0,0.999,0.001,0
+59091,Sander Raieste,CB UCAM Murcia,999,1,46,53,TRUE,2,Helper,0.999,0,0.999,0.001,0
+59092,Toni Nakic,CB UCAM Murcia,1148,1,82,79,TRUE,2,Helper,0.999,0,0.999,0,0.001
+34905,Henri Drell,Club Joventut Badalona,791,1,31,32,FALSE,2,Helper,0.998,0,0.998,0.002,0
+59164,Joel Parra Lopez,BC Barcelona,1327,1,51,42,TRUE,2,Helper,0.998,0,0.998,0.002,0
+59153,Louis Labeyrie,Dreamland Gran Canaria,616,1,29,25,FALSE,2,Helper,0.998,0,0.998,0.002,0
+58771,Mihajlo Andric,Leche Rio Breogan,1306,2,103,108,TRUE,2,Helper,0.998,0,0.998,0.001,0.001
+59155,Miquel Salvo,Dreamland Gran Canaria,450,1,32,29,FALSE,2,Helper,0.998,0,0.998,0.002,0
+35096,Rodions Kurucs,Bitci Baskonia,991,1,51,42,TRUE,2,Helper,0.998,0,0.998,0,0.002
+59113,Aaron Doornekamp,Lenovo Tenerife,1174,1,52,56,TRUE,2,Helper,0.997,0,0.997,0.003,0
+11845,Justin McKoy,BC MoraBanc Andorra,978,1,74,75,TRUE,2,Helper,0.997,0,0.997,0.003,0
+25182,Eric Vila,Dreamland Gran Canaria,442,2,45,45,TRUE,2,Helper,0.996,0,0.996,0.004,0
+24056,Killian Tillie,Malaga,655,1,46,43,TRUE,2,Helper,0.996,0,0.996,0.004,0
+59374,Kyle Kuric,BC MoraBanc Andorra,1178,1,32,35,FALSE,2,Helper,0.996,0,0.996,0.004,0
+34992,Timothe Luwawu-Cabarrot,Bitci Baskonia,1413,1,46,46,TRUE,2,Helper,0.996,0,0.996,0.004,0
+35726,David Kramer,Real Madrid,691,1,22,12,FALSE,2,Helper,0.995,0,0.995,0.005,0
+59133,Leonardo Simoes Meindl,San Pablo Burgos,1572,1,37,44,TRUE,2,Helper,0.995,0,0.995,0.005,0
+59159,Loucas Nzambi Maniema,Dreamland Gran Canaria,120,1,3,4,FALSE,2,Helper,0.995,0,0.995,0.005,0
+59205,Santiago Yusta,Casademont Zaragoza,1629,2,146,141,TRUE,2,Helper,0.994,0,0.994,0.006,0
+59115,Thomas Scrubb,Lenovo Tenerife,1048,1,31,32,FALSE,2,Helper,0.994,0,0.994,0.006,0
+35326,James Webb,Malaga,1161,1,49,51,TRUE,2,Helper,0.992,0,0.992,0.008,0
+59160,Tornike Shengelia,BC Barcelona,1125,1,53,46,TRUE,2,Helper,0.992,0,0.992,0.008,0
+31457,Shannon Evans,BC MoraBanc Andorra,1502,1,32,37,FALSE,2,Helper,0.99,0,0.99,0.01,0
+22724,Eugene Omoruyi,Bitci Baskonia,744,1,37,41,TRUE,2,Helper,0.989,0,0.989,0,0.011
+59125,Jonathan Barreiro,Malaga,959,1,49,51,TRUE,2,Helper,0.985,0,0.985,0.015,0
+59232,Eduardo Duran,Coviran Granada,105,1,7,3,FALSE,2,Helper,0.982,0,0.982,0.018,0
+59180,Alex Reyes,BAXI Manresa,1600,1,53,59,TRUE,2,Helper,0.977,0,0.977,0.023,0
+8673,Zach Hicks,CB UCAM Murcia,235,1,15,12,FALSE,2,Helper,0.975,0,0.975,0.024,0.001
+59189,Josep Busquets,Basquet Girona,1499,1,47,54,TRUE,2,Helper,0.97,0,0.97,0.03,0
+35028,Matt Thomas,Coviran Granada,749,1,76,77,TRUE,2,Helper,0.97,0,0.97,0.03,0
+35806,Retin Obasohan,BAXI Manresa,1255,1,51,65,TRUE,2,Helper,0.969,0,0.969,0.031,0
+59093,Wilhelm Falk,CB UCAM Murcia,653,1,7,9,FALSE,2,Helper,0.953,0,0.953,0.013,0.034
+59121,Hector Alderete Diaz,Lenovo Tenerife,192,1,6,9,FALSE,2,Helper,0.928,0,0.928,0.036,0.036
+15680,Miles Norris,BC Barcelona,731,1,50,49,TRUE,2,Helper,0.924,0,0.924,0.076,0
+35821,Luke Petrasek,Bilbao Basket,1299,1,63,64,TRUE,2,Helper,0.923,0,0.923,0.077,0
+59112,Joan Sastre,Lenovo Tenerife,568,1,20,31,FALSE,2,Helper,0.912,0,0.912,0.088,0
+59386,Ivan Cruz Uceda,Leche Rio Breogan,30,1,7,7,FALSE,2,Helper,0.911,0,0.911,0.011,0.078
+18522,Myles Cale,BC Barcelona,993,1,40,43,TRUE,2,Helper,0.903,0,0.903,0.097,0
+59136,Gytis Radzevicius,Bitci Baskonia,864,1,47,40,TRUE,2,Helper,0.859,0,0.859,0.141,0
+24280,Keandre Cook,Leche Rio Breogan,1224,1,40,40,TRUE,2,Helper,0.847,0,0.847,0.153,0
+59206,Miguel Gonzalez,Casademont Zaragoza,1129,2,92,93,TRUE,2,Helper,0.768,0,0.768,0.232,0
+59221,Jovan Kljajic,Coviran Granada,451,1,53,43,TRUE,2,Helper,0.74,0,0.74,0.26,0
+59148,Stefan Lazarevic,Bilbao Basket,683,1,25,29,FALSE,2,Helper,0.712,0,0.712,0.287,0
+59192,Juan Fernandez,Basquet Girona,745,1,34,45,TRUE,2,Helper,0.693,0,0.693,0,0.307
+59149,Aleix Font,Bilbao Basket,481,1,12,12,FALSE,2,Helper,0.65,0.001,0.65,0.349,0
+28857,Justin Wright-Foreman,Casademont Zaragoza,429,1,42,49,TRUE,2,Helper,0.638,0,0.638,0.362,0
+59163,Kevin Punter,BC Barcelona,1333,1,53,46,TRUE,2,Helper,0.612,0,0.612,0.388,0
+59097,Adam Hanga,Club Joventut Badalona,1260,1,47,47,TRUE,2,Helper,0.543,0,0.543,0.457,0
+59202,Yannick Nzosa,San Pablo Burgos,434,1,0,1,FALSE,2,Helper,0.39,0.097,0.39,0.174,0.34
+32336,Kassius Robertson,Dreamland Gran Canaria,672,2,97,109,TRUE,3,Chaser,0.973,0.019,0.007,0.973,0
+15362,Michael Forrest,CB UCAM Murcia,1044,1,33,33,FALSE,3,Chaser,0.971,0.022,0.008,0.971,0
+59105,Arturs Kurucs,Leche Rio Breogan,1338,2,100,102,TRUE,3,Chaser,0.966,0.009,0.025,0.966,0
+22847,Yves Pons,BC MoraBanc Andorra,1142,1,71,75,TRUE,3,Chaser,0.959,0.008,0.033,0.959,0
+59158,Ziga Samar,Dreamland Gran Canaria,731,2,52,54,TRUE,3,Chaser,0.959,0.035,0.006,0.959,0
+59184,Agustin Ubal,BAXI Manresa,1175,1,43,55,TRUE,3,Chaser,0.958,0.035,0.007,0.958,0
+31587,Darius Thompson,Valencia BC,946,1,46,44,TRUE,3,Chaser,0.958,0.039,0.002,0.958,0
+23056,Justin Jaworski,Bilbao Basket,1401,1,88,80,TRUE,3,Chaser,0.954,0.003,0.043,0.954,0
+15452,Chase Audige,Malaga,663,1,39,39,FALSE,3,Chaser,0.95,0.048,0.002,0.95,0
+22729,Chris Duarte,Malaga,919,1,49,45,TRUE,3,Chaser,0.95,0.049,0.001,0.95,0
+22895,Jhivvan Jameel Jackson Melendez,San Pablo Burgos,1028,1,59,58,TRUE,3,Chaser,0.95,0.049,0.001,0.95,0
+59186,Max Gaspa,BAXI Manresa,205,1,15,23,FALSE,3,Chaser,0.947,0.042,0.011,0.947,0
+59134,Gonzalo Corbalan,San Pablo Burgos,1683,1,55,50,TRUE,3,Chaser,0.946,0.052,0.002,0.946,0
+24268,Trent Forrest,Bitci Baskonia,1077,1,49,48,TRUE,3,Chaser,0.942,0.056,0.002,0.942,0
+24684,Jon Axel Gudmundsson,San Pablo Burgos,1173,1,63,59,TRUE,3,Chaser,0.939,0.059,0.001,0.939,0
+59208,Joaquin Nazar Rodriguez Olivera,Casademont Zaragoza,1254,2,47,44,TRUE,3,Chaser,0.931,0.006,0.063,0.931,0
+59475,Stan Okoye,BC MoraBanc Andorra,1033,1,14,18,FALSE,3,Chaser,0.924,0.067,0.009,0.924,0
+18534,Alfonso Plummer,BAXI Manresa,204,1,38,39,FALSE,3,Chaser,0.921,0.077,0.001,0.921,0
+34854,Patty Mills,Lenovo Tenerife,356,1,61,57,TRUE,3,Chaser,0.913,0.086,0.002,0.913,0
+59162,Dario Brizuela,BC Barcelona,937,1,38,35,FALSE,3,Chaser,0.9,0.099,0.001,0.9,0
+25271,Elias Valtonen,Coviran Granada,839,1,56,40,TRUE,3,Chaser,0.899,0.1,0.002,0.899,0
+59144,Jean Claudio Montero,Valencia BC,954,1,61,61,TRUE,3,Chaser,0.899,0.101,0,0.899,0
+58436,Derek Ryan Needham,Basquet Girona,1383,1,58,52,TRUE,3,Chaser,0.897,0.102,0,0.897,0
+59129,Nihad Djedovic,Malaga,767,1,42,47,TRUE,3,Chaser,0.896,0.003,0.102,0.896,0
+59201,Juan Rubio,San Pablo Burgos,505,1,17,18,FALSE,3,Chaser,0.893,0.027,0.08,0.893,0
+59036,Howard Sant-Roos,CB UCAM Murcia,1226,1,57,54,TRUE,3,Chaser,0.889,0.11,0.001,0.889,0
+59213,Kendrick Perry,Malaga,1401,1,46,47,TRUE,3,Chaser,0.877,0.122,0.001,0.877,0
+24504,Jonah Radebaugh,CB UCAM Murcia,1091,1,38,36,FALSE,3,Chaser,0.876,0.122,0.002,0.876,0
+58359,Justin Cobbs,Malaga,293,1,15,14,FALSE,3,Chaser,0.871,0.126,0.003,0.871,0
+28390,Mark Hughes,Basquet Girona,1236,1,44,54,TRUE,3,Chaser,0.87,0.13,0,0.87,0
+59154,Andrew Albicy,Dreamland Gran Canaria,1306,1,47,45,TRUE,3,Chaser,0.853,0.146,0,0.853,0
+63998,Jordan Walker,Leche Rio Breogan,74,1,27,23,FALSE,3,Chaser,0.849,0.15,0.001,0.849,0
+59161,Juan Ignacio Marcos,BC Barcelona,836,1,48,41,TRUE,3,Chaser,0.834,0.166,0,0.834,0
+15487,Omari Moore,Valencia BC,1055,1,39,36,FALSE,3,Chaser,0.827,0.172,0,0.827,0
+30735,Cameron Hunt,Club Joventut Badalona,1614,1,65,68,TRUE,3,Chaser,0.823,0.177,0,0.823,0
+15347,Isaiah Wong,Dreamland Gran Canaria,1351,2,113,112,TRUE,3,Chaser,0.818,0.182,0,0.818,0
+59187,Jose Ignacio Vildoza,Basquet Girona,899,1,27,35,FALSE,3,Chaser,0.813,0.002,0.185,0.813,0
+15780,Erik Stevenson,Casademont Zaragoza,231,1,49,39,FALSE,3,Chaser,0.716,0.003,0.281,0.716,0
+61550,Brandon Jefferson,Dreamland Gran Canaria,87,1,58,57,TRUE,3,Chaser,0.686,0.314,0,0.686,0
+28410,Francisco Alonso,Leche Rio Breogan,1515,2,124,123,TRUE,3,Chaser,0.683,0,0.316,0.683,0
+59095,Dylan Ennis,CB UCAM Murcia,1144,1,76,75,TRUE,3,Chaser,0.679,0.001,0.32,0.679,0
+28336,Otis Livingston II,Basquet Girona,1601,1,64,58,TRUE,3,Chaser,0.637,0.363,0,0.637,0
+35852,DJ Stephens,Casademont Zaragoza,574,1,46,44,TRUE,3,Chaser,0.628,0.002,0.371,0.628,0
+28648,Travis Munnings,Coviran Granada,264,1,46,32,FALSE,3,Chaser,0.627,0.373,0,0.627,0
+59167,Jose Francisco Ortega Soriano,BC MoraBanc Andorra,715,1,60,56,TRUE,3,Chaser,0.592,0.408,0,0.592,0
+59139,Rafael Villar Cornago,Bitci Baskonia,797,1,35,35,FALSE,3,Chaser,0.519,0.481,0,0.519,0
+59127,Aleksander Balcerowski,Malaga,1250,1,54,56,TRUE,4,Anchor Big,1,0,0,0,1
+34832,Alex Len,Real Madrid,552,1,24,19,FALSE,4,Anchor Big,1,0,0,0,1
+59150,Amar Sylla,Bilbao Basket,226,1,4,5,FALSE,4,Anchor Big,1,0,0,0,1
+59096,Ante Tomic,Club Joventut Badalona,888,1,76,75,TRUE,4,Anchor Big,1,0,0,0,1
+59227,Archange Izaw Bolavie,BAXI Manresa,26,1,6,14,FALSE,4,Anchor Big,1,0,0,0,1
+59170,Artem Pustovyi,BC MoraBanc Andorra,1114,1,66,68,TRUE,4,Anchor Big,1,0,0,0,1
+59124,Augustine Rubit,Malaga,503,1,32,30,FALSE,4,Anchor Big,1,0,0,0,1
+59075,Augusto Lima,San Pablo Burgos,35,1,9,7,FALSE,4,Anchor Big,1,0,0,0,1
+59301,Babatunde Olumuyiwa,Coviran Granada,1216,1,32,26,FALSE,4,Anchor Big,1,0,0,0,1
+59152,Bassala Bagayoko,Bilbao Basket,693,1,37,37,FALSE,4,Anchor Big,1,0,0,0,1
+59204,Bojan Dubljevic,Casademont Zaragoza,1099,2,85,82,TRUE,4,Anchor Big,1,0,0,0,1
+59110,Danko Brankovic,Leche Rio Breogan,1154,2,86,78,TRUE,4,Anchor Big,1,0,0,0,1
+59103,Dragan Apic,Leche Rio Breogan,697,2,73,78,TRUE,4,Anchor Big,1,0,0,0,1
+59090,Emanuel Ion Cate,CB UCAM Murcia,1122,1,77,70,TRUE,4,Anchor Big,1,0,0,0,1
+28032,Ethan Happ,San Pablo Burgos,1174,1,66,61,TRUE,4,Anchor Big,1,0,0,0,1
+59119,Francisco Guerra,Lenovo Tenerife,970,1,29,31,FALSE,4,Anchor Big,1,0,0,0,1
+58361,Gabriel Olaseni,Casademont Zaragoza,129,1,60,60,TRUE,4,Anchor Big,1,0,0,0,1
+59118,Giorgi Shermadini,Lenovo Tenerife,1089,1,64,61,TRUE,4,Anchor Big,1,0,0,0,1
+18503,Grant Golden,BAXI Manresa,479,1,57,58,TRUE,4,Anchor Big,1,0,0,0,1
+25326,Ivan Aurrecoechea,Coviran Granada,18,1,21,15,FALSE,4,Anchor Big,1,0,0,0,1
+23482,Joel Soriano,Casademont Zaragoza,463,1,58,57,TRUE,4,Anchor Big,1,0,0,0,1
+59106,Jordan Sakho,Leche Rio Breogan,867,1,46,54,TRUE,4,Anchor Big,1,0,0,0,1
+15630,Kaodirichi Akobundu-Ehiogu,BAXI Manresa,918,1,39,54,TRUE,4,Anchor Big,1,0,0,0,1
+59138,Khalifa Diop,Bitci Baskonia,601,1,44,42,TRUE,4,Anchor Big,1,0,0,0,1
+59211,Konstantin Iroslavov Kostadinov,BC MoraBanc Andorra / Lenovo Tenerife,616,1,30,31,FALSE,4,Anchor Big,1,0,0,0,1
+59132,Luke Fischer,San Pablo Burgos,921,1,47,45,TRUE,4,Anchor Big,1,0,0,0,1
+24597,Mamadi Diakite,Bitci Baskonia,1290,1,32,33,FALSE,4,Anchor Big,1,0,0,0,1
+31700,Martinas Geben,Basquet Girona,1359,1,62,56,TRUE,4,Anchor Big,1,0,0,0,1
+94471,Mervedi Kasekelayi Miteo,Dreamland Gran Canaria,17,1,16,14,FALSE,4,Anchor Big,1,0,0,0,1
+59102,Michael Ruzic,Club Joventut Badalona,880,1,34,35,FALSE,4,Anchor Big,1,0,0,0,1
+59157,Mike Tobey,Dreamland Gran Canaria,1188,2,54,65,TRUE,4,Anchor Big,1,0,0,0,1
+59089,Moussa Diagne,CB UCAM Murcia,248,1,28,34,FALSE,4,Anchor Big,1,0,0,0,1
+22740,Nathan Reuvers,Valencia BC,1040,1,43,43,TRUE,4,Anchor Big,1,0,0,0,1
+59143,Neal Sako,Valencia BC,702,1,38,38,FALSE,4,Anchor Big,1,0,0,0,1
+19069,Nikola Maric,Basquet Girona,716,1,35,43,TRUE,4,Anchor Big,1,0,0,0,1
+28591,Ruben Guerrero,BC MoraBanc Andorra,445,1,11,13,FALSE,4,Anchor Big,1,0,0,0,1
+59147,Tryggvi Hlinason,Bilbao Basket,1450,1,70,63,TRUE,4,Anchor Big,1,0,0,0,1
+34896,Usman Garuba Alari,Real Madrid,676,1,19,22,FALSE,4,Anchor Big,1,0,0,0,1
+36019,Walter Tavares,Real Madrid,861,1,56,59,TRUE,4,Anchor Big,1,0,0,0,1
+59165,Youssoupha Fall,BC Barcelona,501,1,49,37,FALSE,4,Anchor Big,1,0,0,0,1
+28247,Zach Hankins,Coviran Granada,349,1,64,56,TRUE,4,Anchor Big,1,0,0,0,1
+19426,Kur Kuath,Dreamland Gran Canaria,770,1,74,73,TRUE,4,Anchor Big,0.999,0,0.001,0,0.999
+59126,Emir Sulejmanovic,Malaga,782,1,26,23,FALSE,4,Anchor Big,0.998,0,0.002,0,0.998
+31918,Yankuba Sima,Valencia BC,327,1,19,19,FALSE,4,Anchor Big,0.992,0,0.005,0.002,0.992
+34962,Willy Hernangomez,BC Barcelona,996,1,28,32,FALSE,4,Anchor Big,0.981,0,0.018,0,0.981
+59229,Sayon Keita,BC Barcelona,102,1,7,11,FALSE,4,Anchor Big,0.887,0.001,0.072,0.04,0.887
+59179,Louis Olinde,BAXI Manresa,968,1,44,46,TRUE,4,Anchor Big,0.694,0,0.306,0,0.694
+59181,Marcis Steinbergs,BAXI Manresa,1350,1,51,68,TRUE,4,Anchor Big,0.652,0,0.348,0,0.652
+59156,Pierre Pelos,Dreamland Gran Canaria,1256,2,89,97,TRUE,4,Anchor Big,0.571,0,0.428,0,0.571

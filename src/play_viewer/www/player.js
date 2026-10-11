@@ -540,6 +540,17 @@
   }
 
   // ---- rosters ----
+  /* The archetype tag at the end of a roster row: a colour swatch and a short label, full name on hover.
+     The label and colour slot come from ARCHETYPE_TAGS in R/data.R. */
+  function archetypeTag(arch) {
+    const tag = el('span', 'arch');
+    tag.title = `${arch.name} · ${Math.round(arch.p * 100)}% likely`;
+    const swatch = el('span', 'swatch');
+    swatch.style.background = `var(--arch-${arch.slot})`;
+    tag.append(swatch, el('span', 'arch-label', arch.short));
+    return tag;
+  }
+
   function renderRosters() {
     const p = state.play;
     $('team-off').textContent = p.off;
@@ -550,7 +561,10 @@
       for (const pl of p.players.filter((q) => q.role === role)) {
         const row = el('li');
         row.dataset.pid = pl.id;
-        row.append(el('span', 'num', pl.jersey), el('span', 'name', pl.name), el('span', 'ball-mark'));
+        const name = el('span', 'name', pl.name);
+        name.title = pl.name;                  // long names are cut short once the archetype tag is beside them
+        row.append(el('span', 'num', pl.jersey), name, el('span', 'ball-mark'));
+        if (pl.arch) row.append(archetypeTag(pl.arch));
         row.addEventListener('mouseenter', () => { state.hoverPid = pl.id; state.dirty = true; });
         row.addEventListener('mouseleave', () => { state.hoverPid = null; state.dirty = true; });
         list.append(row);
@@ -768,7 +782,7 @@
   track.addEventListener('pointerdown', (e) => { track.setPointerCapture(e.pointerId); seekFromPointer(e); });
   track.addEventListener('pointermove', (e) => { if (track.hasPointerCapture(e.pointerId)) seekFromPointer(e); });
   document.addEventListener('keydown', (e) => {
-    if (e.target.closest('input, select, textarea, .selectize-control')) return;
+    if ($('tab-viewer').hidden || e.target.closest('input, select, textarea, .selectize-control')) return;
     if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
     if (e.code === 'ArrowLeft') { e.preventDefault(); nudge(-1); }
     if (e.code === 'ArrowRight') { e.preventDefault(); nudge(1); }
@@ -779,6 +793,22 @@
   const parsed = (msg) => (typeof msg === 'string' ? JSON.parse(msg) : msg);
   Shiny.addCustomMessageHandler('plays', (msg) => renderPlays(parsed(msg) || []));
   Shiny.addCustomMessageHandler('play', (msg) => loadPlay(parsed(msg)));
+
+  // ---- tabs: the play viewer and the archetype notes ----
+  function showTab(name) {
+    document.querySelectorAll('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === name));
+    document.querySelectorAll('.tab-page').forEach((page) => { page.hidden = page.id !== `tab-${name}`; });
+    if (name !== 'viewer' && state.playing) togglePlay();
+    if (name === 'viewer') resize();           // the canvas has no size while its tab is hidden
+    history.replaceState(null, '', name === 'viewer' ? location.pathname : `#${name}`);
+  }
+  document.querySelector('.tabs').addEventListener('click', (e) => {
+    const button = e.target.closest('button[data-tab]');
+    if (button) showTab(button.dataset.tab);
+  });
+  const tabFromHash = () => showTab(location.hash === '#archetypes' ? 'archetypes' : 'viewer');
+  window.addEventListener('hashchange', tabFromHash);
+  tabFromHash();
 
   resize();
   requestAnimationFrame(tick);

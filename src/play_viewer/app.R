@@ -6,6 +6,7 @@
 # The first start reads the ten tracking files once (about two minutes) and caches the live frames
 # under outputs/cache/play_viewer/. Rscript src/play_viewer/build_cache.R does the same ahead of time.
 # R/data.R holds the data layer; www/player.js draws the animation in the browser.
+# The second tab (R/archetype_page.R) explains the playstyle archetypes shown beside each player's name.
 
 library(shiny)
 
@@ -63,11 +64,18 @@ list_panel <- div(class = "panel plays",
                   div(class = "plays-head", span("Possessions"), span(id = "play-count", class = "count")),
                   div(id = "play-list", class = "play-list"))
 
+tab_bar <- tags$nav(class = "tabs",
+                    span(class = "brand", "ACB play viewer"),
+                    tags$button(type = "button", class = "on", `data-tab` = "viewer", "Play viewer"),
+                    tags$button(type = "button", `data-tab` = "archetypes", "Archetypes"))
+
 ui <- bootstrapPage(tags$head(tags$title("ACB play viewer"),
                               tags$link(rel = "stylesheet", href = "style.css")),
-                    div(class = "app",
+                    tab_bar,
+                    div(class = "app tab-page", id = "tab-viewer",
                         tags$aside(class = "left", filters_panel, list_panel),
                         includeHTML(file.path("www", "viewer.html"))),
+                    tags$main(class = "doc tab-page", id = "tab-archetypes", hidden = NA, archetype_page(app_data$root)),
                     tags$script(src = "player.js"))
 
 # ---- server --------------------------------------------------------------------------------------

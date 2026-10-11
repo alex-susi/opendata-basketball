@@ -1,0 +1,21 @@
+feature,definition,PC1,PC2
+d_onball_share,Share of assigned half-court time in which his man has the ball,-0.252,-0.208
+d_offball_gap,Feet from his man when his man is off the ball,-0.088,0.388
+d_help_share,Share of off-ball time spent 8+ ft from his man,-0.11,0.401
+d_paint_share,Share of half-court defensive time in the paint,0.262,-0.104
+d_far_share,Share of half-court defensive time 18+ ft from the hoop,-0.255,-0.263
+d_hoop_dist,"Mean distance from the hoop on defense in the half court, ft",-0.282,-0.201
+d_last_line_share,Share of half-court defensive time as the defender nearest the hoop,0.245,0.167
+d_man_hoop_dist,"Mean distance from the hoop of the man he is assigned, ft",-0.283,0.045
+d_speed,"Mean speed on defense in the half court, ft/s",-0.139,-0.27
+d_meet_dist,Feet from the hoop where he first gets within 8 ft of the ball handler he is guarding,-0.278,-0.043
+d_pick_bh_per100,On-ball screens defended as the handler's defender per 100 chances,-0.279,-0.14
+d_pick_scr_per100,On-ball screens defended as the screener's defender per 100 chances,0.197,-0.265
+d_chase_per100,Off-ball screens and handoffs defended as the cutter's or receiver's defender per 100 chances,-0.173,0.016
+d_obs_scr_per100,Off-ball screens defended as the screener's defender per 100 chances,0.196,-0.13
+d_drive_help_share,Share of other men's drives where he closes 4+ ft to end within 6 ft of the driver,0.144,-0.209
+d_glass_crash_share,Share of opponent shots where he is on the glass when the ball reaches the rim,0.177,-0.122
+d_guard_touch,"Touches per 100 chances of the men he is assigned, weighted by time",-0.239,-0.151
+d_guard_three,"Season three-point share of the men he is assigned, weighted by time",-0.182,0.35
+d_guard_screener,Season direct picks as screener per 100 possessions of the men he is assigned,0.236,-0.298
+d_guard_handler,Season direct picks as handler per 100 possessions of the men he is assigned,-0.291,-0.147

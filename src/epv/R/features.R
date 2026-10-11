@@ -73,7 +73,8 @@ game_state <- function(app, g, extra_frames = integer(0)) {
   setorder(pl, frame, role, pid)
   team <- function(r) {
     rows <- which(pl$role == r)
-    lapply(c(x = "x", y = "y", vx = "vx", vy = "vy", pid = "pid"), function(col) matrix(pl[[col]][rows], ncol = 5L, byrow = TRUE))
+    lapply(c(x = "x", y = "y", vx = "vx", vy = "vy", pid = "pid", det = "det"),
+           function(col) matrix(pl[[col]][rows], ncol = 5L, byrow = TRUE))
   }
   fr[, flip := fifelse(plays$left_hoop[play], -1, 1)]
   fr[, c("bx", "by", "poss_id", "game_id") := .(bx * flip, by * flip, plays$id[play], g)]

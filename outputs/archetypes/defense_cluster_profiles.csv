@@ -1,0 +1,81 @@
+cluster,archetype,players,defining_players,feature,z,value,league_mean
+1,Point of Attack,35,27,d_guard_handler,1.61,21.8455,9.2766
+1,Point of Attack,35,27,d_pick_bh_per100,1.5,33.61,13.9574
+1,Point of Attack,35,27,d_onball_share,1.49,0.3404,0.2018
+1,Point of Attack,35,27,d_hoop_dist,1.48,20.5374,17.1795
+1,Point of Attack,35,27,d_far_share,1.41,0.6098,0.426
+1,Point of Attack,35,27,d_guard_touch,1.33,81.3548,65.2808
+1,Point of Attack,35,27,d_man_hoop_dist,1.26,26.1173,22.9629
+1,Point of Attack,35,27,d_meet_dist,1.24,28.0965,22.0513
+1,Point of Attack,35,27,d_speed,0.8,5.0217,4.6594
+1,Point of Attack,35,27,d_chase_per100,0.52,19.8684,14.9167
+1,Point of Attack,35,27,d_guard_three,0.38,0.4403,0.3868
+1,Point of Attack,35,27,d_help_share,0.06,0.4825,0.4739
+1,Point of Attack,35,27,d_offball_gap,0.01,8.2695,8.257
+1,Point of Attack,35,27,d_drive_help_share,-0.34,0.1566,0.2073
+1,Point of Attack,35,27,d_glass_crash_share,-0.58,0.4562,0.5458
+1,Point of Attack,35,27,d_pick_scr_per100,-0.62,3.053,16.3627
+1,Point of Attack,35,27,d_obs_scr_per100,-0.63,5.0425,11.4163
+1,Point of Attack,35,27,d_guard_screener,-0.68,2.6222,10.6876
+1,Point of Attack,35,27,d_paint_share,-0.91,0.126,0.2316
+1,Point of Attack,35,27,d_last_line_share,-1.16,0.1084,0.2014
+2,Helper,75,54,d_offball_gap,0.58,8.9782,8.257
+2,Helper,75,54,d_help_share,0.57,0.5534,0.4739
+2,Helper,75,54,d_last_line_share,0.53,0.2444,0.2014
+2,Helper,75,54,d_guard_three,0.46,0.4525,0.3868
+2,Helper,75,54,d_paint_share,0.06,0.2388,0.2316
+2,Helper,75,54,d_obs_scr_per100,0.02,11.5862,11.4163
+2,Helper,75,54,d_glass_crash_share,-0.03,0.5413,0.5458
+2,Helper,75,54,d_man_hoop_dist,-0.2,22.4535,22.9629
+2,Helper,75,54,d_chase_per100,-0.22,12.862,14.9167
+2,Helper,75,54,d_drive_help_share,-0.26,0.1685,0.2073
+2,Helper,75,54,d_guard_screener,-0.32,6.8469,10.6876
+2,Helper,75,54,d_pick_scr_per100,-0.35,8.8445,16.3627
+2,Helper,75,54,d_meet_dist,-0.4,20.1198,22.0513
+2,Helper,75,54,d_guard_touch,-0.5,59.1692,65.2808
+2,Helper,75,54,d_pick_bh_per100,-0.54,6.8019,13.9574
+2,Helper,75,54,d_guard_handler,-0.58,4.7715,9.2766
+2,Helper,75,54,d_onball_share,-0.63,0.1434,0.2018
+2,Helper,75,54,d_hoop_dist,-0.64,15.7223,17.1795
+2,Helper,75,54,d_speed,-0.69,4.3506,4.6594
+2,Helper,75,54,d_far_share,-0.74,0.3296,0.426
+3,Chaser,46,31,d_pick_bh_per100,0.69,22.9852,13.9574
+3,Chaser,46,31,d_man_hoop_dist,0.63,24.5483,22.9629
+3,Chaser,46,31,d_meet_dist,0.61,25.0216,22.0513
+3,Chaser,46,31,d_chase_per100,0.58,20.4147,14.9167
+3,Chaser,46,31,d_hoop_dist,0.58,18.4935,17.1795
+3,Chaser,46,31,d_guard_handler,0.57,13.7535,9.2766
+3,Chaser,46,31,d_guard_three,0.53,0.4622,0.3868
+3,Chaser,46,31,d_onball_share,0.52,0.2502,0.2018
+3,Chaser,46,31,d_far_share,0.51,0.4926,0.426
+3,Chaser,46,31,d_guard_touch,0.46,70.8282,65.2808
+3,Chaser,46,31,d_help_share,0.42,0.5323,0.4739
+3,Chaser,46,31,d_offball_gap,0.34,8.6863,8.257
+3,Chaser,46,31,d_speed,0.31,4.8006,4.6594
+3,Chaser,46,31,d_drive_help_share,-0.39,0.1481,0.2073
+3,Chaser,46,31,d_glass_crash_share,-0.54,0.4621,0.5458
+3,Chaser,46,31,d_obs_scr_per100,-0.56,5.7184,11.4163
+3,Chaser,46,31,d_pick_scr_per100,-0.58,3.8729,16.3627
+3,Chaser,46,31,d_last_line_share,-0.6,0.1531,0.2014
+3,Chaser,46,31,d_paint_share,-0.62,0.1595,0.2316
+3,Chaser,46,31,d_guard_screener,-0.66,2.853,10.6876
+4,Anchor Big,49,27,d_guard_screener,1.75,31.415,10.6876
+4,Anchor Big,49,27,d_paint_share,1.47,0.4025,0.2316
+4,Anchor Big,49,27,d_pick_scr_per100,1.47,47.8477,16.3627
+4,Anchor Big,49,27,d_drive_help_share,1.1,0.372,0.2073
+4,Anchor Big,49,27,d_obs_scr_per100,1.09,22.4281,11.4163
+4,Anchor Big,49,27,d_glass_crash_share,1.04,0.7081,0.5458
+4,Anchor Big,49,27,d_last_line_share,0.76,0.2626,0.2014
+4,Anchor Big,49,27,d_speed,-0.05,4.6353,4.6594
+4,Anchor Big,49,27,d_onball_share,-0.59,0.1472,0.2018
+4,Anchor Big,49,27,d_far_share,-0.59,0.3492,0.426
+4,Anchor Big,49,27,d_guard_touch,-0.69,56.9044,65.2808
+4,Anchor Big,49,27,d_chase_per100,-0.83,7.091,14.9167
+4,Anchor Big,49,27,d_hoop_dist,-0.83,15.2917,17.1795
+4,Anchor Big,49,27,d_pick_bh_per100,-0.85,2.783,13.9574
+4,Anchor Big,49,27,d_guard_handler,-0.93,1.9835,9.2766
+4,Anchor Big,49,27,d_offball_gap,-1.04,6.9517,8.257
+4,Anchor Big,49,27,d_help_share,-1.19,0.3062,0.4739
+4,Anchor Big,49,27,d_meet_dist,-1.19,16.2157,22.0513
+4,Anchor Big,49,27,d_man_hoop_dist,-1.32,19.6637,22.9629
+4,Anchor Big,49,27,d_guard_three,-1.62,0.1582,0.3868
