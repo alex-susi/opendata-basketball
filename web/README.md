@@ -12,9 +12,9 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/export_data.R` | Writes `public/data/` from the Shiny app's caches, through the app's own functions |
 | `scripts/parity_reference.R` | Runs filter cases through the real Shiny server and writes `tests/parity_reference.json` |
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
-| `public/data/` | `meta.json`, `plays.json`, and one `.json` + `.bin` pair per game period |
+| `public/data/` | `meta.json`, `plays.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
 | `src/lib/` | Decoding, filters, playback sequence, EPV lookup, court and scene drawing — no framework code |
-| `src/components/`, `src/App.svelte` | The page: filters, play list, court, transport bar, side panel |
+| `src/components/`, `src/App.svelte` | The two tabs: the viewer (filters, play list, court, transport bar, side panel) and Archetypes |
 | `tests/parity.test.ts` | Checks the site's filters and decoded plays against the Shiny app |
 
 ## Commands
@@ -40,7 +40,9 @@ Rscript web/scripts/parity_reference.R
 ```
 
 The export needs the viewer's caches (`outputs/cache/play_viewer/`, built on the Shiny app's first start) and,
-for the EPV overlay, the prices from `Rscript src/epv/build_epv.R`.
+for the EPV overlay, the prices from `Rscript src/epv/build_epv.R`. The archetype tags beside each player's name
+and the Archetypes tab come from `outputs/archetypes/` (`Rscript src/archetypes/build_features.R`, then
+`Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters or their wording.
 
 ## Deploying
 
@@ -51,7 +53,9 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 ## Differences from the Shiny app
 
 - Multi-select filters are a custom dropdown with checkboxes and a search box instead of selectize.
-- The selected play is in the address (`#/play/<id>`), so a view can be shared as a link.
+- The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes`.
+- The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
+  `src/play_viewer/R/archetype_page.R`, not here.
 - On narrow screens the court comes first, then options and rosters, then filters and the play list.
 - Coordinates and prices are stored as scaled integers at the precision the Shiny app already rounds to.
 

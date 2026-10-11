@@ -28,7 +28,7 @@ interface FilterCase {
 interface OptionSums { id: number; sv: number; pv: number; tov: number; present: number }
 interface PayloadSums {
   id: string; n: number; m: number; frames: number; gc: number; sc: number; scPresent: number; stopped: number; ball: number[];
-  players: { id: number; role: string; x: number; y: number; present: number; detected: number }[];
+  players: { id: number; role: string; arch: string | null; x: number; y: number; present: number; detected: number }[];
   epv: { f: number; to: number; holder: number; v: number; shot: number; pass: number; haz: number; rop: number; cum: number; players: OptionSums[] };
 }
 interface Reference { export_generated: string; filters: FilterCase[]; payloads: PayloadSums[] }
@@ -78,6 +78,16 @@ describe("export", () => {
   });
 });
 
+describe("archetypes", () => {
+  it("tags players in the sampled plays, and the Archetypes page defines every archetype they carry", () => {
+    const page = readFileSync(join(DATA, "archetypes.html"), "utf8");
+    const escaped = (name: string) => name.replace(/&/g, "&amp;");
+    const names = new Set(reference.payloads.flatMap((p) => p.players.map((pl) => pl.arch)).filter((n): n is string => n !== null));
+    expect(names.size).toBeGreaterThan(1);
+    for (const name of names) expect(page).toContain(escaped(name));
+  });
+});
+
 describe("filters match the Shiny server", () => {
   for (const c of reference.filters) {
     it(`${c.name}: ${c.ids.length} plays`, () => {
@@ -105,7 +115,7 @@ describe("decoded plays match the Shiny payload", () => {
       expect(present(play.sc)).toBe(want.scPresent);
       close(total(play.stopped), want.stopped);
       [play.ball.x, play.ball.y, play.ball.z].forEach((series, i) => close(total(series), want.ball[i]));
-      expect(play.players.map((p) => [p.id, p.role])).toEqual(want.players.map((p) => [p.id, p.role]));
+      expect(play.players.map((p) => [p.id, p.role, p.arch?.name ?? null])).toEqual(want.players.map((p) => [p.id, p.role, p.arch ?? null]));
       play.players.forEach((p, i) => {
         close(total(p.x), want.players[i].x);
         close(total(p.y), want.players[i].y);

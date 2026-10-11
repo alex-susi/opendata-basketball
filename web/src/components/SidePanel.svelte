@@ -1,5 +1,6 @@
 <script lang="ts">
-  // Right column: display toggles, EPV overlay toggles and the two rosters.
+  // Right column: display toggles, EPV overlay toggles and the two rosters. Each roster row ends with the
+  // player's archetype on that side of the ball: a colour swatch and a short label, full name on hover.
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -52,7 +53,12 @@
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
           <li class:bench={!live.onCourt.includes(p.id)} class:has-ball={live.handler === p.id}
               onmouseenter={() => (viewer.hoverPid = p.id)} onmouseleave={() => (viewer.hoverPid = null)}>
-            <span class="num">{p.jersey}</span><span class="name">{p.name}</span><span class="ball-mark"></span>
+            <span class="num">{p.jersey}</span><span class="name" title={p.name}>{p.name}</span><span class="ball-mark"></span>
+            {#if p.arch}
+              <span class="arch" title={`${p.arch.name} · ${Math.round(p.arch.p * 100)}% likely`}>
+                <span class="swatch" style:background={`var(--arch-${p.arch.slot})`}></span><span class="arch-label">{p.arch.short}</span>
+              </span>
+            {/if}
           </li>
         {/each}
       </ul>

@@ -22,6 +22,14 @@ export function loadPlays(): Promise<PlayRow[]> {
   return (plays ??= fetchOk("plays.json").then((r) => r.json()));
 }
 
+let archetypes: Promise<string> | null = null;
+/** The Archetypes tab as the Shiny app renders it: an HTML fragment written by the export. */
+export function loadArchetypes(): Promise<string> {
+  archetypes ??= fetchOk("archetypes.html").then((r) => r.text());
+  archetypes.catch(() => { archetypes = null; });
+  return archetypes;
+}
+
 interface Period {
   index: PeriodIndex;
   buffer: ArrayBuffer;

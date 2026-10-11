@@ -39,7 +39,7 @@
   }
 
   function onKey(ev: KeyboardEvent): void {
-    if (!play || (ev.target as HTMLElement).closest("input, select, textarea, .multi-list")) return;
+    if (!play || viewer.hidden || (ev.target as HTMLElement).closest("input, select, textarea, .multi-list")) return;
     if (ev.code === "Space") { ev.preventDefault(); togglePlay(); }
     if (ev.code === "ArrowLeft") { ev.preventDefault(); viewer.pos = clamp(viewer.pos - FPS, 0, seq.length - 1); }
     if (ev.code === "ArrowRight") { ev.preventDefault(); viewer.pos = clamp(viewer.pos + FPS, 0, seq.length - 1); }

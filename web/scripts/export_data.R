@@ -6,6 +6,7 @@
 #   plays.json           one light record per possession: list text plus the fields the filters need
 #   g<game>_p<period>.json   per-play header for one game period: players, events, touches, byte offsets
 #   g<game>_p<period>.bin    that period's tracking and EPV prices
+#   archetypes.html      the app's Archetypes tab, as the app renders it (needs outputs/archetypes/)
 #
 # Binary layout, little-endian. Each play is one segment starting on a 4-byte boundary:
 #   int32  frames[n], epv.f[m], epv.to[m], epv.holder[m]                      (-1 = null)
@@ -69,7 +70,7 @@ play_header <- function(p, offset) {
   list(id = p$id, o = offset, n = length(p$frames), m = length(p$epv$f), game = p$game, period = p$period,
        off = p$off, def = p$def, home = p$home, away = p$away, homeScore = p$homeScore, awayScore = p$awayScore,
        result = p$result, who = p$who, types = I(as.character(p$types)),
-       players = lapply(p$players, function(pl) pl[c("id", "jersey", "name", "last", "role")]),
+       players = lapply(p$players, function(pl) c(pl[c("id", "jersey", "name", "last", "role")], list(arch = pl$arch))),
        priced = I(as.integer(names(p$epv$players))), events = p$events, touches = p$touches)
 }
 
@@ -94,6 +95,10 @@ for (stem in unique(plays$file)) {
   close(con)
   save_json(list(bytes = offset, plays = headers), paste0(stem, ".json"))
 }
+
+# ---- the Archetypes tab, rendered by the app's own page function ------------------------------
+
+writeLines(enc2utf8(as.character(a$archetype_page(a$root))), file.path(out_dir, "archetypes.html"), useBytes = TRUE)
 
 # ---- play list with the fields the filters read -------------------------------------------------
 

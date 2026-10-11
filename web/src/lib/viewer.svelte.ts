@@ -22,6 +22,8 @@ export const viewer = $state({
   showBestPass: true,
   hoverPid: null as number | null,
   recording: false,
+  /** True while another tab covers the viewer: keyboard shortcuts are off. */
+  hidden: false,
 });
 
 /** What is on court in the frame last drawn; the rosters read this. */

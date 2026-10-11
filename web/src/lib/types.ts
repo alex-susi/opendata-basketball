@@ -44,12 +44,24 @@ export interface PlayRow {
 
 export type Role = "off" | "def";
 
+/** A player's playstyle archetype on the side of the ball he is on in this play (built by src/archetypes/). */
+export interface Archetype {
+  name: string;
+  /** Short label for the roster tag. */
+  short: string;
+  /** Colour slot: `--arch-<slot>` in app.css. */
+  slot: string;
+  /** Probability that he belongs to this archetype. */
+  p: number;
+}
+
 export interface PlayerInfo {
   id: number;
   jersey: string;
   name: string;
   last: string;
   role: Role;
+  arch: Archetype | null;
 }
 
 export interface PlayEvent {

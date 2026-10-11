@@ -18,13 +18,13 @@ repo_root <- function() {
   dir
 }
 
-#' Source the app's data layer and app.R into a private environment.
+#' Source the app's R/ folder (as Shiny does on start) and app.R into a private environment.
 #' app.R's final shinyApp() call only returns an object; nothing is started.
 #' @return Environment holding app_data, choices, server and the data-layer functions.
 load_shiny_app <- function(root = repo_root()) {
   app_dir <- file.path(root, "src", "play_viewer")
   a <- new.env()
-  sys.source(file.path(app_dir, "R", "data.R"), envir = a)
+  for (f in sort(list.files(file.path(app_dir, "R"), "[.][Rr]$", full.names = TRUE))) sys.source(f, envir = a)
   old <- setwd(app_dir)
   on.exit(setwd(old))
   suppressMessages(sys.source("app.R", envir = a))

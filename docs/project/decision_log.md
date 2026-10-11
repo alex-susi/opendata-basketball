@@ -245,3 +245,6 @@ Offense is now EII with 6 clusters on 4 components (was 7); defense stays EEI wi
   archetype and component, and reads its counts, scores, loadings, fit and stability from `outputs/archetypes/`.
   The basketball wording is in `src/play_viewer/R/archetype_page.R`; tag labels and colours are
   `ARCHETYPE_TAGS` in `src/play_viewer/R/data.R`.
+- The static site in `web/` (what GitHub Pages serves) carries the same tags and Archetypes tab. Its export
+  writes each player's archetype into the period files and the Shiny page as `public/data/archetypes.html`, so
+  the wording is edited in one place. The site only redeploys when a push touches `web/`.
