@@ -1,7 +1,7 @@
 <script lang="ts">
   // Transport bar: action stepping, play/pause, the timeline with captioned event ticks, then speed over elapsed time.
   import { clamp, clock } from "../lib/geometry";
-  import { FPS, layoutTimeline, stepAction, type Timeline } from "../lib/sequence";
+  import { FPS, layoutTimeline, stepAction, type Tick, type Timeline } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { viewer } from "../lib/viewer.svelte";
 
@@ -9,6 +9,9 @@
 
   const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
   const TICK_FONT = '600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
+  // Where a tick's ends sit in the track, and how far beyond them a tilted caption starts (the leader line between).
+  // These follow .track-rail and .tick in app.css.
+  const TICK_TOP = 54, TICK_BOTTOM = 74, LEADER = 6;
   const measurer = document.createElement("canvas").getContext("2d")!;
   const measure = (text: string) => {
     measurer.font = TICK_FONT;
@@ -19,6 +22,9 @@
   let width = $state(0);
   const empty: Timeline = { ticks: [], cuts: [], marks: [] };
   const timeline = $derived(play && width > 0 ? layoutTimeline(play, seq, width, measure) : empty);
+  const tilted = $derived(timeline.ticks.filter((tick) => tick.lean !== "flat"));
+  // A flat caption is centred in a box of its measured width; a tilted one takes the width of its own text.
+  const boxWidth = (tick: Tick) => (tick.lean === "flat" ? `${tick.width}px` : null);
   const end = $derived(Math.max(1, seq.length - 1));
   const frac = $derived(clamp(viewer.pos / end, 0, 1));
 
@@ -74,11 +80,15 @@
         <i class="tick {tick.event.kind}" style:left="{tick.frac * 100}%" title={tick.event.label}></i>
       {/each}
     </div>
+    <svg class="leaders" aria-hidden="true">
+      {#each tilted as tick}
+        <line x1={tick.frac * width} y1={TICK_TOP} x2={tick.at} y2={TICK_TOP - LEADER} />
+        <line x1={tick.frac * width} y1={TICK_BOTTOM} x2={tick.at} y2={TICK_BOTTOM + LEADER} />
+      {/each}
+    </svg>
     {#each timeline.ticks as tick}
-      {#if tick.row >= 0}
-        <span class="tick-label above row{tick.row} {tick.event.kind}" style:left="{tick.left}px" style:width="{tick.width}px">{tick.event.short ?? ""}</span>
-        <span class="tick-label below row{tick.row}" style:left="{tick.left}px" style:width="{tick.width}px">{tick.event.who ?? ""}</span>
-      {/if}
+      <span class="tick-label above lean-{tick.lean} {tick.event.kind}" style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.short ?? ""}</span>
+      <span class="tick-label below lean-{tick.lean}" style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.who ?? ""}</span>
     {/each}
     <div class="track-thumb" style:left="{frac * 100}%"></div>
   </div>

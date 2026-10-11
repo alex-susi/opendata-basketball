@@ -16,9 +16,10 @@
   const LANE_MARKS = [1.75 * M, 3.85 * M, 4.7 * M], LANE_BLOCK = [2.6 * M, 3.0 * M];
 
   const FPS = 25;
-  const MARGIN = 4;                          // feet of floor shown outside the lines
-  const PAD = { top: 12, bottom: 34, side: 12 };
-  const HEADER_TOP = 46;                     // top padding while a video is recorded: room for the header on the canvas
+  const MARGIN = 1.5;                        // feet between the court's lines and the edge of the layout
+  const REACH = 4;                           // feet outside the lines in which players and the ball are still drawn
+  const PAD = { top: 6, bottom: 26, side: 6 };
+  const HEADER_TOP = 40;                     // top padding while a video is recorded: room for the header on the canvas
   const LEAD_IN = 50, TAIL = 25;             // stopped-clock frames kept before a restart / after a whistle
   const CAPTION_FRAMES = 62;                 // how long an event label stays up
   const END_HOLD = 1.2;                      // seconds to rest on the last frame before looping
@@ -30,6 +31,13 @@
                    ballEdge: '#7A3E00', panel: '#0F1522', dark: '#0B0E14', best: '#18A56B', risk: '#F5B02E' };
   const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
   const TICK_FONT = `600 11px ${FONT}`;      // must match .tick-label in style.css
+  // Timeline captions. A tick's ends sit at TICK_TOP and TICK_BOTTOM in the track; where ticks crowd, captions
+  // tilt by TILT degrees from anchors LEADER px beyond. These follow .track-rail, .tick and .tick-label in style.css.
+  const TICK_TOP = 54, TICK_BOTTOM = 74, LEADER = 6, TILT = 24;
+  const TILT_GAP = 36;                       // px between the anchors of neighbouring tilted captions
+  const TILT_CAP = 94;                       // widest tilted caption (max-width in style.css); longer text is cut
+  const CLEAR = 22;                          // px along the rail before a tilted caption has risen above a flat one
+  const RUN = Math.cos(TILT * Math.PI / 180);
   const OPTIONS = { 'opt-def-hull': 'showDef', 'opt-off-hull': 'showOff', 'opt-arch': 'showArch', 'opt-loop': 'loop',
                     'opt-epv': 'showEpv', 'opt-pass-values': 'showPassValues', 'opt-pass-tov': 'showPassTov',
                     'opt-ball-tov': 'showBallTov', 'opt-shot-pass': 'showShotPass', 'opt-best-pass': 'showBestPass' };
@@ -252,9 +260,11 @@
   }
 
   // A team's hull: filled in its primary colour, outlined in whichever of its colours shows best on the floor.
-  function drawHull(L, pts, kit) {
+  // Returns its area in square feet whether or not it is drawn, or null when fewer than three players are placed.
+  function drawHull(L, pts, kit, show) {
     const poly = convexHull(pts);
-    if (poly.length < 3) return 0;
+    if (poly.length < 3) return null;
+    if (!show) return polygonArea(poly);
     ctx.beginPath();
     poly.forEach((q, i) => ctx[i ? 'lineTo' : 'moveTo'](L.ox + q[0] * L.s, L.oy - q[1] * L.s));
     ctx.closePath();
@@ -412,11 +422,11 @@
     ctx.fillStyle = COLORS.ink;
     ctx.textAlign = 'left';
     const both = labels.join('   ·   ');
-    ctx.fillText(ctx.measureText(both).width <= room ? both : labels[labels.length - 1] || '', L.left, L.top + L.ch + 17, room);
+    ctx.fillText(ctx.measureText(both).width <= room ? both : labels[labels.length - 1] || '', L.left, L.top + L.ch + 14, room);
     ctx.textAlign = 'right';
     ctx.font = `400 11px ${FONT}`;
     ctx.fillStyle = COLORS.muted;
-    ctx.fillText('Data: SkillCorner open data, Liga ACB', L.left + L.cw, L.top + L.ch + 17);
+    ctx.fillText('Data: SkillCorner open data, Liga ACB', L.left + L.cw, L.top + L.ch + 14);
   }
 
   function draw() {
@@ -436,10 +446,11 @@
     const ep = epvAt(frame + c.t), r = clamp(1.2 * L.s, 9, 22), handler = ballHandler(frame);
     ctx.save();
     ctx.beginPath();
-    ctx.rect(L.left, L.top, L.cw, L.ch);
+    const reach = (REACH - MARGIN) * L.s;      // someone inbounding stands outside the layout's narrow margin
+    ctx.rect(L.left - reach, L.top - reach, L.cw + 2 * reach, L.ch + 2 * reach);
     ctx.clip();
-    const areaDef = state.showDef ? drawHull(L, dots.def.map((d) => [d.x, d.y]), p.colors.def) : null;
-    const areaOff = state.showOff ? drawHull(L, dots.off.map((d) => [d.x, d.y]), p.colors.off) : null;
+    const areaDef = drawHull(L, dots.def.map((d) => [d.x, d.y]), p.colors.def, state.showDef);
+    const areaOff = drawHull(L, dots.off.map((d) => [d.x, d.y]), p.colors.off, state.showOff);
     if (ep && state.showEpv && state.showBestPass && ep.target != null) {
       const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
       if (from && to) {
@@ -482,13 +493,68 @@
     $('time-label').textContent = `${clock(state.pos / FPS)} / ${clock(end / FPS)}`;
   }
 
-  // Ticks for the possession's events, each captioned with the action above it and the player below.
-  // Captions that would overlap drop to a second row; if that is taken too, the tooltip still names them.
+  // ---- timeline captions (the same layout as layoutTimeline in the static site's src/lib/sequence.ts) ----
+  const meets = (p, q, pad = 0) => p[0] < q[1] + pad && q[0] < p[1] + pad;
+  const run = (tick) => Math.min(tick.width, TILT_CAP) * RUN;
+
+  // Place one group of neighbouring ticks. A tick alone gets a flat caption. Ticks that crowd get tilted captions:
+  // their anchors are spread TILT_GAP apart around the group (closer if the rail is too short for that), and the
+  // group leans left if it would run off the right.
+  function placeGroup(group, width) {
+    if (group.length === 1) {
+      const tick = group[0];
+      tick.lean = 'flat';
+      tick.at = clamp(tick.x - tick.width / 2, 0, Math.max(0, width - tick.width));
+      return;
+    }
+    const gap = Math.max(14, Math.min(TILT_GAP, (width - 40) / (group.length - 1)));
+    const at = group.map((tick) => tick.x);
+    for (let i = 1; i < at.length; i++) at[i] = Math.max(at[i], at[i - 1] + gap);
+    // Centre the spread anchors on their ticks, then keep them on the rail.
+    const drift = at.reduce((sum, p, i) => sum + p - group[i].x, 0) / at.length;
+    const nudge = Math.max(drift - at[0], Math.min(0, width + drift - at[at.length - 1]));
+    const anchors = at.map((p) => p - drift + nudge);
+    const right = Math.max(...group.map((tick, i) => anchors[i] + run(tick)));
+    const left = Math.min(...group.map((tick, i) => anchors[i] - run(tick)));
+    const lean = right > width + 6 && left >= -6 ? 'left' : 'right';
+    // Leaning right off the end with no room to lean left: slide the anchors back instead.
+    const slide = lean === 'right' ? Math.max(0, Math.min(right - width - 6, anchors[0])) : 0;
+    group.forEach((tick, i) => {
+      tick.lean = lean;
+      tick.at = anchors[i] - slide;
+    });
+  }
+
+  // The stretch of rail a group's captions occupy at the height of flat captions, and (tilted groups) higher up.
+  function lowSpan(group) {
+    const first = group[0], last = group[group.length - 1];
+    if (first.lean === 'flat') return [first.at, first.at + first.width];
+    return first.lean === 'right' ? [first.at - 4, last.at + CLEAR] : [first.at - CLEAR, last.at + 4];
+  }
+  function highSpan(group) {
+    if (group[0].lean === 'flat') return null;
+    return group[0].lean === 'right' ? [group[0].at, Math.max(...group.map((tick) => tick.at + run(tick)))]
+                                     : [Math.min(...group.map((tick) => tick.at - run(tick))), group[group.length - 1].at];
+  }
+
+  // Whether two neighbouring groups' captions would collide. Tilted captions leaning the same way are parallel,
+  // so they only need their anchors TILT_GAP apart.
+  function collide(g, h) {
+    if (meets(lowSpan(g), lowSpan(h), 4)) return true;
+    const up = highSpan(g), next = highSpan(h);
+    if (!up || !next || !meets(up, next)) return false;
+    return g[0].lean !== h[0].lean || h[0].at - g[g.length - 1].at < TILT_GAP;
+  }
+
+  // Ticks for the possession's events, each captioned with the action above it and the player below. Captions that
+  // would overlap are tilted instead (see placeGroup); groups are merged until no two collide.
   function renderTicks() {
     const p = state.play, end = Math.max(1, state.seq.length - 1), ticks = $('track-ticks'), captions = $('track-labels');
-    const width = $('track').clientWidth, rowEnds = [-Infinity, -Infinity], marks = new Set();
+    const leaders = $('track-leaders'), width = $('track').clientWidth, marks = new Set();
+    let groups = [];
     ticks.replaceChildren();
     captions.replaceChildren();
+    leaders.replaceChildren();
     for (let k = 1; k < state.seq.length; k++) {
       if (p.frames[state.seq[k]] - p.frames[state.seq[k - 1]] > 1) {
         const cut = el('i', 'tick cut');
@@ -507,15 +573,27 @@
       tick.title = e.label;
       ticks.append(tick);
       const w = Math.max(measure.measureText(e.short || '').width, measure.measureText(e.who || '').width) + 8;
-      const left = clamp((k / end) * width - w / 2, 0, Math.max(0, width - w));
-      const row = rowEnds.findIndex((edge) => left >= edge);
-      if (row < 0) continue;
-      rowEnds[row] = left + w;
-      for (const [text, side] of [[e.short, 'above'], [e.who, 'below']]) {
-        const caption = el('span', `tick-label ${side} row${row} ${e.kind}`, text || '');
-        caption.style.left = `${left}px`;
-        caption.style.width = `${w}px`;
+      groups.push([{ k, x: (k / end) * width, event: e, lean: 'flat', at: 0, width: w }]);
+    }
+    groups.sort((g, h) => g[0].k - h[0].k);
+    for (;;) {
+      for (const group of groups) placeGroup(group, width);
+      const i = groups.findIndex((group, j) => j + 1 < groups.length && collide(group, groups[j + 1]));
+      if (i < 0) break;
+      groups.splice(i, 2, groups[i].concat(groups[i + 1]));
+    }
+    for (const tick of groups.flat()) {
+      for (const [text, side] of [[tick.event.short, 'above'], [tick.event.who, 'below']]) {
+        const caption = el('span', `tick-label ${side} lean-${tick.lean} ${tick.event.kind}`, text || '');
+        caption.style.left = `${tick.at}px`;
+        if (tick.lean === 'flat') caption.style.width = `${tick.width}px`;
         captions.append(caption);
+      }
+      if (tick.lean === 'flat') continue;
+      for (const [y, reach] of [[TICK_TOP, -LEADER], [TICK_BOTTOM, LEADER]]) {
+        const leader = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        for (const [name, value] of [['x1', tick.x], ['y1', y], ['x2', tick.at], ['y2', y + reach]]) leader.setAttribute(name, value);
+        leaders.append(leader);
       }
     }
     state.marks = [...marks].sort((a, b) => a - b);
@@ -663,6 +741,7 @@
     for (const id of ['team-off', 'team-def', 'area-off', 'area-def']) $(id).textContent = '';
     $('track-ticks').replaceChildren();
     $('track-labels').replaceChildren();
+    $('track-leaders').replaceChildren();
     state.marks = [];
     syncPlayButton();
     state.dirty = true;

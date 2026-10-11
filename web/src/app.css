@@ -159,28 +159,28 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .viewer { container: viewer / inline-size; }
 .play-head { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 14px; padding: 2px 4px 0; }
 .play-head-text { min-width: 0; }
-.play-head h1 { font-size: 18px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.play-head p { width: 0; min-width: 100%; margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.play-head h1 { font-size: 20px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.play-head p { width: 0; min-width: 100%; font-size: 14px; margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Team names take equal widths either side, so the score is the exact centre of the pill. */
 .scorebug {
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-weight: 600;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-size: 14.5px; font-weight: 600;
 }
 .scorebug .team { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .scorebug .team.home { justify-content: flex-end; text-align: right; }
-.scorebug b { font-size: 21px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.scorebug .kit { width: 12px; height: 12px; flex: none; border: 2px solid; border-radius: 50%; }
-/* Two lines that match the title's: game clock, then quarter and shot clock. */
-.game-clock { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.game-time { display: block; font-size: 18px; font-weight: 700; line-height: 1.25; }
-.period-line { display: flex; align-items: center; gap: 7px; margin-top: 2px; font-weight: 700; line-height: 1.4; }
+.scorebug b { font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.scorebug .kit { width: 13px; height: 13px; flex: none; border: 2px solid; border-radius: 50%; }
+/* Two lines that match the title's: game clock, centred over the quarter and shot clock. */
+.game-clock { display: grid; justify-items: center; justify-self: start; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.game-time { font-size: 20px; font-weight: 700; line-height: 1.25; }
+.period-line { display: flex; align-items: center; gap: 7px; margin-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.4; }
 .shot-clock { min-width: 24px; padding: 0 5px; border-radius: 5px; background: #0F1522; color: #F5B02E; text-align: center; }
 
 /* Narrower centre column: the title takes its own row, so the score stays centred with the clocks to its right. */
-@container viewer (max-width: 860px) {
+@container viewer (max-width: 900px) {
   .play-head { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); row-gap: 6px; }
   .play-head-text { grid-column: 1 / -1; }
-  .scorebug { grid-column: 2; min-height: 43px; }
+  .scorebug { grid-column: 2; min-height: 47px; }
 }
 /* Too narrow for score and clocks side by side: stack them. */
 @container viewer (max-width: 620px) {
@@ -188,7 +188,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .play-head-text { justify-self: stretch; }
   .play-head h1, .play-head p { white-space: normal; }
   .scorebug { grid-column: 1; max-width: 100%; padding: 4px 12px; border-radius: 12px; }
-  .game-clock { display: flex; align-items: center; gap: 10px; }
+  .game-clock { display: flex; align-items: center; gap: 10px; justify-self: center; }
   .period-line { margin-top: 0; }
 }
 
@@ -216,11 +216,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .icon-btn.primary { width: 40px; height: 40px; background: var(--off); border-color: var(--off); }
 .icon-btn.primary svg { fill: #0B1220; }
 .icon-btn.primary:hover { background: #6AABFF; }
-.track { position: relative; flex: 1; min-width: 0; height: 104px; margin: 0 10px; cursor: pointer; touch-action: none; }
-.track-rail { position: absolute; left: 0; right: 0; top: 49px; height: 6px; border-radius: 3px; background: #2F3B55; }
+.track { position: relative; flex: 1; min-width: 0; height: 128px; margin: 0 10px; cursor: pointer; touch-action: none; }
+.track-rail { position: absolute; left: 0; right: 0; top: 61px; height: 6px; border-radius: 3px; background: #2F3B55; }
 .track-fill { height: 100%; border-radius: 3px; background: var(--off); }
 .track-thumb {
-  position: absolute; top: 44px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
+  position: absolute; top: 56px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
   background: var(--ink); border: 2px solid var(--off); pointer-events: none;
 }
 .tick {
@@ -231,7 +231,10 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tick.missed, .tick.turnover { background: var(--missed); }
 .tick.foul, .tick.rebound { background: #6C7A96; }
 .tick.cut { top: -3px; width: 2px; height: 12px; margin-left: -1px; background: var(--panel); opacity: 1; }
-/* Captions for each tick: the action above the rail, the player below. Font must match TICK_FONT in Transport.svelte. */
+/* Captions for each tick: the action above the rail, the player below. A tick with room has a flat caption centred
+   on it. Where ticks crowd, captions tilt up from the rail instead (24 degrees, TILT in the layout code), each from
+   an anchor joined to its tick by a short leader line. Font must match TICK_FONT in Transport.svelte; the offsets
+   follow the rail (ticks span 54px to 74px of the track; tilted captions start 6px beyond). */
 .tick-label {
   position: absolute; overflow: hidden; text-align: center; white-space: nowrap; pointer-events: none;
   font: 600 11px/14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -240,10 +243,15 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tick-label.above.made { color: var(--made); }
 .tick-label.above.missed, .tick-label.above.turnover { color: var(--missed); }
 .tick-label.below { color: var(--muted); font-weight: 500; }
-.tick-label.above.row0 { top: 27px; }
-.tick-label.above.row1 { top: 13px; }
-.tick-label.below.row0 { top: 64px; }
-.tick-label.below.row1 { top: 78px; }
+.tick-label.above { top: 39px; }
+.tick-label.below { top: 75px; }
+.tick-label.lean-right, .tick-label.lean-left { max-width: 94px; text-overflow: ellipsis; }
+.tick-label.above.lean-right { top: 34px; transform-origin: 0 100%; transform: rotate(-24deg); }
+.tick-label.above.lean-left { top: 34px; transform-origin: 100% 100%; transform: translateX(-100%) rotate(24deg); }
+.tick-label.below.lean-right { top: 80px; transform-origin: 0 0; transform: rotate(24deg); }
+.tick-label.below.lean-left { top: 80px; transform-origin: 100% 0; transform: translateX(-100%) rotate(-24deg); }
+.leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.leaders line { stroke: #6C7A96; stroke-width: 1; }
 .transport-end { display: flex; flex-direction: column; align-items: stretch; gap: 5px; flex: none; }
 .time-label { text-align: center; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .speed { height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
@@ -289,12 +297,10 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* Each roster panel carries its team's colours as --kit-* (set inline from the play). */
 .roster { --kit-fill: var(--muted); --kit-edge: #FFFFFF; --kit-ink: #FFFFFF; --kit-text: var(--ink); }
-/* Heading: team name, then its side of the ball, with the hull's area floated into the panel's top right corner.
-   Beside a long team name there is no room for the side label, which then wraps under the name. */
-.roster h2 { display: flow-root; line-height: 20px; }
-.roster .role { display: inline-block; color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-.roster .hull { float: right; margin-left: 8px; color: var(--muted); font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.roster .team { margin-right: 7px; color: var(--kit-text); white-space: nowrap; }
+/* Heading: the team's name in its colour; under it, its side of the ball and the area of its hull. */
+.roster h2 { margin-bottom: 0; overflow: hidden; color: var(--kit-text); text-overflow: ellipsis; white-space: nowrap; }
+.roster-sub { margin: 0 0 7px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.roster-sub .hull::before { content: "·"; margin: 0 6px; font-weight: 700; }
 .roster ul { list-style: none; }
 .roster li { display: flex; align-items: center; gap: 8px; padding: 2px 4px; border-radius: 6px; cursor: default; }
 .roster li:hover { background: var(--raised); }
@@ -329,8 +335,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .left { order: 3; grid-row: auto; position: static; max-height: none; }
   .plays { flex: none; height: 360px; }
   /* As tall as the court at this width: full court, or the taller half court. */
-  .stage { flex: none; height: calc(57.3vw + 24px); min-height: 0; }
-  .stage.half { height: min(calc(106vw + 4px), 600px); }
+  .stage { flex: none; height: calc(55vw + 18px); min-height: 0; }
+  .stage.half { height: min(calc(106.7vw + 2px), 600px); }
   .transport { flex-wrap: wrap; row-gap: 0; }
   .track { order: 3; flex: 1 1 100%; margin: 0 6px; }
   .transport-end { flex-direction: row; align-items: center; gap: 10px; margin-left: auto; }

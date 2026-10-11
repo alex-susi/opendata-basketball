@@ -301,3 +301,8 @@ free-throw rebound. Checked across all 1,564 delivered possessions in the ten ga
   "Mark extrapolated positions" toggle was removed (the detected flags are still exported, unused).
 - The site's data requests carry the export's stamp (`web/vite.config.ts`, `web/src/lib/data.ts`). Without it a
   browser paired a new build with data files cached from the previous export and drew nothing.
+- Timeline captions: a tick with room keeps a flat caption; where ticks crowd, captions tilt 24 degrees from
+  anchors spread along the rail, each joined to its tick by a leader line, so every event is captioned (before,
+  a third overlapping caption was dropped). `layoutTimeline` in `web/src/lib/sequence.ts`, mirrored in `player.js`.
+- The court's layout margin went from 4 ft to 1.5 ft outside the lines; players up to 4 ft out are still drawn.
+  A team's hull area is always reported, whether or not the hull is drawn.

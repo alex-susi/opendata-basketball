@@ -64,10 +64,10 @@
   {#each sides as side}
     {@const kit = play?.colors[side.role]}
     <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-edge={kit?.edge} style:--kit-ink={kit?.ink} style:--kit-text={kit?.text}>
-      <h2>
-        {#if play && area(side.role) != null}<span class="hull" title="Area of the team's convex hull">Hull {area(side.role)} ft²</span>{/if}
-        <span class="team">{play ? (side.role === "off" ? play.off : play.def) : ""}</span> <span class="role">{side.title}</span>
-      </h2>
+      <h2>{play ? (side.role === "off" ? play.off : play.def) : ""}</h2>
+      <p class="roster-sub">
+        <span>{side.title}</span>{#if play && area(side.role) != null}<span class="hull" title="Area of the team's convex hull">Hull {area(side.role)} ft²</span>{/if}
+      </p>
       <ul>
         {#each play?.players.filter((p) => p.role === side.role) ?? [] as p (p.id)}
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

@@ -57,13 +57,22 @@ export function blend(series: Series, c: Cursor): number | null {
   return Number.isNaN(b) ? a : a + (b - a) * c.t;
 }
 
+/** Degrees a caption is tilted where ticks crowd. Matches the rotations of .tick-label in app.css. */
+export const TILT = 24;
+const TILT_GAP = 36;    // px between the anchors of neighbouring tilted captions, so their lines stay apart
+const TILT_CAP = 94;    // widest tilted caption (max-width of .tick-label.lean-right / .lean-left); longer text is cut
+const CLEAR = 22;       // px along the rail before a tilted caption has risen above a flat one
+const RUN = Math.cos((TILT * Math.PI) / 180);
+
 export interface Tick {
   k: number;
   frac: number;
   event: PlayEvent;
-  /** Caption row (0 nearest the rail, 1 outside it) or -1 when there is no room. */
-  row: number;
-  left: number;
+  /** Flat: the caption is centred on its tick. Where ticks crowd, captions tilt up from the rail, to the right or left. */
+  lean: "flat" | "right" | "left";
+  /** Flat: left edge of the caption. Tilted: the anchor on the rail the caption starts from (ends at, leaning left). */
+  at: number;
+  /** Width of the caption's text, with a little padding. */
   width: number;
 }
 
@@ -73,11 +82,66 @@ export interface Timeline {
   marks: number[];
 }
 
-// Ticks for the possession's events, each captioned with the action above it and the player below.
-// Captions that would overlap drop to a second row; if that is taken too, the tooltip still names them.
+type Span = [number, number];
+const meets = (p: Span, q: Span, pad = 0): boolean => p[0] < q[1] + pad && q[0] < p[1] + pad;
+const run = (tick: Tick): number => Math.min(tick.width, TILT_CAP) * RUN;
+
+// Place one group of neighbouring ticks. A tick alone gets a flat caption. Ticks that crowd get tilted captions:
+// their anchors are spread TILT_GAP apart around the group (closer if the rail is too short for that), and the
+// group leans left if it would run off the right.
+function place(group: Tick[], width: number): void {
+  const x = (tick: Tick) => tick.frac * width;
+  if (group.length === 1) {
+    const tick = group[0];
+    tick.lean = "flat";
+    tick.at = clamp(x(tick) - tick.width / 2, 0, Math.max(0, width - tick.width));
+    return;
+  }
+  const gap = Math.max(14, Math.min(TILT_GAP, (width - 40) / (group.length - 1)));
+  const at = group.map(x);
+  for (let i = 1; i < at.length; i++) at[i] = Math.max(at[i], at[i - 1] + gap);
+  // Centre the spread anchors on their ticks, then keep them on the rail.
+  const drift = at.reduce((sum, p, i) => sum + p - x(group[i]), 0) / at.length;
+  const nudge = Math.max(drift - at[0], Math.min(0, width + drift - at[at.length - 1]));
+  const anchors = at.map((p) => p - drift + nudge);
+  const right = Math.max(...group.map((tick, i) => anchors[i] + run(tick)));
+  const left = Math.min(...group.map((tick, i) => anchors[i] - run(tick)));
+  const lean = right > width + 6 && left >= -6 ? "left" : "right";
+  // Leaning right off the end with no room to lean left: slide the anchors back instead.
+  const slide = lean === "right" ? Math.max(0, Math.min(right - width - 6, anchors[0])) : 0;
+  group.forEach((tick, i) => {
+    tick.lean = lean;
+    tick.at = anchors[i] - slide;
+  });
+}
+
+// The stretch of rail a group's captions occupy at the height of flat captions, and (tilted groups) higher up.
+function low(group: Tick[]): Span {
+  const first = group[0], last = group[group.length - 1];
+  if (first.lean === "flat") return [first.at, first.at + first.width];
+  return first.lean === "right" ? [first.at - 4, last.at + CLEAR] : [first.at - CLEAR, last.at + 4];
+}
+function high(group: Tick[]): Span | null {
+  if (group[0].lean === "flat") return null;
+  return group[0].lean === "right" ? [group[0].at, Math.max(...group.map((tick) => tick.at + run(tick)))]
+                                   : [Math.min(...group.map((tick) => tick.at - run(tick))), group[group.length - 1].at];
+}
+
+// Whether two neighbouring groups' captions would collide. Tilted captions leaning the same way are parallel,
+// so they only need their anchors TILT_GAP apart.
+function collide(g: Tick[], h: Tick[]): boolean {
+  if (meets(low(g), low(h), 4)) return true;
+  const up = high(g), next = high(h);
+  if (!up || !next || !meets(up, next)) return false;
+  return g[0].lean !== h[0].lean || h[0].at - g[g.length - 1].at < TILT_GAP;
+}
+
+// Ticks for the possession's events, each captioned with the action above it and the player below. Captions that
+// would overlap are tilted instead (see place); groups are merged until no two collide.
 export function layoutTimeline(play: Play, seq: number[], width: number, measure: (text: string) => number): Timeline {
-  const end = Math.max(1, seq.length - 1), rowEnds = [-Infinity, -Infinity];
-  const cuts: number[] = [], ticks: Tick[] = [], marks = new Set<number>();
+  const end = Math.max(1, seq.length - 1);
+  const cuts: number[] = [], marks = new Set<number>();
+  let groups: Tick[][] = [];
   for (let k = 1; k < seq.length; k++) {
     if (play.frames[seq[k]] - play.frames[seq[k - 1]] > 1) cuts.push(k / end);
   }
@@ -86,12 +150,16 @@ export function layoutTimeline(play: Play, seq: number[], width: number, measure
     if (Math.abs(play.frames[seq[k]] - event.f) > LEAD_IN) continue;
     marks.add(k);
     const w = Math.max(measure(event.short ?? ""), measure(event.who ?? "")) + 8;
-    const left = clamp((k / end) * width - w / 2, 0, Math.max(0, width - w));
-    const row = rowEnds.findIndex((edge) => left >= edge);
-    if (row >= 0) rowEnds[row] = left + w;
-    ticks.push({ k, frac: k / end, event, row, left, width: w });
+    groups.push([{ k, frac: k / end, event, lean: "flat", at: 0, width: w }]);
   }
-  return { ticks, cuts, marks: [...marks].sort((a, b) => a - b) };
+  groups.sort((g, h) => g[0].k - h[0].k);
+  for (;;) {
+    for (const group of groups) place(group, width);
+    const i = groups.findIndex((group, j) => j + 1 < groups.length && collide(group, groups[j + 1]));
+    if (i < 0) break;
+    groups.splice(i, 2, groups[i].concat(groups[i + 1]));
+  }
+  return { ticks: groups.flat(), cuts, marks: [...marks].sort((p, q) => p - q) };
 }
 
 /** Position of the next action, or of the previous one (the current one counts as passed after half a second). */

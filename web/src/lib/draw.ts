@@ -3,7 +3,7 @@
 // Ported from draw(), drawPlayer(), drawTag(), drawOptions(), drawHeader() and drawCaption() in the Shiny
 // app's www/player.js.
 
-import { COLORS, HEADER_TOP, PAD, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
+import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
 import { epvAt, type EpvReading } from "./epv";
 import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
@@ -72,9 +72,11 @@ function readoutCells(ep: EpvReading): [string, string][] {
 }
 
 // A team's hull: filled in its primary colour, outlined in whichever of its colours shows best on the floor.
-function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: TeamColors): number {
+// Returns its area in square feet whether or not it is drawn, or null when fewer than three players are placed.
+function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: TeamColors, show: boolean): number | null {
   const poly = convexHull(dots.map((d): Point => [d.x, d.y]));
-  if (poly.length < 3) return 0;
+  if (poly.length < 3) return null;
+  if (!show) return polygonArea(poly);
   ctx.beginPath();
   poly.forEach((q, i) => (i ? ctx.lineTo(L.ox + q[0] * L.s, L.oy - q[1] * L.s) : ctx.moveTo(L.ox + q[0] * L.s, L.oy - q[1] * L.s)));
   ctx.closePath();
@@ -224,12 +226,12 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[])
   ctx.fillStyle = COLORS.ink;
   ctx.textAlign = "left";
   const both = labels.join("   ·   ");
-  ctx.fillText(ctx.measureText(both).width <= room ? both : labels[labels.length - 1] ?? "", L.left, L.top + L.ch + 17, room);
+  ctx.fillText(ctx.measureText(both).width <= room ? both : labels[labels.length - 1] ?? "", L.left, L.top + L.ch + 14, room);
   if (credit) {
     ctx.textAlign = "right";
     ctx.font = `400 11px ${FONT}`;
     ctx.fillStyle = COLORS.muted;
-    ctx.fillText("Data: SkillCorner open data, Liga ACB", L.left + L.cw, L.top + L.ch + 17);
+    ctx.fillText("Data: SkillCorner open data, Liga ACB", L.left + L.cw, L.top + L.ch + 14);
   }
 }
 
@@ -259,10 +261,11 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
 
   ctx.save();
   ctx.beginPath();
-  ctx.rect(L.left, L.top, L.cw, L.ch);
+  const reach = (REACH - MARGIN) * L.s;   // someone inbounding stands outside the layout's narrow margin
+  ctx.rect(L.left - reach, L.top - reach, L.cw + 2 * reach, L.ch + 2 * reach);
   ctx.clip();
-  const areaDef = o.showDef ? drawHull(ctx, L, dots.def, play.colors.def) : null;
-  const areaOff = o.showOff ? drawHull(ctx, L, dots.off, play.colors.off) : null;
+  const areaDef = drawHull(ctx, L, dots.def, play.colors.def, o.showDef);
+  const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
   if (ep && o.showEpv && o.showBestPass && ep.target != null) {
     const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
     if (from && to) {

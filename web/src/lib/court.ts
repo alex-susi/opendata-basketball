@@ -11,9 +11,10 @@ const CIRCLE_R = 1.8 * M, NO_CHARGE_R = 1.25 * M;
 const BOARD_X = HALF_L - 1.2 * M, BOARD_HALF_W = 0.9 * M, RIM_R = 0.225 * M;
 const LANE_MARKS = [1.75 * M, 3.85 * M, 4.7 * M], LANE_BLOCK = [2.6 * M, 3.0 * M];
 
-export const MARGIN = 4;   // feet of floor shown outside the lines
-export const PAD = { top: 12, bottom: 34, side: 12 };
-export const HEADER_TOP = 46;   // top padding while a video is recorded: room for the header drawn on the canvas
+export const MARGIN = 1.5;   // feet between the court's lines and the edge of the layout
+export const REACH = 4;      // feet outside the lines in which players and the ball are still drawn
+export const PAD = { top: 6, bottom: 26, side: 6 };
+export const HEADER_TOP = 40;   // top padding while a video is recorded: room for the header drawn on the canvas
 
 // The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
 // Team colours come with each play (Play.colors).

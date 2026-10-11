@@ -29,6 +29,7 @@
         <div class="track-fill" id="track-fill"></div>
         <div class="track-ticks" id="track-ticks"></div>
       </div>
+      <svg class="leaders" id="track-leaders" aria-hidden="true"></svg>
       <div class="track-labels" id="track-labels"></div>
       <div class="track-thumb" id="track-thumb"></div>
     </div>
@@ -90,12 +91,14 @@
   </div>
 
   <div class="panel roster off">
-    <h2><span class="hull" id="area-off" title="Area of the team's convex hull"></span><span class="team" id="team-off"></span> <span class="role">Offense</span></h2>
+    <h2 id="team-off"></h2>
+    <p class="roster-sub"><span>Offense</span><span class="hull" id="area-off" title="Area of the team's convex hull"></span></p>
     <ul id="roster-off"></ul>
   </div>
 
   <div class="panel roster def">
-    <h2><span class="hull" id="area-def" title="Area of the team's convex hull"></span><span class="team" id="team-def"></span> <span class="role">Defense</span></h2>
+    <h2 id="team-def"></h2>
+    <p class="roster-sub"><span>Defense</span><span class="hull" id="area-def" title="Area of the team's convex hull"></span></p>
     <ul id="roster-def"></ul>
   </div>
 </aside>
