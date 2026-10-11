@@ -140,47 +140,44 @@ body {
 
 /* ---- centre: header, stage, transport ---- */
 .viewer { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
-/* One row when the centre column is wide: title, clocks, then the score over the middle of the court. If the
-   title and clocks need more than their half, they keep their width and the score moves right. */
+/* Title over its subtitle on the left; the score, as tall as both lines, over the middle of the court; the game
+   clock over the quarter and shot clock to its right. If the title needs more than its half, it keeps its width
+   and the score moves right. */
 .viewer { container: viewer / inline-size; }
-.play-head { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: center; gap: 14px; padding: 2px 4px 0; }
-.play-head-lead { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.play-head-text { flex: 1; min-width: 0; }
+.play-head { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 14px; padding: 2px 4px 0; }
+.play-head-text { min-width: 0; }
 .play-head h1 { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.25; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .play-head p { width: 0; min-width: 100%; margin: 2px 0 0; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Team names take equal widths either side, so the score is the exact centre of the pill. */
 .scorebug {
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; flex: none; padding: 6px 12px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-weight: 600;
 }
 .scorebug .team { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .scorebug .team.home { justify-content: flex-end; text-align: right; }
-.scorebug:empty { display: none; }
-.scorebug b { font-size: 15px; font-variant-numeric: tabular-nums; }
+.scorebug b { font-size: 21px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .scorebug .kit { width: 12px; height: 12px; flex: none; border: 2px solid; border-radius: 50%; }
-.game-clock { display: flex; align-items: center; gap: 8px; flex: none; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.shot-clock {
-  display: grid; place-items: center; min-width: 34px; height: 24px; padding: 0 4px; border-radius: 6px;
-  background: #0F1522; color: #F5B02E; font-weight: 700;
-}
-.game-clock:empty { display: none; }
+/* Two lines that match the title's: game clock, then quarter and shot clock. */
+.game-clock { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.game-time { display: block; font-size: 18px; font-weight: 700; line-height: 1.25; }
+.period-line { display: flex; align-items: center; gap: 7px; margin-top: 2px; font-weight: 700; line-height: 1.4; }
+.shot-clock { min-width: 24px; padding: 0 5px; border-radius: 5px; background: #0F1522; color: #F5B02E; text-align: center; }
+.scorebug:empty, .game-clock:empty { display: none; }
 
-/* Narrower centre column: the title takes its own line, so the score stays centred with the clocks to its left. */
-@container viewer (max-width: 1250px) {
+/* Narrower centre column: the title takes its own row, so the score stays centred with the clocks to its right. */
+@container viewer (max-width: 860px) {
   .play-head { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); row-gap: 6px; }
-  .play-head-lead { display: contents; }
-  .play-head-text { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px; }
-  .play-head h1 { flex: none; max-width: 100%; }
-  .play-head p { flex: 1; width: auto; min-width: 0; margin-top: 0; }
-  .game-clock { justify-self: end; }
+  .play-head-text { grid-column: 1 / -1; }
+  .scorebug { grid-column: 2; min-height: 43px; }
 }
-/* Too narrow for clocks and score side by side: stack them. */
+/* Too narrow for score and clocks side by side: stack them. */
 @container viewer (max-width: 620px) {
   .play-head { grid-template-columns: minmax(0, 1fr); justify-items: center; }
-  .play-head-text { justify-self: stretch; display: block; }
+  .play-head-text { justify-self: stretch; }
   .play-head h1, .play-head p { white-space: normal; }
-  .game-clock { justify-self: center; }
-  .scorebug { max-width: 100%; border-radius: 12px; }
+  .scorebug { grid-column: 1; max-width: 100%; padding: 4px 12px; border-radius: 12px; }
+  .game-clock { display: flex; align-items: center; gap: 10px; }
+  .period-line { margin-top: 0; }
 }
 
 .stage {
@@ -285,9 +282,12 @@ body {
 
 /* Each roster panel carries its team's colours as --kit-* (set inline from the play). */
 .roster { --kit-fill: var(--muted); --kit-edge: #FFFFFF; --kit-ink: #FFFFFF; --kit-text: var(--ink); }
-.roster h2 { display: flex; align-items: baseline; gap: 8px; }
-.roster .team { min-width: 0; overflow: hidden; color: var(--kit-text); text-overflow: ellipsis; white-space: nowrap; }
-.roster .role { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+/* Heading: team name, then its side of the ball, with the hull's area floated into the panel's top right corner.
+   Beside a long team name there is no room for the side label, which then wraps under the name. */
+.roster h2 { display: flow-root; line-height: 20px; }
+.roster .team { margin-right: 7px; color: var(--kit-text); white-space: nowrap; }
+.roster .role { display: inline-block; color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.roster .hull { float: right; margin-left: 8px; color: var(--muted); font-size: 11px; font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .roster ul { margin: 0; padding: 0; list-style: none; }
 .roster li { display: flex; align-items: center; gap: 8px; padding: 2px 4px; border-radius: 6px; cursor: default; }
 .roster li:hover { background: var(--raised); }
@@ -295,14 +295,15 @@ body {
   display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 2px solid var(--kit-edge); border-radius: 50%;
   background: var(--kit-fill); color: var(--kit-ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.roster .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.roster .arch { display: flex; align-items: center; gap: 5px; flex: none; max-width: 45%; margin-left: 4px; color: var(--muted); font-size: 11px; }
+/* The ball mark follows the name; the archetype tag keeps to the right edge. */
+.roster .name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roster .ball-mark { flex: none; margin-left: -2px; }
+.roster .arch { display: flex; align-items: center; gap: 5px; flex: none; max-width: 45%; margin-left: auto; color: var(--muted); font-size: 11px; }
 .roster .arch .swatch { width: 9px; height: 9px; flex: none; border-radius: 2px; }
 .roster .arch-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .roster li.bench { opacity: .4; }
 .roster li.has-ball .name { font-weight: 700; }
 .roster li.has-ball .ball-mark { width: 9px; height: 9px; border-radius: 50%; background: #FFA62B; border: 1px solid #5C3200; }
-.hull-area { margin: 6px 0 0; min-height: 18px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* ---- narrower windows: side panels move under the court, then everything stacks ---- */
 @media (max-width: 1180px) {

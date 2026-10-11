@@ -1,13 +1,18 @@
 // Fetches the exported files. Each file is requested once; period files are kept for the last few periods viewed.
+// Requests carry the export's stamp (set at build time in vite.config.ts): the files keep their names from one
+// export to the next, so without it a browser can run a new build against an older export it has cached.
 
 import { decodePlay } from "./decode";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
+declare const __DATA_STAMP__: string;
+
 const base = `${import.meta.env.BASE_URL}data/`;
+const version = `?v=${encodeURIComponent(__DATA_STAMP__)}`;
 const KEEP_PERIODS = 8;
 
 async function fetchOk(name: string): Promise<Response> {
-  const response = await fetch(base + name);
+  const response = await fetch(base + name + version);
   if (!response.ok) throw new Error(`Could not load ${name} (${response.status})`);
   return response;
 }

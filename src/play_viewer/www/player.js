@@ -30,19 +30,18 @@
                    ballEdge: '#7A3E00', panel: '#0F1522', dark: '#0B0E14', best: '#18A56B', risk: '#F5B02E' };
   const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
   const TICK_FONT = `600 11px ${FONT}`;      // must match .tick-label in style.css
-  const OPTIONS = { 'opt-def-hull': 'showDef', 'opt-off-hull': 'showOff', 'opt-extrap': 'markExtrap', 'opt-loop': 'loop',
+  const OPTIONS = { 'opt-def-hull': 'showDef', 'opt-off-hull': 'showOff', 'opt-arch': 'showArch', 'opt-loop': 'loop',
                     'opt-epv': 'showEpv', 'opt-pass-values': 'showPassValues', 'opt-pass-tov': 'showPassTov',
-                    'opt-ball-tov': 'showBallTov', 'opt-shot-pass': 'showShotPass', 'opt-best-pass': 'showBestPass',
-                    'opt-readout': 'showReadout' };
+                    'opt-ball-tov': 'showBallTov', 'opt-shot-pass': 'showShotPass', 'opt-best-pass': 'showBestPass' };
 
   const $ = (id) => document.getElementById(id);
   const canvas = $('court'), ctx = canvas.getContext('2d'), stage = $('stage');
   const measure = document.createElement('canvas').getContext('2d');   // text widths for timeline captions
 
   const state = { plays: [], playId: null, play: null, seq: [], pos: 0, playing: false, hold: 0, speed: 1,
-                  view: 'full', showDef: true, showOff: true, skipDead: true, loop: true, markExtrap: false,
+                  view: 'full', showDef: true, showOff: true, skipDead: true, loop: true, showArch: true,
                   showEpv: true, showPassValues: true, showPassTov: true, showBallTov: true, showShotPass: true,
-                  showBestPass: true, showReadout: true,
+                  showBestPass: true,
                   hoverPid: null, dirty: true, lastTs: 0, recorder: null, rosterKey: '', areaTick: 0,
                   framed: false };           // the canvas carries its own header while a video is recorded
 
@@ -224,10 +223,11 @@
 
   // ---- EPV prices ----
   // Prices sit on a coarser grid than the tracking. Returns a reader that blends between grid points,
-  // or null where nothing is priced (dead ball, nobody holding the ball, prices not built).
+  // or null where nothing is priced (dead ball, nobody holding the ball, prices not built). Prices are read
+  // whether or not the court overlay is on: the readout beside the court always shows them.
   function epvAt(frame) {
     const e = state.play.epv;
-    if (!state.showEpv || !e || !e.f.length || frame < e.f[0]) return null;
+    if (!e || !e.f.length || frame < e.f[0]) return null;
     let lo = 0, hi = e.f.length - 1;
     while (lo < hi) {
       const mid = (lo + hi + 1) >> 1;
@@ -269,17 +269,34 @@
     return polygonArea(poly);
   }
 
-  // A player dot in his team's colours: secondary ring, primary centre. An extrapolated position is drawn faint.
+  // Archetype colours are the roster swatches' (--arch-<slot> in style.css); each is read from the page once.
+  const archColors = {};
+  function archColor(slot) {
+    if (!archColors[slot]) {
+      archColors[slot] = getComputedStyle(document.documentElement).getPropertyValue(`--arch-${slot}`).trim() || COLORS.muted;
+    }
+    return archColors[slot];
+  }
+
+  // A player dot in his team's colours: secondary ring, primary centre. Around it, when asked for, a ring in the
+  // colour of his archetype on this side of the ball; outside that, the ring that marks the ball handler.
   function drawPlayer(L, d, r, hasBall) {
     const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, kit = state.play.colors[d.p.role];
+    const arch = state.showArch && d.p.arch ? archColor(d.p.arch.slot) : null;
     if (state.hoverPid === d.p.id || hasBall) {
       ctx.beginPath();
-      ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
+      ctx.arc(x, y, r + (arch ? 7.5 : 5.5), 0, 2 * Math.PI);
       ctx.lineWidth = 2.5;
       ctx.strokeStyle = state.hoverPid === d.p.id ? COLORS.dark : kit.mark;
       ctx.stroke();
     }
-    ctx.globalAlpha = state.markExtrap && !d.det ? 0.45 : 1;
+    if (arch) {
+      ctx.beginPath();
+      ctx.arc(x, y, r + 2, 0, 2 * Math.PI);
+      ctx.lineWidth = 3.2;
+      ctx.strokeStyle = arch;
+      ctx.stroke();
+    }
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2 * Math.PI);
     ctx.fillStyle = kit.edge;
@@ -293,7 +310,6 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(d.p.jersey, x, y + 0.5);
-    ctx.globalAlpha = 1;
   }
 
   // A small dark label. `anchor` is 'center' (x is its middle) or 'left' (x is its left edge).
@@ -361,7 +377,7 @@
   }
 
   // The header of a recorded video, on one line above the court: quarter, shot clock, game clock, the score at
-  // the start of the possession, and the EPV readout when prices are showing. On the page these live outside
+  // the start of the possession, and the EPV readout where the frame is priced. On the page these live outside
   // the canvas, so a saved video would otherwise not say what it shows.
   function drawHeader(L, c, ep) {
     const p = state.play, homeIsOff = p.off === p.home, gap = '   ·   ';
@@ -369,7 +385,7 @@
     const parts = [[`${quarter(p.period)}  `, COLORS.ink, 700], [shotClockText(p.sc[c.i0]), COLORS.risk, 700],
                    [`  ${clock(p.gc[c.i0])}`, COLORS.ink, 700], [gap, COLORS.muted, 400], [p.home, home.text, 700],
                    [`  ${p.homeScore} – ${p.awayScore}  `, COLORS.ink, 700], [p.away, away.text, 700]];
-    if (ep && state.showReadout) {
+    if (ep) {
       for (const [label, value] of readoutCells(ep)) parts.push([`${label === 'EPV' ? gap : '   '}${label} `, COLORS.muted, 400], [value, COLORS.ink, 700]);
     }
     const span = (size) => parts.reduce((sum, [text, , weight]) => {
@@ -415,7 +431,7 @@
     const c = cursor(), frame = p.frames[c.i0], dots = { off: [], def: [] };
     for (const pl of p.players) {
       const x = blend(pl.x, c), y = blend(pl.y, c);
-      if (x != null && y != null) dots[pl.role].push({ p: pl, x, y, det: pl.d[c.i0] });
+      if (x != null && y != null) dots[pl.role].push({ p: pl, x, y });
     }
     const ep = epvAt(frame + c.t), r = clamp(1.2 * L.s, 9, 22), handler = ballHandler(frame);
     ctx.save();
@@ -424,7 +440,7 @@
     ctx.clip();
     const areaDef = state.showDef ? drawHull(L, dots.def.map((d) => [d.x, d.y]), p.colors.def) : null;
     const areaOff = state.showOff ? drawHull(L, dots.off.map((d) => [d.x, d.y]), p.colors.off) : null;
-    if (ep && state.showBestPass && ep.target != null) {
+    if (ep && state.showEpv && state.showBestPass && ep.target != null) {
       const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
       if (from && to) {
         ctx.beginPath();
@@ -437,7 +453,7 @@
       }
     }
     for (const d of dots.def.concat(dots.off)) drawPlayer(L, d, r, d.p.id === handler);
-    if (ep) drawOptions(L, dots.off, r, ep);
+    if (ep && state.showEpv) drawOptions(L, dots.off, r, ep);
     const bx = blend(p.ball.x, c), by = blend(p.ball.y, c), bz = blend(p.ball.z, c) || 0;
     if (bx != null && by != null) {
       ctx.beginPath();
@@ -564,10 +580,12 @@
     const p = state.play, text = `${shotClockText(p.sc[c.i0])}|${clock(p.gc[c.i0])}`;
     if (text === state.clockKey) return;
     state.clockKey = text;
-    const shot = el('span', 'shot-clock', shotClockText(p.sc[c.i0])), game = el('b', null, clock(p.gc[c.i0]));
+    const shot = el('span', 'shot-clock', shotClockText(p.sc[c.i0])), game = el('span', 'game-time', clock(p.gc[c.i0]));
+    const line = el('span', 'period-line');
     shot.title = 'Shot clock';
     game.title = 'Game clock';
-    $('game-clock').replaceChildren(el('b', null, quarter(p.period)), shot, game);
+    line.append(el('span', null, quarter(p.period)), shot);
+    $('game-clock').replaceChildren(game, line);
   }
 
   function updateRosters(dots, handler, areaOff, areaDef, ep) {
@@ -583,9 +601,9 @@
     }
     // Areas and prices change every frame; refresh the text a few times a second, or at once when paused.
     if (state.areaTick++ % 4 === 0 || !state.playing) {
-      $('area-off').textContent = areaOff == null ? '' : `Hull area ${Math.round(areaOff)} sq ft`;
-      $('area-def').textContent = areaDef == null ? '' : `Hull area ${Math.round(areaDef)} sq ft`;
-      $('readout').hidden = !(state.play.epv && state.showEpv && state.showReadout);
+      $('area-off').textContent = areaOff == null ? '' : `Hull ${Math.round(areaOff)} ft²`;
+      $('area-def').textContent = areaDef == null ? '' : `Hull ${Math.round(areaDef)} ft²`;
+      $('readout').hidden = !state.play.epv;
       const cells = ep ? readoutCells(ep) : null;
       for (let i = 0; i < 3; i++) $(`readout-${i}`).textContent = cells ? cells[i][1] : '–';
     }
@@ -662,6 +680,7 @@
     $('epv-missing').hidden = Boolean(p.epv);
     $('play-title').textContent = `${p.off} possession`;
     $('play-sub').textContent = [p.who ? `${p.result} (${p.who})` : p.result].concat(p.types).join(' · ');
+    $('play-sub').title = $('play-sub').textContent;
     const bug = $('scorebug'), homeIsOff = p.off === p.home;
     const sides = [[p.home, homeIsOff ? p.colors.off : p.colors.def], [p.away, homeIsOff ? p.colors.def : p.colors.off]];
     const [home, away] = sides.map(([name, kit], i) => {

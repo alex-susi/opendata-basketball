@@ -18,9 +18,8 @@ export interface DrawOptions {
   view: CourtView;
   showDef: boolean;
   showOff: boolean;
-  markExtrap: boolean;
+  showArch: boolean;
   showEpv: boolean;
-  showReadout: boolean;
   showPassValues: boolean;
   showPassTov: boolean;
   showBallTov: boolean;
@@ -45,7 +44,17 @@ interface Dot {
   p: PlayerTrack;
   x: number;
   y: number;
-  det: number;
+}
+
+// Archetype colours are the roster swatches' (--arch-<slot> in app.css); each is read from the page once.
+const archColors = new Map<string, string>();
+function archColor(slot: string): string {
+  let color = archColors.get(slot);
+  if (color === undefined) {
+    color = getComputedStyle(document.documentElement).getPropertyValue(`--arch-${slot}`).trim() || COLORS.muted;
+    archColors.set(slot, color);
+  }
+  return color;
 }
 
 // Red below the current EPV, neutral at it, green above it.
@@ -80,17 +89,25 @@ function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: Te
   return polygonArea(poly);
 }
 
-// A player dot in his team's colours: secondary ring, primary centre. An extrapolated position is drawn faint.
+// A player dot in his team's colours: secondary ring, primary centre. Around it, when asked for, a ring in the
+// colour of his archetype on this side of the ball; outside that, the ring that marks the ball handler.
 function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, kit: TeamColors, hasBall: boolean, o: DrawOptions): void {
   const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, hovered = o.hoverPid === d.p.id;
+  const arch = o.showArch && d.p.arch ? archColor(d.p.arch.slot) : null;
   if (hovered || hasBall) {
     ctx.beginPath();
-    ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
+    ctx.arc(x, y, r + (arch ? 7.5 : 5.5), 0, 2 * Math.PI);
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = hovered ? COLORS.dark : kit.mark;
     ctx.stroke();
   }
-  ctx.globalAlpha = o.markExtrap && !d.det ? 0.45 : 1;
+  if (arch) {
+    ctx.beginPath();
+    ctx.arc(x, y, r + 2, 0, 2 * Math.PI);
+    ctx.lineWidth = 3.2;
+    ctx.strokeStyle = arch;
+    ctx.stroke();
+  }
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
   ctx.fillStyle = kit.edge;
@@ -104,7 +121,6 @@ function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(d.p.jersey, x, y + 0.5);
-  ctx.globalAlpha = 1;
 }
 
 // A small dark label. `anchor` is "center" (x is its middle) or "left" (x is its left edge).
@@ -171,7 +187,7 @@ function drawOptions(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: n
 }
 
 // The header of a recorded video, on one line above the court: quarter, shot clock, game clock, the score at
-// the start of the possession, and the EPV readout when prices are showing. On the page these live outside
+// the start of the possession, and the EPV readout where the frame is priced. On the page these live outside
 // the canvas, so a saved video would otherwise not say what it shows.
 function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor, ep: EpvReading | null, o: DrawOptions): void {
   const homeIsOff = play.off === play.home, gap = "   ·   ";
@@ -180,7 +196,7 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
     [`${quarter(play.period)}  `, COLORS.ink, 700], [shotClockText(play.sc[c.i0]), COLORS.risk, 700],
     [`  ${clock(play.gc[c.i0])}`, COLORS.ink, 700], [gap, COLORS.muted, 400], [play.home, home.text, 700],
     [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.ink, 700], [play.away, away.text, 700]];
-  if (ep && o.showReadout) {
+  if (ep) {
     for (const [label, value] of readoutCells(ep)) parts.push([`${label === "EPV" ? gap : "   "}${label} `, COLORS.muted, 400], [value, COLORS.ink, 700]);
   }
   const span = (size: number) => parts.reduce((sum, [text, , weight]) => {
@@ -235,9 +251,10 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   const dots: Record<"off" | "def", Dot[]> = { off: [], def: [] };
   for (const p of play.players) {
     const x = blend(p.x, c), y = blend(p.y, c);
-    if (x != null && y != null) dots[p.role].push({ p, x, y, det: p.d[c.i0] });
+    if (x != null && y != null) dots[p.role].push({ p, x, y });
   }
-  const ep = o.showEpv ? epvAt(play.epv, frame + c.t) : null;
+  // Prices are read whether or not the court overlay is on: the readout beside the court always shows them.
+  const ep = epvAt(play.epv, frame + c.t);
   const r = clamp(1.2 * L.s, 9, 22), handler = ballHandler(play, frame);
 
   ctx.save();
@@ -246,7 +263,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.clip();
   const areaDef = o.showDef ? drawHull(ctx, L, dots.def, play.colors.def) : null;
   const areaOff = o.showOff ? drawHull(ctx, L, dots.off, play.colors.off) : null;
-  if (ep && o.showBestPass && ep.target != null) {
+  if (ep && o.showEpv && o.showBestPass && ep.target != null) {
     const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
     if (from && to) {
       ctx.beginPath();
@@ -259,7 +276,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     }
   }
   for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
-  if (ep) drawOptions(ctx, L, dots.off, r, ep, o);
+  if (ep && o.showEpv) drawOptions(ctx, L, dots.off, r, ep, o);
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;
   if (bx != null && by != null) {
     ctx.beginPath();

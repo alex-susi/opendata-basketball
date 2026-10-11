@@ -295,3 +295,9 @@ free-throw rebound. Checked across all 1,564 delivered possessions in the ten ga
 - Quarter, shot clock, game clock and score moved from the canvas to the page header, and the EPV readout to
   the side panel, so the court fills the stage. A recorded video draws them on the canvas again, since it
   captures the canvas alone.
+- Later the same day: the score spans both header lines with the game clock over the quarter and shot clock to
+  its right; the EPV readout always shows when a play has prices ("Show/hide all" only switches the labels on
+  the court); a "Player archetypes" toggle rings each player on the court in his archetype's colour; the
+  "Mark extrapolated positions" toggle was removed (the detected flags are still exported, unused).
+- The site's data requests carry the export's stamp (`web/vite.config.ts`, `web/src/lib/data.ts`). Without it a
+  browser paired a new build with data files cached from the previous export and drew nothing.

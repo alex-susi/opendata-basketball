@@ -12,9 +12,10 @@ export const viewer = $state({
   showOff: true,
   skipDead: true,
   loop: true,
-  markExtrap: false,
+  /** Ring each player on the court in his archetype's colour. */
+  showArch: true,
+  /** The EPV labels on the court. The readout beside the court shows whenever the play has prices. */
   showEpv: true,
-  showReadout: true,
   showPassValues: true,
   showPassTov: true,
   showBallTov: true,

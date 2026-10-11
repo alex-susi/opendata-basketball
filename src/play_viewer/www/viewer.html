@@ -1,14 +1,12 @@
 <section class="viewer">
-  <!-- Title on the left, then the running clocks beside the score, which sits over the middle of the court. -->
+  <!-- Title over its subtitle on the left, the score over the middle of the court, the running clocks to its right. -->
   <header class="play-head">
-    <div class="play-head-lead">
-      <div class="play-head-text">
-        <h1 id="play-title">Loading plays…</h1>
-        <p id="play-sub"></p>
-      </div>
-      <div class="game-clock" id="game-clock"></div>
+    <div class="play-head-text">
+      <h1 id="play-title">Loading plays…</h1>
+      <p id="play-sub"></p>
     </div>
     <div class="scorebug" id="scorebug"></div>
+    <div class="game-clock" id="game-clock"></div>
   </header>
 
   <div class="stage" id="stage">
@@ -65,9 +63,11 @@
       </label>
     </div>
     <div class="toggle-grid">
+      <label class="toggle wide" title="Ring each player on the court in the colour of his archetype, as beside his name below">
+        <input type="checkbox" id="opt-arch" checked>Player archetypes
+      </label>
       <label class="toggle"><input type="checkbox" id="opt-skip" checked>Skip dead ball</label>
       <label class="toggle"><input type="checkbox" id="opt-loop" checked>Loop</label>
-      <label class="toggle wide"><input type="checkbox" id="opt-extrap">Mark extrapolated positions</label>
     </div>
   </div>
 
@@ -78,9 +78,8 @@
       <div><span>TOV% (ROP)</span><b id="readout-1">–</b></div>
       <div><span>Cum. TOV</span><b id="readout-2">–</b></div>
     </div>
-    <label class="toggle"><input type="checkbox" id="opt-epv" checked>Show EPV overlay</label>
+    <label class="toggle" title="Show or hide every EPV label on the court"><input type="checkbox" id="opt-epv" checked>Show/hide all</label>
     <div class="toggle-grid" id="epv-options">
-      <label class="toggle" title="EPV, turnover odds for the rest of the possession, cumulative turnover risk so far"><input type="checkbox" id="opt-readout" checked>Readout</label>
       <label class="toggle" title="Value of a pass to each teammate, coloured against current EPV, and the EPV under the ball handler"><input type="checkbox" id="opt-pass-values" checked>Pass values</label>
       <label class="toggle" title="Chance each pass is turned over"><input type="checkbox" id="opt-pass-tov" checked>Pass TOV %</label>
       <label class="toggle" title="Chance the possession is lost in the next two seconds"><input type="checkbox" id="opt-ball-tov" checked>Ball TOV risk</label>
@@ -91,14 +90,12 @@
   </div>
 
   <div class="panel roster off">
-    <h2><span class="role">Offense</span><span class="team" id="team-off"></span></h2>
+    <h2><span class="hull" id="area-off" title="Area of the team's convex hull"></span><span class="team" id="team-off"></span> <span class="role">Offense</span></h2>
     <ul id="roster-off"></ul>
-    <p class="hull-area" id="area-off"></p>
   </div>
 
   <div class="panel roster def">
-    <h2><span class="role">Defense</span><span class="team" id="team-def"></span></h2>
+    <h2><span class="hull" id="area-def" title="Area of the team's convex hull"></span><span class="team" id="team-def"></span> <span class="role">Defense</span></h2>
     <ul id="roster-def"></ul>
-    <p class="hull-area" id="area-def"></p>
   </div>
 </aside>

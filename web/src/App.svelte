@@ -35,6 +35,7 @@
   const homeIsOff = $derived(play ? play.off === play.home : true);
   const home = $derived(play ? (homeIsOff ? play.colors.off : play.colors.def) : null);
   const away = $derived(play ? (homeIsOff ? play.colors.def : play.colors.off) : null);
+  const subtitle = $derived(play ? [play.who ? `${play.result} (${play.who})` : play.result, ...play.types].join(" · ") : "");
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
 
   // The address names the selected play, or the Archetypes tab while it is open.
@@ -124,21 +125,14 @@
   </aside>
 
   <section class="viewer">
-    <!-- Title on the left, then the running clocks beside the score, which sits over the middle of the court. -->
+    <!-- Title over its subtitle on the left, the score over the middle of the court, the running clocks to its right. -->
     <header class="play-head">
-      <div class="play-head-lead">
-        <div class="play-head-text">
-          {#if play}
-            <h1>{play.off} possession</h1>
-            <p>{[play.who ? `${play.result} (${play.who})` : play.result, ...play.types].join(" · ")}</p>
-          {:else}
-            <h1>{meta ? "No play selected" : "Loading plays…"}</h1>
-          {/if}
-        </div>
+      <div class="play-head-text">
         {#if play}
-          <div class="game-clock">
-            <b>{quarter(play.period)}</b><span class="shot-clock" title="Shot clock">{live.shotClock}</span><b title="Game clock">{live.gameClock}</b>
-          </div>
+          <h1>{play.off} possession</h1>
+          <p title={subtitle}>{subtitle}</p>
+        {:else}
+          <h1>{meta ? "No play selected" : "Loading plays…"}</h1>
         {/if}
       </div>
       {#if play && home && away}
@@ -146,6 +140,10 @@
           <span class="team home" style:color={home.text}><span class="kit" style:background={home.fill} style:border-color={home.edge}></span>{play.home}</span>
           <b>{play.homeScore} – {play.awayScore}</b>
           <span class="team away" style:color={away.text}>{play.away}<span class="kit" style:background={away.fill} style:border-color={away.edge}></span></span>
+        </div>
+        <div class="game-clock">
+          <span class="game-time" title="Game clock">{live.gameClock}</span>
+          <span class="period-line"><span>{quarter(play.period)}</span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span>
         </div>
       {/if}
     </header>
