@@ -64,6 +64,20 @@ export interface PlayerInfo {
   arch: Archetype | null;
 }
 
+/** How one team is drawn, from its club colours (TEAM_COLORS and team_kit() in the Shiny app's R/data.R). */
+export interface TeamColors {
+  /** Primary colour: player dots and hull. */
+  fill: string;
+  /** Secondary colour: the ring around a dot. */
+  edge: string;
+  /** Number on a dot. */
+  ink: string;
+  /** Team name on the dark panels. */
+  text: string;
+  /** Outlines drawn on the floor. */
+  mark: string;
+}
+
 export interface PlayEvent {
   f: number;
   kind: string;
@@ -95,6 +109,7 @@ export interface PlayHeader {
   result: string;
   who: string;
   types: string[];
+  colors: Record<Role, TeamColors>;
   players: PlayerInfo[];
   priced: number[];
   events: PlayEvent[];

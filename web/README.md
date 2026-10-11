@@ -42,7 +42,17 @@ Rscript web/scripts/parity_reference.R
 The export needs the viewer's caches (`outputs/cache/play_viewer/`, built on the Shiny app's first start) and,
 for the EPV overlay, the prices from `Rscript src/epv/build_epv.R`. The archetype tags beside each player's name
 and the Archetypes tab come from `outputs/archetypes/` (`Rscript src/archetypes/build_features.R`, then
-`Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters or their wording.
+`Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters.
+
+To change only the wording of the Archetypes tab, edit `src/play_viewer/R/archetype_page.R` and rewrite the page
+alone. This leaves the play data and its stamp untouched, so the parity reference stays valid.
+
+```bash
+Rscript web/scripts/export_data.R --page
+```
+
+Team colours (`TEAM_COLORS` in `src/play_viewer/R/data.R`) are written into each play, so a colour change needs
+the full export.
 
 ## Deploying
 
@@ -55,7 +65,7 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 - Multi-select filters are a custom dropdown with checkboxes and a search box instead of selectize.
 - The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes`.
 - The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
-  `src/play_viewer/R/archetype_page.R`, not here.
+  `src/play_viewer/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.
 - On narrow screens the court comes first, then options and rosters, then filters and the play list.
 - Coordinates and prices are stored as scaled integers at the precision the Shiny app already rounds to.
 

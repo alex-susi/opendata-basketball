@@ -1,5 +1,6 @@
 # Export the play viewer's data for the static site in web/.
 #   Rscript web/scripts/export_data.R          (from anywhere inside the repository)
+#   Rscript web/scripts/export_data.R --page   (only archetypes.html, after editing the Archetypes tab's wording)
 #
 # Reads the Shiny app's caches through the app's own functions and writes to web/public/data/:
 #   meta.json            filter choices and the export's `generated` stamp
@@ -17,7 +18,8 @@
 #   uint8  stopped[n], per player: detected[n]
 # The app already rounds to these precisions, so the integers are exact and the site shows the app's numbers.
 #
-# After running this, run web/scripts/parity_reference.R too and keep both outputs together.
+# After a full run, run web/scripts/parity_reference.R too and keep both outputs together. A --page run leaves
+# the data and its stamp alone, so the reference stays valid.
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -26,6 +28,15 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_a
 a <- load_shiny_app()
 out_dir <- file.path(a$root, "web", "public", "data")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# ---- the Archetypes tab, rendered by the app's own page function ------------------------------
+
+writeLines(enc2utf8(as.character(a$archetype_page(a$root))), file.path(out_dir, "archetypes.html"), useBytes = TRUE)
+if ("--page" %in% args) {
+  message("Wrote archetypes.html only.")
+  quit(save = "no")
+}
+
 unlink(list.files(out_dir, "^g[0-9]+_p[0-9]+[.](bin|json)$", full.names = TRUE))
 
 NULL16 <- -32768L
@@ -69,7 +80,7 @@ write_segment <- function(con, p) {
 play_header <- function(p, offset) {
   list(id = p$id, o = offset, n = length(p$frames), m = length(p$epv$f), game = p$game, period = p$period,
        off = p$off, def = p$def, home = p$home, away = p$away, homeScore = p$homeScore, awayScore = p$awayScore,
-       result = p$result, who = p$who, types = I(as.character(p$types)),
+       result = p$result, who = p$who, types = I(as.character(p$types)), colors = p$colors,
        players = lapply(p$players, function(pl) c(pl[c("id", "jersey", "name", "last", "role")], list(arch = pl$arch))),
        priced = I(as.integer(names(p$epv$players))), events = p$events, touches = p$touches)
 }
@@ -95,10 +106,6 @@ for (stem in unique(plays$file)) {
   close(con)
   save_json(list(bytes = offset, plays = headers), paste0(stem, ".json"))
 }
-
-# ---- the Archetypes tab, rendered by the app's own page function ------------------------------
-
-writeLines(enc2utf8(as.character(a$archetype_page(a$root))), file.path(out_dir, "archetypes.html"), useBytes = TRUE)
 
 # ---- play list with the fields the filters read -------------------------------------------------
 

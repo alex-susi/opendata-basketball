@@ -61,7 +61,7 @@ export function decodePlay(buffer: ArrayBuffer, h: PlayHeader): Play {
   return {
     id: h.id, game: h.game, period: h.period, off: h.off, def: h.def, home: h.home, away: h.away,
     homeScore: h.homeScore, awayScore: h.awayScore, result: h.result, who: h.who, types: h.types,
-    events: h.events, touches: h.touches,
+    colors: h.colors, events: h.events, touches: h.touches,
     frames: i32.subarray(0, n), gc, sc, stopped: u8.subarray(0, n), ball, players: tracks, epv,
   };
 }

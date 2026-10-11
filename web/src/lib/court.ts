@@ -12,13 +12,14 @@ const BOARD_X = HALF_L - 1.2 * M, BOARD_HALF_W = 0.9 * M, RIM_R = 0.225 * M;
 const LANE_MARKS = [1.75 * M, 3.85 * M, 4.7 * M], LANE_BLOCK = [2.6 * M, 3.0 * M];
 
 export const MARGIN = 4;   // feet of floor shown outside the lines
-export const PAD = { top: 112, bottom: 34, side: 12 };
+export const PAD = { top: 12, bottom: 34, side: 12 };
+export const HEADER_TOP = 46;   // top padding while a video is recorded: room for the header drawn on the canvas
 
 // The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
+// Team colours come with each play (Play.colors).
 export const COLORS = {
-  paper: "#1B2334", floor: "#F6CFA3", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8",
-  off: "#1F6FE5", def: "#F26A36", offText: "#4C9AFF", defText: "#FF8552", ball: "#F59A23",
-  ballEdge: "#7A3E00", white: "#FFFFFF", panel: "#0F1522", dark: "#0B0E14", best: "#18A56B", risk: "#F5B02E",
+  paper: "#1B2334", floor: "#F6CFA3", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
+  ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", best: "#18A56B", risk: "#F5B02E",
 };
 
 export type CourtView = "full" | "half";
@@ -36,12 +37,12 @@ export interface Layout {
   oy: number;
 }
 
-export function courtLayout(W: number, H: number, view: CourtView): Layout {
+export function courtLayout(W: number, H: number, view: CourtView, padTop = PAD.top): Layout {
   const x0 = view === "half" ? -MARGIN : -(HALF_L + MARGIN), x1 = HALF_L + MARGIN;
   const y0 = -(HALF_W + MARGIN), y1 = HALF_W + MARGIN;
-  const s = Math.max(1, Math.min((W - 2 * PAD.side) / (x1 - x0), (H - PAD.top - PAD.bottom) / (y1 - y0)));
+  const s = Math.max(1, Math.min((W - 2 * PAD.side) / (x1 - x0), (H - padTop - PAD.bottom) / (y1 - y0)));
   const cw = (x1 - x0) * s, ch = (y1 - y0) * s;
-  const left = (W - cw) / 2, top = PAD.top + (H - PAD.top - PAD.bottom - ch) / 2;
+  const left = (W - cw) / 2, top = padTop + (H - padTop - PAD.bottom - ch) / 2;
   return { W, H, s, left, top, cw, ch, ox: left - x0 * s, oy: top + y1 * s };
 }
 

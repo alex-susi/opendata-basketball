@@ -13,6 +13,8 @@
   let stage: HTMLDivElement;
   let recorder: MediaRecorder | null = null;
   let hold = 0, lastTs = 0, drawn = 0;
+  let framed = false;   // the canvas carries its own header: from the start of a recording until its last frame is flushed
+  const NO_READOUT: [string, string][] = [["EPV", "–"], ["TOV% (ROP)", "–"], ["Cum. TOV", "–"]];
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -31,12 +33,16 @@
   }
 
   function render(ctx: CanvasRenderingContext2D): void {
-    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer);
+    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed);
     if (!info) return;
+    if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
+    if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;
     if (info.handler !== live.handler) live.handler = info.handler;
     if (info.onCourt.length !== live.onCourt.length || info.onCourt.some((id, i) => id !== live.onCourt[i])) live.onCourt = info.onCourt;
-    // Areas change every frame; refresh the text a few times a second, or at once when paused.
+    // Areas and prices change every frame; refresh the text a few times a second, or at once when paused.
     if (drawn++ % 6 === 0 || !viewer.playing) {
+      const readout = info.readout ?? NO_READOUT;
+      if (readout.some((cell, i) => cell[1] !== live.readout[i]?.[1])) live.readout = readout;
       const round = (v: number | null) => (v == null ? null : Math.round(v));
       if (round(info.areaOff) !== live.areaOff) live.areaOff = round(info.areaOff);
       if (round(info.areaDef) !== live.areaDef) live.areaDef = round(info.areaDef);
@@ -56,6 +62,7 @@
     let keep = false;
     active.ondataavailable = (ev) => { if (ev.data.size) chunks.push(ev.data); };
     active.onstop = () => {
+      framed = false;
       if (!keep) return;
       const link = document.createElement("a");
       link.href = URL.createObjectURL(new Blob(chunks, { type: mime.split(";")[0] }));
@@ -68,12 +75,16 @@
       recorder = null;
       viewer.recording = false;
       if (save) viewer.playing = false;
-      setTimeout(() => active.stop(), save ? 250 : 0);
+      setTimeout(() => {
+        if (active.state === "inactive") framed = false; else active.stop();
+      }, save ? 250 : 0);
     };
     recorder = active;
+    framed = true;
     viewer.pos = 0;
     viewer.playing = true;
-    active.start();
+    // Start on the next frame, once the canvas has been redrawn with its header.
+    requestAnimationFrame(() => { if (recorder === active) active.start(); });
   }
   let finishRecording: (save: boolean) => void = () => {};
 
@@ -105,7 +116,7 @@
   });
 </script>
 
-<div class="stage" bind:this={stage}>
+<div class="stage" class:half={viewer.view === "half"} bind:this={stage}>
   <canvas bind:this={canvas} aria-label="Animated court view of the selected possession"></canvas>
   {#if note}
     <div class="stage-note">{note}</div>

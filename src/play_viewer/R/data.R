@@ -4,7 +4,7 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 1L          # tracking cache
-INDEX_VERSION <- 2L          # play index (events carry tick captions since 2)
+INDEX_VERSION <- 3L          # play index (viewing windows and re-homed action markings since 3)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -19,6 +19,30 @@ ARCHETYPE_TAGS <- list("Primary Ball Handler" = c("Primary", "primary"), "Slashe
                        "Floor Spacer" = c("Spacer", "spacer"), "Roll & Cut Big" = c("Roll & Cut", "big"),
                        "Point of Attack" = c("Point", "primary"), "Chaser" = c("Chaser", "secondary"),
                        "Helper" = c("Helper", "spacer"), "Anchor Big" = c("Anchor", "big"))
+
+# Club colours by SkillCorner team id: primary, then secondary. Entered by hand from the clubs' kits and crests.
+# They only style the viewer and are no part of any analysis.
+TEAM_COLORS <- list("1330" = c("#E30613", "#FFFFFF"),    # BAXI Manresa: red, white
+                    "1340" = c("#004D98", "#A50044"),    # Barcelona: blue, garnet
+                    "1332" = c("#0A3A9A", "#FFD100"),    # MoraBanc Andorra: blue, yellow
+                    "1315" = c("#D0202E", "#FFFFFF"),    # Basquet Girona: red, white
+                    "1335" = c("#111111", "#FFFFFF"),    # Bilbao Basket: black, white
+                    "1326" = c("#9D2235", "#13294B"),    # Baskonia: maroon, navy
+                    "1334" = c("#D2232A", "#0C2340"),    # UCAM Murcia: red, navy
+                    "1331" = c("#E2001A", "#FFFFFF"),    # Casademont Zaragoza: red, white
+                    "1336" = c("#00843D", "#111111"),    # Joventut Badalona: green, black
+                    "1319" = c("#D8232A", "#111111"),    # Coviran Granada: red, black
+                    "1328" = c("#FFD100", "#00338D"),    # Gran Canaria: yellow, blue
+                    "1322" = c("#6CACE4", "#FFFFFF"),    # Rio Breogan: sky blue, white
+                    "1333" = c("#FFD100", "#111111"),    # Lenovo Tenerife: yellow, black
+                    "1339" = c("#00A651", "#5C2D91"),    # Unicaja Malaga: green, purple
+                    "1338" = c("#FFFFFF", "#00529F"),    # Real Madrid: white, blue
+                    "1316" = c("#1D4F9C", "#FFFFFF"),    # San Pablo Burgos: blue, white
+                    "1325" = c("#F58220", "#111111"))    # Valencia Basket: orange, black
+SPARE_COLORS <- list(home = c("#1F6FE5", "#FFFFFF"), away = c("#F26A36", "#FFFFFF"))   # a team missing above
+FLOOR_COLOR <- "#F6CFA3"     # the court, as drawn by the front ends
+PANEL_COLOR <- "#1B2334"     # the dark surface team names are written on
+CLASH_DISTANCE <- 110        # RGB distance under which two primaries read as the same colour
 
 RESULT_LABELS <- c(FGM = "Made 2", FGM3 = "Made 3", FGX = "Missed 2", FGX3 = "Missed 3", TO = "Turnover",
                    FOU = "Foul", VIO = "Violation", JMP = "Jump ball", EPD = "End of period")
@@ -90,6 +114,58 @@ canon_id <- function(ids, aliases) {
 }
 
 camel_to_words <- function(x) tolower(gsub("([a-z])([A-Z])", "\\1 \\2", x))
+
+# ---- team colours --------------------------------------------------------------------------------
+
+#' Relative luminance of a colour (WCAG), 0 for black to 1 for white.
+luminance <- function(hex) {
+  v <- grDevices::col2rgb(hex)[, 1] / 255
+  sum(c(0.2126, 0.7152, 0.0722) * ifelse(v <= 0.03928, v / 12.92, ((v + 0.055) / 1.055)^2.4))
+}
+
+#' Contrast ratio between two colours (WCAG), from 1 to 21.
+contrast <- function(a, b) {
+  l <- sort(c(luminance(a), luminance(b)))
+  (l[2] + 0.05) / (l[1] + 0.05)
+}
+
+#' The option that stands out most against a background.
+clearest <- function(options, background) options[which.max(vapply(options, contrast, 0, b = background))]
+
+#' A colour mixed with white until it can be read on the dark panel.
+lightened <- function(hex) {
+  rgb <- grDevices::col2rgb(hex)[, 1]
+  for (share in seq(0, 0.9, 0.1)) {
+    out <- grDevices::rgb(t(round(rgb + (255 - rgb) * share)), maxColorValue = 255)
+    if (contrast(out, PANEL_COLOR) >= 3) break
+  }
+  out
+}
+
+#' How one team is drawn from its two colours: `fill` and `edge` for player dots and hulls, `ink` for the
+#' number on a dot, `text` for the team's name on the dark panel, `mark` for outlines drawn on the floor.
+team_kit <- function(pair) {
+  fill <- pair[1]
+  edge <- pair[2]
+  readable <- function(hex) contrast(hex, PANEL_COLOR) >= 3
+  list(fill = fill, edge = edge,
+       ink = if (contrast(fill, edge) >= 4.5) edge else clearest(c("#FFFFFF", "#0B0E14"), fill),
+       text = if (readable(fill)) fill else if (luminance(fill) < 0.02 && readable(edge)) edge else lightened(fill),
+       mark = clearest(c(fill, edge), FLOOR_COLOR))
+}
+
+#' Both teams' colours for one possession. A team keeps its colours whichever end it is playing; when the two
+#' primaries are too alike, the away team wears its secondary colour, as it would change kit.
+side_colors <- function(row) {
+  pair <- function(id, spare) if (is.null(TEAM_COLORS[[as.character(id)]])) spare else TEAM_COLORS[[as.character(id)]]
+  home <- pair(row$home_team, SPARE_COLORS$home)
+  away <- pair(row$away_team, SPARE_COLORS$away)
+  apart <- sqrt(sum((grDevices::col2rgb(home[1]) - grDevices::col2rgb(away[1]))^2))
+  if (apart < CLASH_DISTANCE) away <- rev(away)
+  kits <- list(home = team_kit(home), away = team_kit(away))
+  home_is_off <- row$off_team == row$home_team
+  list(off = kits[[if (home_is_off) "home" else "away"]], def = kits[[if (home_is_off) "away" else "home"]])
+}
 
 # ---- tracking cache ------------------------------------------------------------------------------
 
@@ -213,14 +289,15 @@ action_events <- function(type, ev, nm) {
              short = action_short(type, recs), who = nm(int_field(recs, TICK_PLAYER[[type]])))
 }
 
-#' Players named in one action family, one row per (possession, type, player, side).
+#' Players named in one action family, one row per (possession, type, player, side), with the action's frame.
 action_actors <- function(type, ev) {
   spec <- ACTIONS[[type]]
   recs <- ev[[spec$table]]
   if (!length(recs)) return(NULL)
   side_actors <- function(fields, side) {
     rbindlist(lapply(fields, function(f) data.table(poss_id = chr_field(recs, "possessionId"), type = type,
-                                                    pid = int_field(recs, f), side = side)))
+                                                    frame = int_field(recs, spec$frame), pid = int_field(recs, f),
+                                                    side = side)))
   }
   rbind(side_actors(spec$off, "off"), side_actors(spec$def, "def"))[!is.na(pid)]
 }
@@ -264,12 +341,48 @@ result_names <- function(plays, events) {
   fifelse(is.na(who), "", who)
 }
 
-#' Count live frames and running-clock frames inside each possession.
+#' Last frame worth showing for each possession. The delivered endFrame can stop short: at a shot's release, at
+#' the start of the possession's last chance, or (the last possession of a period) on its own first frame. The
+#' window is stretched to the end of the possession's last chance and of its last shot. A chance whose frames
+#' are reversed counts by its later frame.
+view_end_frames <- function(plays, ev) {
+  latest <- function(recs) {
+    data.table(id = chr_field(recs, "possessionId"),
+               f = pmax(int_field(recs, "startFrame"), int_field(recs, "endFrame"), na.rm = TRUE))
+  }
+  ends <- rbind(latest(ev$chances), latest(ev$shots))[!is.na(f), .(f = max(f)), by = id]
+  pmax(plays$end_frame, ends$f[match(plays$id, ends$id)], na.rm = TRUE)
+}
+
+#' Move action markings to the possession they happened in. A few carry the id of their period's last
+#' possession although their frame lies in an earlier one; left alone they would tag the wrong play.
+#' @param dt Rows with `poss_id` and `frame`.
+#' @return `dt` with `poss_id` corrected where another possession's window holds the frame.
+rehome <- function(dt, plays) {
+  own <- match(dt$poss_id, plays$id)
+  inside <- dt$frame >= plays$start_frame[own] & dt$frame <= plays$view_end[own]
+  for (i in which(!is.na(dt$frame) & !(inside %in% TRUE))) {
+    holds <- which(plays$start_frame <= dt$frame[i] & plays$view_end >= dt$frame[i])
+    if (length(holds)) set(dt, i, "poss_id", plays$id[holds[which.max(plays$start_frame[holds])]])
+  }
+  dt
+}
+
+#' Keep each possession's viewing window inside the tracking frames of its own period (one possession is
+#' delivered with a start frame in the period before its own).
+#' @return list(view_start, view_end).
+clip_to_period <- function(plays, frames) {
+  span <- frames[, .(lo = min(frame), hi = max(frame)), by = period]
+  at <- match(plays$period, span$period)
+  list(pmax(plays$start_frame, span$lo[at], na.rm = TRUE), pmin(plays$view_end, span$hi[at], na.rm = TRUE))
+}
+
+#' Count live frames and running-clock frames inside each possession's viewing window.
 live_counts <- function(plays, frames) {
-  hi <- findInterval(plays$end_frame, frames$frame)
-  lo <- findInterval(plays$start_frame - 1L, frames$frame)
+  hi <- findInterval(plays$view_end, frames$frame)
+  lo <- findInterval(plays$view_start - 1L, frames$frame)
   running <- c(0L, cumsum(!frames$stopped))
-  list(n_live = hi - lo, n_run = running[hi + 1L] - running[lo + 1L])
+  list(n_live = pmax(hi - lo, 0L), n_run = pmax(running[hi + 1L] - running[lo + 1L], 0L))
 }
 
 #' Index one game: possessions with filter fields, timeline events, touches and rosters.
@@ -289,9 +402,10 @@ game_index <- function(root, game_id, aliases, match_row) {
                       home_team = match_row$home_id, away_team = match_row$away_id)
   plays[, off_ids := lapply(po, function(p) canon_id(as.integer(unlist(p$offPlayerIds)), aliases))]
   plays[, def_ids := lapply(po, function(p) canon_id(as.integer(unlist(p$defPlayerIds)), aliases))]
+  plays[, view_end := view_end_frames(plays, ev)]
 
-  actions <- rbindlist(lapply(names(ACTIONS), action_events, ev = ev, nm = nm))
-  actors <- rbindlist(lapply(names(ACTIONS), action_actors, ev = ev))
+  actions <- rehome(rbindlist(lapply(names(ACTIONS), action_events, ev = ev, nm = nm)), plays)
+  actors <- rehome(rbindlist(lapply(names(ACTIONS), action_actors, ev = ev)), plays)[, frame := NULL]
   actors[, pid := canon_id(pid, aliases)]
   events <- rbind(actions, other_events(ev, nm))[!is.na(frame)]
   orphan <- mean(!events$poss_id %in% plays$id)
@@ -333,8 +447,9 @@ build_index <- function(root) {
   games <- lapply(seq_len(nrow(matches)), function(i) game_index(root, matches$game_id[i], aliases, matches[i]))
   plays <- rbindlist(lapply(games, `[[`, "plays"))
   for (g in matches$game_id) {
-    counts <- live_counts(plays[game_id == g], readRDS(tracking_cache_path(root, g))$frames)
-    plays[game_id == g, c("n_live", "n_run") := counts]
+    frames <- readRDS(tracking_cache_path(root, g))$frames
+    plays[game_id == g, c("view_start", "view_end") := clip_to_period(plays[game_id == g], frames)]
+    plays[game_id == g, c("n_live", "n_run") := live_counts(plays[game_id == g], frames)]
   }
   dropped <- plays[n_live < MIN_LIVE_FRAMES, .N]
   plays <- plays[n_live >= MIN_LIVE_FRAMES]
@@ -498,12 +613,14 @@ epv_payload <- function(app, play) {
 #' Everything the browser needs to animate one possession, as a JSON string.
 #' Tracking is in camera view; possessions.leftHoop says which way the offense attacks. A 180 degree
 #' rotation (not a mirror) puts every offense on the right-hand hoop and keeps left/right handedness.
+#' Frames run over the viewing window (view_start to view_end), which can outlast the delivered possession;
+#' EPV prices exist only inside the delivered one.
 play_payload <- function(app, play_id) {
   row <- app$plays[id == play_id]
   if (nrow(row) != 1L) return(NULL)
   trk <- get_tracking(app, row$game_id)
-  fr <- trk$frames[frame >= row$start_frame & frame <= row$end_frame]
-  pl <- trk$players[frame >= row$start_frame & frame <= row$end_frame]
+  fr <- trk$frames[frame >= row$view_start & frame <= row$view_end]
+  pl <- trk$players[frame >= row$view_start & frame <= row$view_end]
   flip <- if (row$left_hoop) -1 else 1
   roster <- app$roster[game_id == row$game_id]
   info <- merge(trk$jerseys[pid %in% pl$pid], roster[, .(pid, name, last, canon)], by = "pid", all.x = TRUE)
@@ -511,14 +628,14 @@ play_payload <- function(app, play_id) {
   info <- info[order(suppressWarnings(as.integer(jersey)))]
   players <- lapply(seq_len(nrow(info)), function(i) player_track(info$pid[i], pl, fr$frame, flip, info[i],
                                                                   row$off_team == row$home_team, app$archetypes))
-  in_window <- function(dt, col) dt[game_id == row$game_id & get(col) >= row$start_frame & get(col) <= row$end_frame]
+  in_window <- function(dt, col) dt[game_id == row$game_id & get(col) >= row$view_start & get(col) <= row$view_end]
   events <- in_window(app$events, "frame")[order(frame), .(f = frame, kind, label, short, who)]
-  touches <- app$touches[game_id == row$game_id & f1 >= row$start_frame & f0 <= row$end_frame, .(pid, f0, f1)]
+  touches <- app$touches[game_id == row$game_id & f1 >= row$view_start & f0 <= row$view_end, .(pid, f0, f1)]
   game <- app$matches[game_id == row$game_id]
   payload <- list(id = row$id, game = game$label, period = row$period, off = row$off_name, def = row$def_name,
                   home = game$home_name, away = game$away_name, homeScore = row$home_score,
                   awayScore = row$away_score, result = row$result, who = row$result_who,
-                  types = I(unname(PLAY_TYPES[row$types[[1]]])),
+                  types = I(unname(PLAY_TYPES[row$types[[1]]])), colors = side_colors(row),
                   frames = I(fr$frame), gc = I(round(fr$gc, 1)), sc = I(round(fr$sc, 1)),
                   stopped = I(as.integer(fr$stopped)),
                   ball = list(x = I(flip * fr$bx), y = I(flip * fr$by), z = I(fr$bz)),

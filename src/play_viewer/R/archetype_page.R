@@ -155,7 +155,7 @@ score_table <- function(side_out, notes, signs) {
   pcs <- grep("^PC", names(side_out$cluster_components), value = TRUE)
   header <- function(j) {
     note <- if (j <= length(notes)) notes[[j]] else list(plus = "", minus = "")
-    tags$th(div(sprintf("Component %d", j)), div(class = "ends", span(note$minus[1]), span(note$plus[1])))
+    tags$th(div(class = "pc-title", sprintf("Component %d", j)), div(class = "ends", span(note$minus[1]), span(note$plus[1])))
   }
   cell <- function(v) {
     width <- 50 * min(abs(v) / SCORE_FULL, 1)

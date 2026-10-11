@@ -1,11 +1,13 @@
-// Draws one moment of a possession on the canvas: court, hulls, players, ball, EPV labels and the header.
-// Ported from draw(), drawPlayer(), drawTag(), drawOptions() and drawHud() in the Shiny app's www/player.js.
+// Draws one moment of a possession on the canvas: court, hulls, players, ball, EPV labels and the caption.
+// The clock, score and EPV readout are on the page, not the canvas, except in a recorded video (drawHeader).
+// Ported from draw(), drawPlayer(), drawTag(), drawOptions(), drawHeader() and drawCaption() in the Shiny
+// app's www/player.js.
 
-import { COLORS, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
+import { COLORS, HEADER_TOP, PAD, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
 import { epvAt, type EpvReading } from "./epv";
 import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
-import type { Play, PlayerTrack } from "./types";
+import type { Play, PlayerTrack, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 const CAPTION_FRAMES = 62;   // how long an event label stays up
@@ -27,12 +29,16 @@ export interface DrawOptions {
   hoverPid: number | null;
 }
 
-/** What the rosters need to know about the frame just drawn. */
+/** What the page shows beside the canvas about the frame just drawn: rosters, clocks and the EPV readout. */
 export interface FrameInfo {
   onCourt: number[];
   handler: number | null;
   areaOff: number | null;
   areaDef: number | null;
+  gameClock: string;
+  shotClock: string;
+  /** Readout cells in display order, or null when nothing is priced at this frame. */
+  readout: [string, string][] | null;
 }
 
 interface Dot {
@@ -48,48 +54,57 @@ function valueColor(delta: number): string {
   return `rgb(${TEXT_ENDS[1].map((m, i) => Math.round(m + (end[i] - m) * Math.abs(t))).join(",")})`;
 }
 
-function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], color: string): number {
+const shotClockText = (seconds: number): string => (Number.isNaN(seconds) ? "–" : String(Math.ceil(seconds)));
+
+/** EPV, turnover odds for the rest of the possession, and cumulative turnover risk so far. */
+function readoutCells(ep: EpvReading): [string, string][] {
+  return [["EPV", ep.value == null ? "–" : ep.value.toFixed(2)], ["TOV% (ROP)", ep.rop == null ? "–" : pct(ep.rop, 1)],
+          ["Cum. TOV", ep.cum == null ? "–" : pct(ep.cum, 1)]];
+}
+
+// A team's hull: filled in its primary colour, outlined in whichever of its colours shows best on the floor.
+function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: TeamColors): number {
   const poly = convexHull(dots.map((d): Point => [d.x, d.y]));
   if (poly.length < 3) return 0;
   ctx.beginPath();
   poly.forEach((q, i) => (i ? ctx.lineTo(L.ox + q[0] * L.s, L.oy - q[1] * L.s) : ctx.moveTo(L.ox + q[0] * L.s, L.oy - q[1] * L.s)));
   ctx.closePath();
   ctx.globalAlpha = 0.5;
-  ctx.fillStyle = color;
+  ctx.fillStyle = kit.fill;
   ctx.fill();
   ctx.globalAlpha = 1;
   ctx.lineWidth = 2;
   ctx.lineJoin = "round";
-  ctx.strokeStyle = color;
+  ctx.strokeStyle = kit.mark;
   ctx.stroke();
   return polygonArea(poly);
 }
 
-function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, hasBall: boolean, o: DrawOptions): void {
-  const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, color = COLORS[d.p.role];
-  const faded = o.markExtrap && !d.det, hovered = o.hoverPid === d.p.id;
+// A player dot in his team's colours: secondary ring, primary centre. An extrapolated position is drawn faint.
+function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, kit: TeamColors, hasBall: boolean, o: DrawOptions): void {
+  const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, hovered = o.hoverPid === d.p.id;
   if (hovered || hasBall) {
     ctx.beginPath();
     ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = hovered ? COLORS.dark : color;
+    ctx.strokeStyle = hovered ? COLORS.dark : kit.mark;
     ctx.stroke();
   }
+  ctx.globalAlpha = o.markExtrap && !d.det ? 0.45 : 1;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
-  ctx.fillStyle = COLORS.white;
+  ctx.fillStyle = kit.edge;
   ctx.fill();
-  ctx.globalAlpha = faded ? 0.45 : 1;
   ctx.beginPath();
   ctx.arc(x, y, r - 2.2, 0, 2 * Math.PI);
-  ctx.fillStyle = color;
+  ctx.fillStyle = kit.fill;
   ctx.fill();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = faded ? color : COLORS.white;
+  ctx.fillStyle = kit.ink;
   ctx.font = `700 ${Math.round(r * (d.p.jersey.length > 1 ? 0.95 : 1.1))}px ${FONT}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(d.p.jersey, x, y + 0.5);
+  ctx.globalAlpha = 1;
 }
 
 // A small dark label. `anchor` is "center" (x is its middle) or "left" (x is its left edge).
@@ -155,67 +170,40 @@ function drawOptions(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: n
   }
 }
 
-// Header, centred over the court and stacked: teams, then quarter / shot clock / game clock, then the EPV
-// readout when prices are showing. The event caption and data credit sit under the court.
-function drawHud(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor, labels: string[], ep: EpvReading | null, o: DrawOptions): void {
-  const cx = L.left + L.cw / 2, shotClock = play.sc[c.i0];
-  const cells: [string, string][] = ep && o.showReadout
-    ? [["EPV", ep.value == null ? "–" : ep.value.toFixed(2)], ["TOV% (ROP)", ep.rop == null ? "–" : pct(ep.rop, 1)],
-       ["CUM. TOV", ep.cum == null ? "–" : pct(ep.cum, 1)]]
-    : [];
-  const teamsY = L.top - (cells.length ? 96 : 44), clockY = teamsY + 24;
-  ctx.textBaseline = "middle";
-
-  const teams: [string, string, number][] = [[play.off, COLORS.offText, 700], ["  vs  ", COLORS.muted, 400], [play.def, COLORS.defText, 700]];
-  const span = (size: number) => teams.reduce((sum, [text, , weight]) => {
+// The header of a recorded video, on one line above the court: quarter, shot clock, game clock, the score at
+// the start of the possession, and the EPV readout when prices are showing. On the page these live outside
+// the canvas, so a saved video would otherwise not say what it shows.
+function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor, ep: EpvReading | null, o: DrawOptions): void {
+  const homeIsOff = play.off === play.home, gap = "   ·   ";
+  const home = homeIsOff ? play.colors.off : play.colors.def, away = homeIsOff ? play.colors.def : play.colors.off;
+  const parts: [string, string, number][] = [
+    [`${quarter(play.period)}  `, COLORS.ink, 700], [shotClockText(play.sc[c.i0]), COLORS.risk, 700],
+    [`  ${clock(play.gc[c.i0])}`, COLORS.ink, 700], [gap, COLORS.muted, 400], [play.home, home.text, 700],
+    [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.ink, 700], [play.away, away.text, 700]];
+  if (ep && o.showReadout) {
+    for (const [label, value] of readoutCells(ep)) parts.push([`${label === "EPV" ? gap : "   "}${label} `, COLORS.muted, 400], [value, COLORS.ink, 700]);
+  }
+  const span = (size: number) => parts.reduce((sum, [text, , weight]) => {
     ctx.font = `${weight} ${size}px ${FONT}`;
     return sum + ctx.measureText(text).width;
   }, 0);
-  const size = Math.max(10, Math.min(15, Math.floor((15 * (L.W - 24)) / span(15))));
-  let x = cx - span(size) / 2;
+  const size = Math.max(9, Math.min(15, Math.floor((15 * (L.W - 24)) / span(15))));
+  let x = L.W / 2 - span(size) / 2;
   ctx.textAlign = "left";
-  for (const [text, color, weight] of teams) {
+  ctx.textBaseline = "middle";
+  for (const [text, color, weight] of parts) {
     ctx.font = `${weight} ${size}px ${FONT}`;
     ctx.fillStyle = color;
-    ctx.fillText(text, x, teamsY);
+    ctx.fillText(text, x, L.top - HEADER_TOP / 2);
     x += ctx.measureText(text).width;
   }
+}
 
-  const period = quarter(play.period), game = clock(play.gc[c.i0]), pill = 34, gap = 10;
-  ctx.font = `700 15px ${FONT}`;
-  const periodW = ctx.measureText(period).width, gameW = ctx.measureText(game).width;
-  x = cx - (periodW + pill + gameW + 2 * gap) / 2;
-  ctx.fillStyle = COLORS.ink;
-  ctx.fillText(period, x, clockY);
-  ctx.fillText(game, x + periodW + pill + 2 * gap, clockY);
-  ctx.fillStyle = COLORS.panel;
-  ctx.beginPath();
-  ctx.roundRect(x + periodW + gap, clockY - 11, pill, 22, 6);
-  ctx.fill();
-  ctx.fillStyle = COLORS.risk;
-  ctx.textAlign = "center";
-  ctx.fillText(Number.isNaN(shotClock) ? "–" : String(Math.ceil(shotClock)), x + periodW + gap + pill / 2, clockY + 0.5);
-
-  if (cells.length) {
-    const cellW = clamp(L.cw * 0.16, 86, 112), panelW = cells.length * cellW, panelTop = L.top - 58;
-    ctx.fillStyle = COLORS.panel;
-    ctx.beginPath();
-    ctx.roundRect(cx - panelW / 2, panelTop, panelW, 48, 8);
-    ctx.fill();
-    cells.forEach(([label, value], i) => {
-      const cellX = cx - panelW / 2 + (i + 0.5) * cellW;
-      ctx.font = `700 9.5px ${FONT}`;
-      ctx.fillStyle = COLORS.muted;
-      ctx.fillText(label, cellX, panelTop + 13);
-      ctx.font = `700 19px ${FONT}`;
-      ctx.fillStyle = COLORS.ink;
-      ctx.fillText(value, cellX, panelTop + 32);
-    });
-  }
-
-  // Both recent event labels if they fit beside the credit, otherwise the latest one.
+// Under the court: both recent event labels if they fit beside the credit, otherwise the latest one.
+function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[]): void {
   const credit = L.cw >= 420;
   const room = L.cw - (credit ? 200 : 0);
+  ctx.textBaseline = "middle";
   ctx.font = `500 13px ${FONT}`;
   ctx.fillStyle = COLORS.ink;
   ctx.textAlign = "left";
@@ -231,11 +219,12 @@ function drawHud(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor
 
 /**
  * Draw the scene at playback position `pos` (an index into `seq`, fractional between frames).
+ * @param header Draw the clock, score and EPV readout on the canvas too (while a video is recorded).
  * @returns what is on court at that moment, or null when there is no play to draw.
  */
 export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, dpr: number, play: Play | null, seq: number[],
-                          pos: number, o: DrawOptions): FrameInfo | null {
-  const L = courtLayout(W, H, o.view);
+                          pos: number, o: DrawOptions, header = false): FrameInfo | null {
+  const L = courtLayout(W, H, o.view, header ? HEADER_TOP : PAD.top);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.paper;
   ctx.fillRect(0, 0, W, H);
@@ -255,8 +244,8 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.beginPath();
   ctx.rect(L.left, L.top, L.cw, L.ch);
   ctx.clip();
-  const areaDef = o.showDef ? drawHull(ctx, L, dots.def, COLORS.def) : null;
-  const areaOff = o.showOff ? drawHull(ctx, L, dots.off, COLORS.off) : null;
+  const areaDef = o.showDef ? drawHull(ctx, L, dots.def, play.colors.def) : null;
+  const areaOff = o.showOff ? drawHull(ctx, L, dots.off, play.colors.off) : null;
   if (ep && o.showBestPass && ep.target != null) {
     const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
     if (from && to) {
@@ -269,7 +258,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
       ctx.stroke();
     }
   }
-  for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, d.p.id === handler, o);
+  for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
   if (ep) drawOptions(ctx, L, dots.off, r, ep, o);
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;
   if (bx != null && by != null) {
@@ -284,6 +273,8 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.restore();
 
   const labels = play.events.filter((e) => frame >= e.f && frame - e.f <= CAPTION_FRAMES).slice(-2).map((e) => e.label);
-  drawHud(ctx, L, play, c, labels, ep, o);
-  return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef };
+  if (header) drawHeader(ctx, L, play, c, ep, o);
+  drawCaption(ctx, L, labels);
+  return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
+           gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]), readout: ep ? readoutCells(ep) : null };
 }

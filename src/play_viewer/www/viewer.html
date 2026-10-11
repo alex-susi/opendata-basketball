@@ -1,8 +1,12 @@
 <section class="viewer">
+  <!-- Title on the left, then the running clocks beside the score, which sits over the middle of the court. -->
   <header class="play-head">
-    <div class="play-head-text">
-      <h1 id="play-title">Loading plays…</h1>
-      <p id="play-sub"></p>
+    <div class="play-head-lead">
+      <div class="play-head-text">
+        <h1 id="play-title">Loading plays…</h1>
+        <p id="play-sub"></p>
+      </div>
+      <div class="game-clock" id="game-clock"></div>
     </div>
     <div class="scorebug" id="scorebug"></div>
   </header>
@@ -30,38 +34,50 @@
       <div class="track-labels" id="track-labels"></div>
       <div class="track-thumb" id="track-thumb"></div>
     </div>
-    <span class="time-label" id="time-label">0:00 / 0:00</span>
-    <select id="speed" title="Playback speed" aria-label="Playback speed">
-      <option value="0.25">0.25×</option>
-      <option value="0.5">0.5×</option>
-      <option value="0.75">0.75×</option>
-      <option value="1" selected>1×</option>
-      <option value="1.25">1.25×</option>
-      <option value="1.5">1.5×</option>
-      <option value="2">2×</option>
-    </select>
+    <div class="transport-end">
+      <select id="speed" title="Playback speed" aria-label="Playback speed">
+        <option value="0.25">0.25×</option>
+        <option value="0.5">0.5×</option>
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.25">1.25×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2×</option>
+      </select>
+      <span class="time-label" id="time-label">0:00 / 0:00</span>
+    </div>
   </div>
 </section>
 
 <aside class="side">
   <div class="panel display">
-    <h2>Display</h2>
+    <div class="panel-head">
+      <h2>Display</h2>
+      <button type="button" class="text-btn" id="btn-export" title="Record this play once through and save it as a video">Save Video</button>
+    </div>
+    <div class="hull-row">
+      <div>
+        <label class="toggle"><input type="checkbox" id="opt-off-hull" class="off" checked>Offensive hull</label>
+        <label class="toggle"><input type="checkbox" id="opt-def-hull" class="def" checked>Defensive hull</label>
+      </div>
+      <label class="switch" title="Show only the half the offense attacks">
+        <input type="checkbox" role="switch" id="opt-half"><span class="switch-track"></span>Half court
+      </label>
+    </div>
     <div class="toggle-grid">
-      <label class="toggle wide"><input type="checkbox" id="opt-off-hull" class="off">Offensive hull</label>
-      <label class="toggle wide"><input type="checkbox" id="opt-def-hull" class="def" checked>Defensive hull</label>
       <label class="toggle"><input type="checkbox" id="opt-skip" checked>Skip dead ball</label>
       <label class="toggle"><input type="checkbox" id="opt-loop" checked>Loop</label>
       <label class="toggle wide"><input type="checkbox" id="opt-extrap">Mark extrapolated positions</label>
     </div>
-    <div class="segmented" role="group" aria-label="Court view">
-      <button type="button" data-view="full" class="on">Full court</button>
-      <button type="button" data-view="half">Half court</button>
-    </div>
-    <button type="button" class="text-btn" id="btn-export">Save animation as video</button>
   </div>
 
   <div class="panel display epv">
     <h2>Expected Possession Value</h2>
+    <div class="readout" id="readout" title="EPV, turnover odds for the rest of the possession, cumulative turnover risk so far" hidden>
+      <div><span>EPV</span><b id="readout-0">–</b></div>
+      <div><span>TOV% (ROP)</span><b id="readout-1">–</b></div>
+      <div><span>Cum. TOV</span><b id="readout-2">–</b></div>
+    </div>
     <label class="toggle"><input type="checkbox" id="opt-epv" checked>Show EPV overlay</label>
     <div class="toggle-grid" id="epv-options">
       <label class="toggle" title="EPV, turnover odds for the rest of the possession, cumulative turnover risk so far"><input type="checkbox" id="opt-readout" checked>Readout</label>

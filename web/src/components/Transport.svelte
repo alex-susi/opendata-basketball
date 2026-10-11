@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Transport bar: action stepping, play/pause, the timeline with captioned event ticks, and speed.
+  // Transport bar: action stepping, play/pause, the timeline with captioned event ticks, then speed over elapsed time.
   import { clamp, clock } from "../lib/geometry";
   import { FPS, layoutTimeline, stepAction, type Timeline } from "../lib/sequence";
   import type { Play } from "../lib/types";
@@ -8,7 +8,7 @@
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
   const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
-  const TICK_FONT = '600 10.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
+  const TICK_FONT = '600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
   const measurer = document.createElement("canvas").getContext("2d")!;
   const measure = (text: string) => {
     measurer.font = TICK_FONT;
@@ -83,10 +83,12 @@
     <div class="track-thumb" style:left="{frac * 100}%"></div>
   </div>
 
-  <span class="time-label">{clock(viewer.pos / FPS)} / {clock(end / FPS)}</span>
-  <select class="speed" title="Playback speed" aria-label="Playback speed" bind:value={viewer.speed}>
-    {#each SPEEDS as speed}
-      <option value={speed}>{speed}×</option>
-    {/each}
-  </select>
+  <div class="transport-end">
+    <select class="speed" title="Playback speed" aria-label="Playback speed" bind:value={viewer.speed}>
+      {#each SPEEDS as speed}
+        <option value={speed}>{speed}×</option>
+      {/each}
+    </select>
+    <span class="time-label">{clock(viewer.pos / FPS)} / {clock(end / FPS)}</span>
+  </div>
 </div>

@@ -11,10 +11,10 @@
   import Transport from "./components/Transport.svelte";
   import { loadMeta, loadPlay, loadPlays } from "./lib/data";
   import { emptyFilters, filterPlays } from "./lib/filters";
-  import { clock, quarter } from "./lib/geometry";
+  import { quarter } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
-  import { viewer } from "./lib/viewer.svelte";
+  import { live, viewer } from "./lib/viewer.svelte";
 
   const ROUTE = "#/play/";
   const ARCHETYPES = "#/archetypes";
@@ -32,6 +32,9 @@
 
   const rows = $derived(filterPlays(plays, filters));
   const seq = $derived(play ? buildSeq(play, viewer.skipDead) : []);
+  const homeIsOff = $derived(play ? play.off === play.home : true);
+  const home = $derived(play ? (homeIsOff ? play.colors.off : play.colors.def) : null);
+  const away = $derived(play ? (homeIsOff ? play.colors.def : play.colors.off) : null);
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
 
   // The address names the selected play, or the Archetypes tab while it is open.
@@ -121,20 +124,28 @@
   </aside>
 
   <section class="viewer">
+    <!-- Title on the left, then the running clocks beside the score, which sits over the middle of the court. -->
     <header class="play-head">
-      <div class="play-head-text">
+      <div class="play-head-lead">
+        <div class="play-head-text">
+          {#if play}
+            <h1>{play.off} possession</h1>
+            <p>{[play.who ? `${play.result} (${play.who})` : play.result, ...play.types].join(" · ")}</p>
+          {:else}
+            <h1>{meta ? "No play selected" : "Loading plays…"}</h1>
+          {/if}
+        </div>
         {#if play}
-          <h1>{quarter(play.period)} {clock(play.gc[0])} · {play.off} possession</h1>
-          <p>{[play.who ? `${play.result} (${play.who})` : play.result, ...play.types].join(" · ")}</p>
-        {:else}
-          <h1>{meta ? "No play selected" : "Loading plays…"}</h1>
+          <div class="game-clock">
+            <b>{quarter(play.period)}</b><span class="shot-clock" title="Shot clock">{live.shotClock}</span><b title="Game clock">{live.gameClock}</b>
+          </div>
         {/if}
       </div>
-      {#if play}
-        <div class="scorebug" title={play.game}>
-          <span class={play.off === play.home ? "off" : "def"}>{play.home}</span>
+      {#if play && home && away}
+        <div class="scorebug" title={`${play.game} · score at the start of the possession`}>
+          <span class="team home" style:color={home.text}><span class="kit" style:background={home.fill} style:border-color={home.edge}></span>{play.home}</span>
           <b>{play.homeScore} – {play.awayScore}</b>
-          <span class={play.off === play.away ? "off" : "def"}>{play.away}</span>
+          <span class="team away" style:color={away.text}>{play.away}<span class="kit" style:background={away.fill} style:border-color={away.edge}></span></span>
         </div>
       {/if}
     </header>

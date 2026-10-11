@@ -153,17 +153,46 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- centre: header, stage, transport ---- */
 .viewer { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
-.play-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 2px 4px 0; }
-.play-head-text { min-width: 0; }
-.play-head h1 { font-size: 18px; font-weight: 700; line-height: 1.25; }
-.play-head p { margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* One row when the centre column is wide: title, clocks, then the score over the middle of the court. If the
+   title and clocks need more than their half, they keep their width and the score moves right. */
+.viewer { container: viewer / inline-size; }
+.play-head { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: center; gap: 14px; padding: 2px 4px 0; }
+.play-head-lead { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.play-head-text { flex: 1; min-width: 0; }
+.play-head h1 { font-size: 18px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.play-head p { width: 0; min-width: 100%; margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Team names take equal widths either side, so the score is the exact centre of the pill. */
 .scorebug {
-  display: flex; align-items: center; gap: 10px; flex: none; padding: 6px 12px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; flex: none; padding: 6px 12px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-weight: 600;
 }
+.scorebug .team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.scorebug .team.home { justify-content: flex-end; text-align: right; }
 .scorebug b { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.scorebug .off { color: var(--off); }
-.scorebug .def { color: var(--def); }
+.scorebug .kit { width: 12px; height: 12px; flex: none; border: 2px solid; border-radius: 50%; }
+.game-clock { display: flex; align-items: center; gap: 8px; flex: none; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.shot-clock {
+  display: grid; place-items: center; min-width: 34px; height: 24px; padding: 0 4px; border-radius: 6px;
+  background: #0F1522; color: #F5B02E; font-weight: 700;
+}
+
+/* Narrower centre column: the title takes its own line, so the score stays centred with the clocks to its left. */
+@container viewer (max-width: 1250px) {
+  .play-head { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); row-gap: 6px; }
+  .play-head-lead { display: contents; }
+  .play-head-text { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px; }
+  .play-head h1 { flex: none; max-width: 100%; }
+  .play-head p { flex: 1; width: auto; min-width: 0; margin-top: 0; }
+  .game-clock { justify-self: end; }
+}
+/* Too narrow for clocks and score side by side: stack them. */
+@container viewer (max-width: 620px) {
+  .play-head { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .play-head-text { justify-self: stretch; display: block; }
+  .play-head h1, .play-head p { white-space: normal; }
+  .game-clock { justify-self: center; }
+  .scorebug { max-width: 100%; border-radius: 12px; }
+}
 
 .stage {
   position: relative; flex: 1; min-height: 320px; overflow: hidden;
@@ -189,11 +218,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .icon-btn.primary { width: 40px; height: 40px; background: var(--off); border-color: var(--off); }
 .icon-btn.primary svg { fill: #0B1220; }
 .icon-btn.primary:hover { background: #6AABFF; }
-.track { position: relative; flex: 1; min-width: 0; height: 86px; margin: 0 10px; cursor: pointer; touch-action: none; }
-.track-rail { position: absolute; left: 0; right: 0; top: 40px; height: 6px; border-radius: 3px; background: #2F3B55; }
+.track { position: relative; flex: 1; min-width: 0; height: 104px; margin: 0 10px; cursor: pointer; touch-action: none; }
+.track-rail { position: absolute; left: 0; right: 0; top: 49px; height: 6px; border-radius: 3px; background: #2F3B55; }
 .track-fill { height: 100%; border-radius: 3px; background: var(--off); }
 .track-thumb {
-  position: absolute; top: 35px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
+  position: absolute; top: 44px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
   background: var(--ink); border: 2px solid var(--off); pointer-events: none;
 }
 .tick {
@@ -207,18 +236,19 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* Captions for each tick: the action above the rail, the player below. Font must match TICK_FONT in Transport.svelte. */
 .tick-label {
   position: absolute; overflow: hidden; text-align: center; white-space: nowrap; pointer-events: none;
-  font: 600 10.5px/13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 600 11px/14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 .tick-label.above { color: var(--ink); }
 .tick-label.above.made { color: var(--made); }
 .tick-label.above.missed, .tick-label.above.turnover { color: var(--missed); }
 .tick-label.below { color: var(--muted); font-weight: 500; }
-.tick-label.above.row0 { top: 16px; }
-.tick-label.above.row1 { top: 2px; }
-.tick-label.below.row0 { top: 57px; }
-.tick-label.below.row1 { top: 71px; }
-.time-label { flex: none; min-width: 82px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.speed { flex: none; height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
+.tick-label.above.row0 { top: 27px; }
+.tick-label.above.row1 { top: 13px; }
+.tick-label.below.row0 { top: 64px; }
+.tick-label.below.row1 { top: 78px; }
+.transport-end { display: flex; flex-direction: column; align-items: stretch; gap: 5px; flex: none; }
+.time-label { text-align: center; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.speed { height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
 
 /* ---- right column: display options, EPV options and rosters ---- */
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-color: #3A4866 transparent; }
@@ -226,36 +256,51 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .side h2 { margin-bottom: 8px; font-size: 14px; font-weight: 700; }
 .toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; }
 .toggle input { margin: 0; accent-color: var(--off); }
-.toggle input.def { accent-color: var(--def); }
 .toggle-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 8px; }
 .toggle-grid .wide { grid-column: 1 / -1; }
 .toggle-grid.dim { opacity: .4; pointer-events: none; }
-.segmented { display: grid; grid-template-columns: 1fr 1fr; margin: 8px 0; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
-.segmented button { padding: 5px 0; border: 0; background: var(--raised); cursor: pointer; }
-.segmented button.on { background: var(--off); color: #0B1220; font-weight: 700; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.panel-head h2 { margin-bottom: 0; }
+.hull-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+/* A small on/off switch: the checkbox stays in the page for the keyboard, the track is what shows. */
+.switch { position: relative; display: flex; align-items: center; gap: 7px; margin: 0 0 6px; font-weight: 400; cursor: pointer; white-space: nowrap; }
+.switch input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
+.switch-track {
+  position: relative; width: 28px; height: 16px; flex: none; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--raised); transition: background .15s, border-color .15s;
+}
+.switch-track::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--muted); transition: transform .15s, background .15s;
+}
+.switch input:checked + .switch-track { background: var(--off); border-color: var(--off); }
+.switch input:checked + .switch-track::after { transform: translateX(12px); background: #0B1220; }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--off); outline-offset: 2px; }
 .text-btn {
-  width: 100%; margin-top: 4px; padding: 6px 0; border: 1px solid var(--line); border-radius: 7px;
-  background: var(--raised); font-weight: 600; cursor: pointer;
+  flex: none; padding: 3px 10px; border: 1px solid var(--line); border-radius: 7px;
+  background: var(--raised); font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
 }
 .text-btn:hover:not(:disabled) { background: var(--hover); }
 .text-btn:disabled { opacity: .5; cursor: default; }
 .text-btn.recording { border-color: var(--missed); color: var(--missed); }
 .note { margin-top: 6px; color: var(--muted); font-size: 12px; }
+.readout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 8px; border-radius: 8px; background: #0F1522; }
+.readout div { display: grid; justify-items: center; gap: 1px; padding: 6px 2px 7px; }
+.readout span { color: var(--muted); font-size: 9.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; }
+.readout b { font-size: 17px; font-variant-numeric: tabular-nums; line-height: 1.15; }
 
+/* Each roster panel carries its team's colours as --kit-* (set inline from the play). */
+.roster { --kit-fill: var(--muted); --kit-edge: #FFFFFF; --kit-ink: #FFFFFF; --kit-text: var(--ink); }
 .roster h2 { display: flex; align-items: baseline; gap: 8px; }
-.roster .role { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-.roster .team { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.roster.off .role { color: var(--off); }
-.roster.def .role { color: var(--def); }
+.roster .role { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.roster .team { min-width: 0; overflow: hidden; color: var(--kit-text); text-overflow: ellipsis; white-space: nowrap; }
 .roster ul { list-style: none; }
 .roster li { display: flex; align-items: center; gap: 8px; padding: 2px 4px; border-radius: 6px; cursor: default; }
 .roster li:hover { background: var(--raised); }
 .roster .num {
-  display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%;
-  color: #FFFFFF; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+  display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 2px solid var(--kit-edge); border-radius: 50%;
+  background: var(--kit-fill); color: var(--kit-ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.roster.off .num { background: #1F6FE5; }
-.roster.def .num { background: #F26A36; }
 .roster .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .roster .arch { display: flex; align-items: center; gap: 5px; flex: none; max-width: 45%; margin-left: 4px; color: var(--muted); font-size: 11px; }
 .roster .arch .swatch { width: 9px; height: 9px; flex: none; border-radius: 2px; }
@@ -281,13 +326,12 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .side { order: 2; flex-direction: column; }
   .left { order: 3; grid-row: auto; position: static; max-height: none; }
   .plays { flex: none; height: 360px; }
-  .stage { flex: none; height: min(150vw, 600px); min-height: 0; }
-  .play-head { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .play-head p { white-space: normal; }
-  .scorebug { max-width: 100%; flex-wrap: wrap; row-gap: 0; border-radius: 12px; }
+  /* As tall as the court at this width: full court, or the taller half court. */
+  .stage { flex: none; height: calc(57.3vw + 24px); min-height: 0; }
+  .stage.half { height: min(calc(106vw + 4px), 600px); }
   .transport { flex-wrap: wrap; row-gap: 0; }
   .track { order: 3; flex: 1 1 100%; margin: 0 6px; }
-  .time-label { margin-left: auto; min-width: 0; }
+  .transport-end { flex-direction: row; align-items: center; gap: 10px; margin-left: auto; }
   .pair { grid-template-columns: minmax(0, 1fr) 104px; }
 }
 
@@ -344,6 +388,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .scores { width: 100%; min-width: 640px; border-collapse: collapse; }
 .scores th, .scores td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: bottom; }
 .scores th { font-size: 12px; font-weight: 600; color: var(--muted); }
+.scores th .pc-title { text-align: center; }
 .scores th .ends { display: flex; justify-content: space-between; gap: 10px; margin-top: 2px; font-size: 10.5px; font-weight: 400; line-height: 1.25; }
 .scores th .ends span { flex: 1; }
 .scores th .ends span:last-child { text-align: right; }

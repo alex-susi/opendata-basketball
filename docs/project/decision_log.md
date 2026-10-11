@@ -248,3 +248,50 @@ Offense is now EII with 6 clusters on 4 components (was 7); defense stays EEI wi
 - The static site in `web/` (what GitHub Pages serves) carries the same tags and Archetypes tab. Its export
   writes each player's archetype into the period files and the Shiny page as `public/data/archetypes.html`, so
   the wording is edited in one place. The site only redeploys when a push touches `web/`.
+
+## 2026-10-11 — Play viewer: possession windows, team colours, layout
+
+Prompted by possession-191313-4-152 (Zaragoza, Q4 0:04), listed as a made three by Spissu but ending on a
+free-throw rebound. Checked across all 1,564 delivered possessions in the ten games.
+
+### What the delivered data does
+
+- **A possession's `endFrame` can stop before the possession does.** In 72 possessions the last chance or the
+  last shot ends after `endFrame`, in 44 of them by more than a second. Three patterns: 27 possessions,
+  mostly the last of a period, are delivered with `startFrame == endFrame` while their one chance holds the
+  real span (up to 3,528 frames); a possession with several chances can end where its last chance starts (the
+  case above, which also has a chance with reversed frames); and 14 possessions end on the shot's release frame.
+- **Result:** 24 possessions were left out of the viewer as "under 25 live frames" although they are real:
+  15 with a shot (six makes) and 9 that run out the period. 44 more stopped early.
+- **36 action markings carry the wrong `possessionId`:** 27 off-ball screens, 5 closeouts, 2 drives and 2
+  isolations are filed under their period's last possession though their frame lies in an earlier one, up to a
+  whole quarter earlier. Shots, picks, handoffs, posts and fouls are all filed correctly.
+- One possession (178442, first of Q4) is delivered with a start frame 58 seconds inside Q3.
+- Not errors: 19 rebounds fall after their possession's window (a defensive rebound belongs to the shot's
+  possession and happens at the start of the next), and possession outcomes agree with their last shot and last
+  chance in every case.
+
+### Decisions
+
+- The viewer plays each possession over a **viewing window**, `view_start` to `view_end` in the play index:
+  `view_end` is the latest of the delivered end, the end of the possession's last chance and the end of its
+  last shot; both ends are clipped to the tracking frames of the possession's own period. `start_frame` and
+  `end_frame` are kept as delivered. The viewer now lists 1,557 possessions (was 1,533); 7 stay out (zero or
+  near-zero length with nothing in them).
+- Action markings filed under the wrong possession are moved to the possession whose window holds their frame
+  (`rehome()` in `src/play_viewer/R/data.R`). Play-type tags changed on 22 possessions.
+- **Not changed: EPV and the archetype features.** Both read `start_frame`/`end_frame` from the play index, so
+  the added tails and the 24 added possessions have no prices yet, and their frames are not in the tracked
+  features. The 24 additions are now rows of the index, so a rebuild of either would pick them up as
+  zero-length possessions. Whether the models should use the viewing window is open.
+- Seven possessions have no running-clock frame in their window (stuck or unread clock in 178442 Q4, and
+  whistle-to-whistle plays). With "Skip dead ball" on the viewer shows them whole, as before.
+
+### Viewer changes
+
+- Teams are drawn in club colours whichever end they play (`TEAM_COLORS` in `data.R`, entered by hand: primary
+  and secondary). Dot fill and hull use the primary, the ring the secondary; where two primaries are too alike
+  the away team swaps (Granada at Manresa). Colours are presentation only.
+- Quarter, shot clock, game clock and score moved from the canvas to the page header, and the EPV readout to
+  the side panel, so the court fills the stage. A recorded video draws them on the canvas again, since it
+  captures the canvas alone.

@@ -17,19 +17,19 @@
 
   const FPS = 25;
   const MARGIN = 4;                          // feet of floor shown outside the lines
-  const PAD = { top: 112, bottom: 34, side: 12 };
+  const PAD = { top: 12, bottom: 34, side: 12 };
+  const HEADER_TOP = 46;                     // top padding while a video is recorded: room for the header on the canvas
   const LEAD_IN = 50, TAIL = 25;             // stopped-clock frames kept before a restart / after a whistle
   const CAPTION_FRAMES = 62;                 // how long an event label stays up
   const END_HOLD = 1.2;                      // seconds to rest on the last frame before looping
   const EPV_STALE = 9;                       // frames after the last price before the overlay is hidden
   const VALUE_SPAN = 0.35;                   // points above/below current EPV at which pass colours saturate
   // The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
-  const COLORS = { paper: '#1B2334', floor: '#F6CFA3', line: '#2B2622', ink: '#E8EDF6', muted: '#93A0B8',
-                   off: '#1F6FE5', def: '#F26A36', offText: '#4C9AFF', defText: '#FF8552', ball: '#F59A23',
-                   ballEdge: '#7A3E00', white: '#FFFFFF', panel: '#0F1522', dark: '#0B0E14', best: '#18A56B',
-                   risk: '#F5B02E' };
+  // Team colours come with each play (play.colors, from TEAM_COLORS in R/data.R).
+  const COLORS = { paper: '#1B2334', floor: '#F6CFA3', line: '#2B2622', ink: '#E8EDF6', muted: '#93A0B8', ball: '#F59A23',
+                   ballEdge: '#7A3E00', panel: '#0F1522', dark: '#0B0E14', best: '#18A56B', risk: '#F5B02E' };
   const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-  const TICK_FONT = `600 10.5px ${FONT}`;    // must match .tick-label in style.css
+  const TICK_FONT = `600 11px ${FONT}`;      // must match .tick-label in style.css
   const OPTIONS = { 'opt-def-hull': 'showDef', 'opt-off-hull': 'showOff', 'opt-extrap': 'markExtrap', 'opt-loop': 'loop',
                     'opt-epv': 'showEpv', 'opt-pass-values': 'showPassValues', 'opt-pass-tov': 'showPassTov',
                     'opt-ball-tov': 'showBallTov', 'opt-shot-pass': 'showShotPass', 'opt-best-pass': 'showBestPass',
@@ -40,10 +40,11 @@
   const measure = document.createElement('canvas').getContext('2d');   // text widths for timeline captions
 
   const state = { plays: [], playId: null, play: null, seq: [], pos: 0, playing: false, hold: 0, speed: 1,
-                  view: 'full', showDef: true, showOff: false, skipDead: true, loop: true, markExtrap: false,
+                  view: 'full', showDef: true, showOff: true, skipDead: true, loop: true, markExtrap: false,
                   showEpv: true, showPassValues: true, showPassTov: true, showBallTov: true, showShotPass: true,
                   showBestPass: true, showReadout: true,
-                  hoverPid: null, dirty: true, lastTs: 0, recorder: null, rosterKey: '', areaTick: 0 };
+                  hoverPid: null, dirty: true, lastTs: 0, recorder: null, rosterKey: '', areaTick: 0,
+                  framed: false };           // the canvas carries its own header while a video is recorded
 
   // ---- small helpers ----
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -96,10 +97,10 @@
   }
 
   function layout() {
-    const W = stage.clientWidth, H = stage.clientHeight, v = viewRect();
-    const s = Math.max(1, Math.min((W - 2 * PAD.side) / (v.x1 - v.x0), (H - PAD.top - PAD.bottom) / (v.y1 - v.y0)));
+    const W = stage.clientWidth, H = stage.clientHeight, v = viewRect(), padTop = state.framed ? HEADER_TOP : PAD.top;
+    const s = Math.max(1, Math.min((W - 2 * PAD.side) / (v.x1 - v.x0), (H - padTop - PAD.bottom) / (v.y1 - v.y0)));
     const cw = (v.x1 - v.x0) * s, ch = (v.y1 - v.y0) * s;
-    const left = (W - cw) / 2, top = PAD.top + (H - PAD.top - PAD.bottom - ch) / 2;
+    const left = (W - cw) / 2, top = padTop + (H - padTop - PAD.bottom - ch) / 2;
     return { W, H, s, left, top, cw, ch, ox: left - v.x0 * s, oy: top + v.y1 * s };
   }
 
@@ -242,48 +243,57 @@
   }
 
   // ---- drawing ----
-  function drawHull(L, pts, color) {
+  const shotClockText = (seconds) => (seconds == null ? '–' : String(Math.ceil(seconds)));
+
+  // EPV, turnover odds for the rest of the possession, and cumulative turnover risk so far.
+  function readoutCells(ep) {
+    return [['EPV', ep.value == null ? '–' : ep.value.toFixed(2)], ['TOV% (ROP)', ep.rop == null ? '–' : pct(ep.rop, 1)],
+            ['Cum. TOV', ep.cum == null ? '–' : pct(ep.cum, 1)]];
+  }
+
+  // A team's hull: filled in its primary colour, outlined in whichever of its colours shows best on the floor.
+  function drawHull(L, pts, kit) {
     const poly = convexHull(pts);
     if (poly.length < 3) return 0;
     ctx.beginPath();
     poly.forEach((q, i) => ctx[i ? 'lineTo' : 'moveTo'](L.ox + q[0] * L.s, L.oy - q[1] * L.s));
     ctx.closePath();
     ctx.globalAlpha = 0.5;
-    ctx.fillStyle = color;
+    ctx.fillStyle = kit.fill;
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = kit.mark;
     ctx.stroke();
     return polygonArea(poly);
   }
 
+  // A player dot in his team's colours: secondary ring, primary centre. An extrapolated position is drawn faint.
   function drawPlayer(L, d, r, hasBall) {
-    const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, color = COLORS[d.p.role];
-    const faded = state.markExtrap && !d.det;
+    const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, kit = state.play.colors[d.p.role];
     if (state.hoverPid === d.p.id || hasBall) {
       ctx.beginPath();
       ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
       ctx.lineWidth = 2.5;
-      ctx.strokeStyle = state.hoverPid === d.p.id ? COLORS.dark : color;
+      ctx.strokeStyle = state.hoverPid === d.p.id ? COLORS.dark : kit.mark;
       ctx.stroke();
     }
+    ctx.globalAlpha = state.markExtrap && !d.det ? 0.45 : 1;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2 * Math.PI);
-    ctx.fillStyle = COLORS.white;
+    ctx.fillStyle = kit.edge;
     ctx.fill();
-    ctx.globalAlpha = faded ? 0.45 : 1;
     ctx.beginPath();
     ctx.arc(x, y, r - 2.2, 0, 2 * Math.PI);
-    ctx.fillStyle = color;
+    ctx.fillStyle = kit.fill;
     ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = faded ? color : COLORS.white;
+    ctx.fillStyle = kit.ink;
     ctx.font = `700 ${Math.round(r * (d.p.jersey.length > 1 ? 0.95 : 1.1))}px ${FONT}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(d.p.jersey, x, y + 0.5);
+    ctx.globalAlpha = 1;
   }
 
   // A small dark label. `anchor` is 'center' (x is its middle) or 'left' (x is its left edge).
@@ -350,66 +360,38 @@
     }
   }
 
-  // Header, centred over the court and stacked: teams, then quarter / shot clock / game clock, then
-  // the EPV readout when prices are showing.
-  function drawHud(L, c, labels, ep) {
-    const p = state.play, cx = L.left + L.cw / 2, shotClock = p.sc[c.i0];
-    const cells = ep && state.showReadout
-      ? [['EPV', ep.value == null ? '–' : ep.value.toFixed(2)], ['TOV% (ROP)', ep.rop == null ? '–' : pct(ep.rop, 1)],
-         ['CUM. TOV', ep.cum == null ? '–' : pct(ep.cum, 1)]]
-      : [];
-    const teamsY = L.top - (cells.length ? 96 : 44), clockY = teamsY + 24;
-    ctx.textBaseline = 'middle';
-
-    const teams = [[p.off, COLORS.offText, 700], ['  vs  ', COLORS.muted, 400], [p.def, COLORS.defText, 700]];
-    const span = (size) => teams.reduce((sum, [text, , weight]) => {
+  // The header of a recorded video, on one line above the court: quarter, shot clock, game clock, the score at
+  // the start of the possession, and the EPV readout when prices are showing. On the page these live outside
+  // the canvas, so a saved video would otherwise not say what it shows.
+  function drawHeader(L, c, ep) {
+    const p = state.play, homeIsOff = p.off === p.home, gap = '   ·   ';
+    const home = homeIsOff ? p.colors.off : p.colors.def, away = homeIsOff ? p.colors.def : p.colors.off;
+    const parts = [[`${quarter(p.period)}  `, COLORS.ink, 700], [shotClockText(p.sc[c.i0]), COLORS.risk, 700],
+                   [`  ${clock(p.gc[c.i0])}`, COLORS.ink, 700], [gap, COLORS.muted, 400], [p.home, home.text, 700],
+                   [`  ${p.homeScore} – ${p.awayScore}  `, COLORS.ink, 700], [p.away, away.text, 700]];
+    if (ep && state.showReadout) {
+      for (const [label, value] of readoutCells(ep)) parts.push([`${label === 'EPV' ? gap : '   '}${label} `, COLORS.muted, 400], [value, COLORS.ink, 700]);
+    }
+    const span = (size) => parts.reduce((sum, [text, , weight]) => {
       ctx.font = `${weight} ${size}px ${FONT}`;
       return sum + ctx.measureText(text).width;
     }, 0);
-    const size = Math.max(10, Math.min(15, Math.floor(15 * (L.W - 24) / span(15))));
-    let x = cx - span(size) / 2;
+    const size = Math.max(9, Math.min(15, Math.floor(15 * (L.W - 24) / span(15))));
+    let x = L.W / 2 - span(size) / 2;
     ctx.textAlign = 'left';
-    for (const [text, color, weight] of teams) {
+    ctx.textBaseline = 'middle';
+    for (const [text, color, weight] of parts) {
       ctx.font = `${weight} ${size}px ${FONT}`;
       ctx.fillStyle = color;
-      ctx.fillText(text, x, teamsY);
+      ctx.fillText(text, x, L.top - HEADER_TOP / 2);
       x += ctx.measureText(text).width;
     }
+  }
 
-    const period = quarter(p.period), game = clock(p.gc[c.i0]), pill = 34, gap = 10;
-    ctx.font = `700 15px ${FONT}`;
-    const periodW = ctx.measureText(period).width, gameW = ctx.measureText(game).width;
-    x = cx - (periodW + pill + gameW + 2 * gap) / 2;
-    ctx.fillStyle = COLORS.ink;
-    ctx.fillText(period, x, clockY);
-    ctx.fillText(game, x + periodW + pill + 2 * gap, clockY);
-    ctx.fillStyle = COLORS.panel;
-    ctx.beginPath();
-    ctx.roundRect(x + periodW + gap, clockY - 11, pill, 22, 6);
-    ctx.fill();
-    ctx.fillStyle = COLORS.risk;
-    ctx.textAlign = 'center';
-    ctx.fillText(shotClock == null ? '–' : String(Math.ceil(shotClock)), x + periodW + gap + pill / 2, clockY + 0.5);
-
-    if (cells.length) {
-      const cellW = clamp(L.cw * 0.16, 86, 112), panelW = cells.length * cellW, panelTop = L.top - 58;
-      ctx.fillStyle = COLORS.panel;
-      ctx.beginPath();
-      ctx.roundRect(cx - panelW / 2, panelTop, panelW, 48, 8);
-      ctx.fill();
-      cells.forEach(([label, value], i) => {
-        const cellX = cx - panelW / 2 + (i + 0.5) * cellW;
-        ctx.font = `700 9.5px ${FONT}`;
-        ctx.fillStyle = COLORS.muted;
-        ctx.fillText(label, cellX, panelTop + 13);
-        ctx.font = `700 19px ${FONT}`;
-        ctx.fillStyle = COLORS.ink;
-        ctx.fillText(value, cellX, panelTop + 32);
-      });
-    }
-
-    // event caption: both recent labels if they fit beside the credit, otherwise the latest one
+  // Under the court: both recent event labels if they fit beside the credit, otherwise the latest one.
+  function drawCaption(L, labels) {
     const room = L.cw - 200;
+    ctx.textBaseline = 'middle';
     ctx.font = `500 13px ${FONT}`;
     ctx.fillStyle = COLORS.ink;
     ctx.textAlign = 'left';
@@ -440,8 +422,8 @@
     ctx.beginPath();
     ctx.rect(L.left, L.top, L.cw, L.ch);
     ctx.clip();
-    const areaDef = state.showDef ? drawHull(L, dots.def.map((d) => [d.x, d.y]), COLORS.def) : null;
-    const areaOff = state.showOff ? drawHull(L, dots.off.map((d) => [d.x, d.y]), COLORS.off) : null;
+    const areaDef = state.showDef ? drawHull(L, dots.def.map((d) => [d.x, d.y]), p.colors.def) : null;
+    const areaOff = state.showOff ? drawHull(L, dots.off.map((d) => [d.x, d.y]), p.colors.off) : null;
     if (ep && state.showBestPass && ep.target != null) {
       const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
       if (from && to) {
@@ -469,9 +451,11 @@
     ctx.restore();
 
     const labels = p.events.filter((e) => frame >= e.f && frame - e.f <= CAPTION_FRAMES).slice(-2).map((e) => e.label);
-    drawHud(L, c, labels, ep);
+    if (state.framed) drawHeader(L, c, ep);
+    drawCaption(L, labels);
     updateTimeline();
-    updateRosters(dots, handler, areaOff, areaDef);
+    updateClocks(c);
+    updateRosters(dots, handler, areaOff, areaDef, ep);
   }
 
   // ---- timeline ----
@@ -556,7 +540,9 @@
     $('team-off').textContent = p.off;
     $('team-def').textContent = p.def;
     for (const role of ['off', 'def']) {
-      const list = $(`roster-${role}`);
+      const list = $(`roster-${role}`), kit = p.colors[role];
+      for (const key of ['fill', 'edge', 'ink', 'text']) list.closest('.roster').style.setProperty(`--kit-${key}`, kit[key]);
+      $(`opt-${role}-hull`).style.accentColor = kit.fill;
       list.replaceChildren();
       for (const pl of p.players.filter((q) => q.role === role)) {
         const row = el('li');
@@ -573,7 +559,18 @@
     state.rosterKey = '';
   }
 
-  function updateRosters(dots, handler, areaOff, areaDef) {
+  // The running clocks in the page header, beside the score.
+  function updateClocks(c) {
+    const p = state.play, text = `${shotClockText(p.sc[c.i0])}|${clock(p.gc[c.i0])}`;
+    if (text === state.clockKey) return;
+    state.clockKey = text;
+    const shot = el('span', 'shot-clock', shotClockText(p.sc[c.i0])), game = el('b', null, clock(p.gc[c.i0]));
+    shot.title = 'Shot clock';
+    game.title = 'Game clock';
+    $('game-clock').replaceChildren(el('b', null, quarter(p.period)), shot, game);
+  }
+
+  function updateRosters(dots, handler, areaOff, areaDef, ep) {
     const onCourt = new Set(dots.off.concat(dots.def).map((d) => d.p.id));
     const key = `${[...onCourt].join(',')}|${handler}`;
     if (key !== state.rosterKey) {
@@ -584,9 +581,13 @@
         row.classList.toggle('has-ball', pid === handler);
       });
     }
+    // Areas and prices change every frame; refresh the text a few times a second, or at once when paused.
     if (state.areaTick++ % 4 === 0 || !state.playing) {
       $('area-off').textContent = areaOff == null ? '' : `Hull area ${Math.round(areaOff)} sq ft`;
       $('area-def').textContent = areaDef == null ? '' : `Hull area ${Math.round(areaDef)} sq ft`;
+      $('readout').hidden = !(state.play.epv && state.showEpv && state.showReadout);
+      const cells = ep ? readoutCells(ep) : null;
+      for (let i = 0; i < 3; i++) $(`readout-${i}`).textContent = cells ? cells[i][1] : '–';
     }
   }
 
@@ -635,6 +636,9 @@
     $('play-title').textContent = 'No play selected';
     $('play-sub').textContent = '';
     $('scorebug').replaceChildren();
+    $('game-clock').replaceChildren();
+    $('readout').hidden = true;
+    state.clockKey = '';
     $('stage-note').textContent = note;
     $('stage-note').hidden = false;
     document.querySelectorAll('.roster ul').forEach((n) => n.replaceChildren());
@@ -656,12 +660,21 @@
     buildSeq();
     $('stage-note').hidden = true;
     $('epv-missing').hidden = Boolean(p.epv);
-    $('play-title').textContent = `${quarter(p.period)} ${clock(p.gc[0])} · ${p.off} possession`;
+    $('play-title').textContent = `${p.off} possession`;
     $('play-sub').textContent = [p.who ? `${p.result} (${p.who})` : p.result].concat(p.types).join(' · ');
-    const bug = $('scorebug');
-    bug.replaceChildren(el('span', p.off === p.home ? 'off' : 'def', p.home), el('b', null, `${p.homeScore} – ${p.awayScore}`),
-                        el('span', p.off === p.away ? 'off' : 'def', p.away));
-    bug.title = p.game;
+    const bug = $('scorebug'), homeIsOff = p.off === p.home;
+    const sides = [[p.home, homeIsOff ? p.colors.off : p.colors.def], [p.away, homeIsOff ? p.colors.def : p.colors.off]];
+    const [home, away] = sides.map(([name, kit], i) => {
+      const chip = el('span', 'kit'), team = el('span', `team ${i ? 'away' : 'home'}`);
+      chip.style.background = kit.fill;
+      chip.style.borderColor = kit.edge;
+      team.style.color = kit.text;
+      team.append(...(i ? [name, chip] : [chip, name]));
+      return team;
+    });
+    bug.replaceChildren(home, el('b', null, `${p.homeScore} – ${p.awayScore}`), away);
+    bug.title = `${p.game} · score at the start of the possession`;
+    state.clockKey = '';
     renderRosters();
     renderTicks();
     syncPlayButton();
@@ -720,6 +733,8 @@
     const recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: mime, videoBitsPerSecond: 8e6 });
     recorder.ondataavailable = (ev) => { if (ev.data.size) chunks.push(ev.data); };
     recorder.onstop = () => {
+      state.framed = false;
+      state.dirty = true;
       if (!recorder.keep) return;
       const link = el('a');
       link.href = URL.createObjectURL(new Blob(chunks, { type: mime.split(';')[0] }));
@@ -728,13 +743,16 @@
       setTimeout(() => URL.revokeObjectURL(link.href), 10000);
     };
     state.recorder = recorder;
+    state.framed = true;
     state.pos = 0;
     state.hold = 0;
     state.playing = true;
-    $('btn-export').textContent = 'Recording… click to cancel';
+    state.dirty = true;
+    $('btn-export').textContent = 'Cancel recording';
     $('btn-export').classList.add('recording');
     syncPlayButton();
-    recorder.start();
+    // Start on the next frame, once the canvas has been redrawn with its header.
+    requestAnimationFrame(() => { if (state.recorder === recorder) recorder.start(); });
   }
 
   function stopRecording(keep) {
@@ -742,9 +760,13 @@
     if (!recorder) return;
     recorder.keep = keep;
     state.recorder = null;
-    $('btn-export').textContent = 'Save animation as video';
+    $('btn-export').textContent = 'Save Video';
     $('btn-export').classList.remove('recording');
-    setTimeout(() => recorder.stop(), keep ? 250 : 0);
+    setTimeout(() => {
+      if (recorder.state !== 'inactive') return recorder.stop();
+      state.framed = false;
+      state.dirty = true;
+    }, keep ? 250 : 0);
   }
 
   // ---- wiring ----
@@ -764,11 +786,10 @@
     renderTicks();
     state.dirty = true;
   });
-  document.querySelectorAll('.segmented button').forEach((btn) => btn.addEventListener('click', () => {
-    document.querySelectorAll('.segmented button').forEach((b) => b.classList.toggle('on', b === btn));
-    state.view = btn.dataset.view;
+  $('opt-half').addEventListener('change', (e) => {
+    state.view = e.target.checked ? 'half' : 'full';
     state.dirty = true;
-  }));
+  });
   $('speed').addEventListener('change', (e) => { state.speed = Number(e.target.value); });
   $('btn-play').addEventListener('click', togglePlay);
   $('btn-prev').addEventListener('click', () => stepAction(-1));

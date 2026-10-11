@@ -1,6 +1,7 @@
 <script lang="ts">
-  // Right column: display toggles, EPV overlay toggles and the two rosters. Each roster row ends with the
-  // player's archetype on that side of the ball: a colour swatch and a short label, full name on hover.
+  // Right column: display toggles, the EPV readout and overlay toggles, and the two rosters. Each team keeps its
+  // club colours whichever end it plays. A roster row ends with the player's archetype on that side of the ball:
+  // a colour swatch and a short label, full name on hover.
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -12,25 +13,39 @@
 
 <aside class="side">
   <div class="panel display">
-    <h2>Display</h2>
+    <div class="panel-head">
+      <h2>Display</h2>
+      <button type="button" class="text-btn" class:recording={viewer.recording} disabled={!play} title="Record this play once through and save it as a video"
+              onclick={() => (viewer.recording = !viewer.recording)}>
+        {viewer.recording ? "Cancel recording" : "Save Video"}
+      </button>
+    </div>
+    <div class="hull-row">
+      <div>
+        <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
+        <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
+      </div>
+      <label class="switch" title="Show only the half the offense attacks">
+        <input type="checkbox" role="switch" checked={viewer.view === "half"} onchange={(ev) => (viewer.view = ev.currentTarget.checked ? "half" : "full")} />
+        <span class="switch-track"></span>Half court
+      </label>
+    </div>
     <div class="toggle-grid">
-      <label class="toggle wide"><input type="checkbox" class="off" bind:checked={viewer.showOff} />Offensive hull</label>
-      <label class="toggle wide"><input type="checkbox" class="def" bind:checked={viewer.showDef} />Defensive hull</label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
       <label class="toggle"><input type="checkbox" bind:checked={viewer.loop} />Loop</label>
       <label class="toggle wide"><input type="checkbox" bind:checked={viewer.markExtrap} />Mark extrapolated positions</label>
     </div>
-    <div class="segmented" role="group" aria-label="Court view">
-      <button type="button" class:on={viewer.view === "full"} onclick={() => (viewer.view = "full")}>Full court</button>
-      <button type="button" class:on={viewer.view === "half"} onclick={() => (viewer.view = "half")}>Half court</button>
-    </div>
-    <button type="button" class="text-btn" class:recording={viewer.recording} disabled={!play} onclick={() => (viewer.recording = !viewer.recording)}>
-      {viewer.recording ? "Recording… click to cancel" : "Save animation as video"}
-    </button>
   </div>
 
   <div class="panel display">
     <h2>Expected Possession Value</h2>
+    {#if play?.epv && viewer.showEpv && viewer.showReadout}
+      <div class="readout" title="EPV, turnover odds for the rest of the possession, cumulative turnover risk so far">
+        {#each live.readout as [label, value] (label)}
+          <div><span>{label}</span><b>{value}</b></div>
+        {/each}
+      </div>
+    {/if}
     <label class="toggle"><input type="checkbox" bind:checked={viewer.showEpv} />Show EPV overlay</label>
     <div class="toggle-grid" class:dim={!viewer.showEpv}>
       <label class="toggle" title="EPV, turnover odds for the rest of the possession, cumulative turnover risk so far"><input type="checkbox" bind:checked={viewer.showReadout} />Readout</label>
@@ -46,7 +61,8 @@
   </div>
 
   {#each sides as side}
-    <div class="panel roster {side.role}">
+    {@const kit = play?.colors[side.role]}
+    <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-edge={kit?.edge} style:--kit-ink={kit?.ink} style:--kit-text={kit?.text}>
       <h2><span class="role">{side.title}</span><span class="team">{play ? (side.role === "off" ? play.off : play.def) : ""}</span></h2>
       <ul>
         {#each play?.players.filter((p) => p.role === side.role) ?? [] as p (p.id)}

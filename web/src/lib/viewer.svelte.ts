@@ -9,7 +9,7 @@ export const viewer = $state({
   speed: 1,
   view: "full" as CourtView,
   showDef: true,
-  showOff: false,
+  showOff: true,
   skipDead: true,
   loop: true,
   markExtrap: false,
@@ -26,10 +26,14 @@ export const viewer = $state({
   hidden: false,
 });
 
-/** What is on court in the frame last drawn; the rosters read this. */
+/** The frame last drawn, as the page shows it around the canvas: rosters, header clocks and the EPV readout. */
 export const live = $state({
   onCourt: [] as number[],
   handler: null as number | null,
   areaOff: null as number | null,
   areaDef: null as number | null,
+  gameClock: "",
+  shotClock: "",
+  /** Readout cells (label, value); values are dashes where nothing is priced. */
+  readout: [] as [string, string][],
 });
