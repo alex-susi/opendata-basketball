@@ -11,14 +11,16 @@ MAX_GAMES_IN_MEMORY <- 3L
 PLAY_TYPES <- c(pick = "Pick", handoff = "Handoff", off_ball_screen = "Off-ball screen", drive = "Drive",
                 isolation = "Isolation", post = "Post-up", closeout = "Closeout", transition = "Transition")
 
-# Roster tag for each playstyle archetype: short label and colour slot (--arch-* in www/style.css).
-# A defensive role takes the colour of the offensive archetype most of its players have, so a player usually
-# keeps his colour at both ends. An archetype missing here is shown by its full name with a neutral swatch.
-ARCHETYPE_TAGS <- list("Primary Ball Handler" = c("Primary", "primary"), "Slasher" = c("Slasher", "slasher"),
-                       "Secondary Ball Handler" = c("Secondary", "secondary"), "Athletic Finisher" = c("Finisher", "finisher"),
-                       "Floor Spacer" = c("Spacer", "spacer"), "Roll & Cut Big" = c("Roll & Cut", "big"),
-                       "Point of Attack" = c("Point", "primary"), "Chaser" = c("Chaser", "secondary"),
-                       "Helper" = c("Helper", "spacer"), "Anchor Big" = c("Anchor", "big"))
+# Roster tag for each playstyle archetype: the label shown beside a name and its colour slot (--arch-* in
+# www/style.css). A defensive role takes the colour of the offensive archetype most of its players have, so a
+# player usually keeps his colour at both ends. An archetype missing here is shown by its full name in grey.
+ARCHETYPE_TAGS <- list("Primary Ball Handler" = c("Primary BH", "primary"), "Secondary Ball Handler" = c("Secondary BH", "secondary"),
+                       "Slasher" = c("Slasher", "slasher"), "Off Screen Shooter" = c("Off Screen Shooter", "offscreen"),
+                       "Movement Shooter" = c("Movement Shooter", "movement"), "Stationary Shooter" = c("Stationary Shooter", "stationary"),
+                       "Athletic Finisher" = c("Athletic Finisher", "finisher"), "Versatile Big" = c("Versatile Big", "versatile"),
+                       "Post Scorer" = c("Post Scorer", "post"), "Roll & Cut Big" = c("R&C Big", "big"),
+                       "Point of Attack" = c("Point of Attack", "primary"), "Chaser" = c("Chaser", "secondary"),
+                       "Helper" = c("Helper", "movement"), "Anchor Big" = c("Anchor Big", "big"))
 
 # Club colours by SkillCorner team id: primary, then secondary. Entered by hand from the clubs' kits and crests.
 # They only style the viewer and are no part of any analysis.

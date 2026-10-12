@@ -2,17 +2,21 @@
 #
 # Counts, component scores, loadings, fit and stability are read from outputs/archetypes/ (written by
 # src/archetypes/), so the page follows whichever solution was last built. The basketball wording below is
-# written for the solution chosen on 2026-10-10 (offense: 6 clusters on 4 components; defense: 4 on 2) and is
+# written for the solution chosen on 2026-10-12 (offense: 10 clusters on 4 components; defense: 4 on 2) and is
 # a reading of the numbers, not something the model produced. An archetype without a note is shown without a
 # definition; a component is matched to its note by position, and its ends by the sign of the `anchor` feature.
 
 ARCHETYPE_NOTES <- list(
-  "Primary Ball Handler" = "Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble. He rarely spots up, sets screens or goes to the offensive glass.",
+  "Primary Ball Handler" = "Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or goes to the offensive glass.",
+  "Secondary Ball Handler" = "A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups and off-the-dribble threes and many of them contested, and often gets the ball coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.",
   "Slasher" = "An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions, but handles less and takes fewer pull-up jumpers than a primary ball handler.",
-  "Secondary Ball Handler" = "A scoring guard or wing who gets the ball on the move. He comes off off-ball screens more than anyone, takes a high volume of shots and creates many of them himself with pull-ups and off-the-dribble threes. He starts fewer possessions than the primary ball handlers and seldom attacks the rim or the glass.",
-  "Athletic Finisher" = "A forward who scores going to the basket. His drives end at the rim, often from isolation, with layups and contested finishes, and he does little pick-and-roll handling or pull-up shooting. This is the least sharply defined archetype: it sits near the middle of the two main components.",
-  "Floor Spacer" = "Plays off the ball beyond the arc. He shoots off the catch and off movement, spends more time in the corners than anyone, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group.",
-  "Roll & Cut Big" = "The interior player. He sets on-ball and off-ball screens, catches in the paint and scores at the rim and in the post; off the ball he is in or around the lane, and he does not play on the wing or shoot threes. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.",
+  "Off Screen Shooter" = "A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes; he rarely scores in the paint. He does less off the dribble than a secondary ball handler.",
+  "Movement Shooter" = "A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group; it includes most of the shooting forwards that BBall Index would call stretch bigs.",
+  "Stationary Shooter" = "A low-usage spacer who waits in the corner. He stands still off the ball more than anyone, shoots off the catch and attacks closeouts all the way to the rim. He takes few shots and touches the ball little.",
+  "Athletic Finisher" = "A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype: it sits near the middle of the two main components.",
+  "Versatile Big" = "A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, goes to the offensive glass and usually finishes without a dribble. The smallest group, and unlike BBall Index's versatile big it is not defined by three-point shooting.",
+  "Post Scorer" = "A big who scores with his back to the basket and around the rim. He has the highest share of hooks and post fadeaways, takes many layups and paint shots, and sets on-ball and off-ball screens. He does not shoot threes or play on the wing.",
+  "Roll & Cut Big" = "A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most on-ball screens and spends his off-ball time in the paint. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.",
   "Point of Attack" = "Guards the ball. He is assigned to the opposing ball handlers, spends the largest share of his time on the ball, defends the handler in pick-and-roll and picks the ball up furthest from the basket.",
   "Chaser" = "A perimeter defender whose man is usually off the ball. He follows cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.",
   "Helper" = "A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position, and is often the defender nearest the rim when the big is drawn away.",
@@ -30,7 +34,7 @@ COMPONENT_NOTES <- list(
          plus = c("Low-usage rim attacker", "Shoots little, and mostly layups; his drives end at the rim and he stands still off the ball."),
          minus = c("High-volume jump-shot scorer", "Takes many shots, with pull-ups, mid-range jumpers and shots coming off off-ball screens.")),
     list(anchor = "s_drv_iso_share", context = "Players who hunt their own shot on the wing against those who organise from the top.",
-         plus = c("Isolation and off-screen wing scorer", "Drives from isolation, uses off-ball screens, takes contested shots and gets to the rim."),
+         plus = c("Isolation and off-screen wing scorer", "Drives from isolation, takes contested shots, gets to the rim and shoots a lot."),
          minus = c("Organiser", "Stays at the top of the floor, starts possessions, runs pick-and-roll in the middle and shoots off the catch."))),
   defense = list(
     list(anchor = "d_paint_share", context = "The main split on defense: who protects the paint and who guards the ball.",
@@ -104,9 +108,9 @@ method_steps <- function(out) {
                sprintf("That keeps %d components on offense (%.0f%% of the variance) and %d on defense (%.0f%%).", nrow(kept("offense")),
                        100 * max(kept("offense")$cumulative), nrow(kept("defense")), 100 * max(kept("defense")$cumulative))),
           step("Fit a mixture model on the well-sampled players",
-               sprintf("Clusters are defined by the players seen enough to trust: %d on offense (40+ tracked chances and 50+ season attempts) and %d on defense (40+ tracked chances). ",
+               sprintf("Clusters are defined by the players seen enough to trust: %d on offense (25+ tracked chances and 30+ season attempts) and %d on defense (40+ tracked chances). ",
                        fit("offense"), fit("defense")),
-               "Seven Gaussian mixture types were compared at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, and on cluster size. ",
+               "Fourteen Gaussian mixture types were compared at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, on cluster size and, on offense, on how closely the clusters resemble BBall Index's offensive roles. ",
                sprintf("The solution in use was chosen from that comparison. %s. %s.", describe("offense"), describe("defense"))),
           step("Give every player a probability of every archetype",
                sprintf("All %d players in the season aggregates get offensive probabilities and the %d tracked players get defensive ones. ", count("offense"), count("defense")),
@@ -223,6 +227,7 @@ archetype_page <- function(root) {
                            tags$li("Players lie along a continuum more than in separate clumps, so the borders between neighbouring archetypes are soft. The probabilities say how close a player is to a border."),
                            tags$li("Defensive roles rest on one or two tracked games per player, and so reflect that opponent and game plan. There is no season-long defensive data."),
                            tags$li("Probabilities are optimistic about season-long role, because noise in the tracked features is measured within games."),
-                           tags$li("Several intended features were too noisy to use, including roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against the pick-and-roll. Bigs are therefore not split into finer types."))),
+                           tags$li("Several intended features were too noisy to use, including roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against the pick-and-roll. The three kinds of big are therefore told apart by their shots and where they stand, not by what they do after a screen."),
+                           tags$li("Ten offensive archetypes is more than the data settles firmly: the offensive stability score above is lower than it would be for fewer, broader groups, and BBall Index's shot creator and stretch big do not appear as groups of their own."))),
       p(class = "meta", "Data: SkillCorner open data, Liga ACB 2025-2026. Inspired by BBall Index's offensive archetypes and defensive roles."))
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
   // Right column: display toggles, the EPV readout and overlay toggles, and the two rosters. Each team keeps its
   // club colours whichever end it plays. A roster row ends with the player's archetype on that side of the ball:
-  // a colour swatch and a short label, full name on hover.
+  // its name in an outlined pill of the archetype's colour, full name and probability on hover.
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -75,9 +75,8 @@
               onmouseenter={() => (viewer.hoverPid = p.id)} onmouseleave={() => (viewer.hoverPid = null)}>
             <span class="num">{p.jersey}</span><span class="name" title={p.name}>{p.name}</span><span class="ball-mark"></span>
             {#if p.arch}
-              <span class="arch" title={`${p.arch.name} · ${Math.round(p.arch.p * 100)}% likely`}>
-                <span class="swatch" style:background={`var(--arch-${p.arch.slot})`}></span><span class="arch-label">{p.arch.short}</span>
-              </span>
+              <span class="arch" style:--arch-color={`var(--arch-${p.arch.slot})`}
+                    title={`${p.arch.name} · ${Math.round(p.arch.p * 100)}% likely`}>{p.arch.short}</span>
             {/if}
           </li>
         {/each}

@@ -279,7 +279,7 @@
     return polygonArea(poly);
   }
 
-  // Archetype colours are the roster swatches' (--arch-<slot> in style.css); each is read from the page once.
+  // Archetype colours are the roster tags' (--arch-<slot> in style.css); each is read from the page once.
   const archColors = {};
   function archColor(slot) {
     if (!archColors[slot]) {
@@ -619,14 +619,12 @@
   }
 
   // ---- rosters ----
-  /* The archetype tag at the end of a roster row: a colour swatch and a short label, full name on hover.
-     The label and colour slot come from ARCHETYPE_TAGS in R/data.R. */
+  /* The archetype tag at the end of a roster row: the archetype's name in an outlined pill of its colour,
+     full name and probability on hover. The label and colour slot come from ARCHETYPE_TAGS in R/data.R. */
   function archetypeTag(arch) {
-    const tag = el('span', 'arch');
+    const tag = el('span', 'arch', arch.short);
     tag.title = `${arch.name} · ${Math.round(arch.p * 100)}% likely`;
-    const swatch = el('span', 'swatch');
-    swatch.style.background = `var(--arch-${arch.slot})`;
-    tag.append(swatch, el('span', 'arch-label', arch.short));
+    tag.style.setProperty('--arch-color', `var(--arch-${arch.slot})`);
     return tag;
   }
 

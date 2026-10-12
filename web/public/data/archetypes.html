@@ -26,15 +26,15 @@
         <h3>Reduce to principal components</h3>
         <p>
           The surviving features are heavily correlated, so they are combined into principal components. A component is kept only if it carries more variance than the same component of shuffled data. 
-          That keeps 4 components on offense (74% of the variance) and 2 on defense (77%).
+          That keeps 4 components on offense (72% of the variance) and 2 on defense (77%).
         </p>
       </li>
       <li>
         <h3>Fit a mixture model on the well-sampled players</h3>
         <p>
-          Clusters are defined by the players seen enough to trust: 127 on offense (40+ tracked chances and 50+ season attempts) and 139 on defense (40+ tracked chances). 
-          Seven Gaussian mixture types were compared at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, and on cluster size. 
-          The solution in use was chosen from that comparison. Offense: 6 clusters as round clusters of equal size (mclust model EII). Defense: 4 clusters as equal-sized clusters sharing one axis-aligned shape (mclust model EEI).
+          Clusters are defined by the players seen enough to trust: 169 on offense (25+ tracked chances and 30+ season attempts) and 139 on defense (40+ tracked chances). 
+          Fourteen Gaussian mixture types were compared at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, on cluster size and, on offense, on how closely the clusters resemble BBall Index's offensive roles. 
+          The solution in use was chosen from that comparison. Offense: 10 clusters as round clusters of equal size (mclust model EII). Defense: 4 clusters as equal-sized clusters sharing one axis-aligned shape (mclust model EEI).
         </p>
       </li>
       <li>
@@ -52,14 +52,170 @@
     <div class="arch-grid">
       <div class="panel arch-card">
         <h3>
+          <span class="swatch" style="background: var(--arch-offscreen)"></span>
+          Off Screen Shooter
+        </h3>
+        <p class="meta">20 players · 15 well-sampled · mean probability 0.76</p>
+        <p>A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes; he rarely scores in the paint. He does less off the dribble than a secondary ball handler.</p>
+        <p class="meta">
+          <b>Most typical: </b>
+          Matt Thomas, Mark Hughes, Erik Stevenson, Kyle Kuric, Alfonso Plummer
+        </p>
+        <h4>What sets it apart</h4>
+        <ul class="apart">
+          <li>
+            <span class="num">+1.6</span>
+            share of attempts that are jumpers off movement
+          </li>
+          <li>
+            <span class="num">+1.4</span>
+            share of drives that start from an off-ball screen
+          </li>
+          <li>
+            <span class="num">+1.2</span>
+            off-ball screens used as cutter per 100 chances
+          </li>
+          <li>
+            <span class="num">+0.9</span>
+            share of attempts that are above-the-break threes
+          </li>
+          <li>
+            <span class="num">-0.9</span>
+            share of attempts that are layups
+          </li>
+          <li>
+            <span class="num">-0.8</span>
+            share of attempts in the restricted area
+          </li>
+        </ul>
+      </div>
+      <div class="panel arch-card">
+        <h3>
+          <span class="swatch" style="background: var(--arch-movement)"></span>
+          Movement Shooter
+        </h3>
+        <p class="meta">52 players · 26 well-sampled · mean probability 0.78</p>
+        <p>A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group; it includes most of the shooting forwards that BBall Index would call stretch bigs.</p>
+        <p class="meta">
+          <b>Most typical: </b>
+          Aaron Doornekamp, Yves Pons, Mihajlo Andric, Mindaugas Susinskas, Toni Nakic
+        </p>
+        <h4>What sets it apart</h4>
+        <ul class="apart">
+          <li>
+            <span class="num">+1.3</span>
+            share of attempts that are corner threes
+          </li>
+          <li>
+            <span class="num">+1.3</span>
+            share of drives that start from attacking a closeout
+          </li>
+          <li>
+            <span class="num">+0.9</span>
+            share of attempts that are catch-and-shoot (rest are off the dribble)
+          </li>
+          <li>
+            <span class="num">+0.9</span>
+            share of off-ball half-court time spent in: corner
+          </li>
+          <li>
+            <span class="num">-0.9</span>
+            share of attempts in the paint outside the restricted area
+          </li>
+          <li>
+            <span class="num">-0.9</span>
+            share of attempts that are layups
+          </li>
+        </ul>
+      </div>
+      <div class="panel arch-card">
+        <h3>
+          <span class="swatch" style="background: var(--arch-stationary)"></span>
+          Stationary Shooter
+        </h3>
+        <p class="meta">21 players · 11 well-sampled · mean probability 0.72</p>
+        <p>A low-usage spacer who waits in the corner. He stands still off the ball more than anyone, shoots off the catch and attacks closeouts all the way to the rim. He takes few shots and touches the ball little.</p>
+        <p class="meta">
+          <b>Most typical: </b>
+          Bakary Dibba, Jaime Fernandez Manzanares, Sergi Martinez Costa, Thomas Scrubb, Henri Drell
+        </p>
+        <h4>What sets it apart</h4>
+        <ul class="apart">
+          <li>
+            <span class="num">+1.2</span>
+            share of drives that start from attacking a closeout
+          </li>
+          <li>
+            <span class="num">+1.0</span>
+            share of attempts that are corner threes
+          </li>
+          <li>
+            <span class="num">+1.0</span>
+            share of off-ball half-court time spent in: corner
+          </li>
+          <li>
+            <span class="num">+0.8</span>
+            share of off-ball half-court time moving slower than 2 ft/s
+          </li>
+          <li>
+            <span class="num">-0.9</span>
+            share of off-ball half-court time spent in: top
+          </li>
+          <li>
+            <span class="num">-0.9</span>
+            share of drives that start from an on-ball screen
+          </li>
+        </ul>
+      </div>
+      <div class="panel arch-card">
+        <h3>
+          <span class="swatch" style="background: var(--arch-finisher)"></span>
+          Athletic Finisher
+        </h3>
+        <p class="meta">36 players · 22 well-sampled · mean probability 0.76</p>
+        <p>A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype: it sits near the middle of the two main components.</p>
+        <p class="meta">
+          <b>Most typical: </b>
+          Leonardo Simoes Meindl, Howard Sant-Roos, Nihad Djedovic, Agustin Ubal, Santiago Yusta
+        </p>
+        <h4>What sets it apart</h4>
+        <ul class="apart">
+          <li>
+            <span class="num">+0.6</span>
+            share of drives ending in a shot near the basket
+          </li>
+          <li>
+            <span class="num">+0.5</span>
+            share of attempts that are layups
+          </li>
+          <li>
+            <span class="num">+0.4</span>
+            share of off-ball half-court time spent in: corner
+          </li>
+          <li>
+            <span class="num">+0.4</span>
+            share of off-ball half-court time moving slower than 2 ft/s
+          </li>
+          <li>
+            <span class="num">-0.5</span>
+            share of off-ball half-court time spent in: top
+          </li>
+          <li>
+            <span class="num">-0.5</span>
+            share of drives ending in a pull-up
+          </li>
+        </ul>
+      </div>
+      <div class="panel arch-card">
+        <h3>
           <span class="swatch" style="background: var(--arch-primary)"></span>
           Primary Ball Handler
         </h3>
-        <p class="meta">44 players · 20 well-sampled · mean probability 0.87</p>
-        <p>Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble. He rarely spots up, sets screens or goes to the offensive glass.</p>
+        <p class="meta">45 players · 26 well-sampled · mean probability 0.88</p>
+        <p>Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or goes to the offensive glass.</p>
         <p class="meta">
           <b>Most typical: </b>
-          Kendrick Perry, Dominik Mavra, Ricky Rubio, DeWayne Russell, Marcelinho Huertas
+          Shannon Evans, Kendrick Perry, Marco Spissu, Dominik Mavra, Ricky Rubio
         </p>
         <h4>What sets it apart</h4>
         <ul class="apart">
@@ -72,12 +228,12 @@
             share of chances (second chances excluded) where he has the ball when it first reaches the frontcourt
           </li>
           <li>
-            <span class="num">+1.7</span>
+            <span class="num">+1.8</span>
             dribbles per touch
           </li>
           <li>
-            <span class="num">+1.6</span>
-            touches per 100 offensive chances on court
+            <span class="num">+1.5</span>
+            share of his team's on-court offensive clock time with the ball in his hands
           </li>
           <li>
             <span class="num">-1.4</span>
@@ -91,40 +247,40 @@
       </div>
       <div class="panel arch-card">
         <h3>
-          <span class="swatch" style="background: var(--arch-spacer)"></span>
-          Floor Spacer
+          <span class="swatch" style="background: var(--arch-post)"></span>
+          Post Scorer
         </h3>
-        <p class="meta">83 players · 35 well-sampled · mean probability 0.89</p>
-        <p>Plays off the ball beyond the arc. He shoots off the catch and off movement, spends more time in the corners than anyone, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group.</p>
+        <p class="meta">29 players · 15 well-sampled · mean probability 0.79</p>
+        <p>A big who scores with his back to the basket and around the rim. He has the highest share of hooks and post fadeaways, takes many layups and paint shots, and sets on-ball and off-ball screens. He does not shoot threes or play on the wing.</p>
         <p class="meta">
           <b>Most typical: </b>
-          Marcis Steinbergs, Mihajlo Andric, Aaron Doornekamp, Toni Nakic, Yves Pons
+          Ethan Happ, Willy Hernangomez, Ante Tomic, Luka Bozic, Dragan Apic
         </p>
         <h4>What sets it apart</h4>
         <ul class="apart">
           <li>
-            <span class="num">+1.3</span>
-            share of drives that start from attacking a closeout
+            <span class="num">+1.6</span>
+            direct picks as screener per 100 possessions on court
           </li>
           <li>
-            <span class="num">+1.2</span>
-            share of attempts that are corner threes
+            <span class="num">+1.6</span>
+            share of off-ball half-court time spent in: mid
           </li>
           <li>
-            <span class="num">+0.9</span>
-            share of off-ball half-court time spent in: corner
+            <span class="num">+1.6</span>
+            share of attempts that are hooks or post fadeaways
           </li>
           <li>
-            <span class="num">+0.9</span>
-            share of attempts that are catch-and-shoot (rest are off the dribble)
+            <span class="num">+1.5</span>
+            share of attempts in the restricted area
           </li>
           <li>
-            <span class="num">-0.8</span>
-            share of attempts in the paint outside the restricted area
+            <span class="num">-1.6</span>
+            share of attempts that are above-the-break threes
           </li>
           <li>
-            <span class="num">-0.8</span>
-            share of drives that start from an on-ball screen
+            <span class="num">-1.4</span>
+            share of off-ball half-court time spent in: wing
           </li>
         </ul>
       </div>
@@ -133,16 +289,16 @@
           <span class="swatch" style="background: var(--arch-slasher)"></span>
           Slasher
         </h3>
-        <p class="meta">29 players · 12 well-sampled · mean probability 0.85</p>
+        <p class="meta">29 players · 13 well-sampled · mean probability 0.85</p>
         <p>An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions, but handles less and takes fewer pull-up jumpers than a primary ball handler.</p>
         <p class="meta">
           <b>Most typical: </b>
-          Theo Maledon, Matteo Spagnolo, Joaquin Nazar Rodriguez Olivera, Jon Axel Gudmundsson, Retin Obasohan
+          Matteo Spagnolo, Theo Maledon, Joaquin Nazar Rodriguez Olivera, Omari Moore, Jon Axel Gudmundsson
         </p>
         <h4>What sets it apart</h4>
         <ul class="apart">
           <li>
-            <span class="num">+1.3</span>
+            <span class="num">+1.4</span>
             drives per 100 possessions on court
           </li>
           <li>
@@ -154,7 +310,7 @@
             direct picks as ball handler per 100 possessions on court
           </li>
           <li>
-            <span class="num">+0.9</span>
+            <span class="num">+1.0</span>
             mean distance from the hoop off the ball in the half court, ft
           </li>
           <li>
@@ -169,92 +325,14 @@
       </div>
       <div class="panel arch-card">
         <h3>
-          <span class="swatch" style="background: var(--arch-big)"></span>
-          Roll &amp; Cut Big
-        </h3>
-        <p class="meta">69 players · 20 well-sampled · mean probability 0.98</p>
-        <p>The interior player. He sets on-ball and off-ball screens, catches in the paint and scores at the rim and in the post; off the ball he is in or around the lane, and he does not play on the wing or shoot threes. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.</p>
-        <p class="meta">
-          <b>Most typical: </b>
-          Tryggvi Hlinason, Martinas Geben, Aleksander Balcerowski, Mike Tobey, Ethan Happ
-        </p>
-        <h4>What sets it apart</h4>
-        <ul class="apart">
-          <li>
-            <span class="num">+1.8</span>
-            direct picks as screener per 100 possessions on court
-          </li>
-          <li>
-            <span class="num">+1.5</span>
-            share of off-ball half-court time spent in: paint
-          </li>
-          <li>
-            <span class="num">+1.4</span>
-            share of off-ball half-court time spent in: mid
-          </li>
-          <li>
-            <span class="num">+1.4</span>
-            off-ball screens set per 100 chances
-          </li>
-          <li>
-            <span class="num">-1.5</span>
-            share of off-ball half-court time spent in: wing
-          </li>
-          <li>
-            <span class="num">-1.4</span>
-            feet from the hoop where his frontcourt touches start
-          </li>
-        </ul>
-      </div>
-      <div class="panel arch-card">
-        <h3>
-          <span class="swatch" style="background: var(--arch-finisher)"></span>
-          Athletic Finisher
-        </h3>
-        <p class="meta">38 players · 13 well-sampled · mean probability 0.80</p>
-        <p>A forward who scores going to the basket. His drives end at the rim, often from isolation, with layups and contested finishes, and he does little pick-and-roll handling or pull-up shooting. This is the least sharply defined archetype: it sits near the middle of the two main components.</p>
-        <p class="meta">
-          <b>Most typical: </b>
-          Tornike Shengelia, Nihad Djedovic, Jermaine Samuels, Devin Robinson, Jaime Pradilla
-        </p>
-        <h4>What sets it apart</h4>
-        <ul class="apart">
-          <li>
-            <span class="num">+0.7</span>
-            share of drives ending in a shot near the basket
-          </li>
-          <li>
-            <span class="num">+0.6</span>
-            share of attempts that are layups
-          </li>
-          <li>
-            <span class="num">+0.4</span>
-            share of drives that start from an isolation
-          </li>
-          <li>
-            <span class="num">+0.3</span>
-            share of attempts in the paint outside the restricted area
-          </li>
-          <li>
-            <span class="num">-0.5</span>
-            share of drives that start from an on-ball screen
-          </li>
-          <li>
-            <span class="num">-0.5</span>
-            share of attempts that are off-the-dribble threes
-          </li>
-        </ul>
-      </div>
-      <div class="panel arch-card">
-        <h3>
           <span class="swatch" style="background: var(--arch-secondary)"></span>
           Secondary Ball Handler
         </h3>
-        <p class="meta">47 players · 27 well-sampled · mean probability 0.87</p>
-        <p>A scoring guard or wing who gets the ball on the move. He comes off off-ball screens more than anyone, takes a high volume of shots and creates many of them himself with pull-ups and off-the-dribble threes. He starts fewer possessions than the primary ball handlers and seldom attacks the rim or the glass.</p>
+        <p class="meta">30 players · 18 well-sampled · mean probability 0.79</p>
+        <p>A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups and off-the-dribble threes and many of them contested, and often gets the ball coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.</p>
         <p class="meta">
           <b>Most typical: </b>
-          Justin Jaworski, Markus Howard, Patty Mills, Kevin Punter, Francisco Alonso
+          Kevin Punter, Chris Duarte, Justin Wright-Foreman, Darrun Hilliard, Jhivvan Jameel Jackson Melendez
         </p>
         <h4>What sets it apart</h4>
         <ul class="apart">
@@ -263,24 +341,102 @@
             off-ball screens used as cutter per 100 chances
           </li>
           <li>
+            <span class="num">+1.2</span>
+            share of attempts that are self-created jumpers (pull-up, stepback, shake-and-raise, leaner)
+          </li>
+          <li>
+            <span class="num">+1.2</span>
+            share of attempts that are off-the-dribble threes
+          </li>
+          <li>
             <span class="num">+1.1</span>
             field goal attempts per 100 possessions on court
           </li>
           <li>
-            <span class="num">+1.1</span>
-            share of attempts that are self-created jumpers (pull-up, stepback, shake-and-raise, leaner)
-          </li>
-          <li>
-            <span class="num">+0.9</span>
-            share of attempts that are off-the-dribble threes
+            <span class="num">-0.8</span>
+            share of attempts that are catch-and-shoot (rest are off the dribble)
           </li>
           <li>
             <span class="num">-0.8</span>
             share of teammates' shots where he is on the glass when the ball reaches the rim
           </li>
+        </ul>
+      </div>
+      <div class="panel arch-card">
+        <h3>
+          <span class="swatch" style="background: var(--arch-big)"></span>
+          Roll &amp; Cut Big
+        </h3>
+        <p class="meta">36 players · 16 well-sampled · mean probability 0.73</p>
+        <p>A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most on-ball screens and spends his off-ball time in the paint. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.</p>
+        <p class="meta">
+          <b>Most typical: </b>
+          Kaodirichi Akobundu-Ehiogu, Martinas Geben, Danko Brankovic, Mike Tobey, Bassala Bagayoko
+        </p>
+        <h4>What sets it apart</h4>
+        <ul class="apart">
+          <li>
+            <span class="num">+1.7</span>
+            share of attempts that are dunks or lobs
+          </li>
+          <li>
+            <span class="num">+1.7</span>
+            direct picks as screener per 100 possessions on court
+          </li>
+          <li>
+            <span class="num">+1.6</span>
+            share of off-ball half-court time spent in: paint
+          </li>
+          <li>
+            <span class="num">+1.3</span>
+            share of attempts in the restricted area
+          </li>
+          <li>
+            <span class="num">-1.5</span>
+            share of off-ball half-court time spent in: wing
+          </li>
+          <li>
+            <span class="num">-1.2</span>
+            feet from the hoop where his frontcourt touches start
+          </li>
+        </ul>
+      </div>
+      <div class="panel arch-card">
+        <h3>
+          <span class="swatch" style="background: var(--arch-versatile)"></span>
+          Versatile Big
+        </h3>
+        <p class="meta">12 players · 7 well-sampled · mean probability 0.78</p>
+        <p>A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, goes to the offensive glass and usually finishes without a dribble. The smallest group, and unlike BBall Index's versatile big it is not defined by three-point shooting.</p>
+        <p class="meta">
+          <b>Most typical: </b>
+          Pierre Pelos, Augustine Rubit, Emir Sulejmanovic, Mamadi Diakite, Beka Burjanadze
+        </p>
+        <h4>What sets it apart</h4>
+        <ul class="apart">
+          <li>
+            <span class="num">+0.9</span>
+            share of attempts that are hooks or post fadeaways
+          </li>
+          <li>
+            <span class="num">+0.8</span>
+            share of off-ball half-court time spent in: mid
+          </li>
+          <li>
+            <span class="num">+0.8</span>
+            share of touches with no dribble
+          </li>
+          <li>
+            <span class="num">+0.6</span>
+            share of attempts from mid-range
+          </li>
+          <li>
+            <span class="num">-1.0</span>
+            share of drives that start from an on-ball screen
+          </li>
           <li>
             <span class="num">-0.8</span>
-            share of attempts in the restricted area
+            share of attempts that are off-the-dribble threes
           </li>
         </ul>
       </div>
@@ -288,15 +444,15 @@
     <ul class="facts">
       <li>
         <b>Stability: </b>
-        0.73. This is the agreement between these clusters and the ones found when the model is refitted on resampled players (1 = identical; good to about ±0.1).
+        0.62. This is the agreement between these clusters and the ones found when the model is refitted on resampled players (1 = identical; good to about ±0.1).
       </li>
       <li>
         <b>Membership certainty: </b>
-        a player's most likely archetype has probability 0.89 on average; 15 of 310 players are under 0.5.
+        a player's most likely archetype has probability 0.79 on average; 24 of 310 players are under 0.5.
       </li>
       <li>
         <b>Fit: </b>
-        BIC -2134, against -2103 for the best-fitting alternative (VEV with 3 clusters), which was judged too coarse to describe playstyles.
+        BIC -2847, against -2734 for the best-fitting alternative (VEV with 3 clusters), which was judged too coarse to describe playstyles.
       </li>
     </ul>
   </section>
@@ -319,12 +475,8 @@
             <p>Handles in pick-and-roll, brings the ball up, dribbles a lot per touch and shoots off the dribble. Typical of point guards.</p>
             <ul>
               <li>
-                <span class="num">-0.25</span>
+                <span class="num">-0.24</span>
                 Direct picks as ball handler per 100 possessions on court
-              </li>
-              <li>
-                <span class="num">-0.23</span>
-                Dribbles per touch
               </li>
               <li>
                 <span class="num">-0.23</span>
@@ -332,7 +484,11 @@
               </li>
               <li>
                 <span class="num">-0.22</span>
-                Drives per 100 possessions on court
+                Share of attempts that are off-the-dribble threes
+              </li>
+              <li>
+                <span class="num">-0.22</span>
+                Dribbles per touch
               </li>
             </ul>
           </div>
@@ -344,11 +500,11 @@
             <p>Catches and shoots or finishes without a dribble, sets screens and goes to the offensive glass. Typical of bigs.</p>
             <ul>
               <li>
-                <span class="num">+0.22</span>
+                <span class="num">+0.21</span>
                 Share of touches with no dribble
               </li>
               <li>
-                <span class="num">+0.21</span>
+                <span class="num">+0.20</span>
                 Share of attempts that are catch-and-shoot (rest are off the dribble)
               </li>
               <li>
@@ -366,7 +522,7 @@
       <div class="panel pc">
         <div class="pc-head">
           <h3>Component 2</h3>
-          <span class="meta">20% of variance</span>
+          <span class="meta">19% of variance</span>
         </div>
         <p class="pc-context">Among players off the ball, where they operate: outside or inside.</p>
         <div class="pc-ends">
@@ -378,20 +534,20 @@
             <p>Scores in the paint with layups, floaters and post moves, and spends his off-ball time at the top of the floor as a screener.</p>
             <ul>
               <li>
-                <span class="num">-0.29</span>
-                Share of attempts in the paint outside the restricted area
+                <span class="num">-0.26</span>
+                Share of off-ball half-court time spent in: top
               </li>
               <li>
-                <span class="num">-0.25</span>
-                Share of off-ball half-court time spent in: top
+                <span class="num">-0.26</span>
+                Share of attempts in the paint outside the restricted area
               </li>
               <li>
                 <span class="num">-0.22</span>
                 Share of attempts that are layups
               </li>
               <li>
-                <span class="num">-0.19</span>
-                Share of attempts that are floaters
+                <span class="num">-0.17</span>
+                Share of attempts in the restricted area
               </li>
             </ul>
           </div>
@@ -403,7 +559,7 @@
             <p>Lives beyond the arc, especially in the corners, shoots off the catch or off movement and attacks closeouts.</p>
             <ul>
               <li>
-                <span class="num">+0.28</span>
+                <span class="num">+0.29</span>
                 Share of attempts that are corner threes
               </li>
               <li>
@@ -411,11 +567,11 @@
                 Share of off-ball half-court time spent in: corner
               </li>
               <li>
-                <span class="num">+0.26</span>
+                <span class="num">+0.25</span>
                 Share of attempts that are jumpers off movement
               </li>
               <li>
-                <span class="num">+0.23</span>
+                <span class="num">+0.24</span>
                 Share of drives that start from attacking a closeout
               </li>
             </ul>
@@ -425,7 +581,7 @@
       <div class="panel pc">
         <div class="pc-head">
           <h3>Component 3</h3>
-          <span class="meta">7% of variance</span>
+          <span class="meta">6% of variance</span>
         </div>
         <p class="pc-context">How a player gets his points: jump shots in volume, or occasional attacks on the rim.</p>
         <div class="pc-ends">
@@ -437,11 +593,11 @@
             <p>Takes many shots, with pull-ups, mid-range jumpers and shots coming off off-ball screens.</p>
             <ul>
               <li>
-                <span class="num">-0.38</span>
+                <span class="num">-0.35</span>
                 Share of drives ending in a pull-up
               </li>
               <li>
-                <span class="num">-0.34</span>
+                <span class="num">-0.33</span>
                 Share of attempts from mid-range
               </li>
               <li>
@@ -449,7 +605,7 @@
                 Field goal attempts per 100 possessions on court
               </li>
               <li>
-                <span class="num">-0.28</span>
+                <span class="num">-0.29</span>
                 Off-ball screens used as cutter per 100 chances
               </li>
             </ul>
@@ -462,20 +618,20 @@
             <p>Shoots little, and mostly layups; his drives end at the rim and he stands still off the ball.</p>
             <ul>
               <li>
-                <span class="num">+0.28</span>
+                <span class="num">+0.25</span>
                 Share of attempts that are layups
-              </li>
-              <li>
-                <span class="num">+0.19</span>
-                Share of drives ending in a shot near the basket
               </li>
               <li>
                 <span class="num">+0.18</span>
                 Share of off-ball half-court time moving slower than 2 ft/s
               </li>
               <li>
-                <span class="num">+0.16</span>
+                <span class="num">+0.17</span>
                 Share of off-ball half-court time spent in: corner
+              </li>
+              <li>
+                <span class="num">+0.16</span>
+                Share of drives ending in a shot near the basket
               </li>
             </ul>
           </div>
@@ -484,7 +640,7 @@
       <div class="panel pc">
         <div class="pc-head">
           <h3>Component 4</h3>
-          <span class="meta">6% of variance</span>
+          <span class="meta">5% of variance</span>
         </div>
         <p class="pc-context">Players who hunt their own shot on the wing against those who organise from the top.</p>
         <div class="pc-ends">
@@ -496,20 +652,20 @@
             <p>Stays at the top of the floor, starts possessions, runs pick-and-roll in the middle and shoots off the catch.</p>
             <ul>
               <li>
-                <span class="num">-0.26</span>
+                <span class="num">-0.23</span>
                 Share of off-ball half-court time spent in: top
               </li>
               <li>
-                <span class="num">-0.21</span>
+                <span class="num">-0.22</span>
                 Share of attempts that are catch-and-shoot (rest are off the dribble)
               </li>
               <li>
-                <span class="num">-0.17</span>
-                Share of chances (second chances excluded) where he has the ball when it first reaches the frontcourt
+                <span class="num">-0.16</span>
+                Share of direct picks as handler set in the middle of the floor
               </li>
               <li>
-                <span class="num">-0.16</span>
-                Share of drives that start from attacking a closeout
+                <span class="num">-0.15</span>
+                Share of chances (second chances excluded) where he has the ball when it first reaches the frontcourt
               </li>
             </ul>
           </div>
@@ -518,23 +674,23 @@
               <span class="pc-sign">+</span>
               Isolation and off-screen wing scorer
             </h4>
-            <p>Drives from isolation, uses off-ball screens, takes contested shots and gets to the rim.</p>
+            <p>Drives from isolation, takes contested shots, gets to the rim and shoots a lot.</p>
             <ul>
               <li>
-                <span class="num">+0.39</span>
-                Share of drives that start from an isolation
-              </li>
-              <li>
-                <span class="num">+0.33</span>
-                Off-ball screens used as cutter per 100 chances
-              </li>
-              <li>
-                <span class="num">+0.32</span>
+                <span class="num">+0.35</span>
                 Share of non-blocked attempts taken under an average or heavy contest
               </li>
               <li>
-                <span class="num">+0.30</span>
+                <span class="num">+0.35</span>
+                Share of drives that start from an isolation
+              </li>
+              <li>
+                <span class="num">+0.31</span>
                 Share of drives ending in a shot near the basket
+              </li>
+              <li>
+                <span class="num">+0.30</span>
+                Field goal attempts per 100 possessions on court
               </li>
             </ul>
           </div>
@@ -584,54 +740,257 @@
         <tbody>
           <tr>
             <td class="arch-name">
-              <span class="swatch" style="background: var(--arch-primary)"></span>
-              Primary Ball Handler
+              <span class="swatch" style="background: var(--arch-offscreen)"></span>
+              Off Screen Shooter
             </td>
-            <td class="count">44</td>
+            <td class="count">20</td>
             <td>
               <div class="score">
-                <span class="num">-1.45</span>
+                <span class="num">-0.43</span>
                 <div class="bar">
-                  <div class="fill" style="width: 36.2%; left: 13.8%"></div>
+                  <div class="fill" style="width: 10.8%; left: 39.2%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-0.74</span>
+                <span class="num">+1.05</span>
                 <div class="bar">
-                  <div class="fill" style="width: 18.5%; left: 31.5%"></div>
+                  <div class="fill" style="width: 26.2%; left: 50.0%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-0.04</span>
+                <span class="num">-1.16</span>
                 <div class="bar">
-                  <div class="fill" style="width: 1.0%; left: 49.0%"></div>
+                  <div class="fill" style="width: 29.0%; left: 21.0%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-1.07</span>
+                <span class="num">+0.47</span>
                 <div class="bar">
-                  <div class="fill" style="width: 26.8%; left: 23.2%"></div>
+                  <div class="fill" style="width: 11.8%; left: 50.0%"></div>
                 </div>
               </div>
             </td>
           </tr>
           <tr>
             <td class="arch-name">
-              <span class="swatch" style="background: var(--arch-spacer)"></span>
-              Floor Spacer
+              <span class="swatch" style="background: var(--arch-movement)"></span>
+              Movement Shooter
             </td>
-            <td class="count">83</td>
+            <td class="count">52</td>
             <td>
               <div class="score">
-                <span class="num">+0.52</span>
+                <span class="num">+0.32</span>
                 <div class="bar">
-                  <div class="fill" style="width: 13.0%; left: 50.0%"></div>
+                  <div class="fill" style="width: 8.0%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+1.36</span>
+                <div class="bar">
+                  <div class="fill" style="width: 34.0%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.11</span>
+                <div class="bar">
+                  <div class="fill" style="width: 2.8%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-0.63</span>
+                <div class="bar">
+                  <div class="fill" style="width: 15.8%; left: 34.2%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="arch-name">
+              <span class="swatch" style="background: var(--arch-stationary)"></span>
+              Stationary Shooter
+            </td>
+            <td class="count">21</td>
+            <td>
+              <div class="score">
+                <span class="num">+0.56</span>
+                <div class="bar">
+                  <div class="fill" style="width: 14.0%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.97</span>
+                <div class="bar">
+                  <div class="fill" style="width: 24.2%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+1.04</span>
+                <div class="bar">
+                  <div class="fill" style="width: 26.0%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-0.13</span>
+                <div class="bar">
+                  <div class="fill" style="width: 3.2%; left: 46.8%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="arch-name">
+              <span class="swatch" style="background: var(--arch-finisher)"></span>
+              Athletic Finisher
+            </td>
+            <td class="count">36</td>
+            <td>
+              <div class="score">
+                <span class="num">+0.19</span>
+                <div class="bar">
+                  <div class="fill" style="width: 4.8%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.20</span>
+                <div class="bar">
+                  <div class="fill" style="width: 5.0%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.68</span>
+                <div class="bar">
+                  <div class="fill" style="width: 17.0%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.90</span>
+                <div class="bar">
+                  <div class="fill" style="width: 22.5%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="arch-name">
+              <span class="swatch" style="background: var(--arch-primary)"></span>
+              Primary Ball Handler
+            </td>
+            <td class="count">45</td>
+            <td>
+              <div class="score">
+                <span class="num">-1.48</span>
+                <div class="bar">
+                  <div class="fill" style="width: 37.0%; left: 13.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-0.94</span>
+                <div class="bar">
+                  <div class="fill" style="width: 23.5%; left: 26.5%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.10</span>
+                <div class="bar">
+                  <div class="fill" style="width: 2.5%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-1.02</span>
+                <div class="bar">
+                  <div class="fill" style="width: 25.5%; left: 24.5%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="arch-name">
+              <span class="swatch" style="background: var(--arch-post)"></span>
+              Post Scorer
+            </td>
+            <td class="count">29</td>
+            <td>
+              <div class="score">
+                <span class="num">+1.39</span>
+                <div class="bar">
+                  <div class="fill" style="width: 34.8%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-1.33</span>
+                <div class="bar">
+                  <div class="fill" style="width: 33.2%; left: 16.8%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-0.34</span>
+                <div class="bar">
+                  <div class="fill" style="width: 8.5%; left: 41.5%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">+0.61</span>
+                <div class="bar">
+                  <div class="fill" style="width: 15.2%; left: 50.0%"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="arch-name">
+              <span class="swatch" style="background: var(--arch-slasher)"></span>
+              Slasher
+            </td>
+            <td class="count">29</td>
+            <td>
+              <div class="score">
+                <span class="num">-0.88</span>
+                <div class="bar">
+                  <div class="fill" style="width: 22.0%; left: 28.0%"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="score">
+                <span class="num">-0.59</span>
+                <div class="bar">
+                  <div class="fill" style="width: 14.8%; left: 35.2%"></div>
                 </div>
               </div>
             </td>
@@ -645,56 +1004,48 @@
             </td>
             <td>
               <div class="score">
-                <span class="num">+0.23</span>
+                <span class="num">+0.53</span>
                 <div class="bar">
-                  <div class="fill" style="width: 5.8%; left: 50.0%"></div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="score">
-                <span class="num">-0.44</span>
-                <div class="bar">
-                  <div class="fill" style="width: 11.0%; left: 39.0%"></div>
+                  <div class="fill" style="width: 13.2%; left: 50.0%"></div>
                 </div>
               </div>
             </td>
           </tr>
           <tr>
             <td class="arch-name">
-              <span class="swatch" style="background: var(--arch-slasher)"></span>
-              Slasher
+              <span class="swatch" style="background: var(--arch-secondary)"></span>
+              Secondary Ball Handler
             </td>
-            <td class="count">29</td>
+            <td class="count">30</td>
             <td>
               <div class="score">
-                <span class="num">-0.81</span>
+                <span class="num">-0.88</span>
                 <div class="bar">
-                  <div class="fill" style="width: 20.2%; left: 29.8%"></div>
+                  <div class="fill" style="width: 22.0%; left: 28.0%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-0.48</span>
+                <span class="num">+0.19</span>
                 <div class="bar">
-                  <div class="fill" style="width: 12.0%; left: 38.0%"></div>
+                  <div class="fill" style="width: 4.8%; left: 50.0%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">+1.19</span>
+                <span class="num">-0.98</span>
                 <div class="bar">
-                  <div class="fill" style="width: 29.8%; left: 50.0%"></div>
+                  <div class="fill" style="width: 24.5%; left: 25.5%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">+0.38</span>
+                <span class="num">+0.73</span>
                 <div class="bar">
-                  <div class="fill" style="width: 9.5%; left: 50.0%"></div>
+                  <div class="fill" style="width: 18.2%; left: 50.0%"></div>
                 </div>
               </div>
             </td>
@@ -704,7 +1055,7 @@
               <span class="swatch" style="background: var(--arch-big)"></span>
               Roll &amp; Cut Big
             </td>
-            <td class="count">69</td>
+            <td class="count">36</td>
             <td>
               <div class="score">
                 <span class="num">+1.49</span>
@@ -715,103 +1066,64 @@
             </td>
             <td>
               <div class="score">
-                <span class="num">-1.34</span>
+                <span class="num">-1.00</span>
                 <div class="bar">
-                  <div class="fill" style="width: 33.5%; left: 16.5%"></div>
+                  <div class="fill" style="width: 25.0%; left: 25.0%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-0.55</span>
+                <span class="num">-0.49</span>
                 <div class="bar">
-                  <div class="fill" style="width: 13.8%; left: 36.2%"></div>
+                  <div class="fill" style="width: 12.2%; left: 37.8%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-0.24</span>
+                <span class="num">-0.81</span>
                 <div class="bar">
-                  <div class="fill" style="width: 6.0%; left: 44.0%"></div>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td class="arch-name">
-              <span class="swatch" style="background: var(--arch-finisher)"></span>
-              Athletic Finisher
-            </td>
-            <td class="count">38</td>
-            <td>
-              <div class="score">
-                <span class="num">+0.37</span>
-                <div class="bar">
-                  <div class="fill" style="width: 9.2%; left: 50.0%"></div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="score">
-                <span class="num">-0.01</span>
-                <div class="bar">
-                  <div class="fill" style="width: 0.2%; left: 49.8%"></div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="score">
-                <span class="num">+0.64</span>
-                <div class="bar">
-                  <div class="fill" style="width: 16.0%; left: 50.0%"></div>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class="score">
-                <span class="num">+0.77</span>
-                <div class="bar">
-                  <div class="fill" style="width: 19.2%; left: 50.0%"></div>
+                  <div class="fill" style="width: 20.2%; left: 29.8%"></div>
                 </div>
               </div>
             </td>
           </tr>
           <tr>
             <td class="arch-name">
-              <span class="swatch" style="background: var(--arch-secondary)"></span>
-              Secondary Ball Handler
+              <span class="swatch" style="background: var(--arch-versatile)"></span>
+              Versatile Big
             </td>
-            <td class="count">47</td>
+            <td class="count">12</td>
             <td>
               <div class="score">
-                <span class="num">-0.63</span>
+                <span class="num">+0.82</span>
                 <div class="bar">
-                  <div class="fill" style="width: 15.8%; left: 34.2%"></div>
+                  <div class="fill" style="width: 20.5%; left: 50.0%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">+0.42</span>
+                <span class="num">-0.13</span>
                 <div class="bar">
-                  <div class="fill" style="width: 10.5%; left: 50.0%"></div>
+                  <div class="fill" style="width: 3.2%; left: 46.8%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">-0.93</span>
+                <span class="num">-0.53</span>
                 <div class="bar">
-                  <div class="fill" style="width: 23.2%; left: 26.8%"></div>
+                  <div class="fill" style="width: 13.2%; left: 36.8%"></div>
                 </div>
               </div>
             </td>
             <td>
               <div class="score">
-                <span class="num">+0.90</span>
+                <span class="num">-0.09</span>
                 <div class="bar">
-                  <div class="fill" style="width: 22.5%; left: 50.0%"></div>
+                  <div class="fill" style="width: 2.2%; left: 47.8%"></div>
                 </div>
               </div>
             </td>
@@ -865,7 +1177,7 @@
       </div>
       <div class="panel arch-card">
         <h3>
-          <span class="swatch" style="background: var(--arch-spacer)"></span>
+          <span class="swatch" style="background: var(--arch-movement)"></span>
           Helper
         </h3>
         <p class="meta">75 players · 54 well-sampled · mean probability 0.94</p>
@@ -1171,7 +1483,7 @@
           </tr>
           <tr>
             <td class="arch-name">
-              <span class="swatch" style="background: var(--arch-spacer)"></span>
+              <span class="swatch" style="background: var(--arch-movement)"></span>
               Helper
             </td>
             <td class="count">75</td>
@@ -1249,7 +1561,8 @@
       <li>Players lie along a continuum more than in separate clumps, so the borders between neighbouring archetypes are soft. The probabilities say how close a player is to a border.</li>
       <li>Defensive roles rest on one or two tracked games per player, and so reflect that opponent and game plan. There is no season-long defensive data.</li>
       <li>Probabilities are optimistic about season-long role, because noise in the tracked features is measured within games.</li>
-      <li>Several intended features were too noisy to use, including roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against the pick-and-roll. Bigs are therefore not split into finer types.</li>
+      <li>Several intended features were too noisy to use, including roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against the pick-and-roll. The three kinds of big are therefore told apart by their shots and where they stand, not by what they do after a screen.</li>
+      <li>Ten offensive archetypes is more than the data settles firmly: the offensive stability score above is lower than it would be for fewer, broader groups, and BBall Index's shot creator and stretch big do not appear as groups of their own.</li>
     </ul>
   </section>
   <p class="meta">Data: SkillCorner open data, Liga ACB 2025-2026. Inspired by BBall Index's offensive archetypes and defensive roles.</p>

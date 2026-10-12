@@ -1,0 +1,757 @@
+cluster,archetype,players,defining_players,feature,z,value,league_mean
+1,Off Screen Shooter,31,21,s_offmove_share,1.49,0.1969,0.0962
+1,Off Screen Shooter,31,21,t_obs_cut_per100,1.2,21.0849,10.3941
+1,Off Screen Shooter,31,21,s_drv_obs_share,1.16,0.0777,0.037
+1,Off Screen Shooter,31,21,s_ab3_share,0.98,0.4466,0.2899
+1,Off Screen Shooter,31,21,s_pullup_share,0.88,0.314,0.1898
+1,Off Screen Shooter,31,21,s_od3_share,0.82,0.1941,0.114
+1,Off Screen Shooter,31,21,s_scr_shot3_share,0.72,0.5226,0.3323
+1,Off Screen Shooter,31,21,s_fga_per100,0.66,19.0469,16.2283
+1,Off Screen Shooter,31,21,s_drv_pullup_share,0.62,0.1789,0.1357
+1,Off Screen Shooter,31,21,s_bh_shot3_share,0.56,0.434,0.3521
+1,Off Screen Shooter,31,21,t_off_wing_share,0.56,0.3854,0.3061
+1,Off Screen Shooter,31,21,t_pop_share,0.55,0.5337,0.3856
+1,Off Screen Shooter,31,21,s_contested_share,0.48,0.7096,0.6814
+1,Off Screen Shooter,31,21,t_catch_dist,0.45,25.9127,23.9001
+1,Off Screen Shooter,31,21,t_ho_recv_per100,0.44,5.4942,3.824
+1,Off Screen Shooter,31,21,s_mid_share,0.43,0.126,0.0985
+1,Off Screen Shooter,31,21,t_off_corner_share,0.42,0.2054,0.1563
+1,Off Screen Shooter,31,21,t_off_hoop_dist,0.36,22.9412,21.9251
+1,Off Screen Shooter,31,21,t_shot_per_touch,0.33,0.234,0.2107
+1,Off Screen Shooter,31,21,t_off_speed,0.32,5.0749,4.9384
+1,Off Screen Shooter,31,21,t_catch_top_share,0.3,0.2854,0.2596
+1,Off Screen Shooter,31,21,s_corner3_share,0.28,0.1186,0.0956
+1,Off Screen Shooter,31,21,s_drv_pick_share,0.24,0.3715,0.3185
+1,Off Screen Shooter,31,21,t_pass_len,0.2,16.9481,16.4007
+1,Off Screen Shooter,31,21,s_bh_shoot_share,0.19,0.3823,0.3672
+1,Off Screen Shooter,31,21,s_drive_per100,0.18,8.3642,7.2829
+1,Off Screen Shooter,31,21,t_iso_per100,0.17,2.0261,1.6408
+1,Off Screen Shooter,31,21,t_drib_per_touch,0.12,1.7526,1.5867
+1,Off Screen Shooter,31,21,s_pick_bh_per100,0.11,9.7798,8.5689
+1,Off Screen Shooter,31,21,t_off_still_share,0.11,0.266,0.2579
+1,Off Screen Shooter,31,21,s_drv_left_share,0.1,0.5182,0.5102
+1,Off Screen Shooter,31,21,s_drv_kickout_share,0.06,0.3049,0.2999
+1,Off Screen Shooter,31,21,t_touch_per100,0.02,64.2875,63.9514
+1,Off Screen Shooter,31,21,t_sec_per_touch,0,3.1737,3.1754
+1,Off Screen Shooter,31,21,t_catch_corner_share,-0.04,0.043,0.0446
+1,Off Screen Shooter,31,21,t_ball_time_share,-0.06,0.1777,0.1877
+1,Off Screen Shooter,31,21,s_drv_iso_share,-0.1,0.133,0.1396
+1,Off Screen Shooter,31,21,t_initiate_share,-0.1,0.1628,0.1832
+1,Off Screen Shooter,31,21,s_floater_share,-0.16,0.038,0.0436
+1,Off Screen Shooter,31,21,t_ho_set_per100,-0.17,3.5809,4.1494
+1,Off Screen Shooter,31,21,t_off_dunker_share,-0.23,0.0285,0.0321
+1,Off Screen Shooter,31,21,s_cns_share,-0.25,0.4842,0.5315
+1,Off Screen Shooter,31,21,s_drv_closeout_share,-0.28,0.208,0.2678
+1,Off Screen Shooter,31,21,t_pass_per_touch,-0.3,0.6838,0.7069
+1,Off Screen Shooter,31,21,t_zero_drib_share,-0.32,0.4977,0.5618
+1,Off Screen Shooter,31,21,t_post_per100,-0.35,0.4234,1.0594
+1,Off Screen Shooter,31,21,s_drv_rim_share,-0.37,0.3889,0.4289
+1,Off Screen Shooter,31,21,t_off_paint_share,-0.41,0.0793,0.1138
+1,Off Screen Shooter,31,21,t_off_top_share,-0.44,0.1158,0.1586
+1,Off Screen Shooter,31,21,t_off_mid_share,-0.44,0.1897,0.2329
+1,Off Screen Shooter,31,21,s_bh_middle_share,-0.44,0.5275,0.5844
+1,Off Screen Shooter,31,21,t_catch_paint_share,-0.47,0.0549,0.122
+1,Off Screen Shooter,31,21,s_dunk_lob_share,-0.5,0.0129,0.0538
+1,Off Screen Shooter,31,21,t_crash_share,-0.53,0.2861,0.3949
+1,Off Screen Shooter,31,21,s_tip_share,-0.56,0.006,0.0248
+1,Off Screen Shooter,31,21,s_pick_scr_per100,-0.57,2.1856,10.691
+1,Off Screen Shooter,31,21,t_roll_share,-0.57,0.4286,0.575
+1,Off Screen Shooter,31,21,t_trans_rank,-0.58,2.6156,2.8635
+1,Off Screen Shooter,31,21,s_post_shot_share,-0.59,0.0172,0.0471
+1,Off Screen Shooter,31,21,t_obs_scr_per100,-0.6,5.4053,11.2727
+1,Off Screen Shooter,31,21,s_paint_share,-0.79,0.1558,0.2356
+1,Off Screen Shooter,31,21,s_rim_share,-0.86,0.1164,0.2512
+1,Off Screen Shooter,31,21,s_layup_share,-0.88,0.1972,0.3199
+2,Stationary Shooter,30,13,s_corner3_share,1.75,0.2392,0.0956
+2,Stationary Shooter,30,13,t_off_corner_share,1.44,0.3242,0.1563
+2,Stationary Shooter,30,13,s_drv_closeout_share,1.16,0.5129,0.2678
+2,Stationary Shooter,30,13,t_off_still_share,1.09,0.3393,0.2579
+2,Stationary Shooter,30,13,s_cns_share,0.99,0.7214,0.5315
+2,Stationary Shooter,30,13,t_zero_drib_share,0.75,0.7104,0.5618
+2,Stationary Shooter,30,13,t_catch_corner_share,0.69,0.0757,0.0446
+2,Stationary Shooter,30,13,s_offmove_share,0.56,0.1343,0.0962
+2,Stationary Shooter,30,13,s_scr_shot3_share,0.56,0.4798,0.3323
+2,Stationary Shooter,30,13,s_drv_obs_share,0.32,0.0481,0.037
+2,Stationary Shooter,30,13,t_pass_per_touch,0.26,0.7275,0.7069
+2,Stationary Shooter,30,13,s_ab3_share,0.26,0.3318,0.2899
+2,Stationary Shooter,30,13,s_drv_pullup_share,0.26,0.1539,0.1357
+2,Stationary Shooter,30,13,s_bh_shoot_share,0.2,0.3834,0.3672
+2,Stationary Shooter,30,13,t_off_wing_share,0.2,0.3344,0.3061
+2,Stationary Shooter,30,13,t_crash_share,0.09,0.4138,0.3949
+2,Stationary Shooter,30,13,t_pop_share,0.08,0.4073,0.3856
+2,Stationary Shooter,30,13,t_off_dunker_share,0.08,0.0333,0.0321
+2,Stationary Shooter,30,13,t_off_hoop_dist,0.06,22.101,21.9251
+2,Stationary Shooter,30,13,s_drv_left_share,0.05,0.5141,0.5102
+2,Stationary Shooter,30,13,t_catch_dist,0,23.9171,23.9001
+2,Stationary Shooter,30,13,s_bh_shot3_share,0,0.3515,0.3521
+2,Stationary Shooter,30,13,t_pass_len,-0.02,16.3581,16.4007
+2,Stationary Shooter,30,13,s_drv_kickout_share,-0.04,0.2965,0.2999
+2,Stationary Shooter,30,13,t_roll_share,-0.05,0.5629,0.575
+2,Stationary Shooter,30,13,s_contested_share,-0.08,0.6765,0.6814
+2,Stationary Shooter,30,13,t_shot_per_touch,-0.16,0.1991,0.2107
+2,Stationary Shooter,30,13,s_dunk_lob_share,-0.17,0.0401,0.0538
+2,Stationary Shooter,30,13,t_catch_paint_share,-0.2,0.0936,0.122
+2,Stationary Shooter,30,13,s_mid_share,-0.22,0.0846,0.0985
+2,Stationary Shooter,30,13,s_drv_rim_share,-0.23,0.404,0.4289
+2,Stationary Shooter,30,13,s_tip_share,-0.27,0.0157,0.0248
+2,Stationary Shooter,30,13,t_obs_scr_per100,-0.28,8.5089,11.2727
+2,Stationary Shooter,30,13,t_post_per100,-0.3,0.5136,1.0594
+2,Stationary Shooter,30,13,t_ho_set_per100,-0.3,3.1389,4.1494
+2,Stationary Shooter,30,13,s_bh_middle_share,-0.3,0.546,0.5844
+2,Stationary Shooter,30,13,t_iso_per100,-0.36,0.8251,1.6408
+2,Stationary Shooter,30,13,t_trans_rank,-0.37,2.7057,2.8635
+2,Stationary Shooter,30,13,s_pullup_share,-0.38,0.1363,0.1898
+2,Stationary Shooter,30,13,t_sec_per_touch,-0.38,2.5824,3.1754
+2,Stationary Shooter,30,13,s_od3_share,-0.41,0.0741,0.114
+2,Stationary Shooter,30,13,s_drv_iso_share,-0.43,0.1116,0.1396
+2,Stationary Shooter,30,13,t_obs_cut_per100,-0.44,6.4936,10.3941
+2,Stationary Shooter,30,13,t_ho_recv_per100,-0.44,2.1403,3.824
+2,Stationary Shooter,30,13,t_off_mid_share,-0.45,0.1885,0.2329
+2,Stationary Shooter,30,13,s_post_shot_share,-0.5,0.0219,0.0471
+2,Stationary Shooter,30,13,s_pick_scr_per100,-0.5,3.1477,10.691
+2,Stationary Shooter,30,13,s_rim_share,-0.52,0.1705,0.2512
+2,Stationary Shooter,30,13,t_catch_top_share,-0.6,0.2078,0.2596
+2,Stationary Shooter,30,13,t_off_paint_share,-0.61,0.0629,0.1138
+2,Stationary Shooter,30,13,t_ball_time_share,-0.61,0.0892,0.1877
+2,Stationary Shooter,30,13,s_floater_share,-0.62,0.0213,0.0436
+2,Stationary Shooter,30,13,t_initiate_share,-0.68,0.0484,0.1832
+2,Stationary Shooter,30,13,t_drib_per_touch,-0.7,0.6498,1.5867
+2,Stationary Shooter,30,13,s_pick_bh_per100,-0.7,0.8319,8.5689
+2,Stationary Shooter,30,13,s_drive_per100,-0.71,2.9524,7.2829
+2,Stationary Shooter,30,13,s_drv_pick_share,-0.74,0.156,0.3185
+2,Stationary Shooter,30,13,s_layup_share,-0.75,0.2152,0.3199
+2,Stationary Shooter,30,13,s_fga_per100,-0.76,12.9568,16.2283
+2,Stationary Shooter,30,13,t_off_speed,-0.82,4.5829,4.9384
+2,Stationary Shooter,30,13,t_touch_per100,-0.9,45.0499,63.9514
+2,Stationary Shooter,30,13,s_paint_share,-0.95,0.1397,0.2356
+2,Stationary Shooter,30,13,t_off_top_share,-1.03,0.0574,0.1586
+3,Combo Wing,26,14,t_off_wing_share,0.51,0.3782,0.3061
+3,Combo Wing,26,14,t_off_still_share,0.49,0.2941,0.2579
+3,Combo Wing,26,14,s_drive_per100,0.45,10.048,7.2829
+3,Combo Wing,26,14,s_contested_share,0.41,0.7054,0.6814
+3,Combo Wing,26,14,t_off_corner_share,0.4,0.2035,0.1563
+3,Combo Wing,26,14,s_layup_share,0.39,0.3745,0.3199
+3,Combo Wing,26,14,t_pop_share,0.36,0.4822,0.3856
+3,Combo Wing,26,14,t_pass_len,0.3,17.227,16.4007
+3,Combo Wing,26,14,s_drv_rim_share,0.27,0.4588,0.4289
+3,Combo Wing,26,14,s_drv_pick_share,0.25,0.3726,0.3185
+3,Combo Wing,26,14,s_paint_share,0.24,0.2597,0.2356
+3,Combo Wing,26,14,t_shot_per_touch,0.23,0.2272,0.2107
+3,Combo Wing,26,14,s_drv_obs_share,0.21,0.0445,0.037
+3,Combo Wing,26,14,t_obs_cut_per100,0.2,12.2025,10.3941
+3,Combo Wing,26,14,t_catch_corner_share,0.17,0.0524,0.0446
+3,Combo Wing,26,14,t_off_hoop_dist,0.15,22.336,21.9251
+3,Combo Wing,26,14,t_iso_per100,0.14,1.9519,1.6408
+3,Combo Wing,26,14,s_fga_per100,0.13,16.8048,16.2283
+3,Combo Wing,26,14,s_corner3_share,0.12,0.1055,0.0956
+3,Combo Wing,26,14,t_catch_dist,0.08,24.2642,23.9001
+3,Combo Wing,26,14,s_bh_shoot_share,0.06,0.372,0.3672
+3,Combo Wing,26,14,t_drib_per_touch,0,1.5821,1.5867
+3,Combo Wing,26,14,t_off_dunker_share,-0.02,0.0318,0.0321
+3,Combo Wing,26,14,t_ho_recv_per100,-0.03,3.7153,3.824
+3,Combo Wing,26,14,t_zero_drib_share,-0.05,0.5515,0.5618
+3,Combo Wing,26,14,s_drv_kickout_share,-0.07,0.2948,0.2999
+3,Combo Wing,26,14,s_ab3_share,-0.07,0.2783,0.2899
+3,Combo Wing,26,14,s_drv_iso_share,-0.09,0.1337,0.1396
+3,Combo Wing,26,14,t_sec_per_touch,-0.09,3.0352,3.1754
+3,Combo Wing,26,14,s_offmove_share,-0.1,0.0896,0.0962
+3,Combo Wing,26,14,s_post_shot_share,-0.1,0.042,0.0471
+3,Combo Wing,26,14,s_rim_share,-0.11,0.2343,0.2512
+3,Combo Wing,26,14,s_pullup_share,-0.11,0.1742,0.1898
+3,Combo Wing,26,14,t_post_per100,-0.13,0.8165,1.0594
+3,Combo Wing,26,14,s_pick_bh_per100,-0.13,7.1148,8.5689
+3,Combo Wing,26,14,s_scr_shot3_share,-0.13,0.2969,0.3323
+3,Combo Wing,26,14,s_mid_share,-0.14,0.0897,0.0985
+3,Combo Wing,26,14,s_floater_share,-0.14,0.0386,0.0436
+3,Combo Wing,26,14,t_crash_share,-0.15,0.3639,0.3949
+3,Combo Wing,26,14,s_bh_middle_share,-0.16,0.5645,0.5844
+3,Combo Wing,26,14,t_ball_time_share,-0.17,0.161,0.1877
+3,Combo Wing,26,14,t_touch_per100,-0.17,60.4018,63.9514
+3,Combo Wing,26,14,t_catch_paint_share,-0.19,0.0944,0.122
+3,Combo Wing,26,14,t_initiate_share,-0.22,0.1399,0.1832
+3,Combo Wing,26,14,s_od3_share,-0.24,0.0909,0.114
+3,Combo Wing,26,14,s_drv_closeout_share,-0.25,0.215,0.2678
+3,Combo Wing,26,14,t_off_paint_share,-0.28,0.0904,0.1138
+3,Combo Wing,26,14,t_pass_per_touch,-0.29,0.6845,0.7069
+3,Combo Wing,26,14,t_ho_set_per100,-0.31,3.1096,4.1494
+3,Combo Wing,26,14,t_off_speed,-0.32,4.7988,4.9384
+3,Combo Wing,26,14,s_dunk_lob_share,-0.32,0.0274,0.0538
+3,Combo Wing,26,14,s_drv_left_share,-0.33,0.4844,0.5102
+3,Combo Wing,26,14,t_catch_top_share,-0.34,0.2304,0.2596
+3,Combo Wing,26,14,s_cns_share,-0.34,0.4666,0.5315
+3,Combo Wing,26,14,t_off_mid_share,-0.34,0.1991,0.2329
+3,Combo Wing,26,14,s_tip_share,-0.35,0.013,0.0248
+3,Combo Wing,26,14,t_obs_scr_per100,-0.35,7.8097,11.2727
+3,Combo Wing,26,14,t_roll_share,-0.37,0.4783,0.575
+3,Combo Wing,26,14,s_drv_pullup_share,-0.42,0.1065,0.1357
+3,Combo Wing,26,14,s_pick_scr_per100,-0.6,1.6929,10.691
+3,Combo Wing,26,14,t_off_top_share,-0.62,0.098,0.1586
+3,Combo Wing,26,14,t_trans_rank,-0.66,2.5826,2.8635
+3,Combo Wing,26,14,s_bh_shot3_share,-0.67,0.2547,0.3521
+4,Slasher,26,13,s_drive_per100,1.6,17.0593,7.2829
+4,Slasher,26,13,t_initiate_share,1.54,0.4897,0.1832
+4,Slasher,26,13,s_pick_bh_per100,1.24,22.1615,8.5689
+4,Slasher,26,13,t_drib_per_touch,1.17,3.1524,1.5867
+4,Slasher,26,13,s_drv_pick_share,1.15,0.5726,0.3185
+4,Slasher,26,13,t_off_hoop_dist,1.14,25.1445,21.9251
+4,Slasher,26,13,t_touch_per100,1.14,87.9347,63.9514
+4,Slasher,26,13,t_ball_time_share,1.13,0.3702,0.1877
+4,Slasher,26,13,t_catch_dist,0.96,28.1929,23.9001
+4,Slasher,26,13,t_off_wing_share,0.93,0.4386,0.3061
+4,Slasher,26,13,t_sec_per_touch,0.84,4.4712,3.1754
+4,Slasher,26,13,t_pass_len,0.81,18.5909,16.4007
+4,Slasher,26,13,s_layup_share,0.71,0.4198,0.3199
+4,Slasher,26,13,t_ho_recv_per100,0.55,5.9244,3.824
+4,Slasher,26,13,t_pass_per_touch,0.53,0.7483,0.7069
+4,Slasher,26,13,t_off_top_share,0.51,0.2086,0.1586
+4,Slasher,26,13,s_paint_share,0.51,0.287,0.2356
+4,Slasher,26,13,s_bh_middle_share,0.51,0.6496,0.5844
+4,Slasher,26,13,s_pullup_share,0.43,0.2505,0.1898
+4,Slasher,26,13,s_od3_share,0.39,0.1521,0.114
+4,Slasher,26,13,t_trans_rank,0.35,3.011,2.8635
+4,Slasher,26,13,t_pop_share,0.31,0.4674,0.3856
+4,Slasher,26,13,s_contested_share,0.28,0.6979,0.6814
+4,Slasher,26,13,t_catch_top_share,0.23,0.2796,0.2596
+4,Slasher,26,13,s_floater_share,0.19,0.0504,0.0436
+4,Slasher,26,13,s_drv_kickout_share,0.18,0.3137,0.2999
+4,Slasher,26,13,s_drv_rim_share,0.13,0.4432,0.4289
+4,Slasher,26,13,t_catch_corner_share,0.1,0.0492,0.0446
+4,Slasher,26,13,t_off_still_share,0.1,0.2654,0.2579
+4,Slasher,26,13,s_drv_left_share,0.1,0.5179,0.5102
+4,Slasher,26,13,s_scr_shot3_share,0.05,0.3454,0.3323
+4,Slasher,26,13,s_fga_per100,0.01,16.269,16.2283
+4,Slasher,26,13,s_drv_iso_share,0,0.1397,0.1396
+4,Slasher,26,13,s_rim_share,-0.01,0.2489,0.2512
+4,Slasher,26,13,t_off_speed,-0.09,4.8987,4.9384
+4,Slasher,26,13,s_ab3_share,-0.1,0.274,0.2899
+4,Slasher,26,13,s_mid_share,-0.14,0.0892,0.0985
+4,Slasher,26,13,t_off_corner_share,-0.15,0.1383,0.1563
+4,Slasher,26,13,t_iso_per100,-0.16,1.2922,1.6408
+4,Slasher,26,13,t_roll_share,-0.27,0.5049,0.575
+4,Slasher,26,13,s_corner3_share,-0.28,0.0725,0.0956
+4,Slasher,26,13,s_post_shot_share,-0.29,0.0326,0.0471
+4,Slasher,26,13,t_post_per100,-0.35,0.4239,1.0594
+4,Slasher,26,13,t_obs_cut_per100,-0.35,7.2562,10.3941
+4,Slasher,26,13,t_off_dunker_share,-0.37,0.0262,0.0321
+4,Slasher,26,13,t_ho_set_per100,-0.41,2.7616,4.1494
+4,Slasher,26,13,s_bh_shoot_share,-0.43,0.3326,0.3672
+4,Slasher,26,13,s_offmove_share,-0.43,0.0671,0.0962
+4,Slasher,26,13,s_tip_share,-0.48,0.0089,0.0248
+4,Slasher,26,13,s_dunk_lob_share,-0.48,0.0149,0.0538
+4,Slasher,26,13,s_drv_pullup_share,-0.59,0.0948,0.1357
+4,Slasher,26,13,t_catch_paint_share,-0.59,0.0369,0.122
+4,Slasher,26,13,t_shot_per_touch,-0.63,0.166,0.2107
+4,Slasher,26,13,s_drv_obs_share,-0.64,0.0145,0.037
+4,Slasher,26,13,t_off_paint_share,-0.65,0.0592,0.1138
+4,Slasher,26,13,s_pick_scr_per100,-0.66,0.8239,10.691
+4,Slasher,26,13,t_obs_scr_per100,-0.71,4.2989,11.2727
+4,Slasher,26,13,s_bh_shot3_share,-0.73,0.2462,0.3521
+4,Slasher,26,13,s_drv_closeout_share,-0.73,0.1131,0.2678
+4,Slasher,26,13,t_crash_share,-0.78,0.2355,0.3949
+4,Slasher,26,13,t_off_mid_share,-0.99,0.1358,0.2329
+4,Slasher,26,13,t_zero_drib_share,-1.09,0.3461,0.5618
+4,Slasher,26,13,s_cns_share,-1.27,0.2888,0.5315
+5,Secondary Ball Handler,30,14,s_od3_share,1.9,0.3008,0.114
+5,Secondary Ball Handler,30,14,t_initiate_share,1.75,0.531,0.1832
+5,Secondary Ball Handler,30,14,s_pick_bh_per100,1.64,26.5553,8.5689
+5,Secondary Ball Handler,30,14,s_pullup_share,1.55,0.4095,0.1898
+5,Secondary Ball Handler,30,14,t_drib_per_touch,1.48,3.5589,1.5867
+5,Secondary Ball Handler,30,14,t_touch_per100,1.45,94.5919,63.9514
+5,Secondary Ball Handler,30,14,t_ho_recv_per100,1.44,9.303,3.824
+5,Secondary Ball Handler,30,14,s_drv_pick_share,1.37,0.6205,0.3185
+5,Secondary Ball Handler,30,14,t_ball_time_share,1.32,0.4009,0.1877
+5,Secondary Ball Handler,30,14,t_off_hoop_dist,1.31,25.6153,21.9251
+5,Secondary Ball Handler,30,14,s_ab3_share,1.19,0.48,0.2899
+5,Secondary Ball Handler,30,14,t_off_top_share,1.12,0.2685,0.1586
+5,Secondary Ball Handler,30,14,t_catch_dist,1.02,28.4916,23.9001
+5,Secondary Ball Handler,30,14,s_drv_kickout_share,1.01,0.3774,0.2999
+5,Secondary Ball Handler,30,14,t_sec_per_touch,0.89,4.5591,3.1754
+5,Secondary Ball Handler,30,14,s_bh_shot3_share,0.88,0.4806,0.3521
+5,Secondary Ball Handler,30,14,s_bh_middle_share,0.84,0.6914,0.5844
+5,Secondary Ball Handler,30,14,t_pass_len,0.83,18.6405,16.4007
+5,Secondary Ball Handler,30,14,t_off_wing_share,0.82,0.4233,0.3061
+5,Secondary Ball Handler,30,14,s_drive_per100,0.77,11.9913,7.2829
+5,Secondary Ball Handler,30,14,t_catch_top_share,0.72,0.322,0.2596
+5,Secondary Ball Handler,30,14,t_pass_per_touch,0.71,0.7622,0.7069
+5,Secondary Ball Handler,30,14,t_trans_rank,0.71,3.1635,2.8635
+5,Secondary Ball Handler,30,14,s_drv_left_share,0.41,0.5427,0.5102
+5,Secondary Ball Handler,30,14,s_floater_share,0.3,0.0544,0.0436
+5,Secondary Ball Handler,30,14,t_off_speed,0.26,5.0492,4.9384
+5,Secondary Ball Handler,30,14,t_pop_share,0.22,0.443,0.3856
+5,Secondary Ball Handler,30,14,s_mid_share,0.21,0.112,0.0985
+5,Secondary Ball Handler,30,14,t_iso_per100,0.15,1.9721,1.6408
+5,Secondary Ball Handler,30,14,s_fga_per100,0.1,16.6436,16.2283
+5,Secondary Ball Handler,30,14,s_scr_shot3_share,0.04,0.3424,0.3323
+5,Secondary Ball Handler,30,14,t_obs_cut_per100,0,10.4309,10.3941
+5,Secondary Ball Handler,30,14,s_drv_pullup_share,-0.12,0.1276,0.1357
+5,Secondary Ball Handler,30,14,s_offmove_share,-0.13,0.0874,0.0962
+5,Secondary Ball Handler,30,14,s_contested_share,-0.23,0.668,0.6814
+5,Secondary Ball Handler,30,14,t_roll_share,-0.23,0.5156,0.575
+5,Secondary Ball Handler,30,14,s_drv_iso_share,-0.26,0.1227,0.1396
+5,Secondary Ball Handler,30,14,t_catch_corner_share,-0.3,0.0309,0.0446
+5,Secondary Ball Handler,30,14,s_corner3_share,-0.37,0.0652,0.0956
+5,Secondary Ball Handler,30,14,t_post_per100,-0.37,0.3715,1.0594
+5,Secondary Ball Handler,30,14,t_ho_set_per100,-0.43,2.7097,4.1494
+5,Secondary Ball Handler,30,14,t_off_dunker_share,-0.46,0.0249,0.0321
+5,Secondary Ball Handler,30,14,t_off_still_share,-0.47,0.2232,0.2579
+5,Secondary Ball Handler,30,14,s_paint_share,-0.52,0.183,0.2356
+5,Secondary Ball Handler,30,14,s_tip_share,-0.59,0.0052,0.0248
+5,Secondary Ball Handler,30,14,s_bh_shoot_share,-0.6,0.3189,0.3672
+5,Secondary Ball Handler,30,14,s_dunk_lob_share,-0.6,0.005,0.0538
+5,Secondary Ball Handler,30,14,t_obs_scr_per100,-0.6,5.389,11.2727
+5,Secondary Ball Handler,30,14,s_drv_obs_share,-0.6,0.0157,0.037
+5,Secondary Ball Handler,30,14,t_catch_paint_share,-0.61,0.0346,0.122
+5,Secondary Ball Handler,30,14,s_layup_share,-0.62,0.2328,0.3199
+5,Secondary Ball Handler,30,14,t_shot_per_touch,-0.64,0.1651,0.2107
+5,Secondary Ball Handler,30,14,t_off_corner_share,-0.66,0.0796,0.1563
+5,Secondary Ball Handler,30,14,s_pick_scr_per100,-0.67,0.6776,10.691
+5,Secondary Ball Handler,30,14,t_off_paint_share,-0.68,0.057,0.1138
+5,Secondary Ball Handler,30,14,s_post_shot_share,-0.69,0.0123,0.0471
+5,Secondary Ball Handler,30,14,t_off_mid_share,-0.8,0.1539,0.2329
+5,Secondary Ball Handler,30,14,s_drv_closeout_share,-0.81,0.097,0.2678
+5,Secondary Ball Handler,30,14,s_rim_share,-0.82,0.1228,0.2512
+5,Secondary Ball Handler,30,14,s_drv_rim_share,-0.91,0.3301,0.4289
+5,Secondary Ball Handler,30,14,t_crash_share,-0.93,0.2063,0.3949
+5,Secondary Ball Handler,30,14,s_cns_share,-1.11,0.3191,0.5315
+5,Secondary Ball Handler,30,14,t_zero_drib_share,-1.3,0.303,0.5618
+6,Roll & Cut Big,53,26,s_pick_scr_per100,1.75,37.0012,10.691
+6,Roll & Cut Big,53,26,s_dunk_lob_share,1.48,0.1742,0.0538
+6,Roll & Cut Big,53,26,s_rim_share,1.46,0.4786,0.2512
+6,Roll & Cut Big,53,26,t_off_paint_share,1.42,0.2333,0.1138
+6,Roll & Cut Big,53,26,t_obs_scr_per100,1.33,24.2501,11.2727
+6,Roll & Cut Big,53,26,t_off_mid_share,1.27,0.3571,0.2329
+6,Roll & Cut Big,53,26,s_tip_share,1.18,0.0642,0.0248
+6,Roll & Cut Big,53,26,t_catch_paint_share,1.15,0.2881,0.122
+6,Roll & Cut Big,53,26,t_crash_share,1.05,0.6095,0.3949
+6,Roll & Cut Big,53,26,t_off_top_share,0.93,0.2498,0.1586
+6,Roll & Cut Big,53,26,s_cns_share,0.93,0.7104,0.5315
+6,Roll & Cut Big,53,26,t_zero_drib_share,0.92,0.7433,0.5618
+6,Roll & Cut Big,53,26,s_layup_share,0.87,0.4409,0.3199
+6,Roll & Cut Big,53,26,s_paint_share,0.86,0.3227,0.2356
+6,Roll & Cut Big,53,26,t_roll_share,0.83,0.7907,0.575
+6,Roll & Cut Big,53,26,t_ho_set_per100,0.82,6.9205,4.1494
+6,Roll & Cut Big,53,26,s_post_shot_share,0.76,0.0857,0.0471
+6,Roll & Cut Big,53,26,t_off_speed,0.55,5.1772,4.9384
+6,Roll & Cut Big,53,26,t_trans_rank,0.41,3.0391,2.8635
+6,Roll & Cut Big,53,26,t_post_per100,0.27,1.5553,1.0594
+6,Roll & Cut Big,53,26,s_drv_rim_share,0.14,0.4437,0.4289
+6,Roll & Cut Big,53,26,s_drv_iso_share,0.12,0.1477,0.1396
+6,Roll & Cut Big,53,26,t_shot_per_touch,0.06,0.2153,0.2107
+6,Roll & Cut Big,53,26,s_bh_shoot_share,-0.02,0.3659,0.3672
+6,Roll & Cut Big,53,26,t_off_dunker_share,-0.03,0.0316,0.0321
+6,Roll & Cut Big,53,26,s_bh_middle_share,-0.03,0.5805,0.5844
+6,Roll & Cut Big,53,26,s_bh_shot3_share,-0.05,0.3452,0.3521
+6,Roll & Cut Big,53,26,s_drv_left_share,-0.05,0.5062,0.5102
+6,Roll & Cut Big,53,26,t_pass_per_touch,-0.08,0.7004,0.7069
+6,Roll & Cut Big,53,26,s_drv_kickout_share,-0.1,0.2919,0.2999
+6,Roll & Cut Big,53,26,t_catch_top_share,-0.12,0.2496,0.2596
+6,Roll & Cut Big,53,26,s_drv_closeout_share,-0.16,0.2337,0.2678
+6,Roll & Cut Big,53,26,s_drv_obs_share,-0.2,0.0299,0.037
+6,Roll & Cut Big,53,26,s_drv_pullup_share,-0.21,0.1213,0.1357
+6,Roll & Cut Big,53,26,s_floater_share,-0.22,0.0357,0.0436
+6,Roll & Cut Big,53,26,t_iso_per100,-0.33,0.9002,1.6408
+6,Roll & Cut Big,53,26,t_catch_corner_share,-0.34,0.0292,0.0446
+6,Roll & Cut Big,53,26,s_mid_share,-0.46,0.0687,0.0985
+6,Roll & Cut Big,53,26,s_fga_per100,-0.46,14.2397,16.2283
+6,Roll & Cut Big,53,26,t_touch_per100,-0.48,53.7805,63.9514
+6,Roll & Cut Big,53,26,t_sec_per_touch,-0.55,2.3178,3.1754
+6,Roll & Cut Big,53,26,t_obs_cut_per100,-0.57,5.313,10.3941
+6,Roll & Cut Big,53,26,s_drv_pick_share,-0.58,0.1909,0.3185
+6,Roll & Cut Big,53,26,t_ball_time_share,-0.59,0.0927,0.1877
+6,Roll & Cut Big,53,26,s_contested_share,-0.59,0.6467,0.6814
+6,Roll & Cut Big,53,26,t_ho_recv_per100,-0.64,1.3822,3.824
+6,Roll & Cut Big,53,26,t_initiate_share,-0.66,0.0528,0.1832
+6,Roll & Cut Big,53,26,s_pick_bh_per100,-0.77,0.1523,8.5689
+6,Roll & Cut Big,53,26,s_offmove_share,-0.77,0.0444,0.0962
+6,Roll & Cut Big,53,26,s_scr_shot3_share,-0.79,0.124,0.3323
+6,Roll & Cut Big,53,26,t_pop_share,-0.81,0.1697,0.3856
+6,Roll & Cut Big,53,26,t_drib_per_touch,-0.86,0.439,1.5867
+6,Roll & Cut Big,53,26,t_pass_len,-0.9,13.953,16.4007
+6,Roll & Cut Big,53,26,s_corner3_share,-0.93,0.0192,0.0956
+6,Roll & Cut Big,53,26,s_od3_share,-0.96,0.0198,0.114
+6,Roll & Cut Big,53,26,s_drive_per100,-1.01,1.112,7.2829
+6,Roll & Cut Big,53,26,t_off_still_share,-1.03,0.1811,0.2579
+6,Roll & Cut Big,53,26,s_pullup_share,-1.06,0.0393,0.1898
+6,Roll & Cut Big,53,26,t_off_hoop_dist,-1.15,18.6797,21.9251
+6,Roll & Cut Big,53,26,t_off_corner_share,-1.15,0.0219,0.1563
+6,Roll & Cut Big,53,26,s_ab3_share,-1.22,0.0961,0.2899
+6,Roll & Cut Big,53,26,t_catch_dist,-1.25,18.298,23.9001
+6,Roll & Cut Big,53,26,t_off_wing_share,-1.43,0.1023,0.3061
+7,Movement Shooter,30,17,s_drv_closeout_share,1.44,0.5729,0.2678
+7,Movement Shooter,30,17,s_corner3_share,0.96,0.174,0.0956
+7,Movement Shooter,30,17,s_cns_share,0.95,0.7144,0.5315
+7,Movement Shooter,30,17,t_zero_drib_share,0.7,0.7012,0.5618
+7,Movement Shooter,30,17,s_offmove_share,0.66,0.1406,0.0962
+7,Movement Shooter,30,17,s_scr_shot3_share,0.57,0.4826,0.3323
+7,Movement Shooter,30,17,s_ab3_share,0.56,0.3799,0.2899
+7,Movement Shooter,30,17,t_catch_corner_share,0.43,0.0641,0.0446
+7,Movement Shooter,30,17,t_off_corner_share,0.41,0.2044,0.1563
+7,Movement Shooter,30,17,t_obs_scr_per100,0.39,15.1166,11.2727
+7,Movement Shooter,30,17,s_drv_pullup_share,0.34,0.1595,0.1357
+7,Movement Shooter,30,17,t_pass_per_touch,0.33,0.7327,0.7069
+7,Movement Shooter,30,17,t_ho_set_per100,0.31,5.1916,4.1494
+7,Movement Shooter,30,17,t_pop_share,0.31,0.4677,0.3856
+7,Movement Shooter,30,17,s_drv_obs_share,0.17,0.0431,0.037
+7,Movement Shooter,30,17,t_off_wing_share,0.16,0.329,0.3061
+7,Movement Shooter,30,17,t_crash_share,0.14,0.423,0.3949
+7,Movement Shooter,30,17,t_off_mid_share,0.13,0.2459,0.2329
+7,Movement Shooter,30,17,t_off_dunker_share,0.12,0.034,0.0321
+7,Movement Shooter,30,17,t_catch_dist,0.09,24.3229,23.9001
+7,Movement Shooter,30,17,t_off_speed,0.09,4.9763,4.9384
+7,Movement Shooter,30,17,s_bh_shoot_share,0.08,0.3741,0.3672
+7,Movement Shooter,30,17,s_bh_shot3_share,0.07,0.3627,0.3521
+7,Movement Shooter,30,17,t_off_still_share,0.07,0.2628,0.2579
+7,Movement Shooter,30,17,s_drv_left_share,0.01,0.511,0.5102
+7,Movement Shooter,30,17,t_off_hoop_dist,-0.04,21.8148,21.9251
+7,Movement Shooter,30,17,s_dunk_lob_share,-0.06,0.049,0.0538
+7,Movement Shooter,30,17,s_tip_share,-0.07,0.0226,0.0248
+7,Movement Shooter,30,17,s_mid_share,-0.09,0.0929,0.0985
+7,Movement Shooter,30,17,t_trans_rank,-0.09,2.8263,2.8635
+7,Movement Shooter,30,17,s_drv_kickout_share,-0.1,0.2921,0.2999
+7,Movement Shooter,30,17,t_obs_cut_per100,-0.1,9.4593,10.3941
+7,Movement Shooter,30,17,t_post_per100,-0.11,0.8564,1.0594
+7,Movement Shooter,30,17,s_contested_share,-0.11,0.6747,0.6814
+7,Movement Shooter,30,17,s_post_shot_share,-0.13,0.0405,0.0471
+7,Movement Shooter,30,17,s_drv_rim_share,-0.14,0.4141,0.4289
+7,Movement Shooter,30,17,t_catch_top_share,-0.2,0.2426,0.2596
+7,Movement Shooter,30,17,s_pick_scr_per100,-0.25,6.9822,10.691
+7,Movement Shooter,30,17,t_catch_paint_share,-0.25,0.086,0.122
+7,Movement Shooter,30,17,t_shot_per_touch,-0.27,0.1918,0.2107
+7,Movement Shooter,30,17,t_roll_share,-0.27,0.5045,0.575
+7,Movement Shooter,30,17,t_iso_per100,-0.33,0.9005,1.6408
+7,Movement Shooter,30,17,t_off_paint_share,-0.36,0.0838,0.1138
+7,Movement Shooter,30,17,s_bh_middle_share,-0.37,0.5373,0.5844
+7,Movement Shooter,30,17,s_pullup_share,-0.43,0.129,0.1898
+7,Movement Shooter,30,17,s_drv_iso_share,-0.44,0.1106,0.1396
+7,Movement Shooter,30,17,s_fga_per100,-0.46,14.2672,16.2283
+7,Movement Shooter,30,17,s_floater_share,-0.47,0.0269,0.0436
+7,Movement Shooter,30,17,s_od3_share,-0.49,0.0662,0.114
+7,Movement Shooter,30,17,s_rim_share,-0.49,0.1747,0.2512
+7,Movement Shooter,30,17,t_touch_per100,-0.51,53.1845,63.9514
+7,Movement Shooter,30,17,t_ho_recv_per100,-0.54,1.7837,3.824
+7,Movement Shooter,30,17,t_pass_len,-0.54,14.9369,16.4007
+7,Movement Shooter,30,17,t_off_top_share,-0.58,0.1021,0.1586
+7,Movement Shooter,30,17,t_initiate_share,-0.62,0.0599,0.1832
+7,Movement Shooter,30,17,t_sec_per_touch,-0.63,2.2037,3.1754
+7,Movement Shooter,30,17,t_ball_time_share,-0.63,0.0856,0.1877
+7,Movement Shooter,30,17,s_drive_per100,-0.69,3.081,7.2829
+7,Movement Shooter,30,17,t_drib_per_touch,-0.72,0.6266,1.5867
+7,Movement Shooter,30,17,s_pick_bh_per100,-0.73,0.5412,8.5689
+7,Movement Shooter,30,17,s_paint_share,-0.85,0.1504,0.2356
+7,Movement Shooter,30,17,s_layup_share,-0.88,0.1972,0.3199
+7,Movement Shooter,30,17,s_drv_pick_share,-0.9,0.1192,0.3185
+8,Versatile Big,16,10,t_ho_set_per100,1.13,7.9687,4.1494
+8,Versatile Big,16,10,t_post_per100,1.06,3.0013,1.0594
+8,Versatile Big,16,10,s_drv_iso_share,1.03,0.2073,0.1396
+8,Versatile Big,16,10,s_post_shot_share,0.97,0.0961,0.0471
+8,Versatile Big,16,10,t_off_mid_share,0.63,0.2951,0.2329
+8,Versatile Big,16,10,s_mid_share,0.63,0.1393,0.0985
+8,Versatile Big,16,10,s_drv_rim_share,0.58,0.4926,0.4289
+8,Versatile Big,16,10,t_crash_share,0.42,0.4804,0.3949
+8,Versatile Big,16,10,s_pick_scr_per100,0.41,16.7814,10.691
+8,Versatile Big,16,10,t_off_dunker_share,0.4,0.0383,0.0321
+8,Versatile Big,16,10,t_zero_drib_share,0.39,0.6395,0.5618
+8,Versatile Big,16,10,t_obs_scr_per100,0.34,14.5878,11.2727
+8,Versatile Big,16,10,s_drv_closeout_share,0.31,0.3337,0.2678
+8,Versatile Big,16,10,s_fga_per100,0.3,17.5,16.2283
+8,Versatile Big,16,10,t_touch_per100,0.27,69.73,63.9514
+8,Versatile Big,16,10,s_rim_share,0.22,0.2854,0.2512
+8,Versatile Big,16,10,s_layup_share,0.19,0.3459,0.3199
+8,Versatile Big,16,10,t_off_paint_share,0.18,0.1286,0.1138
+8,Versatile Big,16,10,s_bh_shoot_share,0.16,0.3805,0.3672
+8,Versatile Big,16,10,s_paint_share,0.11,0.2472,0.2356
+8,Versatile Big,16,10,s_contested_share,0.11,0.6876,0.6814
+8,Versatile Big,16,10,t_off_top_share,0.09,0.1678,0.1586
+8,Versatile Big,16,10,s_tip_share,0.08,0.0274,0.0248
+8,Versatile Big,16,10,t_iso_per100,0.07,1.7937,1.6408
+8,Versatile Big,16,10,t_pop_share,0.06,0.4017,0.3856
+8,Versatile Big,16,10,t_trans_rank,0.04,2.8792,2.8635
+8,Versatile Big,16,10,t_off_speed,0,4.9375,4.9384
+8,Versatile Big,16,10,s_cns_share,-0.01,0.5288,0.5315
+8,Versatile Big,16,10,s_scr_shot3_share,-0.02,0.3274,0.3323
+8,Versatile Big,16,10,s_drv_left_share,-0.07,0.5051,0.5102
+8,Versatile Big,16,10,s_dunk_lob_share,-0.08,0.0472,0.0538
+8,Versatile Big,16,10,t_roll_share,-0.09,0.5523,0.575
+8,Versatile Big,16,10,t_pass_per_touch,-0.09,0.6997,0.7069
+8,Versatile Big,16,10,t_catch_top_share,-0.09,0.2514,0.2596
+8,Versatile Big,16,10,t_shot_per_touch,-0.1,0.204,0.2107
+8,Versatile Big,16,10,t_catch_corner_share,-0.15,0.0379,0.0446
+8,Versatile Big,16,10,t_catch_paint_share,-0.15,0.1002,0.122
+8,Versatile Big,16,10,s_drv_pullup_share,-0.18,0.1231,0.1357
+8,Versatile Big,16,10,s_floater_share,-0.19,0.0368,0.0436
+8,Versatile Big,16,10,t_obs_cut_per100,-0.21,8.5192,10.3941
+8,Versatile Big,16,10,t_ball_time_share,-0.24,0.1484,0.1877
+8,Versatile Big,16,10,s_drv_obs_share,-0.26,0.0279,0.037
+8,Versatile Big,16,10,t_catch_dist,-0.28,22.6294,23.9001
+8,Versatile Big,16,10,s_bh_shot3_share,-0.3,0.3089,0.3521
+8,Versatile Big,16,10,t_off_still_share,-0.3,0.2353,0.2579
+8,Versatile Big,16,10,s_ab3_share,-0.33,0.238,0.2899
+8,Versatile Big,16,10,t_off_corner_share,-0.33,0.1178,0.1563
+8,Versatile Big,16,10,t_sec_per_touch,-0.34,2.6471,3.1754
+8,Versatile Big,16,10,s_drive_per100,-0.37,5.0161,7.2829
+8,Versatile Big,16,10,s_offmove_share,-0.39,0.0695,0.0962
+8,Versatile Big,16,10,t_off_hoop_dist,-0.41,20.764,21.9251
+8,Versatile Big,16,10,t_off_wing_share,-0.42,0.2462,0.3061
+8,Versatile Big,16,10,t_initiate_share,-0.42,0.099,0.1832
+8,Versatile Big,16,10,s_pullup_share,-0.43,0.1283,0.1898
+8,Versatile Big,16,10,s_corner3_share,-0.46,0.0579,0.0956
+8,Versatile Big,16,10,t_drib_per_touch,-0.48,0.9458,1.5867
+8,Versatile Big,16,10,s_drv_kickout_share,-0.53,0.2592,0.2999
+8,Versatile Big,16,10,t_ho_recv_per100,-0.54,1.7744,3.824
+8,Versatile Big,16,10,s_bh_middle_share,-0.54,0.5148,0.5844
+8,Versatile Big,16,10,t_pass_len,-0.65,14.6416,16.4007
+8,Versatile Big,16,10,s_od3_share,-0.66,0.0495,0.114
+8,Versatile Big,16,10,s_pick_bh_per100,-0.72,0.6506,8.5689
+8,Versatile Big,16,10,s_drv_pick_share,-1.02,0.0925,0.3185
+9,Post Scorer,15,7,s_post_shot_share,2.16,0.1559,0.0471
+9,Post Scorer,15,7,t_post_per100,1.74,4.2611,1.0594
+9,Post Scorer,15,7,s_paint_share,1.72,0.4086,0.2356
+9,Post Scorer,15,7,t_off_mid_share,1.59,0.3892,0.2329
+9,Post Scorer,15,7,t_catch_paint_share,1.59,0.3511,0.122
+9,Post Scorer,15,7,s_pick_scr_per100,1.3,30.207,10.691
+9,Post Scorer,15,7,t_off_paint_share,1.3,0.2229,0.1138
+9,Post Scorer,15,7,t_off_dunker_share,1.29,0.0523,0.0321
+9,Post Scorer,15,7,s_layup_share,1.04,0.4658,0.3199
+9,Post Scorer,15,7,s_rim_share,0.98,0.4045,0.2512
+9,Post Scorer,15,7,t_crash_share,0.97,0.5921,0.3949
+9,Post Scorer,15,7,t_obs_scr_per100,0.85,19.5733,11.2727
+9,Post Scorer,15,7,s_floater_share,0.84,0.0735,0.0436
+9,Post Scorer,15,7,t_roll_share,0.8,0.7827,0.575
+9,Post Scorer,15,7,s_drv_iso_share,0.69,0.1852,0.1396
+9,Post Scorer,15,7,t_shot_per_touch,0.68,0.2594,0.2107
+9,Post Scorer,15,7,t_zero_drib_share,0.63,0.6864,0.5618
+9,Post Scorer,15,7,s_tip_share,0.62,0.0455,0.0248
+9,Post Scorer,15,7,s_drv_rim_share,0.48,0.4815,0.4289
+9,Post Scorer,15,7,t_off_top_share,0.37,0.1948,0.1586
+9,Post Scorer,15,7,s_fga_per100,0.35,17.745,16.2283
+9,Post Scorer,15,7,s_cns_share,0.25,0.5793,0.5315
+9,Post Scorer,15,7,s_dunk_lob_share,0.21,0.0712,0.0538
+9,Post Scorer,15,7,t_ho_set_per100,0.21,4.8571,4.1494
+9,Post Scorer,15,7,t_off_speed,0.19,5.0207,4.9384
+9,Post Scorer,15,7,s_contested_share,0.16,0.6908,0.6814
+9,Post Scorer,15,7,t_trans_rank,0.16,2.93,2.8635
+9,Post Scorer,15,7,s_drv_left_share,0.11,0.519,0.5102
+9,Post Scorer,15,7,s_bh_shoot_share,0.03,0.3693,0.3672
+9,Post Scorer,15,7,s_bh_middle_share,-0.02,0.5822,0.5844
+9,Post Scorer,15,7,t_iso_per100,-0.06,1.5093,1.6408
+9,Post Scorer,15,7,s_mid_share,-0.16,0.0885,0.0985
+9,Post Scorer,15,7,s_drv_obs_share,-0.18,0.0308,0.037
+9,Post Scorer,15,7,s_bh_shot3_share,-0.19,0.324,0.3521
+9,Post Scorer,15,7,s_drv_kickout_share,-0.22,0.2827,0.2999
+9,Post Scorer,15,7,t_sec_per_touch,-0.25,2.7836,3.1754
+9,Post Scorer,15,7,t_ball_time_share,-0.31,0.137,0.1877
+9,Post Scorer,15,7,t_touch_per100,-0.33,56.9728,63.9514
+9,Post Scorer,15,7,t_catch_top_share,-0.41,0.2242,0.2596
+9,Post Scorer,15,7,t_catch_corner_share,-0.43,0.0252,0.0446
+9,Post Scorer,15,7,t_obs_cut_per100,-0.49,6.0442,10.3941
+9,Post Scorer,15,7,s_drv_closeout_share,-0.54,0.1541,0.2678
+9,Post Scorer,15,7,s_drv_pullup_share,-0.57,0.0957,0.1357
+9,Post Scorer,15,7,s_drv_pick_share,-0.58,0.1912,0.3185
+9,Post Scorer,15,7,t_initiate_share,-0.62,0.0604,0.1832
+9,Post Scorer,15,7,t_ho_recv_per100,-0.64,1.3819,3.824
+9,Post Scorer,15,7,t_pass_len,-0.66,14.6225,16.4007
+9,Post Scorer,15,7,t_drib_per_touch,-0.67,0.6913,1.5867
+9,Post Scorer,15,7,t_pass_per_touch,-0.73,0.6498,0.7069
+9,Post Scorer,15,7,t_off_still_share,-0.75,0.2021,0.2579
+9,Post Scorer,15,7,s_pick_bh_per100,-0.75,0.2722,8.5689
+9,Post Scorer,15,7,s_drive_per100,-0.82,2.2772,7.2829
+9,Post Scorer,15,7,s_offmove_share,-0.9,0.0351,0.0962
+9,Post Scorer,15,7,s_corner3_share,-0.98,0.0158,0.0956
+9,Post Scorer,15,7,t_pop_share,-0.99,0.122,0.3856
+9,Post Scorer,15,7,s_od3_share,-1,0.0162,0.114
+9,Post Scorer,15,7,s_pullup_share,-1.01,0.0461,0.1898
+9,Post Scorer,15,7,s_scr_shot3_share,-1.06,0.0537,0.3323
+9,Post Scorer,15,7,t_off_corner_share,-1.11,0.0269,0.1563
+9,Post Scorer,15,7,t_off_hoop_dist,-1.42,17.9157,21.9251
+9,Post Scorer,15,7,s_ab3_share,-1.43,0.0615,0.2899
+9,Post Scorer,15,7,t_off_wing_share,-1.46,0.0985,0.3061
+9,Post Scorer,15,7,t_catch_dist,-1.56,16.9024,23.9001
+10,Athletic Finisher,22,13,t_off_corner_share,0.9,0.2611,0.1563
+10,Athletic Finisher,22,13,s_drv_closeout_share,0.9,0.4573,0.2678
+10,Athletic Finisher,22,13,t_off_still_share,0.85,0.3213,0.2579
+10,Athletic Finisher,22,13,s_drv_rim_share,0.77,0.5127,0.4289
+10,Athletic Finisher,22,13,t_off_dunker_share,0.52,0.0403,0.0321
+10,Athletic Finisher,22,13,t_zero_drib_share,0.43,0.6466,0.5618
+10,Athletic Finisher,22,13,s_layup_share,0.41,0.3771,0.3199
+10,Athletic Finisher,22,13,s_post_shot_share,0.4,0.0671,0.0471
+10,Athletic Finisher,22,13,t_catch_corner_share,0.4,0.0624,0.0446
+10,Athletic Finisher,22,13,s_cns_share,0.39,0.6056,0.5315
+10,Athletic Finisher,22,13,s_corner3_share,0.35,0.1245,0.0956
+10,Athletic Finisher,22,13,s_rim_share,0.33,0.3023,0.2512
+10,Athletic Finisher,22,13,t_crash_share,0.27,0.4495,0.3949
+10,Athletic Finisher,22,13,t_post_per100,0.22,1.4629,1.0594
+10,Athletic Finisher,22,13,s_paint_share,0.19,0.2546,0.2356
+10,Athletic Finisher,22,13,s_bh_shoot_share,0.17,0.3808,0.3672
+10,Athletic Finisher,22,13,s_tip_share,0.14,0.0295,0.0248
+10,Athletic Finisher,22,13,t_roll_share,0.13,0.6094,0.575
+10,Athletic Finisher,22,13,t_shot_per_touch,0.11,0.2185,0.2107
+10,Athletic Finisher,22,13,s_dunk_lob_share,0.08,0.0607,0.0538
+10,Athletic Finisher,22,13,t_off_wing_share,0.01,0.3077,0.3061
+10,Athletic Finisher,22,13,t_obs_scr_per100,-0.06,10.7127,11.2727
+10,Athletic Finisher,22,13,t_off_mid_share,-0.06,0.2268,0.2329
+10,Athletic Finisher,22,13,t_catch_dist,-0.07,23.6016,23.9001
+10,Athletic Finisher,22,13,s_scr_shot3_share,-0.07,0.313,0.3323
+10,Athletic Finisher,22,13,t_catch_paint_share,-0.08,0.1101,0.122
+10,Athletic Finisher,22,13,t_pass_per_touch,-0.12,0.6975,0.7069
+10,Athletic Finisher,22,13,s_drv_obs_share,-0.12,0.0327,0.037
+10,Athletic Finisher,22,13,t_off_hoop_dist,-0.13,21.5563,21.9251
+10,Athletic Finisher,22,13,t_pop_share,-0.13,0.3501,0.3856
+10,Athletic Finisher,22,13,t_pass_len,-0.15,16.0076,16.4007
+10,Athletic Finisher,22,13,s_drv_left_share,-0.16,0.498,0.5102
+10,Athletic Finisher,22,13,s_bh_shot3_share,-0.2,0.323,0.3521
+10,Athletic Finisher,22,13,s_floater_share,-0.23,0.0355,0.0436
+10,Athletic Finisher,22,13,s_pick_scr_per100,-0.23,7.2736,10.691
+10,Athletic Finisher,22,13,s_drv_iso_share,-0.24,0.1241,0.1396
+10,Athletic Finisher,22,13,t_iso_per100,-0.25,1.0768,1.6408
+10,Athletic Finisher,22,13,s_contested_share,-0.28,0.665,0.6814
+10,Athletic Finisher,22,13,t_catch_top_share,-0.29,0.2348,0.2596
+10,Athletic Finisher,22,13,t_ho_set_per100,-0.29,3.1643,4.1494
+10,Athletic Finisher,22,13,s_drv_kickout_share,-0.34,0.274,0.2999
+10,Athletic Finisher,22,13,t_sec_per_touch,-0.38,2.5835,3.1754
+10,Athletic Finisher,22,13,t_off_paint_share,-0.42,0.0784,0.1138
+10,Athletic Finisher,22,13,s_bh_middle_share,-0.43,0.5292,0.5844
+10,Athletic Finisher,22,13,s_mid_share,-0.43,0.0704,0.0985
+10,Athletic Finisher,22,13,s_ab3_share,-0.44,0.2201,0.2899
+10,Athletic Finisher,22,13,t_trans_rank,-0.44,2.6745,2.8635
+10,Athletic Finisher,22,13,s_drive_per100,-0.45,4.501,7.2829
+10,Athletic Finisher,22,13,s_offmove_share,-0.47,0.0646,0.0962
+10,Athletic Finisher,22,13,s_drv_pullup_share,-0.48,0.1019,0.1357
+10,Athletic Finisher,22,13,t_drib_per_touch,-0.51,0.912,1.5867
+10,Athletic Finisher,22,13,t_ho_recv_per100,-0.51,1.8892,3.824
+10,Athletic Finisher,22,13,s_fga_per100,-0.53,13.9582,16.2283
+10,Athletic Finisher,22,13,t_ball_time_share,-0.54,0.1001,0.1877
+10,Athletic Finisher,22,13,t_obs_cut_per100,-0.54,5.5378,10.3941
+10,Athletic Finisher,22,13,t_initiate_share,-0.57,0.0697,0.1832
+10,Athletic Finisher,22,13,t_touch_per100,-0.66,50.0775,63.9514
+10,Athletic Finisher,22,13,s_pick_bh_per100,-0.71,0.7693,8.5689
+10,Athletic Finisher,22,13,s_pullup_share,-0.73,0.086,0.1898
+10,Athletic Finisher,22,13,s_od3_share,-0.75,0.0409,0.114
+10,Athletic Finisher,22,13,t_off_top_share,-0.78,0.0822,0.1586
+10,Athletic Finisher,22,13,t_off_speed,-0.81,4.5863,4.9384
+10,Athletic Finisher,22,13,s_drv_pick_share,-0.86,0.1277,0.3185
+11,Shot Creator,23,15,s_fga_per100,1.42,22.3234,16.2283
+11,Shot Creator,23,15,t_obs_cut_per100,1.41,22.9339,10.3941
+11,Shot Creator,23,15,s_pullup_share,1.32,0.3769,0.1898
+11,Shot Creator,23,15,s_od3_share,1.31,0.2424,0.114
+11,Shot Creator,23,15,s_drive_per100,1.11,14.063,7.2829
+11,Shot Creator,23,15,t_iso_per100,1.06,4.0175,1.6408
+11,Shot Creator,23,15,t_drib_per_touch,1.01,2.9362,1.5867
+11,Shot Creator,23,15,s_pick_bh_per100,0.97,19.2439,8.5689
+11,Shot Creator,23,15,s_contested_share,0.91,0.7346,0.6814
+11,Shot Creator,23,15,s_drv_iso_share,0.78,0.1907,0.1396
+11,Shot Creator,23,15,t_shot_per_touch,0.77,0.2655,0.2107
+11,Shot Creator,23,15,s_drv_pullup_share,0.7,0.1847,0.1357
+11,Shot Creator,23,15,s_bh_shoot_share,0.7,0.4236,0.3672
+11,Shot Creator,23,15,t_sec_per_touch,0.7,4.254,3.1754
+11,Shot Creator,23,15,s_ab3_share,0.64,0.3923,0.2899
+11,Shot Creator,23,15,t_off_wing_share,0.58,0.389,0.3061
+11,Shot Creator,23,15,t_catch_dist,0.57,26.4639,23.9001
+11,Shot Creator,23,15,s_drv_pick_share,0.53,0.4356,0.3185
+11,Shot Creator,23,15,t_ho_recv_per100,0.52,5.8062,3.824
+11,Shot Creator,23,15,t_ball_time_share,0.51,0.2696,0.1877
+11,Shot Creator,23,15,t_off_hoop_dist,0.51,23.3542,21.9251
+11,Shot Creator,23,15,t_pass_len,0.48,17.6895,16.4007
+11,Shot Creator,23,15,t_catch_top_share,0.46,0.2996,0.2596
+11,Shot Creator,23,15,t_pop_share,0.44,0.5019,0.3856
+11,Shot Creator,23,15,t_initiate_share,0.43,0.2694,0.1832
+11,Shot Creator,23,15,s_bh_shot3_share,0.42,0.4137,0.3521
+11,Shot Creator,23,15,s_mid_share,0.42,0.1258,0.0985
+11,Shot Creator,23,15,s_scr_shot3_share,0.41,0.4404,0.3323
+11,Shot Creator,23,15,t_off_still_share,0.35,0.2836,0.2579
+11,Shot Creator,23,15,t_touch_per100,0.33,70.8155,63.9514
+11,Shot Creator,23,15,s_drv_obs_share,0.29,0.0474,0.037
+11,Shot Creator,23,15,s_bh_middle_share,0.26,0.6181,0.5844
+11,Shot Creator,23,15,s_drv_rim_share,0.19,0.4491,0.4289
+11,Shot Creator,23,15,s_offmove_share,0.15,0.1061,0.0962
+11,Shot Creator,23,15,t_trans_rank,0.14,2.9218,2.8635
+11,Shot Creator,23,15,s_floater_share,0.13,0.0482,0.0436
+11,Shot Creator,23,15,s_drv_left_share,0.03,0.513,0.5102
+11,Shot Creator,23,15,t_off_corner_share,0.03,0.1596,0.1563
+11,Shot Creator,23,15,t_off_top_share,-0.06,0.1523,0.1586
+11,Shot Creator,23,15,t_off_speed,-0.09,4.8983,4.9384
+11,Shot Creator,23,15,t_post_per100,-0.24,0.6231,1.0594
+11,Shot Creator,23,15,t_catch_corner_share,-0.24,0.0337,0.0446
+11,Shot Creator,23,15,s_paint_share,-0.26,0.2095,0.2356
+11,Shot Creator,23,15,s_corner3_share,-0.28,0.0727,0.0956
+11,Shot Creator,23,15,t_off_dunker_share,-0.29,0.0275,0.0321
+11,Shot Creator,23,15,s_layup_share,-0.33,0.2743,0.3199
+11,Shot Creator,23,15,t_off_paint_share,-0.33,0.0859,0.1138
+11,Shot Creator,23,15,t_roll_share,-0.39,0.4742,0.575
+11,Shot Creator,23,15,t_ho_set_per100,-0.41,2.7605,4.1494
+11,Shot Creator,23,15,t_off_mid_share,-0.44,0.1896,0.2329
+11,Shot Creator,23,15,s_post_shot_share,-0.47,0.0236,0.0471
+11,Shot Creator,23,15,t_catch_paint_share,-0.52,0.0471,0.122
+11,Shot Creator,23,15,s_dunk_lob_share,-0.52,0.0114,0.0538
+11,Shot Creator,23,15,s_tip_share,-0.53,0.0071,0.0248
+11,Shot Creator,23,15,t_obs_scr_per100,-0.55,5.9095,11.2727
+11,Shot Creator,23,15,s_drv_kickout_share,-0.56,0.2571,0.2999
+11,Shot Creator,23,15,s_rim_share,-0.56,0.1636,0.2512
+11,Shot Creator,23,15,s_pick_scr_per100,-0.59,1.8821,10.691
+11,Shot Creator,23,15,s_drv_closeout_share,-0.62,0.1362,0.2678
+11,Shot Creator,23,15,t_pass_per_touch,-0.73,0.6498,0.7069
+11,Shot Creator,23,15,t_crash_share,-1,0.1918,0.3949
+11,Shot Creator,23,15,t_zero_drib_share,-1,0.3632,0.5618
+11,Shot Creator,23,15,s_cns_share,-1.14,0.3127,0.5315
+12,Primary Ball Handler,8,6,s_pick_bh_per100,2.86,40.036,8.5689
+12,Primary Ball Handler,8,6,s_floater_share,2.52,0.1336,0.0436
+12,Primary Ball Handler,8,6,s_drive_per100,2.46,22.33,7.2829
+12,Primary Ball Handler,8,6,t_drib_per_touch,2.35,4.7242,1.5867
+12,Primary Ball Handler,8,6,t_initiate_share,2.24,0.6289,0.1832
+12,Primary Ball Handler,8,6,s_mid_share,1.97,0.226,0.0985
+12,Primary Ball Handler,8,6,t_ball_time_share,1.88,0.4913,0.1877
+12,Primary Ball Handler,8,6,s_pullup_share,1.63,0.4202,0.1898
+12,Primary Ball Handler,8,6,s_drv_pick_share,1.6,0.6719,0.3185
+12,Primary Ball Handler,8,6,t_touch_per100,1.57,97.0071,63.9514
+12,Primary Ball Handler,8,6,s_fga_per100,1.52,22.7279,16.2283
+12,Primary Ball Handler,8,6,t_sec_per_touch,1.45,5.4218,3.1754
+12,Primary Ball Handler,8,6,s_drv_pullup_share,1.44,0.236,0.1357
+12,Primary Ball Handler,8,6,t_off_hoop_dist,1.34,25.7037,21.9251
+12,Primary Ball Handler,8,6,t_trans_rank,1.33,3.4267,2.8635
+12,Primary Ball Handler,8,6,t_pass_len,1.29,19.8967,16.4007
+12,Primary Ball Handler,8,6,t_ho_recv_per100,1.13,8.1449,3.824
+12,Primary Ball Handler,8,6,t_off_top_share,1.1,0.2664,0.1586
+12,Primary Ball Handler,8,6,t_catch_dist,1,28.3768,23.9001
+12,Primary Ball Handler,8,6,s_bh_middle_share,0.97,0.7085,0.5844
+12,Primary Ball Handler,8,6,t_off_wing_share,0.85,0.4265,0.3061
+12,Primary Ball Handler,8,6,s_od3_share,0.84,0.1968,0.114
+12,Primary Ball Handler,8,6,s_paint_share,0.78,0.3139,0.2356
+12,Primary Ball Handler,8,6,t_catch_top_share,0.72,0.3218,0.2596
+12,Primary Ball Handler,8,6,t_iso_per100,0.61,3.0066,1.6408
+12,Primary Ball Handler,8,6,t_off_speed,0.39,5.1073,4.9384
+12,Primary Ball Handler,8,6,t_pass_per_touch,0.29,0.7295,0.7069
+12,Primary Ball Handler,8,6,t_pop_share,0.28,0.4592,0.3856
+12,Primary Ball Handler,8,6,s_bh_shoot_share,0.01,0.368,0.3672
+12,Primary Ball Handler,8,6,s_drv_kickout_share,-0.07,0.2942,0.2999
+12,Primary Ball Handler,8,6,s_scr_shot3_share,-0.11,0.3034,0.3323
+12,Primary Ball Handler,8,6,s_ab3_share,-0.17,0.2633,0.2899
+12,Primary Ball Handler,8,6,t_catch_corner_share,-0.23,0.0343,0.0446
+12,Primary Ball Handler,8,6,t_roll_share,-0.25,0.5106,0.575
+12,Primary Ball Handler,8,6,t_shot_per_touch,-0.26,0.1925,0.2107
+12,Primary Ball Handler,8,6,s_contested_share,-0.27,0.6655,0.6814
+12,Primary Ball Handler,8,6,s_layup_share,-0.32,0.2753,0.3199
+12,Primary Ball Handler,8,6,t_off_still_share,-0.41,0.2276,0.2579
+12,Primary Ball Handler,8,6,t_off_dunker_share,-0.41,0.0257,0.0321
+12,Primary Ball Handler,8,6,t_post_per100,-0.42,0.2839,1.0594
+12,Primary Ball Handler,8,6,s_post_shot_share,-0.48,0.0228,0.0471
+12,Primary Ball Handler,8,6,t_off_paint_share,-0.5,0.0722,0.1138
+12,Primary Ball Handler,8,6,t_catch_paint_share,-0.54,0.0443,0.122
+12,Primary Ball Handler,8,6,t_obs_cut_per100,-0.54,5.5425,10.3941
+12,Primary Ball Handler,8,6,s_drv_iso_share,-0.55,0.1035,0.1396
+12,Primary Ball Handler,8,6,s_drv_obs_share,-0.58,0.0165,0.037
+12,Primary Ball Handler,8,6,s_drv_left_share,-0.58,0.4646,0.5102
+12,Primary Ball Handler,8,6,s_tip_share,-0.6,0.0047,0.0248
+12,Primary Ball Handler,8,6,s_dunk_lob_share,-0.64,0.0021,0.0538
+12,Primary Ball Handler,8,6,s_pick_scr_per100,-0.64,1.0249,10.691
+12,Primary Ball Handler,8,6,t_off_corner_share,-0.65,0.08,0.1563
+12,Primary Ball Handler,8,6,s_offmove_share,-0.69,0.0498,0.0962
+12,Primary Ball Handler,8,6,s_corner3_share,-0.7,0.0383,0.0956
+12,Primary Ball Handler,8,6,t_obs_scr_per100,-0.73,4.1715,11.2727
+12,Primary Ball Handler,8,6,t_ho_set_per100,-0.74,1.6535,4.1494
+12,Primary Ball Handler,8,6,s_bh_shot3_share,-0.74,0.2443,0.3521
+12,Primary Ball Handler,8,6,t_crash_share,-0.74,0.2438,0.3949
+12,Primary Ball Handler,8,6,s_drv_rim_share,-0.82,0.3399,0.4289
+12,Primary Ball Handler,8,6,s_rim_share,-0.83,0.121,0.2512
+12,Primary Ball Handler,8,6,t_off_mid_share,-0.99,0.1355,0.2329
+12,Primary Ball Handler,8,6,s_drv_closeout_share,-1.01,0.0544,0.2678
+12,Primary Ball Handler,8,6,t_zero_drib_share,-1.65,0.2339,0.5618
+12,Primary Ball Handler,8,6,s_cns_share,-1.87,0.1723,0.5315

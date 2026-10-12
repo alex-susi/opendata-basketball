@@ -1,7 +1,11 @@
 cluster,archetype,players,PC1,PC2,PC3,PC4
-1,Primary Ball Handler,44,-1.45,-0.74,-0.04,-1.07
-2,Floor Spacer,83,0.52,1.15,0.23,-0.44
-3,Slasher,29,-0.81,-0.48,1.19,0.38
-4,Roll & Cut Big,69,1.49,-1.34,-0.55,-0.24
-5,Athletic Finisher,38,0.37,-0.01,0.64,0.77
-6,Secondary Ball Handler,47,-0.63,0.42,-0.93,0.9
+1,Off Screen Shooter,20,-0.43,1.05,-1.16,0.47
+2,Movement Shooter,52,0.32,1.36,0.11,-0.63
+3,Stationary Shooter,21,0.56,0.97,1.04,-0.13
+4,Athletic Finisher,36,0.19,0.2,0.68,0.9
+5,Primary Ball Handler,45,-1.48,-0.94,0.1,-1.02
+6,Post Scorer,29,1.39,-1.33,-0.34,0.61
+7,Slasher,29,-0.88,-0.59,1.15,0.53
+8,Secondary Ball Handler,30,-0.88,0.19,-0.98,0.73
+9,Roll & Cut Big,36,1.49,-1,-0.49,-0.81
+10,Versatile Big,12,0.82,-0.13,-0.53,-0.09

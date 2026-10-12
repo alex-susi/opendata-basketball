@@ -1,12 +1,15 @@
 # Cluster players into offensive and defensive playstyle archetypes, with a probability of each for every player.
-#   Rscript src/archetypes/cluster_archetypes.R [--offense-k=6] [--offense-model=EII] [--offense-pcs=4]
+#   Rscript src/archetypes/cluster_archetypes.R [--offense-k=10] [--offense-model=EII] [--offense-pcs=4]
 #                                               [--defense-k=4] [--defense-model=EEI] [--defense-pcs=2] [--bic] [--tag=alt]
+#                                               [--offense-bar=0.5] [--offense-fit-chances=25] [--offense-fit-attempts=30]
 #
 # Run src/archetypes/build_features.R first. Clusters are fitted on the well-sampled players (fit_offense,
 # fit_defense) and then every player is assigned: all aggregate players on offense, the tracked players on
 # defense. Defaults: principal components by parallel analysis, then the owner's chosen solution (CHOSEN below).
 # --bic takes the model type and number of clusters with the best BIC instead; --tag adds a suffix to the
-# output files so two solutions can be kept side by side.
+# output files so two solutions can be kept side by side. --offense-bar overrides the reliability a feature needs
+# to enter the offensive clustering; --offense-fit-chances and --offense-fit-attempts override the tracked chances
+# and season attempts a player needs to help define the offensive clusters.
 # Writes to outputs/archetypes/: {side}_membership, {side}_cluster_profiles, {side}_components (variance per
 # component), {side}_component_loadings, {side}_cluster_components (each cluster's centre on the components) and
 # cluster_selection (BIC and bootstrap stability of the candidates).
@@ -18,8 +21,11 @@ source(file.path(here, "..", "play_viewer", "R", "data.R"))
 source(file.path(here, "R", "cluster.R"))
 
 CANDIDATES <- 2:12
-# Chosen by the owner on 2026-10-10 after comparing BIC, stability and cluster sizes across seven model types.
-CHOSEN <- list(offense = list(k = 6L, model = "EII"), defense = list(k = 4L, model = "EEI"))
+# Chosen by the owner. Offense (2026-10-12): the ten-cluster fit that best balanced resemblance to BBall Index's
+# offensive roles against stability, on four components, with the fit players widened to 25+ tracked chances
+# and 30+ season attempts. Defense (2026-10-10): unchanged.
+CHOSEN <- list(offense = list(k = 10L, model = "EII", pcs = 4L, fit_chances = 25, fit_attempts = 30),
+               defense = list(k = 4L, model = "EEI"))
 STABILITY_TOP <- 6L       # the best candidates by BIC that get a bootstrap stability check
 STABILITY_REPS <- 30L
 # A cluster is named after a well-known player it contains, so names survive a change in cluster order.
@@ -36,7 +42,28 @@ ANCHORS <- list(offense = list("3" = c("Ball handler" = "Facundo Campazzo", "Flo
                                "7" = c("Primary Ball Handler" = "Marcelinho Huertas", "Slasher" = "Theo Maledon",
                                        "Secondary Ball Handler" = "Patty Mills", "Stretch shooter" = "Aaron Doornekamp",
                                        "Corner wing" = "Bakary Dibba", "Athletic Finisher" = "Tornike Shengelia",
-                                       "Roll & Cut Big" = "Walter Tavares")),
+                                       "Roll & Cut Big" = "Walter Tavares"),
+                               # The closest solution found to BBall Index's twelve roles (9 components, reliability bar 0.5,
+                               # fit players with 25+ chances and 30+ attempts). "Combo Wing" has no BBall Index counterpart.
+                               "10" = c("Primary Ball Handler" = "Marcelinho Huertas", "Secondary Ball Handler" = "Kevin Punter",
+                                        "Slasher" = "Matteo Spagnolo", "Off Screen Shooter" = "Matt Thomas",
+                                        "Movement Shooter" = "Yves Pons", "Stationary Shooter" = "Bakary Dibba",
+                                        "Athletic Finisher" = "Howard Sant-Roos", "Versatile Big" = "Pierre Pelos",
+                                        "Post Scorer" = "Ante Tomic", "Roll & Cut Big" = "Martinas Geben"),
+                               "12@9" = c("Primary Ball Handler" = "Marcelinho Huertas", "Secondary Ball Handler" = "Marco Spissu",
+                                          "Shot Creator" = "Cameron Hunt", "Slasher" = "Theo Maledon",
+                                          "Athletic Finisher" = "Joel Parra Lopez", "Off Screen Shooter" = "Matt Thomas",
+                                          "Movement Shooter" = "Yves Pons", "Stationary Shooter" = "Jonathan Barreiro",
+                                          "Versatile Big" = "Tornike Shengelia", "Post Scorer" = "Ante Tomic",
+                                          "Roll & Cut Big" = "Walter Tavares", "Combo Wing" = "Agustin Ubal"),
+                               # The same search's best fit on the four components that beat the noise test (EEI).
+                               # "Pull-up Lead Guard" has no BBall Index counterpart.
+                               "12@4" = c("Primary Ball Handler" = "Marcelinho Huertas", "Secondary Ball Handler" = "Patty Mills",
+                                          "Pull-up Lead Guard" = "Marco Spissu", "Shot Creator" = "Cameron Hunt",
+                                          "Slasher" = "Theo Maledon", "Athletic Finisher" = "Jermaine Samuels",
+                                          "Off Screen Shooter" = "Matt Thomas", "Movement Shooter" = "Yves Pons",
+                                          "Stationary Shooter" = "Jonathan Barreiro", "Versatile Big" = "Pierre Pelos",
+                                          "Post Scorer" = "Ante Tomic", "Roll & Cut Big" = "Walter Tavares")),
                 defense = list("3" = c("Perimeter defender" = "Trae Bell-Haynes", "Helper" = "Bakary Dibba",
                                        "Anchor Big" = "Walter Tavares"),
                                "4" = c("Point of Attack" = "Trae Bell-Haynes", "Chaser" = "Kassius Robertson",
@@ -65,15 +92,25 @@ cluster_names <- function(P, players, anchors) {
 
 selection <- list()
 for (side_name in c("offense", "defense")) {
-  dict <- built$dictionary[side == side_name & clustering == "cluster"]
+  bar <- if (side_name == "offense") option("offense-bar")
+  dict <- if (is.null(bar)) built$dictionary[side == side_name & clustering == "cluster"] else {
+    built$dictionary[side == side_name & use == "cluster" & reliability >= as.numeric(bar)]
+  }
   pool <- if (side_name == "offense") built$players else built$players[tracked_def_chances > 0]
   M <- scaled_matrices(built$values, built$dictionary, dict$feature, pool$pid)
   in_fit <- pool[[paste0("fit_", side_name)]]
+  if (side_name == "offense") {
+    need <- function(name, default) if (is.null(option(name))) default else as.numeric(option(name))
+    in_fit <- pool$tracked_off_chances >= need("offense-fit-chances", CHOSEN$offense$fit_chances) &
+      pool$season_attempts >= need("offense-fit-attempts", CHOSEN$offense$fit_attempts)
+  }
   F <- lapply(M, function(m) m[in_fit, , drop = FALSE])
 
   # principal components
   pc <- principal_components(F$shrunk)
-  q <- if (is.null(option(paste0(side_name, "-pcs")))) pc$keep else as.integer(option(paste0(side_name, "-pcs")))
+  q <- option(paste0(side_name, "-pcs"))
+  if (is.null(q) && !"--bic" %in% args) q <- CHOSEN[[side_name]]$pcs
+  q <- if (is.null(q)) pc$keep else as.integer(q)
   fwrite(pc$table[, .(component, variance = round(variance, 3), share = round(share, 4), cumulative = round(cumulative, 4),
                       shuffled_95 = round(shuffled_95, 3), kept = component <= q)], out_file(paste0(side_name, "_components")))
   loadings <- data.table(feature = rownames(pc$pca$rotation), round(pc$pca$rotation[, seq_len(q), drop = FALSE], 3))

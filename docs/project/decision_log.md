@@ -633,3 +633,71 @@ EPV squared error 1.3816 to 1.3815. Against the original three-zone model: all s
   35.9%). Like the defender slope, the effect is adopted on the season's evidence, not on these games.
 - It is the three-point effect applied to midrange shots as well, by the same assumption as the slope.
 - xFG on jump shots now runs from 26% to 49%.
+
+## 2026-10-12 — Search for twelve archetypes resembling BBall Index's offensive roles
+
+Status: exploration. The working solution (offense EII, 6 clusters, 4 components) is unchanged; the best
+twelve-cluster candidate is saved beside it as `outputs/archetypes/offense_*_bbi12.csv`.
+
+- **Search.** 504 twelve-cluster fits: 4 to 12 principal components, all 14 mclust covariance types, two
+  feature sets (reliability bar 0.7 with 45 features, 0.5 with 63) and two fit sets (40+ tracked chances and
+  50+ season attempts, 127 players; 25+ and 30+, 169 players). 339 could be fitted.
+- **Scoring.** Each BBall Index role was written as target values (standard deviations from the average fit
+  player) on the descriptors its published description mentions; each cluster centre's root-mean-square
+  distance from each target was computed and clusters were matched one-to-one to roles. The targets are my
+  reading of the descriptions. Shuffled labels score about 0.75; the fits score 0.43 to 0.60.
+- **Result.** No setting recovers all twelve. The closest fits put 9 or 10 roles within 0.6. The guard and
+  wing roles come out consistently (off-screen, stationary and movement shooters, shot creator, slasher,
+  ball handlers, athletic finisher) and so do post scorer and roll and cut big. Stretch big never separates
+  from movement shooter, versatile big appears only as post-and-isolation forwards who do not shoot threes,
+  and there is no low-initiation secondary ball handler: the data gives two kinds of lead guard instead.
+- **Stability falls.** Twelve clusters score 0.56 at best against 0.73 for six. The closest fit of all (EEV,
+  9 components, 0.43) scores 0.29. The variable-volume types (VII, VEI, VEV, EVI) cannot be refitted on 40%
+  to 100% of resamples.
+- **Candidate kept.** EII, 9 components, bar 0.5, 169 fit players: distance 0.46, stability 0.52, no failed
+  refits, smallest cluster 6 fit players, mean top probability 0.85. Eleven clusters carry a BBall Index name
+  and one ("Combo Wing") has no counterpart. BIC prefers far fewer clusters on these components.
+- `cluster_archetypes.R` gained `--offense-bar`, `--offense-fit-chances` and `--offense-fit-attempts`.
+- **Second candidate written for comparison** (owner's request): EEI on the four components that beat the noise
+  test, same features and fit players, as `outputs/archetypes/offense_*_bbi12_eei4.csv`. Stability 0.56 against
+  0.52, mean top probability 0.79 against 0.85, 32 players under 0.5 against 20. It also carries eleven BBall
+  Index names; its twelfth cluster is pull-up lead guards. Its shot creator is six isolation specialists
+  (mean top probability 0.69) and its post scorer is a broad group of 27 bigs. The two candidates agree at an
+  adjusted Rand index of 0.46. `offense_membership_bbi12_compare.csv` has every player's label under the
+  default and both candidates.
+
+### Search extended to 8 to 12 clusters (owner's request, 2026-10-12)
+
+- 2,520 fits: 8 to 12 clusters, 4 to 12 components, all 14 mclust types, both feature bars and both fit sets;
+  1,922 could be fitted. Stability (20 resamples) was measured on 146 of them: the closest fits at each count,
+  and every EII and EEI fit on 4 to 8 components with 169 fit players. Each cluster was matched to a different
+  BBall Index role. Full table: `outputs/archetypes/search_8_to_12_clusters.csv`.
+- The closest fit at every count is a many-component EEV or EEE model with stability 0.25 to 0.40, or a
+  variable-volume model that cannot be refitted. Among models that always refit, the best are EII or EEI on
+  four components.
+- Best balanced fit per count (169 fit players; distance, roles within 0.6, stability): 8 clusters EII bar 0.7
+  (0.37, 8 of 8, 0.68); 9 EII bar 0.5 (0.43, 8 of 9, 0.66); 10 EII bar 0.7 (0.42, 9 of 10, 0.63); 11 EEI
+  bar 0.7 (0.45, 10 of 11, 0.58); 12 EEI bar 0.5 (0.47, 10 of 12, 0.58).
+- Roles appear in this order as clusters are added: at 8, primary ball handler, slasher, off-screen shooter,
+  stationary shooter, movement shooter, athletic finisher, versatile big, roll and cut big; at 9 a secondary
+  ball handler (scoring guards) splits from the off-screen shooters; at 10 post scorer splits from the bigs;
+  11 and 12 add a small pull-up guard group and four isolation specialists. Stretch big never appears.
+- Reading: ten clusters is the last count that adds a clearly recognisable role before stability drops
+  below 0.6. Nothing has been adopted; the working solution is still six clusters.
+
+### Working offensive solution changed to ten archetypes (owner, 2026-10-12)
+
+- Offense is now EII with 10 clusters on 4 components, the same 45 features (bar 0.7), with the fit players
+  widened to 25+ tracked chances and 30+ season attempts (169 players). Defense is unchanged. These are the
+  defaults in `cluster_archetypes.R` (`CHOSEN`) and the untagged files in `outputs/archetypes/`.
+- Clusters (all players / fit players): primary ball handler 45/26, secondary ball handler 30/18, slasher
+  29/13, off screen shooter 20/15, movement shooter 52/26, stationary shooter 21/11, athletic finisher 36/22,
+  versatile big 12/7, post scorer 29/15, roll and cut big 36/16.
+- Stability 0.62 (30 resamples), against about 0.73 for the six-cluster solution it replaces. Mean top
+  probability 0.83 with tracked data and 0.70 season only; 24 of 310 players under 0.5.
+- Viewer and site: each roster tag is the archetype's name in an outlined pill of its colour (Primary BH,
+  Secondary BH and R&C Big shortened, the rest in full), ten offensive colours, and the right-hand column
+  widened from 260 to 330 px to fit the tags. Defensive roles borrow the colour of the offensive archetype
+  most of their players have: point of attack from primary ball handler, chaser from secondary ball handler,
+  helper from movement shooter, anchor big from roll and cut big. The Archetypes page wording was rewritten
+  for the ten archetypes. The `_bbi12` and `_bbi12_eei4` candidate files are left in place.

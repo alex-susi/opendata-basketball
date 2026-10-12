@@ -11,12 +11,17 @@
   --def: #FF8552;
   --made: #4FD08F;
   --missed: #FF8A80;
-  /* Archetype swatches (roster panels). Similar roles sit on neighbouring hues; the label carries the identity. */
+  /* Archetype colours: the roster tags, the rings on the court and the Archetypes tab. One hue per offensive
+     archetype; a defensive role borrows the hue of the offensive archetype most of its players have. */
   --arch-primary: #9085E9;
-  --arch-slasher: #3987E5;
   --arch-secondary: #D55181;
+  --arch-slasher: #3987E5;
+  --arch-offscreen: #1FA3C4;
+  --arch-movement: #1F9D45;
+  --arch-stationary: #8FA31E;
   --arch-finisher: #199E70;
-  --arch-spacer: #008300;
+  --arch-versatile: #D95926;
+  --arch-post: #E66767;
   --arch-big: #C98500;
   --arch-none: var(--muted);
   --radius: 10px;
@@ -49,7 +54,7 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: 330px minmax(0, 1fr) 260px;
+  grid-template-columns: 330px minmax(0, 1fr) 330px;
   gap: 12px;
   height: calc(100vh - var(--bar));
   padding: 12px;
@@ -337,12 +342,16 @@ body {
   display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 2px solid var(--kit-edge); border-radius: 50%;
   background: var(--kit-fill); color: var(--kit-ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-/* The ball mark follows the name; the archetype tag keeps to the right edge. */
+/* The ball mark follows the name. */
 .roster .name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .roster .ball-mark { flex: none; margin-left: -2px; }
-.roster .arch { display: flex; align-items: center; gap: 5px; flex: none; max-width: 45%; margin-left: auto; color: var(--muted); font-size: 11px; }
-.roster .arch .swatch { width: 9px; height: 9px; flex: none; border-radius: 2px; }
-.roster .arch-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The archetype tag: an outlined pill in the archetype's colour (--arch-color is set on the tag), lightened so the
+   label reads on the panel. It keeps to the right edge and never shrinks; a long name gives way instead. */
+.roster .arch {
+  flex: none; margin-left: auto; padding: 1px 8px; border: 1px solid currentColor; border-radius: 999px;
+  color: color-mix(in srgb, var(--arch-color, var(--muted)) 75%, white); font-size: 10.5px; font-weight: 600;
+  line-height: 1.45; white-space: nowrap;
+}
 .roster li.bench { opacity: .4; }
 .roster li.has-ball .name { font-weight: 700; }
 .roster li.has-ball .ball-mark { width: 9px; height: 9px; border-radius: 50%; background: #FFA62B; border: 1px solid #5C3200; }
@@ -354,6 +363,7 @@ body {
   .viewer { min-height: calc(100vh - 24px - var(--bar)); }
   .side { flex-direction: row; flex-wrap: wrap; overflow: visible; }
   .side .panel { flex: 1 1 200px; min-width: 0; }
+  .side .roster { flex-basis: 300px; }       /* room for a name and its archetype tag */
 }
 @media (max-width: 760px) {
   .app { grid-template-columns: minmax(0, 1fr); }

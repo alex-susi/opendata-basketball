@@ -1,0 +1,311 @@
+pid,player,teams,season_possessions,season_attempts,tracked_games,tracked_off_chances,tracked_def_chances,defines_clusters,basis,cluster,archetype,probability,p_off_screen_shooter,p_stationary_shooter,p_combo_wing,p_slasher,p_secondary_ball_handler,p_roll_cut_big,p_movement_shooter,p_versatile_big,p_post_scorer,p_athletic_finisher,p_shot_creator,p_primary_ball_handler
+15780,Erik Stevenson,Casademont Zaragoza,231,42,1,49,39,TRUE,season and tracked,1,Off Screen Shooter,1,1,0,0,0,0,0,0,0,0,0,0,0
+59374,Kyle Kuric,BC MoraBanc Andorra,1178,240,1,32,35,TRUE,season and tracked,1,Off Screen Shooter,1,1,0,0,0,0,0,0,0,0,0,0,0
+28390,Mark Hughes,Basquet Girona,1236,221,1,44,54,TRUE,season and tracked,1,Off Screen Shooter,1,1,0,0,0,0,0,0,0,0,0,0,0
+35028,Matt Thomas,Coviran Granada,749,144,1,76,77,TRUE,season and tracked,1,Off Screen Shooter,1,1,0,0,0,0,0,0,0,0,0,0,0
+24504,Jonah Radebaugh,CB UCAM Murcia,1091,170,1,38,36,TRUE,season and tracked,1,Off Screen Shooter,0.999,0.999,0,0.001,0,0,0,0,0,0,0,0.001,0
+18534,Alfonso Plummer,BAXI Manresa,204,44,1,38,39,TRUE,season and tracked,1,Off Screen Shooter,0.998,0.998,0,0,0,0,0,0.001,0,0,0,0,0
+35402,Nico Brussino,Dreamland Gran Canaria,1598,252,2,100,118,TRUE,season and tracked,1,Off Screen Shooter,0.996,0.996,0,0.003,0,0,0,0,0,0,0,0,0
+35787,Wes VanBeck,Lenovo Tenerife,600,114,0,0,0,FALSE,season only,1,Off Screen Shooter,0.994,0.994,0,0,0,0,0,0,0,0,0,0.005,0
+63998,Jordan Walker,Leche Rio Breogan,74,15,1,27,23,FALSE,season and tracked,1,Off Screen Shooter,0.988,0.988,0,0.002,0,0,0,0,0,0,0,0.009,0
+58880,Tyler Kalinosky,Malaga,1101,187,0,0,0,FALSE,season only,1,Off Screen Shooter,0.986,0.986,0.001,0,0,0,0,0.014,0,0,0,0,0
+59105,Arturs Kurucs,Leche Rio Breogan,1338,200,2,100,102,TRUE,season and tracked,1,Off Screen Shooter,0.983,0.983,0.01,0.002,0,0,0,0.005,0,0,0,0,0
+28410,Francisco Alonso,Leche Rio Breogan,1515,314,2,124,123,TRUE,season and tracked,1,Off Screen Shooter,0.967,0.967,0,0.001,0,0,0,0,0,0,0,0.031,0
+35581,Aaron Best,BC MoraBanc Andorra,1193,211,1,64,70,TRUE,season and tracked,1,Off Screen Shooter,0.957,0.957,0,0.02,0,0,0,0,0,0,0,0.023,0
+61550,Brandon Jefferson,Dreamland Gran Canaria,87,13,1,58,57,FALSE,season and tracked,1,Off Screen Shooter,0.956,0.956,0,0,0,0.042,0,0,0,0,0,0.001,0
+24949,Markus Howard,Bitci Baskonia,567,128,1,53,44,TRUE,season and tracked,1,Off Screen Shooter,0.955,0.955,0,0,0,0,0,0,0,0,0,0.045,0
+58436,Derek Ryan Needham,Basquet Girona,1383,275,1,58,52,TRUE,season and tracked,1,Off Screen Shooter,0.954,0.954,0,0,0,0.008,0,0,0,0,0,0.037,0
+59174,Sergio Llull,Real Madrid,1129,224,1,41,42,TRUE,season and tracked,1,Off Screen Shooter,0.948,0.948,0,0,0,0.008,0,0,0,0,0,0.044,0
+24280,Keandre Cook,Leche Rio Breogan,1224,219,1,40,40,TRUE,season and tracked,1,Off Screen Shooter,0.937,0.937,0,0.034,0,0,0,0,0,0,0,0.028,0
+59142,Brancou Badio,Valencia BC,1077,229,1,52,55,TRUE,season and tracked,1,Off Screen Shooter,0.927,0.927,0,0.001,0,0.004,0,0,0,0,0,0.068,0
+59146,Margiris Normantas,Bilbao Basket,1245,225,1,56,59,TRUE,season and tracked,1,Off Screen Shooter,0.914,0.914,0,0.012,0.001,0.001,0,0,0,0,0,0.072,0
+59215,Alberto Abalde,Real Madrid,928,119,1,34,39,TRUE,season and tracked,1,Off Screen Shooter,0.907,0.907,0.012,0.064,0,0,0,0.016,0,0,0,0,0
+23056,Justin Jaworski,Bilbao Basket,1401,345,1,88,80,TRUE,season and tracked,1,Off Screen Shooter,0.879,0.879,0,0,0,0,0,0,0,0,0,0.121,0
+59232,Eduardo Duran,Coviran Granada,105,11,1,7,3,FALSE,season and tracked,1,Off Screen Shooter,0.87,0.87,0.003,0,0,0,0,0.127,0,0,0,0,0
+59180,Alex Reyes,BAXI Manresa,1600,304,1,53,59,TRUE,season and tracked,1,Off Screen Shooter,0.842,0.842,0.004,0,0,0,0,0.154,0,0,0,0,0
+34854,Patty Mills,Lenovo Tenerife,356,117,1,61,57,TRUE,season and tracked,1,Off Screen Shooter,0.821,0.821,0,0,0,0,0,0,0,0,0,0.179,0
+59246,Daniel Gonzalez,BC Barcelona,48,4,1,10,14,FALSE,season and tracked,1,Off Screen Shooter,0.714,0.714,0,0.023,0.009,0.011,0,0,0,0,0,0.242,0
+31587,Darius Thompson,Valencia BC,946,153,1,46,44,TRUE,season and tracked,1,Off Screen Shooter,0.598,0.598,0,0.02,0.098,0.27,0,0,0,0,0,0.014,0
+34880,Josh Richardson,Casademont Zaragoza,100,24,0,0,0,FALSE,season only,1,Off Screen Shooter,0.555,0.555,0,0.073,0.015,0.001,0,0,0,0,0,0.357,0
+64367,Aleksandr Savkov,Casademont Zaragoza,4,1,0,0,0,FALSE,season only,1,Off Screen Shooter,0.376,0.376,0.112,0.067,0.028,0.095,0.002,0.16,0.019,0.001,0.037,0.1,0.003
+84386,Pol Rios,ICG Forca Lleida,5,2,0,0,0,FALSE,season only,1,Off Screen Shooter,0.353,0.353,0.029,0.102,0.051,0.062,0.001,0.04,0.025,0.002,0.02,0.271,0.044
+7196,Alvaro Cardenas,Valencia BC,14,0,0,0,0,FALSE,season only,1,Off Screen Shooter,0.251,0.251,0.035,0.208,0.207,0.179,0,0.027,0.005,0,0.036,0.049,0.002
+59125,Jonathan Barreiro,Malaga,959,118,1,49,51,TRUE,season and tracked,2,Stationary Shooter,0.999,0,0.999,0,0,0,0,0.001,0,0,0,0,0
+59140,Josep Puerto,Valencia BC,831,143,1,42,38,TRUE,season and tracked,2,Stationary Shooter,0.993,0,0.993,0,0,0,0,0.006,0,0,0.001,0,0
+59175,Gabriele Procida,Real Madrid,842,118,1,36,39,TRUE,season and tracked,2,Stationary Shooter,0.99,0,0.99,0,0,0,0,0.006,0,0,0.004,0,0
+59131,Pablo Almazan Sierra,San Pablo Burgos,547,43,1,40,40,TRUE,season and tracked,2,Stationary Shooter,0.953,0,0.953,0,0,0,0,0.042,0,0,0.004,0,0
+59107,Aleksandar Aranitovic,Leche Rio Breogan,1414,197,2,115,129,TRUE,season and tracked,2,Stationary Shooter,0.943,0.001,0.943,0,0,0,0,0.056,0,0,0,0,0
+59475,Stan Okoye,BC MoraBanc Andorra,1033,174,1,14,18,FALSE,season and tracked,2,Stationary Shooter,0.943,0,0.943,0.001,0,0,0,0.046,0,0,0.011,0,0
+59112,Joan Sastre,Lenovo Tenerife,568,50,1,20,31,FALSE,season and tracked,2,Stationary Shooter,0.938,0,0.938,0,0,0,0,0.051,0,0,0.012,0,0
+59117,Rokas Giedraitis,Lenovo Tenerife,928,140,1,52,46,TRUE,season and tracked,2,Stationary Shooter,0.884,0,0.884,0.002,0,0,0,0.093,0,0,0.021,0,0
+59113,Aaron Doornekamp,Lenovo Tenerife,1174,145,1,52,56,TRUE,season and tracked,2,Stationary Shooter,0.876,0,0.876,0,0,0,0,0.124,0,0,0,0,0
+59121,Hector Alderete Diaz,Lenovo Tenerife,192,12,1,6,9,FALSE,season and tracked,2,Stationary Shooter,0.87,0,0.87,0,0,0,0,0.083,0,0,0.047,0,0
+59206,Miguel Gonzalez,Casademont Zaragoza,1129,113,2,92,93,TRUE,season and tracked,2,Stationary Shooter,0.866,0,0.866,0,0,0,0,0.133,0,0,0.001,0,0
+59167,Jose Francisco Ortega Soriano,BC MoraBanc Andorra,715,61,1,60,56,TRUE,season and tracked,2,Stationary Shooter,0.865,0,0.865,0,0,0,0,0.003,0,0,0.132,0,0
+28648,Travis Munnings,Coviran Granada,264,29,1,46,32,FALSE,season and tracked,2,Stationary Shooter,0.851,0,0.851,0,0,0,0,0.076,0,0,0.073,0,0
+15805,Javan Johnson,Coviran Granada,174,26,0,0,0,FALSE,season only,2,Stationary Shooter,0.847,0,0.847,0.001,0,0,0,0.144,0,0,0.007,0,0
+59272,Pere Tomas Noguera,Coviran Granada,175,16,0,0,0,FALSE,season only,2,Stationary Shooter,0.834,0,0.834,0,0,0,0,0.155,0,0,0.011,0,0
+59201,Juan Rubio,San Pablo Burgos,505,51,1,17,18,FALSE,season and tracked,2,Stationary Shooter,0.818,0,0.818,0,0,0,0,0.167,0,0,0.015,0,0
+59100,Yannick Kraag,Club Joventut Badalona,1344,153,1,73,77,TRUE,season and tracked,2,Stationary Shooter,0.805,0,0.805,0,0,0,0,0.073,0,0,0.122,0,0
+59159,Loucas Nzambi Maniema,Dreamland Gran Canaria,120,8,1,3,4,FALSE,season and tracked,2,Stationary Shooter,0.76,0.001,0.76,0.05,0,0,0,0.049,0,0,0.14,0,0
+35726,David Kramer,Real Madrid,691,129,1,22,12,FALSE,season and tracked,2,Stationary Shooter,0.738,0.006,0.738,0.039,0,0,0,0.179,0,0,0.039,0,0
+93153,Khory Rosembert,Basquet Girona,91,7,0,0,0,FALSE,season only,2,Stationary Shooter,0.693,0,0.693,0.003,0,0,0,0.205,0,0,0.099,0,0
+59190,Mindaugas Susinskas,Basquet Girona,1107,161,1,59,50,TRUE,season and tracked,2,Stationary Shooter,0.666,0,0.666,0,0,0,0,0.334,0,0,0,0,0
+59231,Ferran Mauri,Club Joventut Badalona,16,4,0,0,0,FALSE,season only,2,Stationary Shooter,0.588,0.024,0.588,0.027,0,0,0,0.274,0.002,0,0.086,0,0
+59149,Aleix Font,Bilbao Basket,481,87,1,12,12,FALSE,season and tracked,2,Stationary Shooter,0.581,0.001,0.581,0.001,0,0,0,0.413,0,0,0.004,0,0
+59091,Sander Raieste,CB UCAM Murcia,999,113,1,46,53,TRUE,season and tracked,2,Stationary Shooter,0.568,0,0.568,0,0,0,0,0.132,0,0,0.3,0,0
+18522,Myles Cale,BC Barcelona,993,129,1,40,43,TRUE,season and tracked,2,Stationary Shooter,0.544,0.003,0.544,0.07,0,0,0,0.347,0,0,0.036,0,0
+59185,Gerard Fernandez,BAXI Manresa,178,27,0,0,0,FALSE,season only,2,Stationary Shooter,0.538,0.046,0.538,0.005,0,0,0,0.408,0,0,0.003,0,0
+59198,Mikel Sanz,ICG Forca Lleida,918,121,0,0,0,FALSE,season only,2,Stationary Shooter,0.463,0,0.463,0.002,0,0,0,0.252,0,0,0.283,0,0
+92796,Joaquin Taboada,San Pablo Burgos,120,19,0,0,0,FALSE,season only,2,Stationary Shooter,0.448,0,0.448,0.003,0,0,0,0.132,0,0,0.418,0,0
+59216,Sander Hollanders,Basquet Girona,87,11,0,0,0,FALSE,season only,2,Stationary Shooter,0.425,0.004,0.425,0.023,0,0,0,0.4,0.002,0,0.147,0,0
+94900,Humberto Ruiz,Club Joventut Badalona,17,2,0,0,0,FALSE,season only,2,Stationary Shooter,0.38,0.009,0.38,0.052,0,0,0,0.25,0.011,0,0.298,0,0
+59184,Agustin Ubal,BAXI Manresa,1175,204,1,43,55,TRUE,season and tracked,3,Combo Wing,0.998,0.001,0,0.998,0,0,0,0,0,0,0,0,0
+11247,Kameron Milton Allante Taylor,Valencia BC,909,194,1,50,54,TRUE,season and tracked,3,Combo Wing,0.993,0.001,0,0.993,0.004,0,0,0,0,0,0,0.001,0
+59205,Santiago Yusta,Casademont Zaragoza,1629,325,2,146,141,TRUE,season and tracked,3,Combo Wing,0.983,0.013,0,0.983,0,0,0,0,0,0,0.001,0.002,0
+59186,Max Gaspa,BAXI Manresa,205,21,1,15,23,FALSE,season and tracked,3,Combo Wing,0.977,0.011,0,0.977,0.002,0,0,0.005,0.001,0,0.004,0,0
+22932,David Duke Jr.,BAXI Manresa,305,60,0,0,0,FALSE,season only,3,Combo Wing,0.962,0,0.001,0.962,0.001,0,0,0,0,0,0.036,0,0
+15452,Chase Audige,Malaga,663,115,1,39,39,TRUE,season and tracked,3,Combo Wing,0.918,0.04,0.005,0.918,0,0,0,0.015,0.001,0,0.022,0,0
+59133,Leonardo Simoes Meindl,San Pablo Burgos,1572,313,1,37,44,TRUE,season and tracked,3,Combo Wing,0.912,0,0,0.912,0,0,0,0,0,0,0.087,0,0
+59189,Josep Busquets,Basquet Girona,1499,267,1,47,54,TRUE,season and tracked,3,Combo Wing,0.9,0.055,0.025,0.9,0,0,0,0.013,0,0,0.007,0,0
+59036,Howard Sant-Roos,CB UCAM Murcia,1226,141,1,57,54,TRUE,season and tracked,3,Combo Wing,0.89,0,0,0.89,0,0,0,0,0,0,0.11,0,0
+25431,Andres Feliz Sarita,Real Madrid,918,150,1,61,53,TRUE,season and tracked,3,Combo Wing,0.873,0.001,0,0.873,0.123,0,0,0,0,0,0,0.003,0
+31374,Hamidou Diallo,Bitci Baskonia,322,77,0,0,0,FALSE,season only,3,Combo Wing,0.873,0.003,0,0.873,0.011,0,0,0,0,0,0,0.113,0
+59097,Adam Hanga,Club Joventut Badalona,1260,172,1,47,47,TRUE,season and tracked,3,Combo Wing,0.869,0.029,0.007,0.869,0,0,0,0.086,0,0,0.009,0,0
+59129,Nihad Djedovic,Malaga,767,144,1,42,47,TRUE,season and tracked,3,Combo Wing,0.789,0,0,0.789,0,0,0,0,0.01,0,0.201,0,0
+59269,Maximo Fjellerup,Basquet Girona,80,15,0,0,0,FALSE,season only,3,Combo Wing,0.765,0,0,0.765,0.003,0,0,0,0.087,0.005,0.139,0,0
+59139,Rafael Villar Cornago,Bitci Baskonia,797,51,1,35,35,TRUE,season and tracked,3,Combo Wing,0.753,0,0.012,0.753,0,0,0,0.001,0,0,0.234,0,0
+83934,Lucas Sanchez,BAXI Manresa,17,4,0,0,0,FALSE,season only,3,Combo Wing,0.697,0.024,0.005,0.697,0.102,0.001,0,0.007,0.03,0.001,0.11,0.022,0
+31539,Chimezie Metu,Dreamland Gran Canaria,499,108,1,56,60,TRUE,season and tracked,3,Combo Wing,0.692,0.01,0,0.692,0,0,0,0,0.059,0,0.013,0.225,0
+18544,Jaden Shackelford,San Pablo Burgos,160,29,0,0,0,FALSE,season only,3,Combo Wing,0.692,0.108,0,0.692,0.142,0.001,0,0,0,0,0,0.057,0
+25271,Elias Valtonen,Coviran Granada,839,133,1,56,40,TRUE,season and tracked,3,Combo Wing,0.655,0.337,0.001,0.655,0,0,0,0.006,0,0,0.001,0,0
+35164,William Howard,Coviran Granada,640,85,0,0,0,FALSE,season only,3,Combo Wing,0.65,0.01,0.056,0.65,0,0,0,0.113,0.009,0,0.162,0,0
+58528,Torrian Corey Walden,ICG Forca Lleida,1027,121,0,0,0,FALSE,season only,3,Combo Wing,0.554,0.321,0.002,0.554,0.085,0.034,0,0.004,0,0,0,0,0
+84865,Pablo Sevilla,CB UCAM Murcia,17,1,0,0,0,FALSE,season only,3,Combo Wing,0.527,0.054,0.03,0.527,0.043,0.001,0.001,0.032,0.046,0.004,0.243,0.018,0
+59212,Xabier Lopez-Arostegui,Valencia BC / Lenovo Tenerife,483,73,0,0,0,FALSE,season only,3,Combo Wing,0.523,0.004,0.041,0.523,0,0,0,0.173,0.006,0,0.254,0,0
+35806,Retin Obasohan,BAXI Manresa,1255,241,1,51,65,TRUE,season and tracked,3,Combo Wing,0.521,0,0,0.521,0.476,0,0,0,0,0,0,0.003,0
+95029,Marcos Bella Cabanas,San Pablo Burgos,8,3,0,0,0,FALSE,season only,3,Combo Wing,0.35,0.159,0.03,0.35,0.079,0.019,0.002,0.054,0.068,0.005,0.113,0.122,0
+59228,Stefan Joksimovic,Bitci Baskonia,173,25,0,0,0,FALSE,season only,3,Combo Wing,0.331,0.051,0.207,0.331,0,0,0,0.297,0.001,0,0.112,0,0
+94898,Adria Rodriguez,ICG Forca Lleida,194,29,0,0,0,FALSE,season only,4,Slasher,1,0,0,0,1,0,0,0,0,0,0,0,0
+34945,Raul Neto,San Pablo Burgos,1227,234,1,61,56,TRUE,season and tracked,4,Slasher,1,0,0,0,1,0,0,0,0,0,0,0,0
+34919,Theo Maledon,Real Madrid,1094,149,1,51,55,TRUE,season and tracked,4,Slasher,1,0,0,0,1,0,0,0,0,0,0,0,0
+31739,Trae Bell-Haynes,Casademont Zaragoza,1055,208,2,131,125,TRUE,season and tracked,4,Slasher,1,0,0,0,1,0,0,0,0,0,0,0,0
+24268,Trent Forrest,Bitci Baskonia,1077,171,1,49,48,TRUE,season and tracked,4,Slasher,1,0,0,0,1,0,0,0,0,0,0,0,0
+59158,Ziga Samar,Dreamland Gran Canaria,731,139,2,52,54,TRUE,season and tracked,4,Slasher,0.999,0,0,0,0.999,0.001,0,0,0,0,0,0,0
+59135,Matteo Spagnolo,Bitci Baskonia,1224,176,1,61,65,TRUE,season and tracked,4,Slasher,0.998,0,0,0.002,0.998,0,0,0,0,0,0,0,0
+59169,Rafa Freire Luz,BC MoraBanc Andorra,734,63,0,0,0,FALSE,season only,4,Slasher,0.998,0,0,0,0.998,0.002,0,0,0,0,0,0,0
+7699,Cameron Hildreth,Basquet Girona,238,55,0,0,0,FALSE,season only,4,Slasher,0.995,0,0,0.003,0.995,0,0,0,0,0,0,0.001,0
+15487,Omari Moore,Valencia BC,1055,187,1,39,36,TRUE,season and tracked,4,Slasher,0.992,0,0,0.008,0.992,0,0,0,0,0,0,0,0
+24684,Jon Axel Gudmundsson,San Pablo Burgos,1173,128,1,63,59,TRUE,season and tracked,4,Slasher,0.989,0,0,0.004,0.989,0.008,0,0,0,0,0,0,0
+59109,Erik Quintela,Leche Rio Breogan,170,23,0,0,0,FALSE,season only,4,Slasher,0.987,0,0,0.009,0.987,0.001,0,0,0,0,0,0,0.003
+18791,Eli Brooks,BAXI Manresa,696,116,0,0,0,FALSE,season only,4,Slasher,0.978,0,0,0.02,0.978,0.001,0,0,0,0,0,0.001,0
+59151,Melwin Jan Pantzar,Bilbao Basket,1464,222,1,84,80,TRUE,season and tracked,4,Slasher,0.941,0,0,0,0.941,0.051,0,0,0,0,0,0,0.008
+59422,Mehdy Ngouama,Coviran Granada,569,100,0,0,0,FALSE,season only,4,Slasher,0.919,0.003,0,0.039,0.919,0.005,0,0,0,0,0,0.034,0
+59208,Joaquin Nazar Rodriguez Olivera,Casademont Zaragoza,1254,218,2,47,44,TRUE,season and tracked,4,Slasher,0.904,0,0,0.096,0.904,0,0,0,0,0,0,0,0
+59145,Sergio De Larrea,Valencia BC,900,162,0,0,0,FALSE,season only,4,Slasher,0.857,0,0,0.002,0.857,0.136,0,0,0,0,0,0.004,0
+34909,Kobi Simmons,Bitci Baskonia,1052,202,0,0,0,FALSE,season only,4,Slasher,0.82,0,0,0.168,0.82,0,0,0,0,0,0,0.011,0
+59290,Juan Nunez Garcia,BC Barcelona,241,30,1,43,44,TRUE,season and tracked,4,Slasher,0.809,0,0,0,0.809,0.19,0,0,0,0,0,0,0.001
+59193,Oriol Pauli,ICG Forca Lleida,1457,226,0,0,0,FALSE,season only,4,Slasher,0.789,0,0,0.211,0.789,0,0,0,0,0,0,0,0
+15369,Sir'Jabari Rice,BC MoraBanc Andorra,559,109,1,79,79,TRUE,season and tracked,4,Slasher,0.772,0,0,0,0.772,0.089,0,0,0,0,0,0,0.139
+32266,Elvar Mar Fridriksson,Lenovo Tenerife,59,16,0,0,0,FALSE,season only,4,Slasher,0.732,0.014,0,0.013,0.732,0.116,0,0,0,0,0,0.126,0
+59295,Carlos Alocen,Dreamland Gran Canaria,371,45,2,55,58,TRUE,season and tracked,4,Slasher,0.64,0,0,0,0.64,0.359,0,0,0,0,0,0,0.002
+96118,Alvaro Fernandez,Coviran Granada,10,3,0,0,0,FALSE,season only,4,Slasher,0.605,0.001,0,0.002,0.605,0.103,0,0,0,0,0,0.113,0.175
+64368,Matija Lukic,Casademont Zaragoza,4,1,0,0,0,FALSE,season only,4,Slasher,0.555,0.02,0.001,0.1,0.555,0.046,0.001,0.001,0.006,0.003,0.009,0.125,0.132
+59173,Dylan Bordon,Lenovo Tenerife,35,6,0,0,0,FALSE,season only,4,Slasher,0.503,0.005,0,0.008,0.503,0.07,0,0,0,0,0,0.166,0.248
+59123,Alberto Diaz,Malaga,1086,115,1,53,54,TRUE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59154,Andrew Albicy,Dreamland Gran Canaria,1306,123,1,47,45,TRUE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59120,Bruno Fitipaldo,Lenovo Tenerife,1218,183,1,41,47,TRUE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59191,Guillem Ferrando Porro,Basquet Girona,352,44,1,11,13,FALSE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59187,Jose Ignacio Vildoza,Basquet Girona,899,184,1,27,35,TRUE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59099,Ludvig Hakanson,Club Joventut Badalona,1125,200,1,58,59,TRUE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59207,Marco Spissu,Casademont Zaragoza,1350,165,2,106,104,TRUE,season and tracked,5,Secondary Ball Handler,1,0,0,0,0,1,0,0,0,0,0,0,0
+59218,Lluis Costa,Coviran Granada / Lenovo Tenerife,1349,245,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.999,0,0,0,0,0.999,0,0,0,0,0,0.001,0
+31457,Shannon Evans,BC MoraBanc Andorra,1502,319,1,32,37,TRUE,season and tracked,5,Secondary Ball Handler,0.999,0,0,0,0.001,0.999,0,0,0,0,0,0,0.001
+59213,Kendrick Perry,Malaga,1401,283,1,46,47,TRUE,season and tracked,5,Secondary Ball Handler,0.998,0,0,0,0,0.998,0,0,0,0,0,0,0.001
+59260,Daniel Garcia,ICG Forca Lleida,534,64,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.997,0,0,0,0.003,0.997,0,0,0,0,0,0,0
+34982,Facundo Campazzo,Real Madrid,1207,197,1,73,67,TRUE,season and tracked,5,Secondary Ball Handler,0.997,0,0,0,0.003,0.997,0,0,0,0,0,0,0
+15367,Markquis Nowell,Bitci Baskonia,213,41,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.995,0,0,0,0.005,0.995,0,0,0,0,0,0,0
+59203,Nicolas Laprovittola,BC Barcelona,508,109,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.992,0,0,0,0.006,0.992,0,0,0,0,0,0.001,0
+35009,Tomas Satoransky,BC Barcelona,948,119,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.99,0,0,0,0.01,0.99,0,0,0,0,0,0,0
+59161,Juan Ignacio Marcos,BC Barcelona,836,116,1,48,41,TRUE,season and tracked,5,Secondary Ball Handler,0.989,0,0,0,0.011,0.989,0,0,0,0,0,0,0
+59220,Jonathan Rousselle,Coviran Granada,1351,187,1,65,54,TRUE,season and tracked,5,Secondary Ball Handler,0.977,0,0,0,0.023,0.977,0,0,0,0,0,0,0
+28336,Otis Livingston II,Basquet Girona,1601,376,1,64,58,TRUE,season and tracked,5,Secondary Ball Handler,0.967,0,0,0,0,0.967,0,0,0,0,0,0.03,0.003
+59144,Jean Claudio Montero,Valencia BC,954,251,1,61,61,TRUE,season and tracked,5,Secondary Ball Handler,0.954,0,0,0,0.015,0.954,0,0,0,0,0,0.003,0.028
+59168,Ferran Bassas,BAXI Manresa / BC MoraBanc Andorra,1134,224,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.951,0.005,0,0,0.002,0.951,0,0,0,0,0,0.042,0
+31224,Braian Angola-Rodas,Dreamland Gran Canaria,558,115,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.928,0.003,0,0,0.011,0.928,0,0,0,0,0,0.058,0
+59214,Daniel Perez,BAXI Manresa,593,85,1,42,42,TRUE,season and tracked,5,Secondary Ball Handler,0.898,0,0,0,0.07,0.898,0,0,0,0,0,0,0.032
+24905,Harald Frey,Bilbao Basket,1020,153,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.889,0.003,0,0,0.094,0.889,0,0,0,0,0,0.013,0
+25179,Max Heidegger,San Pablo Burgos,295,69,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.783,0.012,0,0,0.001,0.783,0,0,0,0,0,0.204,0
+15661,Xavier Castaneda,BC MoraBanc Andorra / Malaga,390,90,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.763,0,0,0,0,0.763,0,0,0,0,0,0.228,0.009
+59230,Sergi Garcia,San Pablo Burgos,53,3,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.736,0.014,0.002,0.015,0.23,0.736,0,0.001,0,0,0.001,0.001,0
+59098,Guillem Vives,Club Joventut Badalona,681,82,1,15,16,FALSE,season and tracked,5,Secondary Ball Handler,0.732,0.267,0,0,0,0.732,0,0,0,0,0,0,0
+58537,Kristers Zoriks,ICG Forca Lleida,354,52,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.609,0.004,0,0,0.361,0.609,0,0,0,0,0,0.025,0
+58359,Justin Cobbs,Malaga,293,50,1,15,14,FALSE,season and tracked,5,Secondary Ball Handler,0.441,0.353,0,0,0.007,0.441,0,0,0,0,0,0.197,0.002
+94468,Mate KHATIASHVILI,Bitci Baskonia,5,0,0,0,0,FALSE,season only,5,Secondary Ball Handler,0.342,0.132,0.01,0.085,0.278,0.342,0.002,0.01,0.005,0.001,0.012,0.088,0.037
+59127,Aleksander Balcerowski,Malaga,1250,189,1,54,56,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59150,Amar Sylla,Bilbao Basket,226,22,1,4,5,FALSE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+35077,Amida Brimah,Coviran Granada,591,54,0,0,0,FALSE,season only,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59196,Atouman Diagne,ICG Forca Lleida,823,110,0,0,0,FALSE,season only,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59152,Bassala Bagayoko,Bilbao Basket,693,69,1,37,37,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59110,Danko Brankovic,Leche Rio Breogan,1154,247,2,86,78,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59119,Francisco Guerra,Lenovo Tenerife,970,129,1,29,31,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59118,Giorgi Shermadini,Lenovo Tenerife,1089,186,1,64,61,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+31476,Gyorgy Goloman,ICG Forca Lleida,728,103,0,0,0,FALSE,season only,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+15630,Kaodirichi Akobundu-Ehiogu,BAXI Manresa,918,75,1,39,54,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59138,Khalifa Diop,Bitci Baskonia,601,39,1,44,42,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59211,Konstantin Iroslavov Kostadinov,BC MoraBanc Andorra / Lenovo Tenerife,616,74,1,30,31,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+19426,Kur Kuath,Dreamland Gran Canaria,770,120,1,74,73,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+31700,Martinas Geben,Basquet Girona,1359,228,1,62,56,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59143,Neal Sako,Valencia BC,702,79,1,38,38,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+59147,Tryggvi Hlinason,Bilbao Basket,1450,179,1,70,63,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+36019,Walter Tavares,Real Madrid,861,95,1,56,59,TRUE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+31918,Yankuba Sima,Valencia BC,327,44,1,19,19,FALSE,season and tracked,6,Roll & Cut Big,1,0,0,0,0,0,1,0,0,0,0,0,0
+34832,Alex Len,Real Madrid,552,85,1,24,19,FALSE,season and tracked,6,Roll & Cut Big,0.999,0,0,0,0,0,0.999,0,0,0.001,0,0,0
+59090,Emanuel Ion Cate,CB UCAM Murcia,1122,132,1,77,70,TRUE,season and tracked,6,Roll & Cut Big,0.999,0,0,0,0,0,0.999,0,0,0.001,0,0,0
+12036,Jesse Edwards,Bitci Baskonia,258,30,0,0,0,FALSE,season only,6,Roll & Cut Big,0.999,0,0,0,0,0,0.999,0,0,0,0,0,0
+59157,Mike Tobey,Dreamland Gran Canaria,1188,203,2,54,65,TRUE,season and tracked,6,Roll & Cut Big,0.999,0,0,0,0,0,0.999,0,0.001,0,0,0,0
+34896,Usman Garuba Alari,Real Madrid,676,87,1,19,22,FALSE,season and tracked,6,Roll & Cut Big,0.999,0,0,0,0,0,0.999,0,0,0.001,0,0,0
+94471,Mervedi Kasekelayi Miteo,Dreamland Gran Canaria,17,3,1,16,14,FALSE,season and tracked,6,Roll & Cut Big,0.998,0,0,0,0,0,0.998,0,0,0.002,0,0,0
+59089,Moussa Diagne,CB UCAM Murcia,248,22,1,28,34,FALSE,season and tracked,6,Roll & Cut Big,0.998,0,0,0,0,0,0.998,0,0.001,0.001,0,0,0
+62834,Kevin Yebo,Lenovo Tenerife,15,3,0,0,0,FALSE,season only,6,Roll & Cut Big,0.997,0,0,0,0,0,0.997,0,0,0.003,0,0,0
+25529,Silvio De Sousa,San Pablo Burgos,266,33,0,0,0,FALSE,season only,6,Roll & Cut Big,0.996,0,0,0,0,0,0.996,0,0,0.004,0,0,0
+59204,Bojan Dubljevic,Casademont Zaragoza,1099,149,2,85,82,TRUE,season and tracked,6,Roll & Cut Big,0.994,0,0,0,0,0,0.994,0,0.005,0.001,0,0,0
+35510,Izan Almansa,Real Madrid,395,54,0,0,0,FALSE,season only,6,Roll & Cut Big,0.994,0,0,0,0,0,0.994,0,0,0.006,0,0,0
+19069,Nikola Maric,Basquet Girona,716,133,1,35,43,TRUE,season and tracked,6,Roll & Cut Big,0.994,0,0,0,0,0,0.994,0,0,0.006,0,0,0
+59202,Yannick Nzosa,San Pablo Burgos,434,53,1,0,1,FALSE,season only,6,Roll & Cut Big,0.994,0,0,0,0,0,0.994,0,0,0.006,0,0,0
+28027,Bruno Fernando,Real Madrid,60,11,0,0,0,FALSE,season only,6,Roll & Cut Big,0.988,0,0,0,0,0,0.988,0,0.001,0.011,0,0,0
+18771,James Karnik,Basquet Girona,160,32,0,0,0,FALSE,season only,6,Roll & Cut Big,0.987,0,0,0,0,0,0.987,0,0,0.013,0,0,0
+25326,Ivan Aurrecoechea,Coviran Granada,18,1,1,21,15,FALSE,season and tracked,6,Roll & Cut Big,0.986,0,0,0,0,0,0.986,0,0,0.014,0,0,0
+22740,Nathan Reuvers,Valencia BC,1040,193,1,43,43,TRUE,season and tracked,6,Roll & Cut Big,0.957,0,0,0,0,0,0.957,0.009,0.03,0.001,0.003,0,0
+23482,Joel Soriano,Casademont Zaragoza,463,80,1,58,57,TRUE,season and tracked,6,Roll & Cut Big,0.953,0,0,0,0,0,0.953,0,0,0.047,0,0,0
+59301,Babatunde Olumuyiwa,Coviran Granada,1216,118,1,32,26,TRUE,season and tracked,6,Roll & Cut Big,0.95,0,0,0,0,0,0.95,0,0,0.05,0,0,0
+59106,Jordan Sakho,Leche Rio Breogan,867,92,1,46,54,TRUE,season and tracked,6,Roll & Cut Big,0.944,0,0,0,0,0,0.944,0,0,0.056,0,0,0
+15565,Morris Udeze,BC MoraBanc Andorra,531,65,0,0,0,FALSE,season only,6,Roll & Cut Big,0.898,0,0,0,0,0,0.898,0,0,0.102,0,0,0
+28247,Zach Hankins,Coviran Granada,349,48,1,64,56,TRUE,season and tracked,6,Roll & Cut Big,0.898,0,0,0,0,0,0.898,0,0,0.102,0,0,0
+59209,Youssouf Traore,Casademont Zaragoza,142,20,0,0,0,FALSE,season only,6,Roll & Cut Big,0.889,0,0,0,0,0,0.889,0,0,0.111,0,0,0
+28591,Ruben Guerrero,BC MoraBanc Andorra,445,34,1,11,13,FALSE,season and tracked,6,Roll & Cut Big,0.874,0,0,0,0,0,0.874,0,0,0.126,0,0,0
+65435,Mohamed Sangare,Lenovo Tenerife,0,1,0,0,0,FALSE,season only,6,Roll & Cut Big,0.865,0.004,0.014,0.015,0.006,0.002,0.865,0.021,0.012,0.021,0.035,0.003,0.001
+59165,Youssoupha Fall,BC Barcelona,501,100,1,49,37,TRUE,season and tracked,6,Roll & Cut Big,0.862,0,0,0,0,0,0.862,0,0,0.138,0,0,0
+18749,Pauly Paulicap,BAXI Manresa,154,13,0,0,0,FALSE,season only,6,Roll & Cut Big,0.808,0,0,0,0,0,0.808,0,0.002,0.189,0,0,0
+35877,Yannis Morin,Club Joventut Badalona,28,4,0,0,0,FALSE,season only,6,Roll & Cut Big,0.786,0,0,0.001,0,0,0.786,0.004,0.069,0.122,0.019,0,0
+24597,Mamadi Diakite,Bitci Baskonia,1290,192,1,32,33,TRUE,season and tracked,6,Roll & Cut Big,0.729,0,0,0,0,0,0.729,0.001,0.238,0.002,0.03,0,0
+58361,Gabriel Olaseni,Casademont Zaragoza,129,23,1,60,60,FALSE,season and tracked,6,Roll & Cut Big,0.703,0,0,0,0,0,0.703,0,0,0.297,0,0,0
+59103,Dragan Apic,Leche Rio Breogan,697,94,2,73,78,TRUE,season and tracked,6,Roll & Cut Big,0.695,0,0,0,0,0,0.695,0,0,0.305,0,0,0
+59178,Pierre Oriola,BAXI Manresa,1077,119,0,0,0,FALSE,season only,6,Roll & Cut Big,0.604,0,0,0,0,0,0.604,0.005,0.371,0.001,0.02,0,0
+59132,Luke Fischer,San Pablo Burgos,921,155,1,47,45,TRUE,season and tracked,6,Roll & Cut Big,0.555,0,0,0,0,0,0.555,0,0,0.445,0,0,0
+63799,Vit Hrabar,Bitci Baskonia,4,1,0,0,0,FALSE,season only,6,Roll & Cut Big,0.513,0.015,0.093,0.047,0.004,0.001,0.513,0.127,0.028,0.012,0.156,0.004,0
+59226,Arturas Butajevas,Malaga,4,0,0,0,0,FALSE,season only,6,Roll & Cut Big,0.318,0.054,0.066,0.059,0.011,0.01,0.318,0.161,0.113,0.086,0.109,0.013,0
+24056,Killian Tillie,Malaga,655,136,1,46,43,TRUE,season and tracked,7,Movement Shooter,0.997,0,0.001,0,0,0,0,0.997,0.002,0,0,0,0
+11845,Justin McKoy,BC MoraBanc Andorra,978,177,1,74,75,TRUE,season and tracked,7,Movement Shooter,0.994,0,0.002,0,0,0,0,0.994,0.004,0,0,0,0
+22847,Yves Pons,BC MoraBanc Andorra,1142,161,1,71,75,TRUE,season and tracked,7,Movement Shooter,0.993,0,0.007,0,0,0,0,0.993,0,0,0,0,0
+35386,Matthew Costello,Valencia BC,959,162,0,0,0,FALSE,season only,7,Movement Shooter,0.97,0,0.022,0,0,0,0,0.97,0.001,0,0.007,0,0
+59130,Dani Diez,San Pablo Burgos,835,140,0,0,0,FALSE,season only,7,Movement Shooter,0.963,0,0.036,0,0,0,0,0.963,0,0,0,0,0
+58771,Mihajlo Andric,Leche Rio Breogan,1306,182,2,103,108,TRUE,season and tracked,7,Movement Shooter,0.955,0,0.045,0,0,0,0,0.955,0,0,0,0,0
+35326,James Webb,Malaga,1161,202,1,49,51,TRUE,season and tracked,7,Movement Shooter,0.948,0,0.034,0.001,0,0,0,0.948,0.002,0,0.014,0,0
+59136,Gytis Radzevicius,Bitci Baskonia,864,88,1,47,40,TRUE,season and tracked,7,Movement Shooter,0.946,0,0.051,0.001,0,0,0,0.946,0,0,0.003,0,0
+15680,Miles Norris,BC Barcelona,731,97,1,50,49,TRUE,season and tracked,7,Movement Shooter,0.941,0,0.053,0,0,0,0,0.941,0,0,0.005,0,0
+35852,DJ Stephens,Casademont Zaragoza,574,68,1,46,44,TRUE,season and tracked,7,Movement Shooter,0.928,0,0.072,0,0,0,0,0.928,0,0,0.001,0,0
+59137,Clement Frisch,Bitci Baskonia,815,119,1,40,44,TRUE,season and tracked,7,Movement Shooter,0.916,0,0.082,0,0,0,0,0.916,0,0,0.001,0,0
+59386,Ivan Cruz Uceda,Leche Rio Breogan,30,3,1,7,7,FALSE,season and tracked,7,Movement Shooter,0.892,0,0.076,0,0,0,0,0.892,0.006,0,0.026,0,0
+59153,Louis Labeyrie,Dreamland Gran Canaria,616,70,1,29,25,TRUE,season and tracked,7,Movement Shooter,0.88,0,0.042,0,0,0,0,0.88,0.009,0,0.068,0,0
+59114,Tim Abromaitis,Lenovo Tenerife,1066,127,1,50,45,TRUE,season and tracked,7,Movement Shooter,0.878,0,0.082,0,0,0,0,0.878,0.001,0,0.04,0,0
+59092,Toni Nakic,CB UCAM Murcia,1148,135,1,82,79,TRUE,season and tracked,7,Movement Shooter,0.852,0,0.148,0,0,0,0,0.852,0,0,0,0,0
+28155,Martin Krampelj,Bilbao Basket,1144,170,1,49,45,TRUE,season and tracked,7,Movement Shooter,0.834,0,0.015,0.001,0,0,0,0.834,0.005,0,0.145,0,0
+8673,Zach Hicks,CB UCAM Murcia,235,30,1,15,12,FALSE,season and tracked,7,Movement Shooter,0.815,0,0.185,0,0,0,0,0.815,0,0,0,0,0
+61525,Dario Dreznjak,Leche Rio Breogan,33,4,0,0,0,FALSE,season only,7,Movement Shooter,0.767,0.005,0.114,0.005,0,0,0.001,0.767,0.036,0,0.073,0,0
+25182,Eric Vila,Dreamland Gran Canaria,442,64,2,45,45,TRUE,season and tracked,7,Movement Shooter,0.659,0,0.338,0,0,0,0,0.659,0,0,0.003,0,0
+59181,Marcis Steinbergs,BAXI Manresa,1350,187,1,51,68,TRUE,season and tracked,7,Movement Shooter,0.657,0,0.342,0,0,0,0,0.657,0,0,0.001,0,0
+31283,Kelan Martin,CB UCAM Murcia,511,99,0,0,0,FALSE,season only,7,Movement Shooter,0.633,0.078,0.285,0.002,0,0,0,0.633,0,0,0.001,0,0
+28010,Chuma Okeke,Real Madrid,943,136,1,46,50,TRUE,season and tracked,7,Movement Shooter,0.617,0,0.377,0,0,0,0,0.617,0,0,0.006,0,0
+59223,Sam Dekker,Club Joventut Badalona,379,70,0,0,0,FALSE,season only,7,Movement Shooter,0.613,0.045,0.341,0,0,0,0,0.613,0,0,0,0,0
+59195,John Shurna,ICG Forca Lleida,980,136,0,0,0,FALSE,season only,7,Movement Shooter,0.587,0,0.413,0,0,0,0,0.587,0,0,0,0,0
+35821,Luke Petrasek,Bilbao Basket,1299,188,1,63,64,TRUE,season and tracked,7,Movement Shooter,0.568,0,0.384,0,0,0,0,0.568,0,0,0.048,0,0
+59199,Millan Jimenez Garrido,ICG Forca Lleida,745,123,0,0,0,FALSE,season only,7,Movement Shooter,0.483,0.075,0.317,0.11,0,0,0,0.483,0,0,0.015,0,0
+59225,Tadas Sedekerskis,Bitci Baskonia,331,46,0,0,0,FALSE,season only,7,Movement Shooter,0.466,0,0.234,0.002,0,0,0,0.466,0.001,0,0.297,0,0
+82918,Gunars Grinvalds,Real Madrid,4,1,0,0,0,FALSE,season only,7,Movement Shooter,0.314,0.206,0.203,0.078,0.012,0.018,0.006,0.314,0.039,0.003,0.094,0.028,0
+84393,Diego Niebla,Club Joventut Badalona,58,10,0,0,0,FALSE,season only,7,Movement Shooter,0.298,0.057,0.236,0.218,0,0,0,0.298,0.021,0,0.17,0,0
+59268,Adrian Torres,Club Joventut Badalona,5,0,0,0,0,FALSE,season only,7,Movement Shooter,0.227,0.142,0.193,0.13,0.025,0.017,0.021,0.227,0.05,0.011,0.162,0.023,0.001
+59160,Tornike Shengelia,BC Barcelona,1125,207,1,53,46,TRUE,season and tracked,8,Versatile Big,1,0,0,0,0,0,0,0,1,0,0,0,0
+59124,Augustine Rubit,Malaga,503,92,1,32,30,TRUE,season and tracked,8,Versatile Big,0.999,0,0,0,0,0,0,0,0.999,0,0,0,0
+59156,Pierre Pelos,Dreamland Gran Canaria,1256,218,2,89,97,TRUE,season and tracked,8,Versatile Big,0.998,0,0,0,0,0,0,0,0.998,0,0.001,0,0
+35222,Devin Robinson,Casademont Zaragoza,1608,310,2,150,147,TRUE,season and tracked,8,Versatile Big,0.989,0,0,0.007,0,0,0,0,0.989,0,0.004,0,0
+34838,Trey Lyles,Real Madrid,989,197,1,52,48,TRUE,season and tracked,8,Versatile Big,0.973,0,0,0.012,0,0,0,0.005,0.973,0,0.01,0,0
+35096,Rodions Kurucs,Bitci Baskonia,991,163,1,51,42,TRUE,season and tracked,8,Versatile Big,0.97,0,0,0.002,0,0,0,0.026,0.97,0,0.002,0,0
+59126,Emir Sulejmanovic,Malaga,782,143,1,26,23,TRUE,season and tracked,8,Versatile Big,0.96,0,0,0,0,0,0.025,0.001,0.96,0.009,0.005,0,0
+58577,Amar Alibegovic,Coviran Granada,970,213,0,0,0,FALSE,season only,8,Versatile Big,0.942,0,0,0.001,0,0,0,0.048,0.942,0,0.009,0,0
+58696,Jan Vesely,BC Barcelona,710,121,0,0,0,FALSE,season only,8,Versatile Big,0.925,0,0,0,0,0,0.047,0.028,0.925,0,0,0,0
+22724,Eugene Omoruyi,Bitci Baskonia,744,123,1,37,41,TRUE,season and tracked,8,Versatile Big,0.916,0,0,0.009,0,0,0,0,0.916,0,0.075,0,0
+34898,Luka Samanic,Bitci Baskonia,99,18,0,0,0,FALSE,season only,8,Versatile Big,0.859,0,0,0.007,0,0,0.023,0.026,0.859,0.001,0.085,0,0
+58700,David Kravish,Malaga,308,63,0,0,0,FALSE,season only,8,Versatile Big,0.809,0,0,0,0,0,0.006,0.184,0.809,0,0,0,0
+35056,Jabari Parker,Club Joventut Badalona,538,123,0,0,0,FALSE,season only,8,Versatile Big,0.773,0.002,0.008,0.055,0,0,0,0.085,0.773,0,0.078,0,0
+59194,Melvin Ejim,ICG Forca Lleida,1562,282,0,0,0,FALSE,season only,8,Versatile Big,0.708,0,0,0.012,0,0,0,0,0.708,0,0.279,0,0
+59219,Beka Burjanadze,Coviran Granada,462,67,1,38,35,TRUE,season and tracked,8,Versatile Big,0.619,0,0.004,0.014,0,0,0,0.219,0.619,0,0.143,0,0
+59141,Jaime Pradilla,Valencia BC,1193,199,1,55,56,TRUE,season and tracked,8,Versatile Big,0.515,0,0,0.039,0,0,0,0.005,0.515,0,0.441,0,0
+59096,Ante Tomic,Club Joventut Badalona,888,211,1,76,75,TRUE,season and tracked,9,Post Scorer,1,0,0,0,0,0,0,0,0,1,0,0,0
+28032,Ethan Happ,San Pablo Burgos,1174,226,1,66,61,TRUE,season and tracked,9,Post Scorer,1,0,0,0,0,0,0,0,0,1,0,0,0
+59217,Luka Bozic,Coviran Granada,1894,284,1,81,64,TRUE,season and tracked,9,Post Scorer,0.999,0,0,0,0,0,0,0,0.001,0.999,0,0,0
+18503,Grant Golden,BAXI Manresa,479,103,1,57,58,TRUE,season and tracked,9,Post Scorer,0.998,0,0,0,0,0,0.002,0,0,0.998,0,0,0
+29142,Devontae Cacok,CB UCAM Murcia,1032,197,0,0,0,FALSE,season only,9,Post Scorer,0.995,0,0,0,0,0,0.005,0,0,0.995,0,0,0
+59177,Simon Birgander,Club Joventut Badalona,913,149,0,0,0,FALSE,season only,9,Post Scorer,0.988,0,0,0,0,0,0.012,0,0,0.988,0,0,0
+34962,Willy Hernangomez,BC Barcelona,996,158,1,28,32,TRUE,season and tracked,9,Post Scorer,0.981,0,0,0,0,0,0.019,0,0,0.981,0,0,0
+59227,Archange Izaw Bolavie,BAXI Manresa,26,3,1,6,14,FALSE,season and tracked,9,Post Scorer,0.977,0,0,0,0,0,0.023,0,0,0.977,0,0,0
+23002,Cameron Krutwig,ICG Forca Lleida,916,125,0,0,0,FALSE,season only,9,Post Scorer,0.969,0,0,0,0,0,0.031,0,0,0.969,0,0,0
+27976,Christ Koumadje,Casademont Zaragoza,324,37,0,0,0,FALSE,season only,9,Post Scorer,0.925,0,0,0,0,0,0.075,0,0,0.925,0,0,0
+59170,Artem Pustovyi,BC MoraBanc Andorra,1114,196,1,66,68,TRUE,season and tracked,9,Post Scorer,0.849,0,0,0,0,0,0.151,0,0,0.849,0,0,0
+59075,Augusto Lima,San Pablo Burgos,35,2,1,9,7,FALSE,season and tracked,9,Post Scorer,0.843,0,0,0,0,0,0.157,0,0,0.843,0,0,0
+59102,Michael Ruzic,Club Joventut Badalona,880,129,1,34,35,TRUE,season and tracked,9,Post Scorer,0.836,0,0,0,0,0,0.164,0,0,0.836,0,0,0
+59229,Sayon Keita,BC Barcelona,102,10,1,7,11,FALSE,season and tracked,9,Post Scorer,0.602,0,0,0,0,0,0.398,0,0,0.602,0,0,0
+25181,Omer Yurtseven,Real Madrid,65,9,0,0,0,FALSE,season only,9,Post Scorer,0.514,0,0,0,0,0,0.485,0,0.001,0.514,0,0,0
+59155,Miquel Salvo,Dreamland Gran Canaria,450,76,1,32,29,TRUE,season and tracked,10,Athletic Finisher,0.996,0,0.001,0.003,0,0,0,0,0,0,0.996,0,0
+59101,Miguel Allen Montesdeoca,Club Joventut Badalona,332,35,1,62,60,TRUE,season and tracked,10,Athletic Finisher,0.992,0,0,0,0,0,0,0,0.007,0,0.992,0,0
+59164,Joel Parra Lopez,BC Barcelona,1327,185,1,51,42,TRUE,season and tracked,10,Athletic Finisher,0.989,0,0.01,0.001,0,0,0,0.001,0,0,0.989,0,0
+59093,Wilhelm Falk,CB UCAM Murcia,653,64,1,7,9,FALSE,season and tracked,10,Athletic Finisher,0.987,0,0.002,0.001,0,0,0.001,0.008,0.001,0,0.987,0,0
+59188,Sergi Martinez Costa,Basquet Girona,1455,165,1,69,70,TRUE,season and tracked,10,Athletic Finisher,0.986,0,0.011,0.001,0,0,0,0.002,0,0,0.986,0,0
+59115,Thomas Scrubb,Lenovo Tenerife,1048,148,1,31,32,TRUE,season and tracked,10,Athletic Finisher,0.971,0,0.022,0.001,0,0,0,0.006,0,0,0.971,0,0
+34905,Henri Drell,Club Joventut Badalona,791,122,1,31,32,TRUE,season and tracked,10,Athletic Finisher,0.962,0,0.013,0.006,0,0,0,0.018,0.001,0,0.962,0,0
+59108,Bakary Dibba,Leche Rio Breogan,1077,164,2,94,93,TRUE,season and tracked,10,Athletic Finisher,0.957,0,0.04,0,0,0,0,0.002,0,0,0.957,0,0
+59182,Gustav Knudsen,BAXI Manresa,724,77,0,0,0,FALSE,season only,10,Athletic Finisher,0.954,0,0.034,0.001,0,0,0,0.011,0,0,0.954,0,0
+59200,Tyson Perez,Malaga,679,112,0,0,0,FALSE,season only,10,Athletic Finisher,0.933,0,0.011,0.008,0,0,0,0.026,0.023,0,0.933,0,0
+18363,Jermaine Samuels,San Pablo Burgos,1408,228,1,76,71,TRUE,season and tracked,10,Athletic Finisher,0.927,0,0,0.045,0,0,0,0,0.027,0,0.927,0,0
+24598,Braxton Key,Valencia BC,656,94,1,45,44,TRUE,season and tracked,10,Athletic Finisher,0.926,0,0,0.06,0,0,0,0.001,0.013,0,0.926,0,0
+59192,Juan Fernandez,Basquet Girona,745,112,1,34,45,TRUE,season and tracked,10,Athletic Finisher,0.92,0,0,0.002,0,0,0,0.001,0.076,0,0.92,0,0
+35062,Gabriel Deck,Real Madrid,698,93,0,0,0,FALSE,season only,10,Athletic Finisher,0.905,0,0.004,0.034,0,0,0,0.008,0.049,0,0.905,0,0
+35475,Isaac Nogues,Valencia BC,269,17,1,10,12,FALSE,season and tracked,10,Athletic Finisher,0.888,0,0.104,0.006,0,0,0,0.002,0,0,0.888,0,0
+59179,Louis Olinde,BAXI Manresa,968,127,1,44,46,TRUE,season and tracked,10,Athletic Finisher,0.877,0,0.025,0.004,0,0,0,0.092,0.001,0,0.877,0,0
+32852,Ruben Lopez,CB UCAM Murcia,65,3,1,1,1,FALSE,season and tracked,10,Athletic Finisher,0.804,0,0.086,0.017,0,0,0,0.086,0.008,0,0.804,0,0
+59148,Stefan Lazarevic,Bilbao Basket,683,66,1,25,29,TRUE,season and tracked,10,Athletic Finisher,0.682,0,0.008,0.186,0,0,0,0.049,0.074,0,0.682,0,0
+84336,Ibou Dabo,ICG Forca Lleida,25,3,0,0,0,FALSE,season only,10,Athletic Finisher,0.536,0.003,0.021,0.258,0.002,0,0.002,0.037,0.113,0.028,0.536,0,0
+59527,Jaime Fernandez Manzanares,Casademont Zaragoza,518,50,2,33,35,TRUE,season and tracked,10,Athletic Finisher,0.525,0,0.139,0,0,0,0,0.336,0,0,0.525,0,0
+59166,Nikola Kusturica,BC Barcelona,109,17,0,0,0,FALSE,season only,10,Athletic Finisher,0.462,0.006,0.075,0.343,0,0,0,0.088,0.025,0,0.462,0,0
+83935,Naspler Guillem,BAXI Manresa,14,1,0,0,0,FALSE,season only,10,Athletic Finisher,0.382,0.024,0.088,0.183,0.005,0,0.023,0.148,0.122,0.024,0.382,0.002,0
+30735,Cameron Hunt,Club Joventut Badalona,1614,348,1,65,68,TRUE,season and tracked,11,Shot Creator,1,0,0,0,0,0,0,0,0,0,0,1,0
+22729,Chris Duarte,Malaga,919,216,1,49,45,TRUE,season and tracked,11,Shot Creator,1,0,0,0,0,0,0,0,0,0,0,1,0
+15347,Isaiah Wong,Dreamland Gran Canaria,1351,319,2,113,112,TRUE,season and tracked,11,Shot Creator,1,0,0,0,0,0,0,0,0,0,0,1,0
+28857,Justin Wright-Foreman,Casademont Zaragoza,429,101,1,42,49,TRUE,season and tracked,11,Shot Creator,0.998,0.002,0,0,0,0,0,0,0,0,0,0.998,0
+59163,Kevin Punter,BC Barcelona,1333,296,1,53,46,TRUE,season and tracked,11,Shot Creator,0.996,0.004,0,0,0,0,0,0,0,0,0,0.996,0
+35376,Darrun Hilliard,Bilbao Basket,1361,318,1,72,61,TRUE,season and tracked,11,Shot Creator,0.989,0.011,0,0,0,0,0,0,0,0,0,0.989,0
+22915,Isaiah Washington,Casademont Zaragoza,280,66,0,0,0,FALSE,season only,11,Shot Creator,0.984,0.012,0,0,0.002,0.002,0,0,0,0,0,0.984,0
+59095,Dylan Ennis,CB UCAM Murcia,1144,228,1,76,75,TRUE,season and tracked,11,Shot Creator,0.982,0,0,0,0.018,0,0,0,0,0,0,0.982,0
+29113,James Batemon,ICG Forca Lleida,1575,326,0,0,0,FALSE,season only,11,Shot Creator,0.952,0.012,0,0.001,0.029,0.006,0,0,0,0,0,0.952,0
+15362,Michael Forrest,CB UCAM Murcia,1044,294,1,33,33,TRUE,season and tracked,11,Shot Creator,0.951,0,0,0,0,0.049,0,0,0,0,0,0.951,0
+28361,Jaylen Hands,CB UCAM Murcia,187,41,0,0,0,FALSE,season only,11,Shot Creator,0.944,0.003,0,0,0.02,0.032,0,0,0,0,0,0.944,0.001
+35554,Jassel Perez,Coviran Granada,986,186,0,0,0,FALSE,season only,11,Shot Creator,0.943,0.001,0,0.006,0.049,0.001,0,0,0,0,0,0.943,0
+22895,Jhivvan Jameel Jackson Melendez,San Pablo Burgos,1028,221,1,59,58,TRUE,season and tracked,11,Shot Creator,0.934,0.065,0,0,0,0,0,0,0,0,0,0.934,0
+59116,Jaime Fernandez Bernabe,Lenovo Tenerife,1045,241,1,34,39,TRUE,season and tracked,11,Shot Creator,0.93,0,0,0,0.064,0.005,0,0,0,0,0,0.93,0.001
+59221,Jovan Kljajic,Coviran Granada,451,94,1,53,43,TRUE,season and tracked,11,Shot Creator,0.919,0.063,0,0.006,0.012,0,0,0,0,0,0,0.919,0
+58524,Will Clyburn,BC Barcelona,869,175,0,0,0,FALSE,season only,11,Shot Creator,0.91,0.073,0,0.016,0,0,0,0,0,0,0,0.91,0
+59197,Caleb Agada,ICG Forca Lleida,1069,271,0,0,0,FALSE,season only,11,Shot Creator,0.877,0,0,0,0.122,0,0,0,0,0,0,0.877,0.001
+59134,Gonzalo Corbalan,San Pablo Burgos,1683,355,1,55,50,TRUE,season and tracked,11,Shot Creator,0.831,0.006,0,0.049,0.114,0,0,0,0,0,0,0.831,0
+34992,Timothe Luwawu-Cabarrot,Bitci Baskonia,1413,373,1,46,46,TRUE,season and tracked,11,Shot Creator,0.81,0.183,0,0.007,0,0,0,0,0,0,0,0.81,0
+32336,Kassius Robertson,Dreamland Gran Canaria,672,134,2,97,109,TRUE,season and tracked,11,Shot Creator,0.772,0.227,0,0.001,0,0,0,0,0,0,0,0.772,0
+35125,Mario Hezonja,Real Madrid,1265,343,0,0,0,FALSE,season only,11,Shot Creator,0.631,0.241,0,0.127,0,0,0,0,0.001,0,0,0.631,0
+59162,Dario Brizuela,BC Barcelona,937,213,1,38,35,TRUE,season and tracked,11,Shot Creator,0.601,0.399,0,0,0,0,0,0,0,0,0,0.601,0
+59234,Aaron Ganal,BC MoraBanc Andorra,19,4,1,2,3,FALSE,season and tracked,11,Shot Creator,0.371,0.32,0.015,0.148,0.059,0.063,0,0.009,0.002,0,0.013,0.371,0
+58474,DeWayne Russell,Leche Rio Breogan,1244,278,2,104,114,TRUE,season and tracked,12,Primary Ball Handler,1,0,0,0,0,0,0,0,0,0,0,0,1
+59104,Dominik Mavra,Leche Rio Breogan,1296,240,2,101,96,TRUE,season and tracked,12,Primary Ball Handler,1,0,0,0,0,0,0,0,0,0,0,0,1
+59122,Marcelinho Huertas,Lenovo Tenerife,1199,325,1,65,61,TRUE,season and tracked,12,Primary Ball Handler,1,0,0,0,0,0,0,0,0,0,0,0,1
+34943,Ricky Rubio,Club Joventut Badalona,1248,270,1,69,71,TRUE,season and tracked,12,Primary Ball Handler,1,0,0,0,0,0,0,0,0,0,0,0,1
+15394,David Dejulius,CB UCAM Murcia,1518,415,1,80,74,TRUE,season and tracked,12,Primary Ball Handler,0.997,0,0,0,0,0,0,0,0,0,0,0.003,0.997
+59183,Hugo Benitez,BAXI Manresa,593,136,1,51,67,TRUE,season and tracked,12,Primary Ball Handler,0.996,0,0,0,0.004,0,0,0,0,0,0,0,0.996
+59233,Micah Speight,Coviran Granada,105,17,1,51,45,FALSE,season and tracked,12,Primary Ball Handler,0.859,0,0,0,0.017,0.123,0,0,0,0,0,0,0.859
+35281,Ikenna Iroegbu,Valencia BC,8,4,0,0,0,FALSE,season only,12,Primary Ball Handler,0.658,0.02,0,0.006,0.07,0.041,0,0,0,0,0,0.203,0.658

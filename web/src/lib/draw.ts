@@ -49,7 +49,7 @@ interface Dot {
   y: number;
 }
 
-// Archetype colours are the roster swatches' (--arch-<slot> in app.css); each is read from the page once.
+// Archetype colours are the roster tags' (--arch-<slot> in app.css); each is read from the page once.
 const archColors = new Map<string, string>();
 function archColor(slot: string): string {
   let color = archColors.get(slot);
