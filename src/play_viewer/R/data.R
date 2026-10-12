@@ -616,17 +616,20 @@ SHOT_FEATURES <- c(loc_xfg = 4, def1 = 1, def2 = 1, n6 = 0, between = 0, rim_def
                    held = 1, drib = 0)
 
 #' The steps behind xFG for each tracked shot of one possession, in order of release: the baseline for the
-#' shot's zone, each context feature's value at release (`v`) and what it adds to xFG (`e`), and the result.
+#' shot's kind (`zone`: rim, mid or three), each context feature's value at release (`v`) and what it adds to
+#' xFG (`e`), and the result. Only the inputs of the shot's context model (`model`: rim or jump) are listed.
+#' `fixed` flags the features whose effect includes one set from the season aggregates, not fitted.
 #' Empty when the possession has no priced shot or the prices were built before shots were saved.
 shot_payload <- function(app, play) {
   shots <- get_epv(app, play$game_id)$shots
   if (is.null(shots)) return(list())
   sh <- shots[poss_id == play$id][order(frame)]
-  keys <- names(SHOT_FEATURES)
   lapply(seq_len(nrow(sh)), function(i) {
     s <- sh[i]
-    list(f = s$frame, pid = s$pid, made = s$made, fouled = s$fouled, three = s$three == 1L, zone = s$zone,
+    keys <- Filter(function(k) !is.na(s[[paste0("eff_", k)]]), names(SHOT_FEATURES))
+    list(f = s$frame, pid = s$pid, made = s$made, fouled = s$fouled, three = s$three == 1L, zone = s$area, model = s$zone,
          dist = round(s$dist, 1), rounds = s$rounds, base = round(s$base, 4), xfg = round(s$xfg, 4),
+         fixed = if (nzchar(s$fixed)) lapply(setNames(nm = strsplit(s$fixed, ",")[[1]]), function(k) TRUE),
          v = lapply(setNames(keys, keys), function(k) round(s[[k]], SHOT_FEATURES[[k]])),
          e = lapply(setNames(keys, keys), function(k) round(s[[paste0("eff_", k)]], 4)))
   })

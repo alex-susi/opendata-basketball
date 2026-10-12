@@ -447,3 +447,189 @@ Shiny: `www/player.js` (shot panel). Site: `web/src/lib/shots.ts`, `web/src/comp
   decimals and checks that the site's feature list is the model's.
 - The static site was re-exported, so it now carries the 2026-10-11 prices (closing that open item above).
 - A recorded video captures the canvas only; the panel is not in it.
+
+### Follow-up (same day): why jump shots show no context effect, and a pending change
+
+Asked by the owner, who expects defender distance to matter on midrange and three-point shots and asked why
+the location xFG is not at least the starting point there. Scratch checks on the 846 unfouled jump shots.
+
+- **Pending (owner):** `rim_def` is not to be a feature for midrange and three-point shots. To be removed at
+  the next refit; nothing was refitted here.
+- **The direction is the expected one, the sample cannot size it.** Make rate on threes by closest defender:
+  2 to 4 ft 29.8% (114 shots), 4 to 6 ft 34.3% (169), 6 to 8 ft 35.5% (107), 8 ft or more 36.0% (100), each
+  with a standard error of 4 to 5 points. Logistic slope: +0.8 points of xFG per foot on threes (95% interval
+  -1.0 to +2.6), +1.8 on midrange (-0.8 to +4.5).
+- **A one-parameter model does not beat the make rate on held-out games either.** Leave-one-game-out log
+  loss, logistic in defender distance alone: threes 0.6448 against 0.6432 (gain -0.002 +/- 0.002, better in
+  5 games of 10); midrange 0.6627 against 0.6622 (0.000 +/- 0.004, 6 of 10). Adding a catch-and-shoot flag:
+  midrange 0.6579 (+0.005 +/- 0.010), threes 0.6471.
+- **Location is worse than the make rate inside both zones**: midrange 0.6794 against 0.6622 (better in 2
+  games of 10), threes 0.6496 against 0.6432 (1 of 10); refitted to each zone it is still worse (0.6675,
+  0.6560). The location model's gain over the overall make rate comes from telling the zones apart.
+- **The season aggregates do show the effect** (per-team rows, 293 games): uncontested threes 38.3% of 4,694,
+  contested 33.9% of 10,872, a gap of 4.4 +/- 0.9 points; twos 72.8% against 47.6%. "Contested" is the
+  vendor's label (average, plus or blocked), so it includes blocked shots, and these games include the ten
+  tracked ones. With about 500 tracked threes a gap of that size has a standard error near 4.5 points.
+- Not decided: whether jump-shot xFG should carry a defender-distance effect set by assumption or by the
+  season aggregates instead of chosen by held-out log loss.
+- The rim zone ends at 6 ft, so a layup released from 6.8 ft is priced as midrange (make rate 58.5% at 5 to
+  6 ft, 35.8% at 6 to 7 ft on 53 shots).
+
+### Follow-up (same day): midrange and three pooled into one jump-shot context model (scratch test)
+
+Proposed by the owner: keep the one location GAM, then two context models, rim (unchanged) and jump shots
+(every non-rim attempt). Tested on the shots alone, leave-one-game-out, three seeds, same boosting settings
+and round selection. Not adopted or rejected; no model code or price changed.
+
+Held-out log loss on the 846 unfouled jump shots:
+
+| Prediction | Log loss | Per-game gain over the two make rates ± SE | Games better |
+|---|---|---|---|
+| One jump-shot make rate | 0.6500 | +0.0008 ± 0.0008 | 5 |
+| Midrange and three-point make rates | 0.6508 | – | – |
+| Location GAM alone | 0.6616 | −0.0105 ± 0.0035 | 2 |
+| Current: separate midrange and three context models | 0.6521 | −0.0012 ± 0.0013 | 2 |
+| Pooled jump-shot context model, started from the jump make rate | 0.6522 | −0.0013 ± 0.0024 | 5 |
+| Same without `rim_def` | 0.6524 | −0.0016 ± 0.0027 | 5 |
+| Same, started from the two make rates | 0.6519 | −0.0011 ± 0.0011 | 2 |
+| Same, started from the location model | 0.6649 | −0.0138 ± 0.0027 | 1 |
+
+- The pooled model kept no trees in 28 of 30 fits (40 rounds in the other two), so on most folds it is the
+  jump-shot make rate. All unfouled shots: 0.6464 pooled against 0.6463 current.
+- One logistic slope on closest-defender distance over the pooled jump shots, with the two/three flag:
+  +1.1 points of xFG per foot (95% interval −0.4 to +2.6; positive in 95% of 2,000 game-level bootstrap
+  draws). Held out it scores 0.6506 against 0.6508 (gain 0.0000 ± 0.0018, better in 7 games of 10).
+- Reading: an effect of about a point per foot would lower log loss by roughly 0.001, which is smaller than
+  the fold-to-fold noise of the comparison (about 0.002). Held-out log loss cannot confirm or reject an
+  effect of that size on 846 shots, pooled or not.
+
+## 2026-10-11 — xFG: jump shots pooled, closest-defender slope set from the season aggregates
+
+Status: adopted by the owner. Supersedes the zone context models of the "xFG restructured by location and
+zone" entry for midrange and three-point shots; the location GAM and the rim model are unchanged in form.
+Code: `fit_xfg`, `xfg_start`, `predict_xfg`, `explain_xfg` in `src/epv/R/models.R`; `src/epv/R/season.R`;
+`src/epv/build_epv.R`. The slope and the counts behind it: `outputs/epv/jump_fixed_effects.csv`.
+
+### Decisions (owner)
+
+- Two context models: rim (as before) and jump shots (every non-rim attempt, midrange and three together).
+- Jump shots carry a closest-defender slope that is fixed, not chosen by held-out log loss.
+- `rim_def` is not an input for jump shots. It stays in the rim model.
+
+### Choices made in the implementation (for the owner to confirm or change)
+
+- **Level.** The jump model starts from the make rate of twos or of threes (two levels fitted on the
+  training games with the slope in place), not from one jump-shot rate. With one level the slope
+  under-predicts midrange shots, whose defenders stand closer (0.33 predicted against 0.37 made).
+- **Shape.** Linear in log-odds per foot of closest-defender distance up to 10 ft (`DEF_CAP`), flat beyond.
+  Capping at 8 or 6 ft scored worse on held-out games in a scratch test (jump shots 0.6504 and 0.6543 against 0.6498).
+- **Source.** The slope is a line through two points: season threes labelled uncontested and contested.
+  It is applied to midrange shots too; the aggregates have no contested split for midrange alone.
+- **One slope for all ten folds.** It uses season outcomes from outside the tracked games, plus labels and
+  positions (no outcomes) of the tracked games.
+- Boosting still runs on top for jump shots, on the same features less `rim_def`, with rounds chosen by
+  inner validation. It kept no trees in any of the ten folds.
+
+### Definitions
+
+- **Slope.** Season threes with the ten tracked games' box-score attempts taken out (283 games): uncontested
+  (vendor level open or light) 38.4% of 4,543, contested (average, plus or blocked) 34.0% of 10,510, a
+  log-odds gap of 0.192 (se 0.037). On tracked threes the closest defender is 7.71 ft away on average when
+  the vendor says uncontested and 4.91 ft when contested, capped at 10 ft: 2.80 ft apart. Slope =
+  0.192 / 2.80 = 0.0686 log-odds per foot, about +1.6 points of xFG per foot near 35%.
+- **Jump-shot xFG.** `plogis(level[two or three] + 0.0686 * min(def1, 10))`, then trees if any are kept.
+- **Panel.** The baseline of a jump shot is the model's xFG at the average defender distance of training
+  twos (3.7 ft) or threes (5.7 ft); the closest-defender effect is measured from there. Jump shots no
+  longer list the rim protector. The panel says the slope comes from the season and was not fitted.
+- Shots saved per game now carry `zone` (rim or jump), `area` (rim, mid, three) and `fixed`.
+
+### Validation (leave-one-game-out), against the previous model and the make rates
+
+| Shots | n | Make rate(s) | Location GAM | Previous model | This model | Gain over previous ± SE | Games better |
+|---|---|---|---|---|---|---|---|
+| All unfouled | 1,277 | 0.6876 | 0.6655 | 0.6486 | 0.6447 | 0.0036 ± 0.0019 | 8 |
+| Rim | 431 | 0.6701 | 0.6730 | 0.6379 | 0.6349 | 0.0032 ± 0.0024 | 5 |
+| Jump | 846 | 0.6508 | 0.6616 | 0.6540 | 0.6497 | 0.0038 ± 0.0031 | 7 |
+| Midrange | 340 | 0.6622 | 0.6794 | 0.6701 | 0.6594 | 0.0107 ± 0.0037 | 8 |
+| Three | 506 | 0.6432 | 0.6496 | 0.6432 | 0.6431 | −0.0003 ± 0.0035 | 3 |
+
+The make-rate column is the overall rate for all shots, the midrange and three-point rates for jump shots.
+Against the make rates this model gains 0.0008 ± 0.0022 on jump shots (better in 6 games), 0.0032 ± 0.0037
+on midrange (6) and −0.0003 ± 0.0035 on threes (3). Other components: EPV squared error 1.3831 to 1.3816
+(0.0015 ± 0.0005, 8 games; gain over the base rate now 0.005 ± 0.002); foul 0.2872 to 0.2907; pass
+turnover 0.0791 to 0.0787; turnover within 2 s unchanged.
+
+### What the numbers do not support
+
+- **The slope is not shown to improve prediction.** On jump shots the gain over the make rates is a third
+  of its standard error, and on threes it is nil. The model is adopted on the season evidence and the
+  owner's judgment, not on held-out log loss.
+- **Most of the gain over the previous model is the previous model's own damage.** Its midrange trees, kept
+  in two folds, scored worse than the make rate (0.6701 against 0.6622).
+- **The rim row moved without the rim model changing.** The xFG stage now has one boosting fit fewer per
+  fold, so every later fit draws different random numbers. Rim (0.003) and foul (0.004) shifted for that
+  reason alone, which is as large as the changes being measured. A fixed seed per component would stop it.
+- **The ends of the line are extrapolation.** The two season points sit near 4.9 and 7.7 ft. Held out,
+  threes with a defender under 2 ft were priced at 27.7% and made 37.5% (16 unfouled shots); midrange shots with
+  8 ft or more of room were priced at 46% and made 60% (15 unfouled shots). xFG on jump shots now runs from 26% to 49%.
+- **"Contested" includes blocked shots**, which always miss, and the season percentages count and-one makes
+  as attempts while xFG is fitted to unfouled attempts. Both are small for threes (5 of 362 tracked
+  contested threes were blocked) and neither was corrected.
+- Shot value on the perimeter now rises with openness, so pass values to open teammates rise with it. The
+  earlier cautions about hypothetical options (defenders are not moved during a catch) apply with more force.
+
+### Other effects the season aggregates could supply (not adopted)
+
+- **Catch-and-shoot against off the dribble.** Season threes, tracked games out: 36.8% of 10,327 against
+  32.2% of 4,778 (log-odds gap 0.203, se 0.037). Time on the ball of 1.5 s or less matches the vendor's
+  flag on 96% of tracked threes. Because catch-and-shoot threes are also more open, the two season gaps were
+  solved together: defender 0.072 per foot, catch-and-shoot 0.09 (about +2 points). Held out it changes
+  nothing measurable (jump shots 0.6498 with or without; midrange 0.6584 against 0.6594, threes 0.6440
+  against 0.6434).
+- **Corner against above the break.** 37.9% of 3,320 against 35.1% of 11,477 (gap 0.119, se 0.041). Not tested.
+- Not usable for jump shots: contested and catch-and-shoot splits of twos, and the five contest levels,
+  because they mix rim attempts with jump shots; shot-type splits, which describe the shot after the fact.
+- Zone make rates themselves (midrange 40.6% of 4,017 in the season against 36.8% of 340 tracked) could set
+  the levels, but the vendor's zones are not the model's and the season counts include and-one makes.
+
+### Revision (same day): catch-and-shoot effect added to the jump-shot model
+
+Decided by the owner after the entry above. Jump shots now carry two fixed effects, solved together from the
+season aggregates (`season_jump_effects()` in `src/epv/R/season.R`, `jump_fixed()` in `R/models.R`). This
+changes the defender slope given above; the numbers here are the current ones.
+
+- **Catch-and-shoot** in the model is 1.5 s or less on the ball at release (`CATCH_SECONDS`), the vendor's
+  rule on its own release time. A shooter with no tracked touch is not one. On tracked threes the flag is 1
+  for 99% of the vendor's catch-and-shoot attempts and 5% of its off-the-dribble ones. Teammates priced as
+  hypothetical shooters have 0 s on the ball, so they are catch-and-shoot.
+- **Season gaps** (threes, tracked games out): uncontested 38.4% of 4,543 against contested 34.0% of 10,510
+  (log-odds 0.192, se 0.037); catch-and-shoot 36.8% of 10,331 against off the dribble 32.2% of 4,796
+  (0.204, se 0.037). Shots the vendor left unlabelled are in neither side of a split.
+- **Solved together**, because catch-and-shoot threes are also more open (closest defender 6.3 ft against
+  4.7 ft; 77% of uncontested threes are catch-and-shoot against 62% of contested ones). The pair that
+  reproduces both gaps: **0.0631 log-odds per foot** of closest-defender distance (about +1.4 points of xFG
+  per foot near 35%) and **0.108 for a catch-and-shoot attempt** (about +2.4 points). Alone, the defender
+  slope was 0.0686 and the catch-and-shoot gap 0.204.
+- **Panel.** The catch-and-shoot effect is shown on the Time on the ball row, measured from the share of
+  catch-and-shoot attempts among training twos (22%) or threes (66%): about +0.8 points for a
+  catch-and-shoot three and −1.5 for one off the dribble.
+
+Held-out log loss, against the model with the defender slope alone (rim and every other component are
+identical between the two runs, so these differences are the effect itself):
+
+| Shots | n | Make rate(s) | Defender slope only | With catch-and-shoot | Gain ± SE | Games better |
+|---|---|---|---|---|---|---|
+| Jump | 846 | 0.6508 | 0.6497 | 0.6496 | 0.0000 ± 0.0009 | 4 |
+| Midrange | 340 | 0.6622 | 0.6594 | 0.6584 | 0.0007 ± 0.0013 | 6 |
+| Three | 506 | 0.6432 | 0.6431 | 0.6437 | −0.0006 ± 0.0011 | 4 |
+| All unfouled | 1,277 | 0.6876 | 0.6447 | 0.6447 | 0.0000 ± 0.0006 | 4 |
+
+EPV squared error 1.3816 to 1.3815. Against the original three-zone model: all shots 0.6486 to 0.6447
+(0.0036 ± 0.0020), jump shots 0.6540 to 0.6496 (0.0038 ± 0.0032), EPV 1.3831 to 1.3815 (0.0016 ± 0.0005).
+
+- **The ten tracked games do not show the catch-and-shoot effect on threes.** Unfouled catch-and-shoot
+  threes made 34.0% (332) and the rest 33.9% (174); the model prices them at 35.6% and 30.8%. On midrange
+  shots the tracked gap is larger than the model's (43.2% of 81 against 34.7% of 259; priced 39.5% and
+  35.9%). Like the defender slope, the effect is adopted on the season's evidence, not on these games.
+- It is the three-point effect applied to midrange shots as well, by the same assumption as the slope.
+- xFG on jump shots now runs from 26% to 49%.

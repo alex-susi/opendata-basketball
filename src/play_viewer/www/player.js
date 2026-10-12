@@ -689,10 +689,11 @@
   }
 
   // ---- shot panel (beside the half court): the steps behind a shot's xFG ----
-  // The baseline for the shot's zone, then every input of the context model as it stood at release with what it
+  // The baseline for the shot's kind, then every input of its context model as it stood at release with what it
   // adds to xFG, then the result. Mirrored in the static site's src/lib/shots.ts and ShotPanel.svelte.
   const ZONE_NAMES = { rim: 'Rim', mid: 'Midrange', three: 'Three-point' };
-  // Inputs of the xFG context model in display order (XFG_FEATURES in src/epv/R/models.R): key, label, unit, hint.
+  // Inputs of the xFG context models in display order (XFG_FEATURES in src/epv/R/models.R): key, label, unit, hint.
+  // A shot lists the ones its own model takes: jump shots have no rim protector.
   const SHOT_FEATURES = [
     ['loc_xfg', 'Location xFG', 'pct', 'Make chance from court position alone: the location GAM'],
     ['def1', 'Closest defender', 'ft', 'Distance to the nearest defender'],
@@ -703,7 +704,7 @@
     ['closing', 'Defender closing', 'ft/s', 'Speed at which the closest defender is closing on the shooter; negative when the gap is opening'],
     ['speed', 'Shooter speed', 'ft/s', "The shooter's speed over the last quarter second"],
     ['sc', 'Shot clock', 's', 'Seconds left on the shot clock'],
-    ['held', 'Time on the ball', 's', "Seconds since the shooter's touch began"],
+    ['held', 'Time on the ball', 's', "Seconds since the shooter's touch began; on a jump shot 1.5 s or less counts as catch-and-shoot"],
     ['drib', 'Dribbles', 'count', 'Dribbles the shooter took in this touch']];
 
   // The shot the panel shows at a frame: the latest one released, or the first while none has been. -1 if there are none.
@@ -719,6 +720,20 @@
   function points(effect) {
     const text = Math.abs(100 * effect).toFixed(1);
     return text === '0.0' ? text : `${effect > 0 ? '+' : '−'}${text}`;
+  }
+
+  // What the reader should know about how this shot's effects were arrived at.
+  function shotNotes(shot) {
+    const notes = [], kind = shot.model === 'jump' ? 'jump' : ZONE_NAMES[shot.zone].toLowerCase();
+    const fixed = Object.keys(shot.fixed || {}).length > 0;
+    if (fixed) notes.push("The closest-defender and catch-and-shoot effects are set from the season's three-point percentages; they were not fitted to these ten games. Catch-and-shoot means 1.5 s or less on the ball and shows under Time on the ball.");
+    if (shot.rounds === 0) {
+      notes.push(fixed ? `No other context effect held up for ${kind} shots when this game was left out of the fit.`
+        : `No context effect held up for ${kind} shots when this game was left out of the fit, so xFG is their make rate and no feature moves it.`);
+    }
+    if (shot.fouled) notes.push('Fouled on the shot. xFG is the make chance of an unfouled attempt.');
+    notes.push('Effects are percentage points of xFG in a model fitted on the other nine games. They describe the model, not cause and effect.');
+    return notes;
   }
 
   // Stop on the release frame, where the listed values were measured.
@@ -762,17 +777,13 @@
     when.append(el('span', null, `${at < 0 ? '' : `${quarter(p.period)} ${clock(p.gc[at])} · `}${shot.dist.toFixed(1)} ft`), go);
     steps.append(stepRow('head', [['', null], ['At release', null], ['Effect', null]], 'Effects are percentage points of xFG'),
                  stepRow('anchor', [[`${zone} baseline`, null], ['', null], [pct(shot.base, 1), null]],
-                         `The ${zone.toLowerCase()} context model's average over its training shots, close to their make rate. The effects below start from it.`));
-    for (const [key, label, unit, hint] of SHOT_FEATURES) {
+                         `The model's xFG for an average ${zone.toLowerCase()} shot in its training games, close to their make rate. The effects below start from it.`));
+    for (const [key, label, unit, hint] of SHOT_FEATURES.filter(([k]) => k in shot.e)) {
       const effect = shot.e[key] || 0, text = points(effect);
       steps.append(stepRow('', [[label, null], [withUnit(shot.v[key], unit), null], [text, text === '0.0' ? 'flat' : effect > 0 ? 'up' : 'down']], hint));
     }
     steps.append(stepRow('total', [['Shot xFG', null], ['', null], [pct(shot.xfg, 1), null]], 'Baseline plus the effects'));
-    const notes = [];
-    if (shot.rounds === 0) notes.push(`No context effect held up for ${zone.toLowerCase()} shots when this game was left out of the fit, so xFG is their make rate and no feature moves it.`);
-    if (shot.fouled) notes.push('Fouled on the shot. xFG is the make chance of an unfouled attempt.');
-    notes.push('Effects are percentage points of xFG in a model fitted on the other nine games. They describe the model, not cause and effect.');
-    body.replaceChildren(who, when, steps, ...notes.map((text) => el('p', 'note', text)));
+    body.replaceChildren(who, when, steps, ...shotNotes(shot).map((text) => el('p', 'note', text)));
   }
 
   // The panel is redrawn only when playback reaches another shot, or another play is loaded.

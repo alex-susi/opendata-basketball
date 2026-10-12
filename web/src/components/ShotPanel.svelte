@@ -1,10 +1,10 @@
 <script lang="ts">
-  // Beside the half court: the steps behind a shot's xFG. The baseline for the shot's zone, then every input of
-  // the context model as it stood at release with what it adds to xFG, then the result. Follows playback: the
+  // Beside the half court: the steps behind a shot's xFG. The baseline for the shot's kind, then every input of
+  // its context model as it stood at release with what it adds to xFG, then the result. Follows playback: the
   // latest shot released, or the possession's first shot while none has been.
   import { clock, pct, quarter } from "../lib/geometry";
   import { seqIndexOfFrame } from "../lib/sequence";
-  import { ZONE_NAMES, points, shotRows } from "../lib/shots";
+  import { ZONE_NAMES, points, shotNotes, shotRows } from "../lib/shots";
   import type { Play, ShotSteps } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -49,23 +49,19 @@
     </p>
     <div class="shot-steps">
       <div class="shot-step head"><span></span><span>At release</span><span title="Percentage points of xFG">Effect</span></div>
-      <div class="shot-step anchor" title="The {zone.toLowerCase()} context model's average over its training shots, close to their make rate. The effects below start from it.">
+      <div class="shot-step anchor" title="The model's xFG for an average {zone.toLowerCase()} shot in its training games, close to their make rate. The effects below start from it.">
         <span>{zone} baseline</span><span></span><span>{pct(shot.base, 1)}</span>
       </div>
-      {#each shotRows(shot) as row (row.label)}
+      {#each shotRows(shot) as row (row.key)}
         <div class="shot-step" title={row.hint}>
           <span>{row.label}</span><span>{row.value}</span><span class={tone(row.effect)}>{points(row.effect)}</span>
         </div>
       {/each}
       <div class="shot-step total" title="Baseline plus the effects"><span>Shot xFG</span><span></span><span>{pct(shot.xfg, 1)}</span></div>
     </div>
-    {#if shot.rounds === 0}
-      <p class="note">No context effect held up for {zone.toLowerCase()} shots when this game was left out of the fit, so xFG is their make rate and no feature moves it.</p>
-    {/if}
-    {#if shot.fouled}
-      <p class="note">Fouled on the shot. xFG is the make chance of an unfouled attempt.</p>
-    {/if}
-    <p class="note">Effects are percentage points of xFG in a model fitted on the other nine games. They describe the model, not cause and effect.</p>
+    {#each shotNotes(shot) as text (text)}
+      <p class="note">{text}</p>
+    {/each}
   {:else if play}
     <p class="note">{hasShot ? "No xFG steps for this possession's shot." : "No shot in this possession."}</p>
   {/if}

@@ -3,7 +3,9 @@
 #
 # 1. Features for all ten games (cached in outputs/cache/epv/tables.rds; --force rebuilds them).
 #    Finished folds are kept, so an interrupted run resumes; --refit (or --force) fits every fold again.
-# 2. Leave-one-game-out: for each game, fit every component on the other nine and price the held-out game.
+# 2. The closest-defender slope and catch-and-shoot effect for jump shots, from the season aggregates
+#    (outputs/epv/jump_fixed_effects.csv).
+#    Leave-one-game-out: for each game, fit every component on the other nine and price the held-out game.
 # 3. Save per-frame prices and, for every tracked shot, the steps behind its xFG to
 #    outputs/cache/epv/epv_{gameId}.rds (read by the play viewer), and held-out validation tables to outputs/epv/.
 
@@ -13,6 +15,7 @@ here <- if (length(script)) dirname(script) else "src/epv"
 source(file.path(here, "..", "play_viewer", "R", "data.R"))
 source(file.path(here, "R", "features.R"))
 source(file.path(here, "R", "models.R"))
+source(file.path(here, "R", "season.R"))
 
 set.seed(20261010)
 app <- load_app_data()
@@ -62,6 +65,16 @@ holders[, train := frame %% TRAIN_STEP == 0L]
 message(sprintf("%d priced frames, %d shots, %d passes (%d intercepted)", nrow(holders), nrow(shots), nrow(passes),
                 sum(passes$turnover)))
 
+# ---- fixed effects from the season aggregates --------------------------------------------------------
+
+# The same two effects for every fold: they are built from season outcomes outside the tracked games, and from
+# the tracked games' labels and positions only.
+season <- season_jump_effects(app$root, shots)
+fwrite(season$detail, file.path(report, "jump_fixed_effects.csv"))
+print(season$detail, digits = 4)
+message(sprintf("Jump shots: %.4f log-odds per foot of closest-defender distance up to %d ft, %.4f for a catch-and-shoot attempt",
+                season$fixed[["def1"]], DEF_CAP, season$fixed[["cs"]]))
+
 # ---- leave-one-game-out --------------------------------------------------------------------------
 
 #' Held-out score of one component in one game, against the training base rate and the GAM alone.
@@ -75,20 +88,23 @@ score_component <- function(name, model, test, y, base, test_game) {
              auc = if (binary && uniqueN(test[[y]]) == 2L) auc(full, test[[y]]) else NA_real_)
 }
 
-#' Held-out score of xFG in one game, overall and by zone. loss_gam is the location GAM alone. The overall
-#' row is scored against the training make rate; a zone row against that zone's training make rate, which is
-#' where its context model starts.
-score_xfg <- function(model, test, base, test_game) {
-  p <- data.table(zone = shot_zone(test$dist, test$three), y = as.numeric(test$made), base = base,
-                  rate = predict_xfg(model, test, "rate"), loc = predict_xfg(model, test, "location"),
-                  full = predict_xfg(model, test))
-  one <- function(name, d, base, rounds) {
+#' Held-out score of xFG in one game: all shots, each context model's shots (rim, jump), and jump shots
+#' split into midrange and three. loss_gam is the location GAM alone. Every row is scored against the
+#' training make rate of the same kind of shot.
+#' @param train,test Unfouled attempts of the training games and of the held-out game.
+score_xfg <- function(model, test, train, test_game) {
+  p <- data.table(area = shot_area(test$dist, test$three), y = as.numeric(test$made),
+                  loc = predict_xfg(model, test, "location"), full = predict_xfg(model, test))
+  train_area <- shot_area(train$dist, train$three)
+  one <- function(name, areas, rounds) {
+    d <- p[area %in% areas]
     data.table(component = name, game_id = test_game, n = nrow(d), events = sum(d$y), rounds = rounds,
-               loss_base = log_loss(base, d$y), loss_gam = log_loss(d$loc, d$y), loss_full = log_loss(d$full, d$y),
-               auc = if (uniqueN(d$y) == 2L) auc(d$full, d$y) else NA_real_)
+               loss_base = log_loss(mean(train$made[train_area %in% areas]), d$y), loss_gam = log_loss(d$loc, d$y),
+               loss_full = log_loss(d$full, d$y), auc = if (uniqueN(d$y) == 2L) auc(d$full, d$y) else NA_real_)
   }
-  rbind(one("xfg", p, p$base, NA_integer_),
-        rbindlist(lapply(ZONES, function(z) one(paste0("xfg_", z), p[zone == z], p[zone == z]$rate, model$zones[[z]]$rounds))))
+  jump <- model$zones$jump$rounds
+  rbind(one("xfg", c("rim", "mid", "three"), NA_integer_), one("xfg_rim", "rim", model$zones$rim$rounds),
+        one("xfg_jump", c("mid", "three"), jump), one("xfg_mid", "mid", jump), one("xfg_three", "three", jump))
 }
 
 #' Fit on every game but `test_game`, then price `test_game`.
@@ -96,7 +112,7 @@ run_fold <- function(test_game) {
   message("Fold: holding out game ", test_game)
   tr <- function(dt) dt[game_id != test_game]
   te <- function(dt) dt[game_id == test_game]
-  shot_m <- fit_shot_models(tr(shots), tr(ft), tr(orb))
+  shot_m <- fit_shot_models(tr(shots), tr(ft), tr(orb), season$fixed)
   pass_m <- fit_pass_model(tr(passes))
 
   # shot value for all five offensive players on the rows this fold needs
@@ -137,7 +153,7 @@ run_fold <- function(test_game) {
           file.path(cache, sprintf("epv_%d.rds", test_game)))
 
   unfouled <- function(dt) dt[fouled == FALSE]
-  rbind(score_xfg(shot_m$xfg, unfouled(te(shots)), unfouled(tr(shots))[, mean(made)], test_game),
+  rbind(score_xfg(shot_m$xfg, unfouled(te(shots)), unfouled(tr(shots)), test_game),
         score_component("foul", shot_m$foul, te(shots), "fouled", tr(shots)[, mean(fouled)], test_game),
         score_component("pass_turnover", pass_m, te(passes), "turnover", tr(passes)[, mean(turnover)], test_game),
         score_component("turnover_2s", state_m$haz, hh, "haz_y", h[game_id != test_game, mean(haz_y)], test_game),

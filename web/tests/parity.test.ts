@@ -102,7 +102,10 @@ describe("shots", () => {
       expect(rows.length).toBe(Object.keys(shot.e).length);
       // Each effect is stored to four decimals.
       expect(Math.abs(rows.reduce((sum, row) => sum + row.effect, 0) - (shot.xfg - shot.base))).toBeLessThan(1e-3);
-      if (shot.rounds === 0) expect(rows.every((row) => row.effect === 0)).toBe(true);
+      // Without trees only the effects set from the season can move xFG, and only jump shots carry them.
+      if (shot.rounds === 0) expect(rows.every((row) => row.effect === 0 || Boolean(shot.fixed?.[row.key]))).toBe(true);
+      expect(Object.keys(shot.fixed ?? {})).toEqual(shot.model === "jump" ? ["def1", "held"] : []);
+      expect("rim_def" in shot.e).toBe(shot.model === "rim");
     }
   });
 

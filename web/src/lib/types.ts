@@ -100,16 +100,20 @@ export interface ShotSteps {
   made: boolean;
   fouled: boolean;
   three: boolean;
-  /** Which context model priced it. */
+  /** The kind of shot: jump shots are split into midrange and three. */
   zone: "rim" | "mid" | "three";
+  /** Which context model priced it. */
+  model: "rim" | "jump";
   /** Feet from the hoop. */
   dist: number;
-  /** Trees in that zone's context model; 0 means xFG is the zone's make rate. */
+  /** Trees in that context model; 0 means only fixed effects move xFG from the baseline. */
   rounds: number;
-  /** The context model's average for the zone: where the effects start from. */
+  /** The model's xFG for an average shot of this kind: where the effects start from. */
   base: number;
+  /** Features whose effect includes one set from the season aggregates, not fitted (null if none). */
+  fixed: Record<string, boolean> | null;
   xfg: number;
-  /** Each context feature at release, by its name in the model; null where it was not measured. */
+  /** Each input of the shot's context model at release, by its name in the model; null where it was not measured. */
   v: Record<string, number | null>;
   /** What each feature adds to xFG. The effects sum to xfg - base. */
   e: Record<string, number | null>;
