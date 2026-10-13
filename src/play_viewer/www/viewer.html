@@ -1,12 +1,14 @@
 <section class="viewer">
-  <!-- Title over its subtitle on the left, the score over the middle of the court, the running clocks to its right. -->
+  <!-- Title over its subtitle on the left; the score and the running clocks centred in the space beside them. -->
   <header class="play-head">
     <div class="play-head-text">
       <h1 id="play-title">Loading plays…</h1>
       <p id="play-sub"></p>
     </div>
-    <div class="scorebug" id="scorebug"></div>
-    <div class="game-clock" id="game-clock"></div>
+    <div class="play-head-score">
+      <div class="scorebug" id="scorebug"></div>
+      <div class="game-clock" id="game-clock"></div>
+    </div>
   </header>
 
   <!-- The half court leaves room beside it: the steps behind the shot's xFG go there. -->
@@ -64,21 +66,18 @@
       <h2>Display</h2>
       <button type="button" class="text-btn" id="btn-export" title="Record this play once through and save it as a video">Save Video</button>
     </div>
-    <div class="hull-row">
-      <div>
-        <label class="toggle"><input type="checkbox" id="opt-off-hull" class="off" checked>Offensive hull</label>
-        <label class="toggle"><input type="checkbox" id="opt-def-hull" class="def" checked>Defensive hull</label>
-      </div>
-      <label class="switch" title="Show only the half the offense attacks">
-        <input type="checkbox" role="switch" id="opt-half"><span class="switch-track"></span>Half court
-      </label>
-    </div>
-    <div class="toggle-grid">
-      <label class="toggle wide" title="Ring each player on the court in the colour of his archetype, as beside his name below">
+    <!-- Left column: what is drawn on the court. Right column: how the play runs and how much court shows. -->
+    <div class="toggle-grid by-column">
+      <label class="toggle"><input type="checkbox" id="opt-off-hull" class="off" checked>Offensive hull</label>
+      <label class="toggle"><input type="checkbox" id="opt-def-hull" class="def" checked>Defensive hull</label>
+      <label class="toggle" title="Ring each player on the court in the colour of his archetype, as beside his name below">
         <input type="checkbox" id="opt-arch" checked>Player archetypes
       </label>
       <label class="toggle"><input type="checkbox" id="opt-skip" checked>Skip dead ball</label>
       <label class="toggle"><input type="checkbox" id="opt-loop" checked>Loop</label>
+      <label class="switch" title="Show only the half the offense attacks">
+        <input type="checkbox" role="switch" id="opt-half"><span class="switch-track"></span>Half court
+      </label>
     </div>
   </div>
 
@@ -90,25 +89,30 @@
       <div><span>Cum. TOV</span><b id="readout-2">–</b></div>
     </div>
     <label class="toggle" title="Show or hide every EPV label on the court"><input type="checkbox" id="opt-epv" checked>Show/hide all</label>
-    <div class="toggle-grid" id="epv-options">
+    <!-- Three columns: the pass labels on the first row, the ball handler's on the second. -->
+    <div class="toggle-grid three" id="epv-options">
       <label class="toggle" title="Value of a pass to each teammate, coloured against current EPV, and the EPV under the ball handler"><input type="checkbox" id="opt-pass-values" checked>Pass values</label>
       <label class="toggle" title="Chance each pass is turned over"><input type="checkbox" id="opt-pass-tov" checked>Pass TOV %</label>
+      <label class="toggle" title="Line to the most valuable pass"><input type="checkbox" id="opt-best-pass" checked>Best pass</label>
       <label class="toggle" title="Chance the possession is lost in the next two seconds"><input type="checkbox" id="opt-ball-tov" checked>Ball TOV risk</label>
       <label class="toggle" title="Value of shooting now against the best available pass"><input type="checkbox" id="opt-shot-pass" checked>Shot / pass</label>
-      <label class="toggle" title="Line to the most valuable pass"><input type="checkbox" id="opt-best-pass" checked>Best pass</label>
     </div>
     <p class="note" id="epv-missing" hidden>No EPV prices for this play. Run src/epv/build_epv.R to build them.</p>
   </div>
 
   <div class="panel roster off">
-    <h2 id="team-off"></h2>
-    <p class="roster-sub"><span>Offense</span><span class="hull" id="area-off" title="Area of the team's convex hull"></span></p>
+    <div class="roster-head">
+      <h2 id="team-off"></h2>
+      <p class="roster-sub"><span>Offense</span><span class="hull" id="area-off" title="Area of the team's convex hull"></span></p>
+    </div>
     <ul id="roster-off"></ul>
   </div>
 
   <div class="panel roster def">
-    <h2 id="team-def"></h2>
-    <p class="roster-sub"><span>Defense</span><span class="hull" id="area-def" title="Area of the team's convex hull"></span></p>
+    <div class="roster-head">
+      <h2 id="team-def"></h2>
+      <p class="roster-sub"><span>Defense</span><span class="hull" id="area-def" title="Area of the team's convex hull"></span></p>
+    </div>
     <ul id="roster-def"></ul>
   </div>
 </aside>

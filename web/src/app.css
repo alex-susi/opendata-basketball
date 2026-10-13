@@ -158,14 +158,15 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- centre: header, stage, transport ---- */
 .viewer { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
-/* Title over its subtitle on the left; the score, as tall as both lines, over the middle of the court; the game
-   clock over the quarter and shot clock to its right. If the title needs more than its half, it keeps its width
-   and the score moves right. */
+/* One row. Title over its subtitle on the left; the score, as tall as both lines, with the game clock over the
+   quarter and shot clock beside it, centred in the space that is left. When the row is short the title and
+   subtitle give way: they are cut with an ellipsis. */
 .viewer { container: viewer / inline-size; }
-.play-head { display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 14px; padding: 2px 4px 0; }
-.play-head-text { min-width: 0; }
+.play-head { display: flex; align-items: stretch; gap: 14px; padding: 2px 4px 0; }
+.play-head-text { flex: 0 1 auto; min-width: 0; }
+.play-head-score { display: flex; flex: 1 0 auto; justify-content: center; align-items: stretch; gap: 14px; }
 .play-head h1 { font-size: 20px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.play-head p { width: 0; min-width: 100%; font-size: 14px; margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.play-head p { font-size: 14px; margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Team names take equal widths either side, so the score is the exact centre of the pill. */
 .scorebug {
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px;
@@ -176,24 +177,26 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .scorebug b { font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .scorebug .kit { width: 13px; height: 13px; flex: none; border: 2px solid; border-radius: 50%; }
 /* Two lines that match the title's: game clock, centred over the quarter and shot clock. */
-.game-clock { display: grid; justify-items: center; justify-self: start; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.game-clock { display: grid; justify-items: center; align-content: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .game-time { font-size: 20px; font-weight: 700; line-height: 1.25; }
 .period-line { display: flex; align-items: center; gap: 7px; margin-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.4; }
 .shot-clock { min-width: 24px; padding: 0 5px; border-radius: 5px; background: #0F1522; color: #F5B02E; text-align: center; }
 
-/* Narrower centre column: the title takes its own row, so the score stays centred with the clocks to its right. */
-@container viewer (max-width: 900px) {
-  .play-head { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); row-gap: 6px; }
-  .play-head-text { grid-column: 1 / -1; }
-  .scorebug { grid-column: 2; min-height: 47px; }
+/* A narrower centre column keeps the one row with slightly smaller type. */
+@container viewer (max-width: 780px) {
+  .play-head, .play-head-score { gap: 10px; }
+  .play-head h1, .game-time { font-size: 18px; }
+  .play-head p, .period-line { font-size: 13px; }
+  .scorebug { gap: 8px; padding: 0 12px; font-size: 13px; }
+  .scorebug b { font-size: 20px; }
 }
-/* Too narrow for score and clocks side by side: stack them. */
-@container viewer (max-width: 620px) {
-  .play-head { grid-template-columns: minmax(0, 1fr); justify-items: center; }
-  .play-head-text { justify-self: stretch; }
+/* A narrow one (a phone) has no room for one row: the score and clocks go under the title. */
+@container viewer (max-width: 640px) {
+  .play-head { flex-direction: column; gap: 6px; }
   .play-head h1, .play-head p { white-space: normal; }
-  .scorebug { grid-column: 1; max-width: 100%; padding: 4px 12px; border-radius: 12px; }
-  .game-clock { display: flex; align-items: center; gap: 10px; justify-self: center; }
+  .play-head-score { flex-wrap: wrap; row-gap: 4px; }
+  .scorebug { max-width: 100%; padding: 4px 12px; border-radius: 12px; }
+  .game-clock { display: flex; align-items: center; gap: 10px; }
   .period-line { margin-top: 0; }
 }
 
@@ -297,12 +300,16 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .side h2 { margin-bottom: 8px; font-size: 14px; font-weight: 700; }
 .toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; }
 .toggle input { margin: 0; accent-color: var(--off); }
-.toggle-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 8px; }
+/* Toggles in columns. By default two columns filled row by row; .by-column fills each column top to bottom, and
+   .three sets three columns as wide as their labels. */
+.toggle-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px; }
+.toggle-grid .toggle, .toggle-grid .switch { margin: 0; }
+.toggle-grid.by-column { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
+.toggle-grid.three { grid-template-columns: repeat(3, auto); justify-content: space-between; }
 .toggle-grid .wide { grid-column: 1 / -1; }
 .toggle-grid.dim { opacity: .4; pointer-events: none; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .panel-head h2 { margin-bottom: 0; }
-.hull-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 /* A small on/off switch: the checkbox stays in the page for the keyboard, the track is what shows. */
 .switch { position: relative; display: flex; align-items: center; gap: 7px; margin: 0 0 6px; font-weight: 400; cursor: pointer; white-space: nowrap; }
 .switch input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
@@ -332,9 +339,10 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* Each roster panel carries its team's colours as --kit-* (set inline from the play). */
 .roster { --kit-fill: var(--muted); --kit-edge: #FFFFFF; --kit-ink: #FFFFFF; --kit-text: var(--ink); }
-/* Heading: the team's name in its colour; under it, its side of the ball and the area of its hull. */
-.roster h2 { margin-bottom: 0; overflow: hidden; color: var(--kit-text); text-overflow: ellipsis; white-space: nowrap; }
-.roster-sub { margin: 0 0 7px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* Heading, on one row: the team's name in its colour; at the right, its side of the ball and the area of its hull. */
+.roster-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 7px; }
+.roster h2 { min-width: 0; margin-bottom: 0; overflow: hidden; color: var(--kit-text); text-overflow: ellipsis; white-space: nowrap; }
+.roster-sub { flex: none; margin: 0; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .roster-sub .hull::before { content: "·"; margin: 0 6px; font-weight: 700; }
 .roster ul { list-style: none; }
 .roster li { display: flex; align-items: center; gap: 8px; padding: 2px 4px; border-radius: 6px; cursor: default; }
@@ -364,6 +372,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .viewer { min-height: calc(100vh - 24px - var(--bar)); }
   .side { flex-direction: row; flex-wrap: wrap; overflow: visible; }
   .side .panel { flex: 1 1 200px; min-width: 0; }
+  .side .display { flex-basis: 300px; }      /* three columns of toggles */
   .side .roster { flex-basis: 300px; }       /* room for a name and its archetype tag */
 }
 

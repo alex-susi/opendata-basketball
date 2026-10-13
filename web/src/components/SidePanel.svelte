@@ -20,22 +20,19 @@
         {viewer.recording ? "Cancel recording" : "Save Video"}
       </button>
     </div>
-    <div class="hull-row">
-      <div>
-        <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
-        <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
-      </div>
-      <label class="switch" title="Show only the half the offense attacks">
-        <input type="checkbox" role="switch" checked={viewer.view === "half"} onchange={(ev) => (viewer.view = ev.currentTarget.checked ? "half" : "full")} />
-        <span class="switch-track"></span>Half court
-      </label>
-    </div>
-    <div class="toggle-grid">
-      <label class="toggle wide" title="Ring each player on the court in the colour of his archetype, as beside his name below">
+    <!-- Left column: what is drawn on the court. Right column: how the play runs and how much court shows. -->
+    <div class="toggle-grid by-column">
+      <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
+      <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
+      <label class="toggle" title="Ring each player on the court in the colour of his archetype, as beside his name below">
         <input type="checkbox" bind:checked={viewer.showArch} />Player archetypes
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
       <label class="toggle"><input type="checkbox" bind:checked={viewer.loop} />Loop</label>
+      <label class="switch" title="Show only the half the offense attacks">
+        <input type="checkbox" role="switch" checked={viewer.view === "half"} onchange={(ev) => (viewer.view = ev.currentTarget.checked ? "half" : "full")} />
+        <span class="switch-track"></span>Half court
+      </label>
     </div>
   </div>
 
@@ -49,12 +46,13 @@
       </div>
     {/if}
     <label class="toggle" title="Show or hide every EPV label on the court"><input type="checkbox" bind:checked={viewer.showEpv} />Show/hide all</label>
-    <div class="toggle-grid" class:dim={!viewer.showEpv}>
+    <!-- Three columns: the pass labels on the first row, the ball handler's on the second. -->
+    <div class="toggle-grid three" class:dim={!viewer.showEpv}>
       <label class="toggle" title="Value of a pass to each teammate, coloured against current EPV, and the EPV under the ball handler"><input type="checkbox" bind:checked={viewer.showPassValues} />Pass values</label>
       <label class="toggle" title="Chance each pass is turned over"><input type="checkbox" bind:checked={viewer.showPassTov} />Pass TOV %</label>
+      <label class="toggle" title="Line to the most valuable pass"><input type="checkbox" bind:checked={viewer.showBestPass} />Best pass</label>
       <label class="toggle" title="Chance the possession is lost in the next two seconds"><input type="checkbox" bind:checked={viewer.showBallTov} />Ball TOV risk</label>
       <label class="toggle" title="Value of shooting now against the best available pass"><input type="checkbox" bind:checked={viewer.showShotPass} />Shot / pass</label>
-      <label class="toggle" title="Line to the most valuable pass"><input type="checkbox" bind:checked={viewer.showBestPass} />Best pass</label>
     </div>
     {#if play && !play.epv}
       <p class="note">No EPV prices for this play.</p>
@@ -64,10 +62,12 @@
   {#each sides as side}
     {@const kit = play?.colors[side.role]}
     <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-edge={kit?.edge} style:--kit-ink={kit?.ink} style:--kit-text={kit?.text}>
-      <h2>{play ? (side.role === "off" ? play.off : play.def) : ""}</h2>
-      <p class="roster-sub">
-        <span>{side.title}</span>{#if play && area(side.role) != null}<span class="hull" title="Area of the team's convex hull">Hull {area(side.role)} ft²</span>{/if}
-      </p>
+      <div class="roster-head">
+        <h2>{play ? (side.role === "off" ? play.off : play.def) : ""}</h2>
+        <p class="roster-sub">
+          <span>{side.title}</span>{#if play && area(side.role) != null}<span class="hull" title="Area of the team's convex hull">Hull {area(side.role)} ft²</span>{/if}
+        </p>
+      </div>
       <ul>
         {#each play?.players.filter((p) => p.role === side.role) ?? [] as p (p.id)}
           <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

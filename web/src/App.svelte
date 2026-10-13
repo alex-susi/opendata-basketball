@@ -126,7 +126,7 @@
   </aside>
 
   <section class="viewer">
-    <!-- Title over its subtitle on the left, the score over the middle of the court, the running clocks to its right. -->
+    <!-- Title over its subtitle on the left; the score and the running clocks centred in the space beside them. -->
     <header class="play-head">
       <div class="play-head-text">
         {#if play}
@@ -137,6 +137,7 @@
         {/if}
       </div>
       {#if play && home && away}
+        <div class="play-head-score">
         <div class="scorebug" title={`${play.game} · score at the start of the possession`}>
           <span class="team home" style:color={home.text}><span class="kit" style:background={home.fill} style:border-color={home.edge}></span>{play.home}</span>
           <b>{play.homeScore} – {play.awayScore}</b>
@@ -145,6 +146,7 @@
         <div class="game-clock">
           <span class="game-time" title="Game clock">{live.gameClock}</span>
           <span class="period-line"><span>{quarter(play.period)}</span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span>
+        </div>
         </div>
       {/if}
     </header>
