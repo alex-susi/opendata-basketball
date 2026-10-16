@@ -44,6 +44,15 @@ for the EPV overlay and the shot panel beside the half court, the prices from `R
 and the Archetypes tab come from `outputs/archetypes/` (`Rscript src/archetypes/build_features.R`, then
 `Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters.
 
+The court control overlay is computed in the browser (`src/lib/control.ts`, mirroring
+`src/court_control/R/control.R`) from parameters fitted by `Rscript src/court_control/build_control.R`. The export
+copies them to `public/data/control.json`, and copies their reference cases to `tests/control_reference.json`
+(checked by `tests/control.test.ts`). To refresh only these, without touching the play data or its stamp:
+
+```bash
+Rscript web/scripts/export_data.R --control
+```
+
 To change only the wording of the Archetypes tab, edit `src/play_viewer/R/archetype_page.R` and rewrite the page
 alone. This leaves the play data and its stamp untouched, so the parity reference stays valid.
 
@@ -67,6 +76,7 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 - The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
   `src/play_viewer/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.
 - On narrow screens the court comes first, then options and rosters, then filters and the play list.
+- Court control (Display panel, "Court control") exists only on the site.
 - Coordinates and prices are stored as scaled integers at the precision the Shiny app already rounds to.
 
 Data: SkillCorner open basketball data (Liga ACB 2025-2026), MIT licence.

@@ -701,3 +701,122 @@ twelve-cluster candidate is saved beside it as `outputs/archetypes/offense_*_bbi
   most of their players have: point of attack from primary ball handler, chaser from secondary ball handler,
   helper from movement shooter, anchor big from roll and cut big. The Archetypes page wording was rewritten
   for the ten archetypes. The `_bbi12` and `_bbi12_eei4` candidate files are left in place.
+
+## 2026-10-16 — Court control model and its overlay in the play viewer
+
+Status: exploration, at the owner's direction. Adapts soccer's pitch control (Spearman 2016, 2017; the
+"relevant" and scoring-opportunity layers of Spearman 2018; Fernandez and Bornn 2018) to the court. When a
+shot is in the air the surface becomes the offensive-rebound chance given the shot's spot and the ten players.
+Code: `src/court_control/` (`R/data.R`, `R/control.R`, `build_control.R`). Outputs: `outputs/court_control/`
+(parameters, validation and calibration tables). Cache: `outputs/cache/court_control/` (git-ignored).
+Site: `web/src/lib/control.ts` (the model, run live in the browser), `web/src/lib/controlLayer.ts` (drawing),
+"Court control" panel in `SidePanel.svelte`; `web/tests/control.test.ts` checks the site against R.
+
+### Decisions (owner)
+
+- The overlay is on the static site only, not the Shiny app.
+- Three live-ball layers: control, relevant control, scoring opportunity.
+- While a shot is in the air the rebound surface replaces the layer and is recomputed every frame as players
+  move; the chance at release is shown beside the current one.
+- The rebound model replaces EPV's constant offensive-rebound rate only if it beats the base rate on held-out
+  games. **Not done yet**: see "Open choices".
+
+### Definitions
+
+- **Physics (both modes).** A player keeps his velocity for a reaction time, then runs straight to the spot at
+  top speed (18.1 ft/s, the 99th percentile of tracked speed). His chance of having arrived by time t is
+  logistic in t minus that time, with spread sigma. From the moment the ball reaches the spot, an arrived
+  player takes control at rate lambda while it is free (Spearman's integration, 0.04 s steps, up to 6 s or
+  99% controlled). Shown: offense share of control. Velocities: 0.24 s backward difference, as in EPV.
+- **Live ball.** Ball travel time to a spot is a pass's flight time for that length (0.016 s + 0.020 s per
+  foot, fitted on completed passes). Grid: 2 ft over the whole court.
+- **Rebound.** Ball time to a spot = rest of the shot's flight (0.44 s + 0.035 s per foot of shot distance,
+  from release to the event's end frame) + bounce (0.60 s + 0.046 s per foot from the hoop, from end frame
+  to the rebound frame). Landing density: distance from the hoop gamma-shaped (shape 2, mean 4.1 ft + 0.20 ft
+  per foot of shot distance), direction a von Mises bump toward the shooter's side (concentration 1.28) over a
+  uniform floor (0.37). Fitted by maximum likelihood on where the 629 player rebounds were taken (the
+  rebounder's tracked position at the rebound frame). P(OREB) = (1 − team share) × Σ density × offense
+  control + team share × offensive rate of team rebounds (9.8% of misses are team rebounds, 65% of them
+  offensive). Grid: 1.5 ft, offensive half within 35 ft of the hoop. Only unfouled misses (697 with a state).
+- **Rebound physics** fitted by maximum likelihood on which team took each rebound, at the spot it was
+  taken, from every 0.2 s sample between release and the rim (3,866 samples): reaction 1.0 s, sigma 0.17 s,
+  lambda 113 per s, and defenders' rate × 1.58 (the box-out advantage). Fitted on nine games per fold.
+- **Live-ball physics** chosen on passes (3,708 live passes, 66 intercepted): at release, offense control at
+  the spot the ball was next taken (receiver's or interceptor's position at the pass's end frame). Passers pick
+  safe passes, so raw control is not a completion chance; the grid point (reaction 0.2/0.4/0.7 s × sigma
+  0.15 to 0.45 s × lambda 8 to 100) is chosen by log loss after a two-parameter logistic on logit(control),
+  fitted on the training games. The court shows raw control. Chosen in every fold: **reaction 0.4 s, sigma
+  0.15 s, lambda 100** — the sharp corner of the grid, close to a deterministic time-to-arrive model.
+- **Relevance.** Where the ball is 1.44 s later (36 frames; the 3-frame state grid), as a distribution over
+  the grid: Gaussian around the ball (spread 10.1 ft), times control^0.19, times exp(−1.06 × feet from the
+  hoop / 10). Fitted on 5,000 live frames with a holder (500 per game).
+- **Scoring opportunity** = Σ control × relevance × value, where value is the location xFG GAM
+  (`s(x, y, k = 30)` on all unfouled shots of the ten games) × 2 or 3 (the EPV arc rule), 0 beyond 30 ft.
+- Rebound reference case and every layer are computed identically in R and TypeScript; the site's test
+  compares them to 6 decimals.
+
+### Validation (leave-one-game-out)
+
+| Check | n | Base | Model | AUC | Gain ± SE | Games better |
+|---|---|---|---|---|---|---|
+| P(OREB) at release | 697 | 0.6228 | 0.6101 | 0.59 | 0.013 ± 0.007 | 7 |
+| P(OREB) halfway to the rim | 697 | 0.6228 | 0.5984 | 0.63 | 0.024 ± 0.007 | 9 |
+| P(OREB) as the ball reaches the rim | 697 | 0.6228 | 0.6075 | 0.60 | 0.017 ± 0.011 | 8 |
+| Team at the spot the rebound was taken, from release | 629 | 0.5921 | 0.5665 | 0.63 | 0.024 ± 0.012 | 6 |
+| Pass completed, recalibrated control at its spot | 3,708 | 0.0896 | 0.0620 | 0.93 | 0.028 ± 0.005 | 10 |
+| Relevance, log density per sample vs distance-only | 5,000 | – | – | – | 0.311 ± 0.009 | 10 |
+
+Base is the training games' rate. Calibration of P(OREB) (`calibration_rebound.csv`) is close in every band
+with more than ten shots; predictions run from about 0.15 to 0.55.
+
+### What the numbers do not support
+
+- **The rebound chance at release is a small gain**: 0.013 ± 0.007, under two standard errors, better in 7
+  of 10 games. It is clearer halfway through the flight (9 of 10) than at release or at the rim.
+- **Rebound "landing" is where the ball was secured**, which depends on where players are, not where it
+  first bounced. The density is therefore partly a model of players, and the control term counts them again.
+- **Raw live-ball control is not a probability of anything observed.** It is ranked well by pass outcomes
+  (AUC 0.93) but its level is only checked after recalibration. The chosen physics sits at the edge of the
+  searched grid; sharper values were not tried. The ball handler's own spot is offense-controlled on 85% of
+  frames.
+- **Scoring opportunity does not predict points.** Held-in frames by quintile of its total scored 1.03 to
+  1.08 points in the rest of the possession, with no trend (`check_scoring_opportunity.csv`). Like EPV, it
+  describes space, not outcomes.
+- The value surface and the relevance model use all ten games (the relevance folds use control grids from
+  the all-game physics); neither is used to score outcomes held out.
+- Velocities are unsmoothed backward differences; positions extrapolated off screen are used like detected ones.
+- The overlay colours are fixed (blue offense, orange defense), not the clubs', because two clubs often share
+  a primary colour.
+
+### Open choices
+
+- **EPV.** By the owner's rule ("only if it beats the base rate on held-out games") the rebound chance at
+  release qualified on its mean gain, narrowly, and the owner said go ahead. See the EPV result below.
+- Whether the box-out advantage should differ by shot distance or zone; a sharper live-ball grid; smoothed
+  velocities; down-weighting extrapolated positions.
+
+### EPV with the spatial rebound chance (same day)
+
+At the owner's go-ahead, `shot_value()` now takes each row's spatial P(OREB) (`poreb_spatial`) in place of
+the training-fold constant (0.314), falling back to the constant where a row has none.
+
+- **Pricing.** `src/court_control/price_rebounds.R` prices every offensive player on every row EPV prices,
+  within 35 ft of the hoop: 604,000 shooter-frames, about 30 minutes. Each game uses rebound parameters fitted
+  without it (`outputs/cache/court_control/params_{gameId}.rds`, saved by `build_control.R`). Training games'
+  rows in an EPV fold therefore carry parameters that saw the held-out game's rebounds; the held-out game's
+  never do. Every shooter row within 30 ft got a value (mean 0.316 against the constant 0.314). A pass
+  receiver takes his chance at the pass's pricing frame, from where he stands then, not where he catches.
+- **Result (leave-one-game-out, `build_epv.R --refit`).** xFG, foul, pass and turnover components are
+  unchanged (they do not use the rebound rate). **EPV is worse**: squared error 1.3827 against 1.3815 with the
+  constant, a paired change of +0.0012 ± 0.0003 per game, worse in 9 of 10 games; its gain over the base
+  rate falls from 0.0051 ± 0.0022 to 0.0039 ± 0.0022. The value model still keeps no boosting rounds.
+- **Reading.** The spatial chance has a little skill for the rebound itself (0.013 ± 0.007 at release), but it
+  moves shot value by roughly ±0.07 points from frame to frame, and that variation does not track possession
+  points. It makes the value model's main input noisier.
+- **Decision (owner): keep the spatial rate** despite the held-out loss. The EPV caches, `outputs/epv/` and
+  the site's period files hold the spatial version; the site was re-exported (stamp 2026-10-16T17:25:28Z)
+  with a new parity reference, and its 38 tests pass. `build_epv.R --refit --constant-oreb` restores the
+  constant rate.
+- **Rebuild order now:** `build_epv.R` (feature tables; stops if rebound prices are missing), then
+  `src/court_control/build_control.R`, `src/court_control/price_rebounds.R`, `build_epv.R --refit`,
+  `web/scripts/export_data.R`, `web/scripts/parity_reference.R`.

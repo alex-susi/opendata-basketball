@@ -230,7 +230,8 @@ explain_xfg <- function(m, dt) {
 }
 
 #' Fit the shot-side components on a set of training shots, plus the constants the shot value needs.
-#' The offensive-rebound rate after an unfouled miss is one constant until it is modelled spatially.
+#' `oreb`, the training rate of offensive rebounds after an unfouled miss, is only a fallback: shot_value()
+#' uses the spatial chance from src/court_control/ wherever a row has one.
 #' @param fixed The fixed effects for jump shots, see jump_fixed().
 fit_shot_models <- function(shots, ft, orb, fixed) {
   list(xfg = fit_xfg(shots[fouled == FALSE], fixed),
@@ -241,12 +242,14 @@ fit_shot_models <- function(shots, ft, orb, fixed) {
 
 #' Expected points if this player shot now: unfouled make, second chance after a miss, and free throws.
 #' Beyond SHOT_RANGE the value is 0: almost no attempts exist there, so the shot is not offered as an option.
+#' The second chance uses the row's spatial offensive-rebound chance (`poreb_spatial`, from the ten players'
+#' positions; src/court_control/price_rebounds.R) where it has one, and the training rate otherwise.
 #' @return data.table(sv, xfg, pfoul, poreb).
 shot_value <- function(m, dt) {
   dt <- copy(dt)[, dist := pmin(dist, 60)]
   xfg <- predict_xfg(m$xfg, dt)
   pfoul <- predict_two_stage(m$foul, dt)
-  poreb <- m$oreb
+  poreb <- if ("poreb_spatial" %in% names(dt)) fcoalesce(dt$poreb_spatial, m$oreb) else rep(m$oreb, nrow(dt))
   pts <- 2 + dt$three
   data.table(sv = fifelse(dt$dist > SHOT_RANGE, 0, (1 - pfoul) * (xfg * pts + (1 - xfg) * poreb * m$orb_value) +
                             pfoul * (m$and1 * (pts + m$ft) + (1 - m$and1) * pts * m$ft)),

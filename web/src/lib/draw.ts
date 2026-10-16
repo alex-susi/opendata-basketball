@@ -1,8 +1,10 @@
-// Draws one moment of a possession on the canvas: court, hulls, players, ball, EPV labels and the caption.
-// The clock, score and EPV readout are on the page, not the canvas, except in a recorded video (drawHeader).
-// Ported from draw(), drawPlayer(), drawTag(), drawOptions(), drawHeader() and drawCaption() in the Shiny
-// app's www/player.js.
+// Draws one moment of a possession on the canvas: court, court control, hulls, players, ball, EPV labels and
+// the caption. The clock, score and EPV readout are on the page, not the canvas, except in a recorded video
+// (drawHeader). Ported from draw(), drawPlayer(), drawTag(), drawOptions(), drawHeader() and drawCaption() in
+// the Shiny app's www/player.js; court control exists only on the site.
 
+import type { ControlParams } from "./control";
+import { controlAt, drawControl, type ControlMode } from "./controlLayer";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
 import { epvAt, type EpvReading } from "./epv";
 import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
@@ -26,6 +28,8 @@ export interface DrawOptions {
   showBallTov: boolean;
   showShotPass: boolean;
   showBestPass: boolean;
+  showControl: boolean;
+  controlMode: ControlMode;
   hoverPid: number | null;
 }
 
@@ -41,6 +45,8 @@ export interface FrameInfo {
   readout: [string, string][] | null;
   /** Index in play.shots of the shot the panel beside the half court shows, or -1. */
   shot: number;
+  /** Court control readout, or null when the overlay is off or has nothing to show. */
+  control: { kind: string; cells: [string, string][] } | null;
 }
 
 interface Dot {
@@ -241,10 +247,11 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[])
 /**
  * Draw the scene at playback position `pos` (an index into `seq`, fractional between frames).
  * @param header Draw the clock, score and EPV readout on the canvas too (while a video is recorded).
+ * @param control Court control parameters; null draws no court control.
  * @returns what is on court at that moment, or null when there is no play to draw.
  */
 export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, dpr: number, play: Play | null, seq: number[],
-                          pos: number, o: DrawOptions, header = false): FrameInfo | null {
+                          pos: number, o: DrawOptions, header = false, control: ControlParams | null = null): FrameInfo | null {
   const L = courtLayout(W, H, o.view, header ? HEADER_TOP : PAD.top);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.paper;
@@ -269,6 +276,10 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.clip();
   const areaDef = drawHull(ctx, L, dots.def, play.colors.def, o.showDef);
   const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
+  // Court control goes over the hulls (their fill would hide it) and under the players. It is computed at the
+  // tracking frame, not blended between frames.
+  const cc = control && o.showControl ? controlAt(play, c.i0, o.controlMode, control) : null;
+  if (cc) drawControl(ctx, L, cc);
   if (ep && o.showEpv && o.showBestPass && ep.target != null) {
     const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
     if (from && to) {
@@ -300,5 +311,5 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   drawCaption(ctx, L, labels);
   return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
            gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]), readout: ep ? readoutCells(ep) : null,
-           shot: shotIndexAt(play.shots, frame) };
+           shot: shotIndexAt(play.shots, frame), control: cc ? { kind: cc.kind, cells: cc.readout } : null };
 }

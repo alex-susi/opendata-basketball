@@ -1,7 +1,10 @@
 # Build the EPV model end to end.
-#   Rscript src/epv/build_epv.R [--force] [--refit]
+#   Rscript src/epv/build_epv.R [--force] [--refit] [--constant-oreb]
 #
-# 1. Features for all ten games (cached in outputs/cache/epv/tables.rds; --force rebuilds them).
+# 1. Features for all ten games (cached in outputs/cache/epv/tables.rds; --force rebuilds them), plus the
+#    spatial offensive-rebound chance of every potential shooter from src/court_control/price_rebounds.R
+#    (run src/court_control/build_control.R and that script after the tables exist). --constant-oreb uses
+#    the training games' offensive-rebound rate instead, as before 2026-10-16.
 #    Finished folds are kept, so an interrupted run resumes; --refit (or --force) fits every fold again.
 # 2. The closest-defender slope and catch-and-shoot effect for jump shots, from the season aggregates
 #    (outputs/epv/jump_fixed_effects.csv).
@@ -55,6 +58,30 @@ shots[, three := as.integer(three_ev)]   # real attempts take the scorer's two o
 passes <- bind("passes")
 orb <- bind("orb")
 ft <- bind("ft")
+
+# Offensive-rebound chance from the ten players' positions for every potential shooter on every priced frame,
+# each game priced with rebound parameters fitted without it (src/court_control/price_rebounds.R). A pass
+# receiver takes his chance at the frame the pass is priced, from where he stands then.
+poreb_files <- file.path(app$root, "outputs", "cache", "court_control", paste0("poreb_", games, ".rds"))
+if ("--constant-oreb" %in% args) {
+  message("Offensive-rebound rate: the training games' constant (--constant-oreb)")
+} else if (!all(file.exists(poreb_files))) {
+  stop("No spatial rebound prices for game(s) ", paste(games[!file.exists(poreb_files)], collapse = ", "),
+       ". Run Rscript src/court_control/build_control.R, then Rscript src/court_control/price_rebounds.R",
+       " (it reads the feature tables just saved), then this script again.")
+} else {
+  poreb <- rbindlist(lapply(seq_along(games), function(k) readRDS(poreb_files[k])[, game_id := games[k]]))
+  row_frames <- rows[, .(game_id, row, frame)]
+  add_poreb <- function(dt) {
+    f <- row_frames[dt, on = .(game_id, row), x.frame]
+    dt[, poreb_spatial := poreb[data.table(game_id = dt$game_id, frame = f, pid = dt$pid), on = .(game_id, frame, pid), x.poreb]]
+  }
+  add_poreb(slots)
+  add_poreb(cands)
+  message(sprintf("Spatial P(OREB) on %.1f%% of shooter rows within %d ft (mean %.3f)",
+                  100 * slots[dist <= SHOT_RANGE, mean(!is.na(poreb_spatial))], SHOT_RANGE, mean(slots$poreb_spatial, na.rm = TRUE)))
+}
+
 counts <- do.call(rbind, lapply(tabs, `[[`, "counts"))
 rownames(counts) <- games
 print(counts)

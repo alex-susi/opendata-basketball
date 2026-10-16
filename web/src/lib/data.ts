@@ -3,6 +3,7 @@
 // export to the next, so without it a browser can run a new build against an older export it has cached.
 
 import { decodePlay } from "./decode";
+import type { ControlParams } from "./control";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
 declare const __DATA_STAMP__: string;
@@ -65,4 +66,10 @@ export async function loadPlay(row: PlayRow): Promise<Play> {
   const header = index.plays[row.id];
   if (!header) throw new Error(`${row.id} is missing from ${row.file}.json`);
   return decodePlay(buffer, header);
+}
+
+let control: Promise<ControlParams | null> | null = null;
+/** Court control parameters (control.json). Null when the export has none, so the viewer runs without the overlay. */
+export function loadControl(): Promise<ControlParams | null> {
+  return (control ??= fetchOk("control.json").then((r) => r.json() as Promise<ControlParams>).catch(() => null));
 }

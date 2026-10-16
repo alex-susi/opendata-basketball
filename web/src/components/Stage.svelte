@@ -1,6 +1,8 @@
 <script lang="ts">
   // The court canvas: runs the animation clock, draws each frame and records video on request.
   import { onMount } from "svelte";
+  import type { ControlParams } from "../lib/control";
+  import { loadControl } from "../lib/data";
   import { drawScene } from "../lib/draw";
   import { FPS } from "../lib/sequence";
   import type { Play } from "../lib/types";
@@ -15,6 +17,8 @@
   let hold = 0, lastTs = 0, drawn = 0;
   let framed = false;   // the canvas carries its own header: from the start of a recording until its last frame is flushed
   const NO_READOUT: [string, string][] = [["EPV", "–"], ["TOV% (ROP)", "–"], ["Cum. TOV", "–"]];
+  let control: ControlParams | null = null;   // court control parameters, once control.json has loaded
+  loadControl().then((p) => { control = p; });
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -33,7 +37,7 @@
   }
 
   function render(ctx: CanvasRenderingContext2D): void {
-    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed);
+    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed, control);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;
@@ -44,6 +48,8 @@
     if (drawn++ % 6 === 0 || !viewer.playing) {
       const readout = info.readout ?? NO_READOUT;
       if (readout.some((cell, i) => cell[1] !== live.readout[i]?.[1])) live.readout = readout;
+      const cc = info.control, was = live.control;
+      if (!cc !== !was || (cc && was && (cc.kind !== was.kind || cc.cells.some((cell, i) => cell[1] !== was.cells[i]?.[1])))) live.control = cc;
       const round = (v: number | null) => (v == null ? null : Math.round(v));
       if (round(info.areaOff) !== live.areaOff) live.areaOff = round(info.areaOff);
       if (round(info.areaDef) !== live.areaDef) live.areaDef = round(info.areaDef);

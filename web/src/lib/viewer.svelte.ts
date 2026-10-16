@@ -1,5 +1,6 @@
 // Playback and display state shared by the stage, the transport bar and the side panel.
 
+import type { ControlMode } from "./controlLayer";
 import type { CourtView } from "./court";
 
 export const viewer = $state({
@@ -21,6 +22,9 @@ export const viewer = $state({
   showBallTov: true,
   showShotPass: true,
   showBestPass: true,
+  /** Court control under the players (the rebound surface while a shot is in the air). */
+  showControl: false,
+  controlMode: "control" as ControlMode,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */
@@ -39,4 +43,6 @@ export const live = $state({
   readout: [] as [string, string][],
   /** Index in the play's shots of the one the shot panel shows, or -1. */
   shot: -1,
+  /** Court control readout at the frame drawn: which surface is showing and its numbers. */
+  control: null as { kind: string; cells: [string, string][] } | null,
 });

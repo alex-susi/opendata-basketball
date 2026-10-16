@@ -1,6 +1,7 @@
 # Export the play viewer's data for the static site in web/.
 #   Rscript web/scripts/export_data.R          (from anywhere inside the repository)
 #   Rscript web/scripts/export_data.R --page   (only archetypes.html, after editing the Archetypes tab's wording)
+#   Rscript web/scripts/export_data.R --control   (only control.json, after src/court_control/build_control.R)
 #
 # Reads the Shiny app's caches through the app's own functions and writes to web/public/data/:
 #   meta.json            filter choices and the export's `generated` stamp
@@ -9,6 +10,8 @@
 #                            each shot's xFG, byte offsets
 #   g<game>_p<period>.bin    that period's tracking and EPV prices
 #   archetypes.html      the app's Archetypes tab, as the app renders it (needs outputs/archetypes/)
+#   control.json         court control parameters and court-value grid (outputs/court_control/params.json);
+#                        its reference cases go to web/tests/control_reference.json
 #
 # Binary layout, little-endian. Each play is one segment starting on a 4-byte boundary:
 #   int32  frames[n], epv.f[m], epv.to[m], epv.holder[m]                      (-1 = null)
@@ -29,6 +32,21 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_a
 a <- load_shiny_app()
 out_dir <- file.path(a$root, "web", "public", "data")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# ---- court control: fitted parameters and the site's test cases, as build_control.R wrote them -----
+
+control_dir <- file.path(a$root, "outputs", "court_control")
+if (file.exists(file.path(control_dir, "params.json"))) {
+  invisible(file.copy(file.path(control_dir, "params.json"), file.path(out_dir, "control.json"), overwrite = TRUE))
+  invisible(file.copy(file.path(control_dir, "reference.json"), file.path(a$root, "web", "tests", "control_reference.json"),
+                      overwrite = TRUE))
+} else {
+  message("No court control parameters yet: run src/court_control/build_control.R. The site runs without the overlay.")
+}
+if ("--control" %in% args) {
+  message("Wrote control.json only.")
+  quit(save = "no")
+}
 
 # ---- the Archetypes tab, rendered by the app's own page function ------------------------------
 
