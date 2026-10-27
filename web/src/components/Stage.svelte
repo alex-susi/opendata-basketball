@@ -4,7 +4,7 @@
   import type { ControlParams } from "../lib/control";
   import { loadControl, loadRebounds } from "../lib/data";
   import { drawScene } from "../lib/draw";
-  import { episodesInPlay, gameOf, reboundAt, type ReboundEpisode } from "../lib/rebounding";
+  import { episodesInPlay, gameOf, reboundAt, type HeatGrid, type ReboundEpisode } from "../lib/rebounding";
   import { FPS, cursorAt } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
@@ -23,6 +23,7 @@
   // Rebound forecasts of the play's game, loaded when the play changes.
   let episodes: ReboundEpisode[] = [];
   let talent = false;
+  let grid: HeatGrid | null = null;
   $effect(() => {
     const current = play;
     episodes = [];
@@ -33,6 +34,7 @@
       if (play !== current) return;
       episodes = episodesInPlay(current, g);
       talent = g?.talent ?? false;
+      grid = g?.heat ?? null;
       live.reboundEpisodes = episodes;
       live.reboundTalent = talent;
     });
@@ -59,7 +61,7 @@
     const reading = episodes.length ? reboundAt(episodes, frame) : null;
     if (reading?.step !== live.rebound?.step || reading?.resolved !== live.rebound?.resolved) live.rebound = reading;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed, control,
-                           reading ? { reading, talent } : null);
+                           reading ? { reading, talent, grid, landing: viewer.reboundLanding } : null);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;

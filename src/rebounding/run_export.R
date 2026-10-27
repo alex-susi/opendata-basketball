@@ -16,7 +16,22 @@ dir.create(file.path(web, "rebounding"), recursive = TRUE, showWarnings = FALSE)
 
 SITE_STEP <- 0.2      # s between forecasts
 SITE_MAX <- 4         # s after release at most
-LAND_SHOWN <- 40L     # landing points kept per forecast
+LAND_SHOWN <- 40L     # landing points kept per forecast for the dot view
+HEAT <- list(x0 = RIM_X - 36, y0 = -COURT_HALF_W - 4, cell = 1.5, nx = 32L, ny = 39L, bw = 2)   # landing density grid
+
+#' Landing density of a forecast on the HEAT grid: a Gaussian kernel (bandwidth HEAT$bw ft) over every simulated
+#' landing, scaled so its peak is 100. Returned as flat (column, row, weight) integer triplets for cells of 3+.
+landing_heat <- function(land) {
+  if (!nrow(land)) return(integer(0))
+  cx <- HEAT$x0 + HEAT$cell * (seq_len(HEAT$nx) - 0.5)
+  cy <- HEAT$y0 + HEAT$cell * (seq_len(HEAT$ny) - 0.5)
+  kx <- outer(cx, land[, 1], function(a, b) dnorm(a, b, HEAT$bw))
+  ky <- outer(cy, land[, 2], function(a, b) dnorm(a, b, HEAT$bw))
+  d <- kx %*% t(ky)
+  w <- round(100 * d / max(d))
+  keep <- which(w >= 3, arr.ind = TRUE)
+  as.integer(t(cbind(keep[, 1] - 1L, keep[, 2] - 1L, w[keep])))
+}
 
 final <- readRDS(file.path(cache, "final_fits.rds"))
 flight_all <- readRDS(file.path(cache, "flight_params_all.rds"))
@@ -45,7 +60,7 @@ episode_forecasts <- function(i) {
     out <- list(f = sc$frame, pid = sc$pl$pid, p = r3(P[1:10]),
                 team = r3(c(sum(P[1:5]), sum(P[6:10]), P[11], P[12], P[13])),
                 land = lapply(seq_len(nrow(land)), function(k) round(land[k, 1:2], 1)),
-                target = round(sc$target, 1),
+                heat = landing_heat(sc$land), out = r3(mean(out_of_court(sc$land[, 1], sc$land[, 2]))),
                 box = lapply(seq_len(nrow(pairs)), function(k) list(b = sc$pl$pid[pairs[k, 1]], o = sc$pl$pid[pairs[k, 2]],
                                                                     s = r3(sc$O[pairs[k, 1], pairs[k, 2]]))))
     if (talent) out$pt <- r3(predict_cr(st, f$effects)[1, 1:10])
@@ -74,7 +89,7 @@ for (g in if (length(only)) as.integer(only) else games) {
     saveRDS(eps, path)
     message(sprintf("Site forecasts %s: %d episodes, %.0f s", g, length(eps), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
   }
-  jsonlite::write_json(list(game = g, talent = talent, episodes = readRDS(path)), file.path(web, "rebounding", sprintf("%s.json", g)),
+  jsonlite::write_json(list(game = g, talent = talent, heat = HEAT[c("x0", "y0", "cell", "nx", "ny")], episodes = readRDS(path)), file.path(web, "rebounding", sprintf("%s.json", g)),
                        auto_unbox = TRUE, digits = NA, null = "null", na = "null")
 }
 
@@ -99,6 +114,7 @@ boxp <- named(tab("skills", "boxout_player.csv"))
 doc <- list(
   built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), talent = talent,
   episodes = length(bundles), checks = tab("checks", "scenario_checks.csv"),
+  eda = { fs <- list.files(file.path(report, "eda"), "[.]csv$"); setNames(lapply(fs, function(f) fread(file.path(report, "eda", f))), sub("[.]csv$", "", fs)) },
   audit = list(counts = tab("audit", "counts.csv"), population = tab("audit", "population.csv"), by_game = tab("audit", "by_game.csv"),
                quality = tab("audit", "tracking_quality.csv"), hoops = tab("audit", "hoop_calibration.csv"),
                gaps = tab("audit", "frame_index_gaps.csv"), timeline = tab("audit", "timeline_by_kind.csv"),

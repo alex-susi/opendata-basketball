@@ -7,7 +7,8 @@ import type { ControlParams } from "./control";
 import { controlAt, drawControl, type ControlMode } from "./controlLayer";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
 import { epvAt, type EpvReading } from "./epv";
-import { collectionLabels, drawReboundUnder, type ReboundReading } from "./rebounding";
+import { collectionLabels, drawReboundUnder, type HeatGrid, type LandingView, type ReboundReading } from "./rebounding";
+import { floorColors } from "./teamColors";
 import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
 import { shotIndexAt } from "./shots";
@@ -36,10 +37,13 @@ export interface DrawOptions {
   hoverPid: number | null;
 }
 
-/** A rebound forecast to draw, and whether its talent-aware chances are the ones labelled. */
+/** A rebound forecast to draw, whether its talent-aware chances are the ones labelled, the game's landing grid
+ * and how landings are shown. */
 export interface ReboundDraw {
   reading: ReboundReading;
   talent: boolean;
+  grid: HeatGrid | null;
+  landing: LandingView;
 }
 
 /** What the page shows beside the canvas about the frame just drawn: rosters, clocks and the EPV readout. */
@@ -154,6 +158,23 @@ function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: str
   ctx.fill();
   ctx.globalAlpha = 1;
   ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, left + w / 2, cy + 0.5);
+}
+
+// A label in a team's kit, like its player dots: primary fill, secondary ring, the dot's number colour.
+function drawChip(ctx: CanvasRenderingContext2D, left: number, cy: number, text: string, kit: TeamColors): void {
+  ctx.font = `700 11px ${FONT}`;
+  const w = ctx.measureText(text).width + 10, h = 17;
+  ctx.beginPath();
+  ctx.roundRect(left, cy - h / 2, w, h, 5);
+  ctx.fillStyle = kit.fill;
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = kit.edge;
+  ctx.stroke();
+  ctx.fillStyle = kit.ink;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, left + w / 2, cy + 0.5);
@@ -290,7 +311,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   // Court control goes over the hulls (their fill would hide it) and under the players. It is computed at the
   // tracking frame, not blended between frames.
   const cc = control && o.showControl ? controlAt(play, c.i0, o.controlMode, control) : null;
-  if (cc) drawControl(ctx, L, cc);
+  if (cc) drawControl(ctx, L, cc, floorColors(play));
   if (ep && o.showEpv && o.showBestPass && ep.target != null) {
     const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
     if (from && to) {
@@ -308,7 +329,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   if (rb) {
     const at = new Map<number, [number, number]>(), mark = new Map<number, string>();
     for (const d of dots.def.concat(dots.off)) { at.set(d.p.id, [d.x, d.y]); mark.set(d.p.id, play.colors[d.p.role].mark); }
-    drawReboundUnder(ctx, L, rb.reading, at, mark);
+    drawReboundUnder(ctx, L, rb.reading, rb.grid, rb.landing, at, mark);
   }
   for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
   if (ep && o.showEpv) drawOptions(ctx, L, dots.off, r, ep, o);
@@ -316,7 +337,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     const chance = collectionLabels(rb.reading, rb.talent);
     for (const d of dots.def.concat(dots.off)) {
       const p = chance.get(d.p.id);
-      if (p != null) drawTag(ctx, L.ox + d.x * L.s + r + 3, L.oy - d.y * L.s + r + 4, `${Math.round(p * 100)}%`, play.colors[d.p.role].text, 11, "left");
+      if (p != null) drawChip(ctx, L.ox + d.x * L.s + r + 3, L.oy - d.y * L.s + r + 4, `${Math.round(p * 100)}%`, play.colors[d.p.role]);
     }
   }
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;

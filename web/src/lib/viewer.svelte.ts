@@ -2,7 +2,7 @@
 
 import type { ControlMode } from "./controlLayer";
 import type { CourtView } from "./court";
-import type { ReboundEpisode, ReboundReading } from "./rebounding";
+import type { LandingView, ReboundEpisode, ReboundReading } from "./rebounding";
 
 export const viewer = $state({
   /** Playback position: an index into the current play's frame sequence, fractional between frames. */
@@ -28,6 +28,8 @@ export const viewer = $state({
   controlMode: "control" as ControlMode,
   /** The rebounding forecast while a missed shot is live: landing sample, box-out links, collection chances. */
   showRebound: true,
+  /** How the untouched-landing forecast is drawn: a density, the simulated landings as dots, or not at all. */
+  reboundLanding: "heat" as LandingView,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */

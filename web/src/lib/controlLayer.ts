@@ -24,7 +24,9 @@ export interface ControlReading {
 }
 
 const MAX_ALPHA = 0.66;
-// Fixed colours, not the clubs': two clubs often share a primary (both red in Manresa-Granada).
+const REBOUND_ALPHA = 0.42;  // lighter while a shot is in the air, so the rebounding forecast drawn over it stays readable
+// Fallback colours when a play has no team colours. Plays carry their clubs' colours, de-clashed in the export
+// (team_kit() in src/play_viewer/R/data.R swaps the away kit when the two primaries are too alike).
 export const CONTROL_COLORS = { off: "#1F6FE5", def: "#F26A36" };
 const NEUTRAL: [number, number, number] = [246, 246, 246];
 const TOSS_UP_ALPHA = 0.3;   // share of full strength at which a 50-50 spot is drawn (not on the rebound surface)
@@ -49,8 +51,7 @@ function gridsFor(p: ControlParams): Grids {
 }
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
-
-// The latest reading and, per shot, its chance at release: playback asks for the same frame many times.
+// The latest reading: playback asks for the same frame many times.
 let lastKey = "", last: ControlReading | null = null;
 const atRelease = new Map<string, number>();
 
@@ -67,18 +68,12 @@ function compute(play: Play, i: number, mode: ControlMode, p: ControlParams): Co
   const G = gridsFor(p), b = bodiesAt(play, i);
   if (b.nOff < 5 || b.x.length - b.nOff < 5) return null;
   const shot = shotInAir(play, i, p);
+  // While a shot is in the air the surface is control with rebound timing (the ball reaches each spot when a miss
+  // would), drawn everywhere near the basket. Its own rebound chance is not shown: the rebounding panel's models
+  // (src/rebounding/) replace it.
   if (shot) {
     const now = reboundChance(b, G.rebound, shot.sx, shot.sy, shot.elapsed, p);
-    const releaseKey = `${play.id}:${shot.event.f}`;
-    if (!atRelease.has(releaseKey)) {
-      const b0 = bodiesAt(play, shot.i);
-      atRelease.set(releaseKey, b0.nOff >= 5 ? reboundChance(b0, G.rebound, shot.sx, shot.sy, 0, p).p : NaN);
-    }
-    const first = atRelease.get(releaseKey)!;
-    let top = 0;
-    for (const d of now.dens) top = Math.max(top, d);
-    return { kind: "rebound", grid: G.rebound, pc: now.pc, weight: now.dens.map((d) => Math.sqrt(d / top)), oneSided: false,
-             readout: [["OREB if missed, at release", Number.isNaN(first) ? "–" : pct(first)], ["OREB now", pct(now.p)]] };
+    return { kind: "rebound", grid: G.rebound, pc: now.pc, weight: new Float64Array(now.pc.length).fill(1), oneSided: false, readout: [] };
   }
   const bx = play.ball.x[i], by = play.ball.y[i];
   if (Number.isNaN(bx) || Number.isNaN(by)) return null;
@@ -112,8 +107,8 @@ function rgb(hex: string): [number, number, number] {
 let raster: HTMLCanvasElement | null = null;
 
 /** Paint a reading over the floor, clipped to the court's lines. */
-export function drawControl(ctx: CanvasRenderingContext2D, L: Layout, r: ControlReading): void {
-  const g = r.grid, offC = rgb(CONTROL_COLORS.off), defC = rgb(CONTROL_COLORS.def);
+export function drawControl(ctx: CanvasRenderingContext2D, L: Layout, r: ControlReading, colors: { off: string; def: string } = CONTROL_COLORS): void {
+  const g = r.grid, offC = rgb(colors.off), defC = rgb(colors.def);
   raster ??= document.createElement("canvas");
   if (raster.width !== g.nx || raster.height !== g.ny) {
     raster.width = g.nx;
@@ -127,13 +122,12 @@ export function drawControl(ctx: CanvasRenderingContext2D, L: Layout, r: Control
     else {
       const end = t >= 0.5 ? offC : defC, s = Math.min(1, Math.abs(t - 0.5) / SATURATE);
       color = [0, 1, 2].map((k) => NEUTRAL[k] + (end[k] - NEUTRAL[k]) * s) as [number, number, number];
-      // On the rebound surface the landing density already fades unlikely spots, and most spots are near even.
-      if (r.kind !== "rebound") strength = TOSS_UP_ALPHA + (1 - TOSS_UP_ALPHA) * s;
+      strength = TOSS_UP_ALPHA + (1 - TOSS_UP_ALPHA) * s;
     }
     img.data[at] = color[0];
     img.data[at + 1] = color[1];
     img.data[at + 2] = color[2];
-    img.data[at + 3] = Math.round(255 * MAX_ALPHA * strength * r.weight[c]);
+    img.data[at + 3] = Math.round(255 * (r.kind === "rebound" ? REBOUND_ALPHA : MAX_ALPHA) * strength * r.weight[c]);
   }
   rc.putImageData(img, 0, 0);
   ctx.save();

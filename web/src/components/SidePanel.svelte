@@ -4,7 +4,8 @@
   // archetype on that side of the ball: its name in an outlined pill of the archetype's colour, full name and
   // probability on hover.
   import ReboundPanel from "./ReboundPanel.svelte";
-  import { CONTROL_COLORS, type ControlMode } from "../lib/controlLayer";
+  import type { ControlMode } from "../lib/controlLayer";
+  import { floorColors } from "../lib/teamColors";
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -21,7 +22,7 @@
     control: "Who would get to the ball first if it went there; pale is a toss-up. Spots far from the ball are less certain because it takes longer to get there.",
     relevant: "Control, faded where the ball is unlikely to be in the next 1.5 seconds.",
     scoring: "Blue: offensive control where the ball is likely to go, times the expected points of a shot from there.",
-    rebound: "Shot in the air: where a miss is likely to be rebounded, and which team would get there first. The chance assumes a miss.",
+    rebound: "Shot in the air: which team would reach each spot first if a miss came down there (rebound timing). Who is likely to get it is in the Rebounding panel.",
   };
   const area = (role: Role) => (role === "off" ? live.areaOff : live.areaDef);
 </script>
@@ -66,14 +67,16 @@
       {/each}
     </div>
     {#if viewer.showControl && live.control}
-      <div class="readout" class:one={live.control.cells.length === 1} class:two={live.control.cells.length === 2}>
-        {#each live.control.cells as [label, value] (label)}
-          <div><span title={label}>{label}</span><b>{value}</b></div>
-        {/each}
-      </div>
+      {#if live.control.cells.length}
+        <div class="readout" class:one={live.control.cells.length === 1} class:two={live.control.cells.length === 2}>
+          {#each live.control.cells as [label, value] (label)}
+            <div><span title={label}>{label}</span><b>{value}</b></div>
+          {/each}
+        </div>
+      {/if}
       <p class="note">
-        {#if live.control.kind !== "scoring"}<span class="legend"><i style:background={CONTROL_COLORS.off}></i>{play?.off ?? "Offense"}</span>
-          <span class="legend"><i style:background={CONTROL_COLORS.def}></i>{play?.def ?? "Defense"}</span>{/if}
+        {#if live.control.kind !== "scoring" && play}<span class="legend"><i style:background={floorColors(play).off}></i>{play.off}</span>
+          <span class="legend"><i style:background={floorColors(play).def}></i>{play.def}</span>{/if}
         {notes[live.control.kind]}
       </p>
     {:else if viewer.showControl}

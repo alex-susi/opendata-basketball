@@ -5,7 +5,7 @@ import type { Play } from "../src/lib/types";
 
 const step = (f: number, p0: number): ReboundStep => ({
   f, pid: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], p: [p0, 0.02, 0.01, 0.01, 0.01, 0.4, 0.1, 0.03, 0.02, 0.01],
-  team: [p0 + 0.05, 0.56, 0.05, 0.02, 0.01], land: [[38, 2]], target: [37, 1], box: [{ b: 6, o: 1, s: 0.5 }],
+  team: [p0 + 0.05, 0.56, 0.05, 0.02, 0.01], land: [[38, 2]], heat: [3, 4, 100], out: 0.1, box: [{ b: 6, o: 1, s: 0.5 }],
 });
 const episode = (f0: number, rf: number): ReboundEpisode => ({
   id: `shot-${f0}`, f0, f1: f0 + 25, rf, rim: f0 + 25, shooter: 3, outcome: "def player", rebounder: 6,
@@ -20,7 +20,7 @@ describe("rebounding lookups", () => {
   });
 
   it("keeps only misses released inside the play", () => {
-    const game: ReboundGame = { game: 1, talent: false, episodes: eps };
+    const game: ReboundGame = { game: 1, talent: false, heat: { x0: 0, y0: 0, cell: 1.5, nx: 2, ny: 2 }, episodes: eps };
     const play = { id: "possession-1-1-0", frames: Int32Array.from([90, 200]) } as unknown as Play;
     expect(episodesInPlay(play, game).map((e) => e.f0)).toEqual([100]);
   });

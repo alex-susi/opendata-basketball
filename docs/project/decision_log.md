@@ -880,3 +880,30 @@ tables `outputs/rebounding/`, site: Rebounding tab and a rebounding panel beside
 
 - Whether to review the 60-episode sample against the viewer; whether to widen the contact/observation grid past its edges.
 - Whether rebound collection should replace EPV's constant offensive-rebound rate (not attempted here).
+
+## 2026-10-27 (later) — Rebounding site clean-up and the EDA walkthrough
+
+At the owner's request after reviewing the first version.
+
+- **Court control while a shot is in the air** no longer fades out away from the old empirical landing density: it
+  shows control with rebound timing everywhere near the basket, a little lighter so the rebounding overlay reads over
+  it. Its stale "OREB if missed / OREB now" readout (the 2026-10-16 court control model) is removed; the rebounding
+  panel's forecast replaces it.
+- **Team colours**: court control shades with each club's colours (from the play's de-clashed kits, falling back to
+  blue/orange only when no pair separates on the floor); collection chances on the court and every mark in the
+  rebounding panel wear the team kit (primary fill, secondary edge), like the player dots.
+- **Landing forecast** is drawn as a density (kernel 2 ft over all ~400 simulated landings, on a 1.5 ft grid
+  exported per forecast) by default, with Dots and Off as alternatives. It stays labelled as not validated. The black
+  X (mean of the first reachable points) is gone: it was the centre of a possibly two-sided cloud and invited misreading.
+- **Collected vs awarded** is explained in the panel: collected = a player secures the ball; awarded = nobody does
+  and a team gets it (team rebound; usually out of bounds). The panel also states the share of simulated misses that
+  would first land out of bounds.
+- **Rebounding tab rewritten as a walkthrough** (`src/rebounding/run_eda.R` → `outputs/rebounding/eda/`): for each
+  stage, what the data show, the decision that follows, and how it was checked. EDA findings worth keeping:
+  rebound distance grows with shot range (median 3.2 / 5.7 / 6.5 ft); rebounds stay on the shooter's side (0–30° most
+  common for every range); the offensive rate barely moves with shot distance (25–37%, intervals overlap the 32%
+  overall); the rebounder is the nearest player to the rebound spot 60% of the time just before the rim but the nearest
+  to the hoop only 23%, and the nearest player's team wins 79% (67% at release); crowd and box-out counts move the
+  offensive rate little; players carry 85% of their momentum over 0.48 s.
+- **Not used as a feature**: the audit's "putback or tip" kind is defined by the offense getting the ball (100% by
+  construction). No model uses it; the tab says so.

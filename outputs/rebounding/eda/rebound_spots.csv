@@ -1,0 +1,635 @@
+shot_id,rx,ry,r,shot_dist,range,off,angle,sy_sign,kind
+shot-114243-1-0,-7.1,-11.3,13.41,18.5,mid (10-22 ft),FALSE,79,1,rim first
+shot-114243-1-1,0.5,0.7,0.82,13.5,mid (10-22 ft),FALSE,66,1,backboard first
+shot-114243-1-2,-25.9,-14.9,29.91,10.9,mid (10-22 ft),TRUE,44,-1,rim first
+shot-114243-1-5,-3.9,-2.7,4.76,23.9,long (22+ ft),FALSE,47,1,rim first
+shot-114243-1-6,0.3,4.2,4.24,21.3,mid (10-22 ft),FALSE,125,-1,backboard first
+shot-114243-1-7,-1.8,-0.3,1.83,1.8,short (<10 ft),TRUE,93,1,putback or tip
+shot-114243-1-8,-1.8,-2.7,3.23,1.7,short (<10 ft),FALSE,69,1,rim first
+shot-114243-1-10,-2.1,-1,2.39,22.9,long (22+ ft),FALSE,24,-1,rim first
+shot-114243-1-11,-2.2,0.4,2.22,6.9,short (<10 ft),FALSE,3,1,rim first
+shot-114243-1-12,-0.5,-4,4.03,6.3,short (<10 ft),FALSE,169,1,backboard first
+shot-114243-1-13,-2.1,3.8,4.31,11.5,mid (10-22 ft),FALSE,46,1,rim first
+shot-114243-1-18,-2.4,2.9,3.82,24,long (22+ ft),FALSE,1,1,backboard first
+shot-114243-1-20,0.1,3.1,3.09,10,mid (10-22 ft),FALSE,4,1,backboard first
+shot-114243-1-21,-3.5,5.1,6.22,0.3,short (<10 ft),FALSE,162,-1,blocked
+shot-114243-1-22,-4.4,-0.8,4.44,22.7,long (22+ ft),FALSE,80,-1,rim first
+shot-114243-1-24,-2.2,13.3,13.44,21,mid (10-22 ft),FALSE,5,1,airball or no contact
+shot-114243-1-29,-4.9,-3.6,6.06,23.9,long (22+ ft),TRUE,85,1,rim first
+shot-114243-1-33,-6.3,0.7,6.3,27.5,long (22+ ft),TRUE,50,-1,rim first
+shot-114243-1-34,-1.4,-2.9,3.21,22.1,long (22+ ft),FALSE,29,-1,backboard first
+shot-114243-1-35,-4,-0.7,4.02,4.9,short (<10 ft),FALSE,75,1,rim first
+shot-114243-2-38,0.2,-4.1,4.07,3.4,short (<10 ft),FALSE,159,1,rim first
+shot-114243-2-39,3.6,-5.9,6.92,23.5,long (22+ ft),TRUE,165,1,backboard first
+shot-114243-2-41,2.1,2.2,3.06,7.2,short (<10 ft),FALSE,124,1,rim first
+shot-114243-2-44,-4.3,-5.8,7.19,18.5,mid (10-22 ft),TRUE,51,-1,putback or tip
+shot-114243-2-45,-3.7,6.1,7.11,11.7,mid (10-22 ft),FALSE,42,1,airball or no contact
+shot-114243-2-46,-12.6,8.8,15.37,24.4,long (22+ ft),FALSE,30,1,airball or no contact
+shot-114243-2-50,-4.7,-0.6,4.74,25.9,long (22+ ft),FALSE,53,-1,rim first
+shot-114243-2-51,2.1,-2.1,3,23.5,long (22+ ft),FALSE,135,1,rim first
+shot-114243-2-53,-2.8,2.3,3.56,24.5,long (22+ ft),TRUE,43,-1,putback or tip
+shot-114243-2-54,-6,5,7.85,6.2,short (<10 ft),FALSE,32,1,blocked
+shot-114243-2-55,-3.7,-10.7,11.29,26.4,long (22+ ft),FALSE,124,1,airball or no contact
+shot-114243-2-56,-14.7,-3.5,15.1,23.4,long (22+ ft),TRUE,70,1,putback or tip
+shot-114243-2-57,-2.5,-5.4,6.01,15.1,mid (10-22 ft),TRUE,69,1,putback or tip
+shot-114243-2-58,-2.3,-3.4,4.1,6.8,short (<10 ft),FALSE,34,-1,rim first
+shot-114243-2-60,-3.5,-1.8,3.97,13.3,mid (10-22 ft),TRUE,27,-1,rim first
+shot-114243-2-65,-1.4,-7.9,7.99,14.4,mid (10-22 ft),FALSE,84,1,airball or no contact
+shot-114243-2-66,-6.1,-11.2,12.74,23.1,long (22+ ft),FALSE,99,1,airball or no contact
+shot-114243-2-68,-5.4,-7.3,9.08,18.5,mid (10-22 ft),TRUE,82,1,rim first
+shot-114243-2-69,-10.7,4.9,11.78,18.2,mid (10-22 ft),FALSE,19,1,airball or no contact
+shot-114243-2-70,-2.5,10.9,11.18,22.2,long (22+ ft),FALSE,73,1,airball or no contact
+shot-114243-2-74,-3.5,8.9,9.59,10.9,mid (10-22 ft),FALSE,50,1,rim first
+shot-114243-3-76,0.6,-1.4,1.54,5.2,short (<10 ft),FALSE,40,-1,rim first
+shot-114243-3-80,-20.8,12.3,24.14,15.4,mid (10-22 ft),TRUE,38,-1,rim first
+shot-114243-3-82,0.8,4.1,4.14,22.7,long (22+ ft),FALSE,11,1,backboard first
+shot-114243-3-83,-1.9,-0.6,1.99,6.4,short (<10 ft),FALSE,2,-1,rim first
+shot-114243-3-91,-1.7,2.6,3.05,27.5,long (22+ ft),FALSE,103,-1,rim first
+shot-114243-3-92,-1.1,1.2,1.61,20.9,mid (10-22 ft),FALSE,50,-1,rim first
+shot-114243-3-98,-9.6,3.5,10.17,19.2,mid (10-22 ft),TRUE,16,1,rim first
+shot-114243-3-101,-6.4,-3.6,7.4,25.5,long (22+ ft),FALSE,66,-1,airball or no contact
+shot-114243-3-102,-3.1,4.5,5.47,23.3,long (22+ ft),TRUE,11,1,airball or no contact
+shot-114243-3-103,-1.1,2.6,2.86,1,short (<10 ft),FALSE,63,1,rim first
+shot-114243-3-104,-1.3,-2.9,3.18,2.9,short (<10 ft),FALSE,115,1,rim first
+shot-114243-3-106,-4.5,8.9,9.94,2.4,short (<10 ft),FALSE,153,-1,rim first
+shot-114243-3-108,-1.3,-2.8,3.13,6.1,short (<10 ft),TRUE,162,1,putback or tip
+shot-114243-3-109,-2.4,-1.8,3.01,3,short (<10 ft),TRUE,27,-1,putback or tip
+shot-114243-3-110,-2.8,-1.7,3.32,4.8,short (<10 ft),FALSE,13,-1,rim first
+shot-114243-3-111,-3.1,-0.3,3.12,5.4,short (<10 ft),TRUE,87,1,putback or tip
+shot-114243-3-114,-1,-4.7,4.81,2.9,short (<10 ft),FALSE,85,1,rim first
+shot-114243-3-115,-9.8,8.8,13.18,27.4,long (22+ ft),FALSE,44,-1,airball or no contact
+shot-114243-4-119,1.5,-8,8.15,23.5,long (22+ ft),FALSE,160,1,backboard first
+shot-114243-4-121,-26.9,15.4,30.98,22.2,long (22+ ft),FALSE,10,1,rim first
+shot-114243-4-122,-1.6,-0.2,1.59,7.8,short (<10 ft),FALSE,133,1,backboard first
+shot-114243-4-123,-5.2,-4.8,7.12,27.7,long (22+ ft),FALSE,3,-1,rim first
+shot-114243-4-125,0.9,1.8,2.04,2.7,short (<10 ft),TRUE,40,1,rim first
+shot-114243-4-126,-2.3,-6,6.44,16.2,mid (10-22 ft),FALSE,47,-1,rim first
+shot-114243-4-127,2.9,3.9,4.88,11.3,mid (10-22 ft),TRUE,130,-1,rim first
+shot-114243-4-129,-2,4.2,4.64,24.1,long (22+ ft),FALSE,155,-1,rim first
+shot-114243-4-134,-2,0.1,2.05,5.3,short (<10 ft),TRUE,9,1,rim first
+shot-114243-4-135,-12.7,-1.7,12.86,22.7,long (22+ ft),TRUE,1,-1,airball or no contact
+shot-114243-4-137,-0.5,-0.6,0.74,9.7,short (<10 ft),TRUE,11,-1,putback or tip
+shot-114243-4-139,-7,3,7.64,24.3,long (22+ ft),TRUE,51,-1,backboard first
+shot-114243-4-141,-3.1,-8.4,9,23.2,long (22+ ft),FALSE,1,-1,airball or no contact
+shot-114243-4-143,-0.1,3.3,3.33,4.5,short (<10 ft),FALSE,22,1,blocked
+shot-114243-4-145,-9.7,-5.5,11.17,2.3,short (<10 ft),TRUE,52,-1,putback or tip
+shot-114243-4-147,-1.5,1.2,1.9,5.8,short (<10 ft),FALSE,33,1,rim first
+shot-114243-4-151,0.6,2,2.06,4.5,short (<10 ft),TRUE,5,1,rim first
+shot-114243-4-152,-21,-13.4,24.88,25.4,long (22+ ft),FALSE,8,-1,rim first
+shot-114243-4-154,-4.3,-2.5,4.95,23.6,long (22+ ft),FALSE,54,-1,backboard first
+shot-114243-4-155,-1.2,6.3,6.38,3.1,short (<10 ft),FALSE,3,1,rim first
+shot-114234-1-1,-16,4.3,16.57,24.4,long (22+ ft),FALSE,29,-1,rim first
+shot-114234-1-2,-1.2,-1.3,1.76,8.9,short (<10 ft),FALSE,36,-1,rim first
+shot-114234-1-5,-2.8,17.3,17.5,13.8,mid (10-22 ft),FALSE,15,1,airball or no contact
+shot-114234-1-10,-6.6,-6.4,9.19,4.7,short (<10 ft),FALSE,96,1,rim first
+shot-114234-1-12,1.4,0.7,1.56,7.6,short (<10 ft),FALSE,145,-1,backboard first
+shot-114234-1-19,-0.5,3.8,3.86,21.7,mid (10-22 ft),FALSE,178,-1,backboard first
+shot-114234-1-20,-5.6,-14,15.03,25.9,long (22+ ft),FALSE,56,-1,rim first
+shot-114234-1-21,-25.2,-13,28.35,22.2,long (22+ ft),FALSE,24,-1,rim first
+shot-114234-1-22,-4.4,-11.4,12.24,17.6,mid (10-22 ft),FALSE,18,-1,rim first
+shot-114234-1-23,0.5,-2.9,2.95,0.7,short (<10 ft),FALSE,180,1,blocked
+shot-114234-1-24,-4.5,2.7,5.29,23.1,long (22+ ft),FALSE,5,1,rim first
+shot-114234-1-25,0.4,1.5,1.58,2.8,short (<10 ft),TRUE,6,1,putback or tip
+shot-114234-1-28,-0.8,-1.4,1.64,1.6,short (<10 ft),TRUE,15,-1,putback or tip
+shot-114234-1-29,1.4,8.3,8.45,2.5,short (<10 ft),FALSE,142,-1,rim first
+shot-114234-1-30,-11.6,6.5,13.31,24.1,long (22+ ft),FALSE,2,1,rim first
+shot-114234-1-32,-1.4,6.5,6.68,22.8,long (22+ ft),TRUE,140,-1,rim first
+shot-114234-2-35,-0.9,1.7,1.92,0.2,short (<10 ft),TRUE,31,1,rim first
+shot-114234-2-37,-1.4,-5.6,5.77,1.9,short (<10 ft),FALSE,3,-1,blocked
+shot-114234-2-43,-3.2,4.7,5.67,22.3,long (22+ ft),FALSE,27,1,airball or no contact
+shot-114234-2-44,-8.4,-0.8,8.47,23.2,long (22+ ft),FALSE,80,1,backboard first
+shot-114234-2-46,-6.2,-1.8,6.43,26.6,long (22+ ft),TRUE,27,-1,rim first
+shot-114234-2-49,0,-5.8,5.76,16.4,mid (10-22 ft),FALSE,154,1,backboard first
+shot-114234-2-55,-15.5,-4.4,16.15,24,long (22+ ft),FALSE,27,-1,rim first
+shot-114234-2-59,-7,-0.7,6.99,4.1,short (<10 ft),FALSE,64,1,blocked
+shot-114234-2-60,-7.6,8,11.07,22.2,long (22+ ft),FALSE,34,1,rim first
+shot-114234-2-61,-2.1,-1.8,2.75,6.6,short (<10 ft),FALSE,44,-1,rim first
+shot-114234-2-67,2.6,4.7,5.35,2.4,short (<10 ft),FALSE,31,1,rim first
+shot-114234-2-68,0.9,0.5,1.03,21.4,mid (10-22 ft),TRUE,157,-1,rim first
+shot-114234-3-74,0.5,2.6,2.61,5.9,short (<10 ft),FALSE,9,1,rim first
+shot-114234-3-75,1.9,5.6,5.94,3,short (<10 ft),TRUE,45,1,putback or tip
+shot-114234-3-76,-1.8,3,3.46,22.8,long (22+ ft),TRUE,14,1,rim first
+shot-114234-3-79,-1.3,-4.8,4.94,23.1,long (22+ ft),TRUE,164,1,backboard first
+shot-114234-3-92,-0.7,0.8,1.03,13.1,mid (10-22 ft),FALSE,50,-1,rim first
+shot-114234-3-95,4,-1.3,4.24,22.1,long (22+ ft),FALSE,96,-1,rim first
+shot-114234-3-96,-5.3,3.3,6.2,24.3,long (22+ ft),FALSE,7,1,rim first
+shot-114234-3-100,-5.8,1.3,5.94,23.3,long (22+ ft),FALSE,65,-1,rim first
+shot-114234-3-104,-3.1,6.3,7,2.9,short (<10 ft),FALSE,94,-1,blocked
+shot-114234-3-105,-11.9,-5.7,13.24,21.1,mid (10-22 ft),TRUE,8,-1,rim first
+shot-114234-4-108,-1,2.5,2.63,23.3,long (22+ ft),FALSE,44,1,rim first
+shot-114234-4-110,-1.5,0.3,1.58,23,long (22+ ft),FALSE,19,-1,rim first
+shot-114234-4-112,-14.8,6.4,16.14,11.6,mid (10-22 ft),TRUE,15,1,backboard first
+shot-114234-4-113,-6.4,-7.9,10.14,3.9,short (<10 ft),FALSE,91,1,rim first
+shot-114234-4-115,-2.5,2.2,3.3,22.4,long (22+ ft),TRUE,56,1,backboard first
+shot-114234-4-120,-2.4,-3.1,3.9,11.9,mid (10-22 ft),FALSE,61,1,rim first
+shot-114234-4-121,-1.8,3.6,3.99,6.8,short (<10 ft),FALSE,162,-1,rim first
+shot-114234-4-124,-4,4.3,5.9,21.7,mid (10-22 ft),FALSE,41,1,blocked
+shot-114234-4-127,-0.8,-2.2,2.34,1.8,short (<10 ft),FALSE,7,-1,blocked
+shot-114234-4-129,0.4,-1,1.12,16.3,mid (10-22 ft),FALSE,97,-1,rim first
+shot-114234-4-131,-3.1,-2.5,4.04,12.9,mid (10-22 ft),TRUE,16,-1,putback or tip
+shot-114234-4-133,-2,-2.1,2.95,4.9,short (<10 ft),TRUE,39,-1,backboard first
+shot-114234-4-134,-0.4,-1.9,1.96,7.2,short (<10 ft),FALSE,3,-1,rim first
+shot-114234-4-136,-2,-10.4,10.64,23.3,long (22+ ft),FALSE,121,1,rim first
+shot-114234-4-137,-2.4,-6.1,6.53,2.7,short (<10 ft),FALSE,93,1,rim first
+shot-114234-4-138,-2,-3.2,3.8,14.3,mid (10-22 ft),TRUE,80,1,rim first
+shot-114234-4-139,-3.5,0.7,3.58,23.7,long (22+ ft),FALSE,10,1,backboard first
+shot-114234-4-141,-8.7,-0.2,8.68,22.9,long (22+ ft),FALSE,49,1,rim first
+shot-114234-4-142,-6.3,3.5,7.16,23.9,long (22+ ft),FALSE,31,-1,backboard first
+shot-114169-1-1,-1.4,3.9,4.19,4.2,short (<10 ft),FALSE,19,1,blocked
+shot-114169-1-2,-5.1,6.6,8.3,23,long (22+ ft),FALSE,33,1,airball or no contact
+shot-114169-1-3,-3.7,1.1,3.85,2.5,short (<10 ft),FALSE,98,1,rim first
+shot-114169-1-7,-4.3,5.6,7.08,11.2,mid (10-22 ft),TRUE,7,1,rim first
+shot-114169-1-15,-3.4,-0.3,3.39,6.5,short (<10 ft),FALSE,71,-1,rim first
+shot-114169-1-17,-5.2,-6.3,8.21,29.6,long (22+ ft),TRUE,21,-1,rim first
+shot-114169-1-19,0.1,-9.5,9.55,21,mid (10-22 ft),TRUE,20,-1,airball or no contact
+shot-114169-1-22,0,3.7,3.72,25.3,long (22+ ft),FALSE,95,-1,backboard first
+shot-114169-1-26,-2.6,5.7,6.28,8.1,short (<10 ft),FALSE,74,-1,rim first
+shot-114169-1-27,1.2,-6,6.1,22.5,long (22+ ft),FALSE,4,-1,rim first
+shot-114169-1-28,2.1,-2,2.91,25.8,long (22+ ft),FALSE,100,-1,rim first
+shot-114169-1-29,-9.3,-8.5,12.59,8.2,short (<10 ft),FALSE,105,1,rim first
+shot-114169-1-31,-1.5,1,1.78,3,short (<10 ft),TRUE,5,1,putback or tip
+shot-114169-1-35,-8.4,-1.1,8.43,25.2,long (22+ ft),FALSE,34,-1,rim first
+shot-114169-1-36,-7.5,-3.8,8.44,25.6,long (22+ ft),FALSE,37,1,airball or no contact
+shot-114169-2-37,-5.4,0.2,5.44,22,mid (10-22 ft),FALSE,26,-1,rim first
+shot-114169-2-39,-4.2,-0.9,4.31,10.9,mid (10-22 ft),FALSE,54,1,backboard first
+shot-114169-2-40,-9.3,0.9,9.31,27.3,long (22+ ft),FALSE,31,1,rim first
+shot-114169-2-41,-2.1,2.3,3.07,1.9,short (<10 ft),FALSE,124,-1,backboard first
+shot-114169-2-42,-1.4,8.9,8.97,10.4,mid (10-22 ft),FALSE,11,1,backboard first
+shot-114169-2-43,-2.5,-3.6,4.39,23,long (22+ ft),FALSE,142,1,backboard first
+shot-114169-2-45,-12.4,-12.7,17.75,22.6,long (22+ ft),TRUE,25,-1,airball or no contact
+shot-114169-2-46,0.4,-3.3,3.34,23.2,long (22+ ft),FALSE,171,1,backboard first
+shot-114169-2-49,-0.3,2.4,2.41,3.6,short (<10 ft),FALSE,16,1,rim first
+shot-114169-2-50,-5.2,6.7,8.5,22.8,long (22+ ft),FALSE,5,1,rim first
+shot-114169-2-53,-1.4,0.9,1.65,2.9,short (<10 ft),FALSE,96,-1,rim first
+shot-114169-2-54,-1.5,-2.5,2.88,3.2,short (<10 ft),TRUE,143,1,putback or tip
+shot-114169-2-55,-0.6,4,4.04,7.9,short (<10 ft),TRUE,84,-1,putback or tip
+shot-114169-2-56,2.3,4.2,4.8,5.4,short (<10 ft),FALSE,21,1,blocked
+shot-114169-2-58,-2.1,1.4,2.5,9.8,short (<10 ft),FALSE,15,1,rim first
+shot-114169-2-59,0.2,5.1,5.08,22.6,long (22+ ft),FALSE,176,-1,rim first
+shot-114169-2-62,-2.4,-3.7,4.43,3.3,short (<10 ft),FALSE,20,-1,rim first
+shot-114169-2-63,-0.9,-3.3,3.47,11.4,mid (10-22 ft),TRUE,71,-1,putback or tip
+shot-114169-2-64,0.1,0.3,0.28,8.4,short (<10 ft),FALSE,88,1,rim first
+shot-114169-2-67,-3.7,5.2,6.4,25.8,long (22+ ft),FALSE,113,-1,rim first
+shot-114169-2-68,-4.6,-1.7,4.86,7.4,short (<10 ft),FALSE,21,-1,rim first
+shot-114169-2-69,-1.9,3.3,3.79,15.3,mid (10-22 ft),FALSE,64,-1,rim first
+shot-114169-2-74,-0.7,4.7,4.78,10.8,mid (10-22 ft),FALSE,168,-1,rim first
+shot-114169-3-77,-11.4,6.3,12.97,5,short (<10 ft),FALSE,49,1,blocked
+shot-114169-3-78,-3.6,-1.9,4.06,23.7,long (22+ ft),FALSE,32,1,rim first
+shot-114169-3-79,-2.2,-5.8,6.22,13,mid (10-22 ft),FALSE,94,1,rim first
+shot-114169-3-80,0.2,-1.4,1.46,7.7,short (<10 ft),TRUE,45,-1,backboard first
+shot-114169-3-81,-7.6,-4.9,9.03,10.7,mid (10-22 ft),TRUE,26,-1,putback or tip
+shot-114169-3-82,0.2,-1.2,1.26,14.9,mid (10-22 ft),FALSE,54,-1,backboard first
+shot-114169-3-84,-2.5,-1.5,2.96,19,mid (10-22 ft),FALSE,9,-1,rim first
+shot-114169-3-85,0.4,4.5,4.56,17,mid (10-22 ft),FALSE,74,1,backboard first
+shot-114169-3-86,-6.3,-6,8.73,13.8,mid (10-22 ft),FALSE,31,-1,rim first
+shot-114169-3-89,-1.9,4.7,5.05,22.4,long (22+ ft),FALSE,19,1,rim first
+shot-114169-3-96,-13.9,-13.4,19.3,11.9,mid (10-22 ft),FALSE,8,-1,rim first
+shot-114169-3-98,-2.6,1.2,2.86,6.9,short (<10 ft),FALSE,1,1,backboard first
+shot-114169-3-101,-10.1,9.2,13.68,10.4,mid (10-22 ft),FALSE,21,1,rim first
+shot-114169-3-102,2.8,6.3,6.95,4.4,short (<10 ft),FALSE,126,-1,rim first
+shot-114169-3-107,-3.4,0.4,3.47,6.6,short (<10 ft),FALSE,36,1,rim first
+shot-114169-4-110,-4.2,2.2,4.77,19.4,mid (10-22 ft),FALSE,82,-1,rim first
+shot-114169-4-111,-13.2,-1,13.22,23.5,long (22+ ft),FALSE,15,1,backboard first
+shot-114169-4-113,-1.2,0.3,1.22,24.5,long (22+ ft),FALSE,51,-1,rim first
+shot-114169-4-117,-3.6,-1.5,3.91,3.4,short (<10 ft),FALSE,85,1,backboard first
+shot-114169-4-118,-2.6,-2.6,3.67,23.1,long (22+ ft),FALSE,32,-1,rim first
+shot-114169-4-120,-0.3,2,1.99,6.3,short (<10 ft),TRUE,10,1,blocked
+shot-114169-4-122,0.7,0.3,0.82,7.6,short (<10 ft),TRUE,108,1,rim first
+shot-114169-4-125,-5.9,-0.6,5.94,23.4,long (22+ ft),FALSE,19,-1,rim first
+shot-114169-4-128,-6.9,-0.9,6.97,25.2,long (22+ ft),TRUE,19,-1,putback or tip
+shot-114169-4-129,-5.1,-2.7,5.77,6.3,short (<10 ft),FALSE,39,1,rim first
+shot-114169-4-130,-0.8,1.3,1.52,2.8,short (<10 ft),FALSE,44,1,rim first
+shot-114169-4-131,1.5,18.1,18.17,23.9,long (22+ ft),TRUE,24,1,airball or no contact
+shot-114169-4-132,-3.9,-1.4,4.13,21.3,mid (10-22 ft),TRUE,95,1,rim first
+shot-114169-4-133,-7.9,-6.9,10.47,6.9,short (<10 ft),FALSE,7,-1,rim first
+shot-114169-4-134,0.1,13.6,13.56,22.8,long (22+ ft),FALSE,3,1,backboard first
+shot-114169-4-135,-3.4,9.6,10.2,25,long (22+ ft),FALSE,23,1,airball or no contact
+shot-114169-4-136,-15.2,3.6,15.62,24.1,long (22+ ft),TRUE,52,-1,rim first
+shot-114169-4-139,-0.4,-4.8,4.84,20.4,mid (10-22 ft),FALSE,45,-1,rim first
+shot-114099-1-3,-2.6,6.3,6.83,25.9,long (22+ ft),FALSE,104,-1,rim first
+shot-114099-1-4,-5.9,-3.5,6.89,4,short (<10 ft),FALSE,4,-1,rim first
+shot-114099-1-5,-0.8,-4.3,4.4,18.1,mid (10-22 ft),TRUE,155,1,backboard first
+shot-114099-1-10,-0.8,2.1,2.29,1.4,short (<10 ft),FALSE,42,1,blocked
+shot-114099-1-15,-2.6,2.6,3.69,23.7,long (22+ ft),FALSE,135,-1,airball or no contact
+shot-114099-1-18,-9.5,1.2,9.58,20.3,mid (10-22 ft),TRUE,68,-1,rim first
+shot-114099-1-19,-4.1,5.7,7.01,24.7,long (22+ ft),FALSE,0,1,rim first
+shot-114099-1-20,-11.4,-8.4,14.1,21.8,mid (10-22 ft),TRUE,43,1,rim first
+shot-114099-1-21,-1.5,-0.3,1.52,22.5,long (22+ ft),FALSE,81,-1,backboard first
+shot-114099-1-23,0.3,3.7,3.7,1.2,short (<10 ft),FALSE,171,-1,rim first
+shot-114099-1-26,-1.4,1.3,1.91,14.3,mid (10-22 ft),FALSE,60,-1,rim first
+shot-114099-1-27,-0.1,-2.6,2.63,2.8,short (<10 ft),FALSE,23,-1,rim first
+shot-114099-1-29,-10.4,5.2,11.61,5,short (<10 ft),FALSE,10,1,rim first
+shot-114099-1-30,-0.8,2.2,2.28,1.4,short (<10 ft),FALSE,75,1,rim first
+shot-114099-1-36,-1,0.8,1.25,3.7,short (<10 ft),TRUE,69,1,rim first
+shot-114099-2-39,0.4,2,2.06,2,short (<10 ft),FALSE,93,-1,backboard first
+shot-114099-2-41,-5.3,3.9,6.56,22.6,long (22+ ft),FALSE,104,-1,backboard first
+shot-114099-2-43,-2.4,2,3.13,15.8,mid (10-22 ft),TRUE,132,-1,putback or tip
+shot-114099-2-45,-3.9,-5.3,6.6,16.1,mid (10-22 ft),FALSE,27,-1,rim first
+shot-114099-2-47,-2.2,-3.4,4.08,3.7,short (<10 ft),FALSE,67,1,rim first
+shot-114099-2-48,0.3,3.4,3.46,2.1,short (<10 ft),FALSE,117,-1,rim first
+shot-114099-2-49,-7.8,-12.4,14.63,8.5,short (<10 ft),TRUE,69,-1,backboard first
+shot-114099-2-50,1.9,0.1,1.91,15.3,mid (10-22 ft),TRUE,158,-1,putback or tip
+shot-114099-2-53,1.9,-5.3,5.62,23.1,long (22+ ft),FALSE,140,1,backboard first
+shot-114099-2-54,-4,-2,4.47,16.2,mid (10-22 ft),FALSE,51,1,rim first
+shot-114099-2-55,-0.1,3,3,23,long (22+ ft),FALSE,176,-1,rim first
+shot-114099-2-57,4.3,-1.1,4.46,0.2,short (<10 ft),FALSE,9,-1,rim first
+shot-114099-2-59,-1.8,-0.1,1.78,16.6,mid (10-22 ft),FALSE,92,-1,backboard first
+shot-114099-2-63,-0.2,-5.6,5.59,22.9,long (22+ ft),TRUE,8,-1,backboard first
+shot-114099-2-65,-0.5,7,7,26.4,long (22+ ft),FALSE,99,-1,backboard first
+shot-114099-2-66,-3.7,-1.2,3.87,21.6,mid (10-22 ft),FALSE,7,-1,rim first
+shot-114099-2-69,-5,-1.1,5.16,26,long (22+ ft),FALSE,17,-1,rim first
+shot-114099-2-70,-0.6,5.4,5.47,24.4,long (22+ ft),TRUE,141,-1,backboard first
+shot-114099-2-71,-3.4,5,6.04,26.8,long (22+ ft),FALSE,46,1,rim first
+shot-114099-2-72,-9.5,1.4,9.57,22.7,long (22+ ft),FALSE,30,-1,backboard first
+shot-114099-3-75,-2.8,12.5,12.85,23.5,long (22+ ft),FALSE,2,1,backboard first
+shot-114099-3-78,-5.3,-0.4,5.27,2.9,short (<10 ft),FALSE,33,1,rim first
+shot-114099-3-79,0.2,1,1.01,6.3,short (<10 ft),FALSE,6,1,backboard first
+shot-114099-3-80,-1.8,-8.8,9,23.6,long (22+ ft),FALSE,163,1,backboard first
+shot-114099-3-81,-4.9,-12.2,13.13,2.8,short (<10 ft),FALSE,60,-1,blocked
+shot-114099-3-84,-5.8,-1.9,6.11,25.3,long (22+ ft),FALSE,15,-1,rim first
+shot-114099-3-86,-2.6,4.1,4.84,1.1,short (<10 ft),FALSE,69,-1,blocked
+shot-114099-3-87,-4.8,7.2,8.61,23.5,long (22+ ft),FALSE,33,1,backboard first
+shot-114099-3-88,-1.8,0.5,1.9,16.3,mid (10-22 ft),FALSE,8,1,rim first
+shot-114099-3-89,-17.6,1,17.62,7,short (<10 ft),FALSE,7,-1,rim first
+shot-114099-3-92,-4.4,-1.8,4.71,24.6,long (22+ ft),FALSE,34,1,rim first
+shot-114099-3-93,-6.7,6.1,9.08,13,mid (10-22 ft),FALSE,44,-1,backboard first
+shot-114099-3-98,-5.9,-0.9,6.01,10.1,mid (10-22 ft),FALSE,45,1,rim first
+shot-114099-3-99,0.1,3.8,3.78,1.7,short (<10 ft),FALSE,84,1,rim first
+shot-114099-3-101,-10.2,8,12.96,27.3,long (22+ ft),TRUE,14,1,rim first
+shot-114099-3-102,-6.3,-3.1,7.04,27,long (22+ ft),FALSE,74,1,rim first
+shot-114099-3-107,-2.7,-5.6,6.18,2.9,short (<10 ft),FALSE,58,-1,rim first
+shot-114099-3-108,0.9,-0.7,1.13,9.7,short (<10 ft),TRUE,170,1,putback or tip
+shot-114099-3-109,-3.1,-0.2,3.15,1,short (<10 ft),TRUE,134,1,putback or tip
+shot-114099-3-111,0.7,19.7,19.75,20.1,mid (10-22 ft),TRUE,4,1,backboard first
+shot-114099-3-114,-11.2,-5.2,12.39,25.8,long (22+ ft),TRUE,33,1,putback or tip
+shot-114099-3-115,1.5,-0.1,1.46,16.8,mid (10-22 ft),TRUE,155,-1,putback or tip
+shot-114099-4-117,-9.1,-5.8,10.83,25,long (22+ ft),FALSE,4,-1,backboard first
+shot-114099-4-121,0.7,10,10,3.9,short (<10 ft),FALSE,178,-1,rim first
+shot-114099-4-122,1.4,-3.5,3.74,24.4,long (22+ ft),FALSE,163,1,backboard first
+shot-114099-4-123,-1.7,3,3.44,6.7,short (<10 ft),FALSE,48,1,rim first
+shot-114099-4-125,-14,-14.3,19.97,21.8,mid (10-22 ft),TRUE,35,-1,rim first
+shot-114099-4-129,-0.9,-1.6,1.79,22,mid (10-22 ft),FALSE,82,1,rim first
+shot-114099-4-132,-14.9,-6.4,16.18,7.8,short (<10 ft),TRUE,37,-1,backboard first
+shot-114099-4-133,-1.2,-2.6,2.91,24.2,long (22+ ft),FALSE,3,-1,backboard first
+shot-114099-4-135,-0.4,-0.1,0.42,11,mid (10-22 ft),FALSE,15,1,rim first
+shot-114099-4-139,-3.2,-0.6,3.24,3.4,short (<10 ft),TRUE,19,-1,rim first
+shot-114099-4-143,-1.9,5.5,5.87,15.8,mid (10-22 ft),TRUE,107,-1,rim first
+shot-114099-4-144,-7.8,10.4,12.98,23.5,long (22+ ft),FALSE,112,-1,rim first
+shot-114099-4-146,-5.4,-1.3,5.52,8.8,short (<10 ft),FALSE,24,-1,airball or no contact
+shot-114099-4-147,-2.9,1,3.06,6.8,short (<10 ft),FALSE,67,1,rim first
+shot-114099-4-149,-4.2,-0.3,4.17,24,long (22+ ft),FALSE,19,1,rim first
+shot-114086-1-0,-3.8,-3.6,5.24,2.4,short (<10 ft),TRUE,117,1,backboard first
+shot-114086-1-2,-1.7,6.4,6.59,17.3,mid (10-22 ft),FALSE,83,-1,rim first
+shot-114086-1-3,-9.4,-5.7,11.01,4.8,short (<10 ft),FALSE,77,1,backboard first
+shot-114086-1-4,0.6,3,3.1,5.3,short (<10 ft),FALSE,120,-1,rim first
+shot-114086-1-6,0.9,6.1,6.13,21.8,mid (10-22 ft),FALSE,180,-1,backboard first
+shot-114086-1-9,-8.5,-0.8,8.54,24.8,long (22+ ft),FALSE,30,1,rim first
+shot-114086-1-10,0.5,-0.4,0.66,2.2,short (<10 ft),FALSE,79,1,rim first
+shot-114086-1-13,-3.2,3.5,4.7,26.4,long (22+ ft),TRUE,81,-1,rim first
+shot-114086-1-15,-2.9,11.7,12.09,23,long (22+ ft),TRUE,55,1,rim first
+shot-114086-1-18,-4.1,2.7,4.92,6.2,short (<10 ft),FALSE,44,1,rim first
+shot-114086-1-21,-4,2.1,4.56,1.7,short (<10 ft),TRUE,104,1,blocked
+shot-114086-1-22,-7.5,0.7,7.55,8.5,short (<10 ft),FALSE,7,1,rim first
+shot-114086-1-26,1.1,-1.7,2.04,22.4,long (22+ ft),FALSE,109,-1,backboard first
+shot-114086-2-35,-5.6,-4.4,7.18,23.6,long (22+ ft),FALSE,7,-1,rim first
+shot-114086-2-36,-5,-8.8,10.11,24.4,long (22+ ft),TRUE,69,1,rim first
+shot-114086-2-39,-0.9,4,4.1,22.6,long (22+ ft),FALSE,150,-1,airball or no contact
+shot-114086-2-40,-0.6,-1.3,1.41,10.5,mid (10-22 ft),FALSE,12,-1,rim first
+shot-114086-2-41,0.9,-3.6,3.71,21.5,mid (10-22 ft),TRUE,174,1,rim first
+shot-114086-2-42,-4,2.8,4.87,23.1,long (22+ ft),FALSE,38,1,rim first
+shot-114086-2-43,-0.3,9.2,9.21,21.7,mid (10-22 ft),FALSE,178,-1,backboard first
+shot-114086-2-44,-6.3,-3.5,7.18,22.7,long (22+ ft),TRUE,84,1,airball or no contact
+shot-114086-2-45,-1.6,2,2.6,23,long (22+ ft),FALSE,90,-1,backboard first
+shot-114086-2-47,0.5,-12.2,12.22,21.8,mid (10-22 ft),FALSE,178,1,backboard first
+shot-114086-2-48,0,2,2.03,11.3,mid (10-22 ft),FALSE,87,1,backboard first
+shot-114086-2-49,-3.9,9,9.82,23.2,long (22+ ft),FALSE,154,-1,backboard first
+shot-114086-2-51,-1.8,-2.3,2.92,1.8,short (<10 ft),TRUE,69,1,putback or tip
+shot-114086-2-52,-5.2,-1.7,5.42,23.7,long (22+ ft),FALSE,59,1,rim first
+shot-114086-2-55,-0.1,3,3.02,7.8,short (<10 ft),FALSE,65,1,rim first
+shot-114086-2-56,-4.1,-3.1,5.16,23.4,long (22+ ft),FALSE,63,1,rim first
+shot-114086-2-57,-0.4,3.1,3.15,5.2,short (<10 ft),FALSE,164,-1,backboard first
+shot-114086-2-59,-0.7,8.5,8.57,14.2,mid (10-22 ft),TRUE,144,-1,rim first
+shot-114086-2-60,-3.6,-10.2,10.78,14.8,mid (10-22 ft),FALSE,5,-1,rim first
+shot-114086-2-61,-0.4,7.6,7.6,7,short (<10 ft),FALSE,115,-1,rim first
+shot-114086-3-77,-4.9,1,5,22.8,long (22+ ft),TRUE,79,1,backboard first
+shot-114086-3-78,-1.5,-0.9,1.76,23.4,long (22+ ft),FALSE,43,-1,rim first
+shot-114086-3-79,-0.9,-4.2,4.3,3.2,short (<10 ft),FALSE,110,1,blocked
+shot-114086-3-82,-3.1,-3.3,4.52,6.4,short (<10 ft),TRUE,63,1,putback or tip
+shot-114086-3-85,-2.2,-0.7,2.35,8.1,short (<10 ft),FALSE,53,-1,backboard first
+shot-114086-3-87,-0.7,1.1,1.28,7.4,short (<10 ft),FALSE,24,1,backboard first
+shot-114086-3-89,-1.6,6.4,6.63,21.8,mid (10-22 ft),FALSE,159,-1,airball or no contact
+shot-114086-3-90,-0.6,0.1,0.58,2,short (<10 ft),TRUE,51,-1,backboard first
+shot-114086-3-96,-2.4,-1.4,2.72,4.7,short (<10 ft),FALSE,69,1,backboard first
+shot-114086-3-97,-0.4,-4.2,4.26,23.2,long (22+ ft),TRUE,16,-1,rim first
+shot-114086-3-98,-0.9,9.3,9.39,8.1,short (<10 ft),FALSE,66,1,rim first
+shot-114086-4-105,-3.8,-2.2,4.39,4.2,short (<10 ft),TRUE,49,-1,putback or tip
+shot-114086-4-106,1,-3.6,3.77,1.2,short (<10 ft),FALSE,41,-1,backboard first
+shot-114086-4-107,-1.2,-0.9,1.5,22.4,long (22+ ft),TRUE,53,1,putback or tip
+shot-114086-4-111,-0.5,3.3,3.35,21.7,mid (10-22 ft),FALSE,117,-1,rim first
+shot-114086-4-113,-4.4,8.2,9.3,24.1,long (22+ ft),TRUE,112,-1,rim first
+shot-114086-4-116,-1.6,2.7,3.19,14.3,mid (10-22 ft),TRUE,141,-1,putback or tip
+shot-114086-4-119,-28.4,-4.2,28.69,9.1,short (<10 ft),TRUE,86,-1,backboard first
+shot-114086-4-122,-4.2,-0.5,4.21,23.3,long (22+ ft),FALSE,75,-1,airball or no contact
+shot-114086-4-125,-0.2,-10.6,10.63,11.2,mid (10-22 ft),FALSE,35,-1,rim first
+shot-114086-4-128,-8.2,10.8,13.54,13.6,mid (10-22 ft),FALSE,7,1,rim first
+shot-114086-4-130,-4.8,2.4,5.42,24.9,long (22+ ft),FALSE,83,-1,airball or no contact
+shot-114086-4-131,-4,-5.5,6.79,7.4,short (<10 ft),FALSE,72,1,rim first
+shot-114086-4-133,-0.6,-4.7,4.78,5.8,short (<10 ft),TRUE,103,1,putback or tip
+shot-114086-4-134,-1.8,-2,2.62,3.9,short (<10 ft),FALSE,40,-1,rim first
+shot-114086-4-135,-0.5,6.5,6.55,25.8,long (22+ ft),FALSE,132,-1,backboard first
+shot-178442-1-1,-7,0.5,7.04,22.6,long (22+ ft),FALSE,37,1,airball or no contact
+shot-178442-1-3,2.2,5.2,5.64,23.9,long (22+ ft),FALSE,175,-1,blocked
+shot-178442-1-5,-0.1,3.7,3.66,21.8,mid (10-22 ft),FALSE,141,-1,rim first
+shot-178442-1-8,2.3,2.5,3.36,3.3,short (<10 ft),FALSE,133,-1,rim first
+shot-178442-1-9,-0.7,-13,13.01,2.1,short (<10 ft),FALSE,20,-1,airball or no contact
+shot-178442-1-11,2.7,-1,2.87,10.4,mid (10-22 ft),FALSE,105,1,rim first
+shot-178442-1-14,-2.1,7.4,7.73,23.2,long (22+ ft),FALSE,14,1,airball or no contact
+shot-178442-1-16,-0.8,3.2,3.33,14.9,mid (10-22 ft),FALSE,20,1,rim first
+shot-178442-1-17,-0.1,-18.8,18.84,2.2,short (<10 ft),TRUE,140,1,airball or no contact
+shot-178442-1-20,1.5,5.7,5.92,22.4,long (22+ ft),FALSE,14,1,backboard first
+shot-178442-1-21,-1.8,-2.9,3.41,5,short (<10 ft),TRUE,14,-1,putback or tip
+shot-178442-1-26,1.9,-1.4,2.3,27.1,long (22+ ft),FALSE,143,-1,rim first
+shot-178442-1-28,-16,-0.8,16.06,22.6,long (22+ ft),FALSE,57,1,airball or no contact
+shot-178442-1-30,-0.2,2.3,2.3,21.4,mid (10-22 ft),FALSE,62,1,backboard first
+shot-178442-1-33,-11.7,-8.9,14.71,13.8,mid (10-22 ft),FALSE,49,1,rim first
+shot-178442-1-34,-27,0.9,27.06,11.7,mid (10-22 ft),FALSE,37,-1,rim first
+shot-178442-2-38,0.5,2.8,2.9,3.7,short (<10 ft),FALSE,94,-1,rim first
+shot-178442-2-39,0.3,-4,4.05,2.4,short (<10 ft),TRUE,58,-1,putback or tip
+shot-178442-2-40,-1.4,-0.9,1.64,3.2,short (<10 ft),FALSE,56,-1,rim first
+shot-178442-2-44,-3.1,-10.7,11.19,22.8,long (22+ ft),FALSE,132,1,backboard first
+shot-178442-2-46,-7.5,-5.3,9.19,25,long (22+ ft),TRUE,90,1,rim first
+shot-178442-2-49,0.9,1.8,1.99,11.2,mid (10-22 ft),FALSE,104,1,rim first
+shot-178442-2-50,-2.7,2.1,3.43,21.2,mid (10-22 ft),FALSE,116,-1,rim first
+shot-178442-2-51,2.2,0.5,2.29,2.6,short (<10 ft),FALSE,108,-1,rim first
+shot-178442-2-63,-2.5,5.4,5.93,1.9,short (<10 ft),FALSE,171,-1,rim first
+shot-178442-2-64,-7,-2.7,7.45,27.2,long (22+ ft),FALSE,45,1,airball or no contact
+shot-178442-2-65,-1.2,7.6,7.68,22.4,long (22+ ft),FALSE,176,-1,rim first
+shot-178442-2-66,-9.5,-9.3,13.34,22.2,long (22+ ft),FALSE,23,-1,rim first
+shot-178442-3-76,-1.8,-3.8,4.15,8,short (<10 ft),FALSE,32,-1,rim first
+shot-178442-3-81,-2.9,-2,3.54,21.3,mid (10-22 ft),TRUE,20,-1,rim first
+shot-178442-3-84,-4.2,1,4.33,6.9,short (<10 ft),FALSE,87,1,blocked
+shot-178442-3-85,-3.8,4.8,6.14,24.7,long (22+ ft),FALSE,5,1,rim first
+shot-178442-3-86,-1.8,-9.2,9.43,12.3,mid (10-22 ft),FALSE,10,-1,airball or no contact
+shot-178442-3-87,-4.6,3.3,5.7,25.2,long (22+ ft),FALSE,66,-1,rim first
+shot-178442-3-89,-3.1,3.1,4.33,11.8,mid (10-22 ft),FALSE,56,-1,rim first
+shot-178442-3-90,-14.2,-13.7,19.73,25.3,long (22+ ft),FALSE,64,1,rim first
+shot-178442-3-91,-2,0,1.96,6.3,short (<10 ft),FALSE,81,-1,backboard first
+shot-178442-3-97,-3.2,5.2,6.06,20,mid (10-22 ft),FALSE,108,-1,rim first
+shot-178442-3-98,-3.7,0.1,3.71,15.2,mid (10-22 ft),TRUE,38,-1,rim first
+shot-178442-3-100,-6.8,-9.3,11.49,10.4,mid (10-22 ft),FALSE,74,1,rim first
+shot-178442-3-101,-2.8,-1.3,3.03,21.1,mid (10-22 ft),FALSE,72,1,airball or no contact
+shot-178442-3-102,-0.8,-0.6,1.04,3.3,short (<10 ft),FALSE,33,-1,rim first
+shot-178442-4-109,-1.5,-20.6,20.65,25.4,long (22+ ft),TRUE,36,-1,airball or no contact
+shot-178442-4-116,0.7,4.7,4.75,25.2,long (22+ ft),TRUE,162,-1,rim first
+shot-178442-4-117,-1.4,-6.9,7.05,24.4,long (22+ ft),TRUE,142,1,backboard first
+shot-178442-4-119,-11.4,0.5,11.4,23.5,long (22+ ft),FALSE,30,-1,rim first
+shot-178442-4-120,0.4,-0.4,0.58,8,short (<10 ft),TRUE,88,-1,putback or tip
+shot-178442-4-122,-6.9,-7.3,10.09,22.5,long (22+ ft),TRUE,66,1,airball or no contact
+shot-178442-4-124,-8.8,11.7,14.65,23.8,long (22+ ft),FALSE,24,1,airball or no contact
+shot-178442-4-125,-9.8,3,10.23,22.1,long (22+ ft),FALSE,99,-1,airball or no contact
+shot-178442-4-126,-1.9,-1.3,2.35,4.7,short (<10 ft),TRUE,6,-1,putback or tip
+shot-178442-4-129,-1.9,-1.2,2.3,8.3,short (<10 ft),TRUE,41,1,backboard first
+shot-178442-4-132,-1,3.1,3.21,6.4,short (<10 ft),FALSE,21,1,backboard first
+shot-178442-4-134,0,-0.5,0.53,21.2,mid (10-22 ft),FALSE,74,-1,rim first
+shot-178442-5-140,-4.6,6.2,7.72,23.3,long (22+ ft),FALSE,20,1,airball or no contact
+shot-178442-5-143,-3.2,-1.8,3.63,14.8,mid (10-22 ft),FALSE,51,1,rim first
+shot-178442-5-146,-10.5,0.9,10.56,26.4,long (22+ ft),FALSE,45,-1,rim first
+shot-178442-5-148,-7.4,-12,14.11,6.5,short (<10 ft),FALSE,22,-1,rim first
+shot-178442-5-149,1.2,-0.8,1.46,3.1,short (<10 ft),TRUE,110,1,putback or tip
+shot-178442-5-151,-13.1,-3.3,13.48,11.7,mid (10-22 ft),FALSE,46,1,rim first
+shot-178442-5-152,-1,-11.9,11.92,12.1,mid (10-22 ft),FALSE,31,-1,airball or no contact
+shot-178442-5-155,-13.5,7.5,15.48,24.4,long (22+ ft),FALSE,16,1,rim first
+shot-179612-1-2,-2.1,-2.2,3.06,0.8,short (<10 ft),FALSE,108,1,rim first
+shot-179612-1-3,-4.8,5.7,7.49,24.3,long (22+ ft),FALSE,102,-1,rim first
+shot-179612-1-6,2,2.4,3.18,21.7,mid (10-22 ft),FALSE,149,-1,rim first
+shot-179612-1-10,-3.3,-1.5,3.62,7.2,short (<10 ft),FALSE,30,1,rim first
+shot-179612-1-11,0.6,-1.4,1.53,22.7,long (22+ ft),FALSE,58,-1,backboard first
+shot-179612-1-12,-2.9,-2.6,3.94,23.7,long (22+ ft),FALSE,89,1,rim first
+shot-179612-1-13,0.7,2.6,2.75,13.1,mid (10-22 ft),FALSE,99,1,rim first
+shot-179612-1-14,-2.3,-3.3,4.03,23.6,long (22+ ft),TRUE,18,-1,rim first
+shot-179612-1-18,-4.5,-4,6.05,20.9,mid (10-22 ft),FALSE,1,-1,rim first
+shot-179612-1-21,-0.7,-2.2,2.34,2.6,short (<10 ft),TRUE,90,1,putback or tip
+shot-179612-1-23,-0.5,-2.3,2.34,18,mid (10-22 ft),TRUE,145,1,putback or tip
+shot-179612-1-27,-1.6,0.3,1.59,22.1,long (22+ ft),FALSE,81,1,rim first
+shot-179612-1-28,-7.1,2.2,7.46,25.9,long (22+ ft),TRUE,40,1,rim first
+shot-179612-1-33,-2.1,5.9,6.26,15.5,mid (10-22 ft),FALSE,4,1,backboard first
+shot-179612-1-34,-1.8,1.2,2.18,1.2,short (<10 ft),FALSE,120,1,backboard first
+shot-179612-2-45,-10.7,-2.7,11.05,21.9,mid (10-22 ft),FALSE,19,-1,airball or no contact
+shot-179612-2-46,-10.5,-5.8,11.99,17.1,mid (10-22 ft),TRUE,49,1,rim first
+shot-179612-2-51,-2.5,5.9,6.42,23.5,long (22+ ft),TRUE,6,1,rim first
+shot-179612-2-55,-4.3,-4.1,5.95,24.7,long (22+ ft),FALSE,80,1,rim first
+shot-179612-2-57,-4.4,-3.3,5.51,22.7,long (22+ ft),FALSE,35,-1,rim first
+shot-179612-2-59,-5.1,-4,6.45,8.1,short (<10 ft),FALSE,52,1,rim first
+shot-179612-2-60,-2.8,-3.3,4.36,4.9,short (<10 ft),FALSE,36,-1,rim first
+shot-179612-2-61,1.3,-2.2,2.56,17.7,mid (10-22 ft),FALSE,104,-1,backboard first
+shot-179612-2-62,-6.1,2.8,6.74,21.9,mid (10-22 ft),TRUE,119,-1,rim first
+shot-179612-2-67,-1.7,-6.2,6.41,17.8,mid (10-22 ft),FALSE,81,1,rim first
+shot-179612-2-70,-3,-5.2,6,8.5,short (<10 ft),TRUE,32,-1,blocked
+shot-179612-2-71,-1.1,-0.9,1.47,1.2,short (<10 ft),FALSE,61,1,blocked
+shot-179612-3-74,-8.9,11.9,14.84,29.2,long (22+ ft),TRUE,42,1,rim first
+shot-179612-3-77,-3.6,4.9,6.09,28.2,long (22+ ft),FALSE,74,-1,rim first
+shot-179612-3-80,-2.5,-4.9,5.46,23.6,long (22+ ft),FALSE,96,1,rim first
+shot-179612-3-81,2.4,0.8,2.53,4.8,short (<10 ft),TRUE,73,1,rim first
+shot-179612-3-85,-5.4,-3.8,6.57,22.1,long (22+ ft),FALSE,8,-1,rim first
+shot-179612-3-90,-2.7,-18,18.15,23.1,long (22+ ft),FALSE,122,1,backboard first
+shot-179612-3-91,0.6,-2.7,2.79,9.5,short (<10 ft),FALSE,120,1,rim first
+shot-179612-3-92,1.6,4.6,4.84,3.8,short (<10 ft),TRUE,11,1,putback or tip
+shot-179612-3-94,-20.4,8.8,22.2,27.8,long (22+ ft),FALSE,76,-1,rim first
+shot-179612-3-95,-4,1.4,4.26,22.2,long (22+ ft),FALSE,10,1,backboard first
+shot-179612-3-97,1.5,6.8,7,22.3,long (22+ ft),TRUE,167,-1,backboard first
+shot-179612-3-102,-6.2,15.2,16.45,20.7,mid (10-22 ft),TRUE,140,-1,backboard first
+shot-179612-3-104,-9.7,0.8,9.77,30.2,long (22+ ft),TRUE,9,-1,rim first
+shot-179612-3-105,-1.5,-1.1,1.89,6.7,short (<10 ft),FALSE,31,-1,rim first
+shot-179612-4-108,-7.6,4.5,8.84,26.4,long (22+ ft),FALSE,79,-1,rim first
+shot-179612-4-109,-6.9,1.4,7.03,21.6,mid (10-22 ft),TRUE,109,-1,putback or tip
+shot-179612-4-110,0.5,1.9,1.94,2.8,short (<10 ft),FALSE,160,-1,blocked
+shot-179612-4-115,-2.8,5.7,6.35,22.8,long (22+ ft),FALSE,21,1,backboard first
+shot-179612-4-117,-3.1,1.9,3.65,22.1,long (22+ ft),TRUE,56,1,backboard first
+shot-179612-4-118,-3.8,-2.6,4.57,3.1,short (<10 ft),FALSE,40,1,backboard first
+shot-179612-4-120,-19.6,12.6,23.31,25.8,long (22+ ft),FALSE,26,1,airball or no contact
+shot-179612-4-121,-0.2,0.9,0.91,7.2,short (<10 ft),TRUE,99,-1,rim first
+shot-179612-4-122,-10.7,-5.1,11.87,28.4,long (22+ ft),FALSE,10,-1,rim first
+shot-179612-4-124,0.9,5.2,5.24,25.9,long (22+ ft),FALSE,106,-1,backboard first
+shot-179612-4-126,-0.2,2.1,2.13,4.6,short (<10 ft),FALSE,121,-1,rim first
+shot-179612-4-129,-0.9,2.2,2.38,9.8,short (<10 ft),FALSE,56,1,rim first
+shot-179612-4-130,0.6,0.6,0.88,23.6,long (22+ ft),FALSE,146,-1,rim first
+shot-179612-4-133,-1.1,-3.4,3.61,24.6,long (22+ ft),FALSE,109,1,rim first
+shot-179612-4-134,0,-3.6,3.62,13.1,mid (10-22 ft),FALSE,151,1,backboard first
+shot-179612-4-135,-14.1,-0.9,14.13,23.2,long (22+ ft),FALSE,41,-1,airball or no contact
+shot-179612-4-139,-3.7,-5.9,6.95,29.6,long (22+ ft),TRUE,21,-1,airball or no contact
+shot-179612-4-144,-2.3,-2.7,3.53,1.6,short (<10 ft),FALSE,10,-1,rim first
+shot-184439-1-3,-1.8,13.4,13.57,15.9,mid (10-22 ft),FALSE,66,1,rim first
+shot-184439-1-4,1.8,-3.3,3.76,26.1,long (22+ ft),FALSE,160,1,backboard first
+shot-184439-1-5,-0.4,1,1.09,1.1,short (<10 ft),TRUE,0,1,blocked
+shot-184439-1-6,-6.9,-10.4,12.52,23.4,long (22+ ft),FALSE,67,1,rim first
+shot-184439-1-12,-4.4,4.7,6.42,21.1,mid (10-22 ft),TRUE,46,1,backboard first
+shot-184439-1-14,-5.2,-8.4,9.92,22.7,long (22+ ft),FALSE,37,-1,rim first
+shot-184439-1-17,0.4,0.8,0.93,9.5,short (<10 ft),FALSE,82,1,rim first
+shot-184439-1-21,1.2,23.4,23.45,24.6,long (22+ ft),FALSE,20,1,backboard first
+shot-184439-1-23,0.5,-1,1.12,3.4,short (<10 ft),FALSE,143,1,backboard first
+shot-184439-1-24,0.3,-7.7,7.72,22.4,long (22+ ft),FALSE,50,-1,rim first
+shot-184439-1-29,-10.5,4.5,11.39,18.4,mid (10-22 ft),TRUE,62,-1,rim first
+shot-184439-1-30,-8.5,-16.4,18.44,5.4,short (<10 ft),TRUE,64,1,rim first
+shot-184439-1-31,-3.8,-2,4.26,24,long (22+ ft),FALSE,21,-1,rim first
+shot-184439-1-32,3.5,4.9,6.01,6.3,short (<10 ft),FALSE,157,-1,backboard first
+shot-184439-2-35,-0.3,-8.6,8.63,23.4,long (22+ ft),FALSE,9,-1,rim first
+shot-184439-2-36,-14,1.6,14.05,23.2,long (22+ ft),FALSE,30,-1,rim first
+shot-184439-2-38,-1.6,1.8,2.45,24,long (22+ ft),TRUE,20,1,rim first
+shot-184439-2-42,1,2.5,2.69,1.8,short (<10 ft),TRUE,113,-1,rim first
+shot-184439-2-44,-2.9,-3.7,4.64,3.2,short (<10 ft),FALSE,78,1,rim first
+shot-184439-2-46,-3.2,7.3,7.96,24.4,long (22+ ft),FALSE,87,-1,airball or no contact
+shot-184439-2-47,-3,4,5.01,12,mid (10-22 ft),FALSE,38,1,blocked
+shot-184439-2-48,-3,-0.5,3.04,25.3,long (22+ ft),FALSE,2,-1,rim first
+shot-184439-2-49,-4.4,-2.5,5.03,15.3,mid (10-22 ft),TRUE,57,-1,airball or no contact
+shot-184439-2-54,-1.9,-1.4,2.34,21.2,mid (10-22 ft),TRUE,1,-1,rim first
+shot-184439-2-55,0.9,-0.5,1.02,1.8,short (<10 ft),TRUE,113,1,putback or tip
+shot-184439-2-56,0.8,-0.2,0.86,1,short (<10 ft),TRUE,20,-1,putback or tip
+shot-184439-2-57,-0.2,-0.8,0.83,0.9,short (<10 ft),TRUE,94,-1,rim first
+shot-184439-2-59,-9.3,-2.3,9.59,23.9,long (22+ ft),FALSE,1,-1,rim first
+shot-184439-2-60,-4.1,-3.7,5.57,21.1,mid (10-22 ft),FALSE,14,-1,rim first
+shot-184439-2-61,-0.3,-1.3,1.33,9.9,short (<10 ft),FALSE,88,1,rim first
+shot-184439-2-62,-1.5,-0.9,1.75,1.2,short (<10 ft),FALSE,107,1,rim first
+shot-184439-2-65,1.1,8.1,8.2,23.6,long (22+ ft),FALSE,150,-1,rim first
+shot-184439-2-68,-8.5,-8,11.66,24.1,long (22+ ft),FALSE,86,1,rim first
+shot-184439-2-69,1.1,-5.5,5.66,23.9,long (22+ ft),FALSE,50,-1,rim first
+shot-184439-2-70,-8.8,-0.4,8.76,7.5,short (<10 ft),FALSE,11,-1,blocked
+shot-184439-3-74,-2,-7.8,8.1,14.9,mid (10-22 ft),FALSE,49,-1,rim first
+shot-184439-3-76,0.6,1.6,1.69,15.1,mid (10-22 ft),FALSE,147,-1,backboard first
+shot-184439-3-77,-1.3,-0.6,1.4,3.2,short (<10 ft),FALSE,17,-1,backboard first
+shot-184439-3-79,-1,-1.1,1.44,7,short (<10 ft),TRUE,30,-1,putback or tip
+shot-184439-3-80,-0.8,-0.8,1.1,2.6,short (<10 ft),FALSE,30,-1,rim first
+shot-184439-3-82,-2.8,0.2,2.84,3.6,short (<10 ft),TRUE,89,-1,putback or tip
+shot-184439-3-84,1.7,3.8,4.13,20.5,mid (10-22 ft),FALSE,148,-1,rim first
+shot-184439-3-86,-12.4,-0.5,12.45,16.7,mid (10-22 ft),FALSE,35,-1,rim first
+shot-184439-3-87,1.5,-1.9,2.4,23.4,long (22+ ft),FALSE,145,1,blocked
+shot-184439-3-91,-0.7,1.5,1.68,24.8,long (22+ ft),TRUE,157,-1,putback or tip
+shot-184439-3-93,-7.9,-6.4,10.18,21.2,mid (10-22 ft),FALSE,33,-1,blocked
+shot-184439-3-97,-3.1,3.3,4.47,23.6,long (22+ ft),FALSE,52,1,backboard first
+shot-184439-3-101,-1.6,1.2,2,3.6,short (<10 ft),TRUE,36,1,backboard first
+shot-184439-4-107,-2.5,3.5,4.37,2.7,short (<10 ft),FALSE,13,1,rim first
+shot-184439-4-108,-7.3,-2.2,7.59,20.9,mid (10-22 ft),FALSE,21,-1,rim first
+shot-184439-4-110,0.8,9.6,9.61,21.2,mid (10-22 ft),FALSE,179,-1,backboard first
+shot-184439-4-117,-0.9,0,0.91,2.1,short (<10 ft),TRUE,30,1,rim first
+shot-184439-4-119,-1.4,1.4,1.94,25.5,long (22+ ft),FALSE,13,1,rim first
+shot-184439-4-120,1.4,0.4,1.49,14.3,mid (10-22 ft),FALSE,167,-1,rim first
+shot-184439-4-122,-5.1,5.5,7.55,22.4,long (22+ ft),TRUE,111,-1,rim first
+shot-184439-4-125,-7.5,2.4,7.93,1.8,short (<10 ft),FALSE,34,-1,rim first
+shot-184439-4-127,-7.2,-1,7.28,23.4,long (22+ ft),FALSE,39,-1,rim first
+shot-184439-4-128,-1.9,0.8,2.09,18.7,mid (10-22 ft),FALSE,6,1,backboard first
+shot-184439-4-131,-3.5,10.3,10.88,4.6,short (<10 ft),FALSE,96,-1,rim first
+shot-184439-4-133,0.1,2.3,2.26,22,mid (10-22 ft),FALSE,174,-1,rim first
+shot-184439-4-134,0.4,-3.1,3.15,4.8,short (<10 ft),FALSE,75,-1,rim first
+shot-184439-4-138,-1.3,2.3,2.66,27.8,long (22+ ft),TRUE,104,-1,putback or tip
+shot-184439-4-139,-1.1,-1.9,2.18,2.2,short (<10 ft),FALSE,123,1,backboard first
+shot-188630-1-0,-2.1,-3.7,4.28,10.5,mid (10-22 ft),TRUE,27,-1,rim first
+shot-188630-1-4,-1.9,-7,7.21,24.2,long (22+ ft),FALSE,120,1,rim first
+shot-188630-1-5,-2.9,-0.8,3,8.1,short (<10 ft),FALSE,40,1,rim first
+shot-188630-1-6,-3,4.3,5.18,24.5,long (22+ ft),FALSE,54,1,rim first
+shot-188630-1-8,1.6,-4.1,4.44,3,short (<10 ft),TRUE,39,-1,blocked
+shot-188630-1-14,0.5,0.2,0.52,18.8,mid (10-22 ft),FALSE,70,1,rim first
+shot-188630-1-18,-1.9,3.9,4.35,27.3,long (22+ ft),FALSE,71,-1,rim first
+shot-188630-1-23,0.3,11.4,11.39,25.8,long (22+ ft),FALSE,71,1,backboard first
+shot-188630-1-26,-6.2,-0.8,6.28,2.5,short (<10 ft),FALSE,15,1,rim first
+shot-188630-1-30,-1,0.9,1.33,8.4,short (<10 ft),FALSE,26,1,backboard first
+shot-188630-2-34,-0.4,2.1,2.18,23.8,long (22+ ft),FALSE,110,-1,rim first
+shot-188630-2-35,0.8,2.6,2.72,23.9,long (22+ ft),FALSE,154,-1,rim first
+shot-188630-2-36,-6.6,1.4,6.77,25.7,long (22+ ft),FALSE,10,1,rim first
+shot-188630-2-37,1.6,6.9,7.05,10.4,mid (10-22 ft),FALSE,6,1,backboard first
+shot-188630-2-42,-7.1,2.8,7.63,12.8,mid (10-22 ft),FALSE,32,-1,rim first
+shot-188630-2-44,-6,4,7.24,25,long (22+ ft),FALSE,13,1,backboard first
+shot-188630-2-48,-0.2,-0.1,0.21,2.3,short (<10 ft),TRUE,51,1,rim first
+shot-188630-2-51,-3.2,-0.1,3.23,6.8,short (<10 ft),FALSE,15,-1,backboard first
+shot-188630-2-54,-4.7,1.3,4.9,23.2,long (22+ ft),FALSE,98,-1,rim first
+shot-188630-2-55,-4.7,-18.2,18.82,5.6,short (<10 ft),FALSE,28,-1,rim first
+shot-188630-2-57,-2.1,1.5,2.55,23.7,long (22+ ft),FALSE,38,-1,rim first
+shot-188630-2-60,-7.7,-4.5,8.94,6.7,short (<10 ft),FALSE,80,1,backboard first
+shot-188630-2-62,-1.9,-4.1,4.47,2.8,short (<10 ft),TRUE,88,1,putback or tip
+shot-188630-3-66,-2.6,-0.7,2.72,30,long (22+ ft),FALSE,46,1,backboard first
+shot-188630-3-67,-0.6,4.9,4.9,10.6,mid (10-22 ft),FALSE,37,1,rim first
+shot-188630-3-68,0.9,2.8,2.94,8.4,short (<10 ft),FALSE,114,-1,rim first
+shot-188630-3-69,-3.2,-9.4,9.96,24.7,long (22+ ft),FALSE,68,-1,rim first
+shot-188630-3-70,-0.1,-2.8,2.79,21.4,mid (10-22 ft),TRUE,5,-1,airball or no contact
+shot-188630-3-72,-1.3,1.4,1.91,3.4,short (<10 ft),FALSE,59,-1,rim first
+shot-188630-3-73,-20.9,-7.6,22.28,22.2,long (22+ ft),FALSE,27,1,rim first
+shot-188630-3-75,-3.6,-0.3,3.61,5,short (<10 ft),FALSE,3,-1,blocked
+shot-188630-3-77,-2.1,4.9,5.36,23.4,long (22+ ft),FALSE,26,1,backboard first
+shot-188630-3-80,-7,4.7,8.39,24.4,long (22+ ft),FALSE,80,-1,airball or no contact
+shot-188630-3-82,-1.5,-3.4,3.74,14.9,mid (10-22 ft),TRUE,110,1,rim first
+shot-188630-3-87,-14.1,-10.9,17.79,24.3,long (22+ ft),TRUE,23,-1,rim first
+shot-188630-3-88,0.3,3,2.99,7.6,short (<10 ft),TRUE,129,-1,rim first
+shot-188630-3-89,-1.1,0.2,1.16,2.2,short (<10 ft),TRUE,68,1,blocked
+shot-188630-3-91,-0.3,5.9,5.93,26.7,long (22+ ft),FALSE,94,-1,rim first
+shot-188630-3-94,-8.3,-3.4,8.93,27.1,long (22+ ft),FALSE,42,1,rim first
+shot-188630-3-95,0.2,-0.3,0.36,21.8,mid (10-22 ft),FALSE,125,1,rim first
+shot-188630-4-98,-1.9,-0.2,1.86,2.7,short (<10 ft),TRUE,113,-1,putback or tip
+shot-188630-4-102,-4.7,-4.4,6.45,21.5,mid (10-22 ft),FALSE,47,-1,rim first
+shot-188630-4-107,-1.4,-1.9,2.31,5.9,short (<10 ft),TRUE,1,-1,putback or tip
+shot-188630-4-109,-1.8,-0.2,1.79,9.8,short (<10 ft),TRUE,71,-1,putback or tip
+shot-188630-4-111,-2.4,6,6.49,21.6,mid (10-22 ft),FALSE,155,-1,rim first
+shot-188630-4-113,-0.9,0.4,1.02,8.7,short (<10 ft),FALSE,22,1,backboard first
+shot-188630-4-114,-3.1,-1.5,3.48,22.7,long (22+ ft),FALSE,58,1,rim first
+shot-188630-4-117,-1.3,4.4,4.6,21.8,mid (10-22 ft),FALSE,18,1,blocked
+shot-188630-4-119,-3.8,6.3,7.4,16.7,mid (10-22 ft),FALSE,37,1,rim first
+shot-188630-4-120,-1.3,4.6,4.81,12.6,mid (10-22 ft),FALSE,21,1,backboard first
+shot-188630-4-121,-5.1,-6.4,8.14,9.3,short (<10 ft),FALSE,45,-1,rim first
+shot-188630-4-122,0.5,3.2,3.3,23.2,long (22+ ft),TRUE,167,-1,putback or tip
+shot-188630-4-125,-4,2.1,4.52,3.5,short (<10 ft),FALSE,26,1,airball or no contact
+shot-188630-4-130,0.9,4.2,4.3,6.8,short (<10 ft),FALSE,32,1,blocked
+shot-191313-1-1,-18.7,-7.9,20.32,5,short (<10 ft),FALSE,70,-1,backboard first
+shot-191313-1-4,-6.6,6.7,9.36,26.1,long (22+ ft),TRUE,75,-1,rim first
+shot-191313-1-5,-3.3,-5.7,6.54,2.4,short (<10 ft),FALSE,6,-1,blocked
+shot-191313-1-9,-5.5,10.1,11.45,22.4,long (22+ ft),TRUE,24,1,backboard first
+shot-191313-1-11,-3.8,-1.8,4.21,4.7,short (<10 ft),FALSE,79,1,backboard first
+shot-191313-1-12,0.4,-3.2,3.25,3.4,short (<10 ft),FALSE,25,-1,backboard first
+shot-191313-1-13,-2.7,-1.5,3.04,4.1,short (<10 ft),FALSE,24,-1,rim first
+shot-191313-1-15,-0.9,3.8,3.89,22.4,long (22+ ft),FALSE,153,-1,backboard first
+shot-191313-1-18,0.5,0.4,0.63,2.2,short (<10 ft),FALSE,45,-1,blocked
+shot-191313-1-19,-1.2,-1.6,1.97,27.5,long (22+ ft),FALSE,0,-1,backboard first
+shot-191313-1-20,-16.3,3.2,16.62,24.8,long (22+ ft),FALSE,6,1,rim first
+shot-191313-1-32,-1.5,2.6,3.03,21.5,mid (10-22 ft),TRUE,18,1,backboard first
+shot-191313-1-34,-1.9,-2.6,3.24,26.2,long (22+ ft),FALSE,2,-1,rim first
+shot-191313-1-35,-1.2,5.9,6,13.4,mid (10-22 ft),FALSE,65,1,rim first
+shot-191313-2-36,-1.7,-0.3,1.68,23.5,long (22+ ft),FALSE,41,1,rim first
+shot-191313-2-45,1.1,3.6,3.72,20.8,mid (10-22 ft),TRUE,159,-1,backboard first
+shot-191313-2-47,-0.5,2.6,2.66,3.9,short (<10 ft),TRUE,91,-1,putback or tip
+shot-191313-2-49,-5.9,1.2,6,16.2,mid (10-22 ft),TRUE,49,1,rim first
+shot-191313-2-51,-9.2,2,9.4,17.2,mid (10-22 ft),TRUE,30,1,rim first
+shot-191313-2-53,-0.2,5.5,5.54,22.9,long (22+ ft),FALSE,150,-1,backboard first
+shot-191313-2-54,-0.9,-8.2,8.22,10.5,mid (10-22 ft),FALSE,155,1,backboard first
+shot-191313-2-55,-2,-7.4,7.67,18.6,mid (10-22 ft),FALSE,164,1,rim first
+shot-191313-2-57,-4.1,2.8,4.95,11,mid (10-22 ft),FALSE,76,-1,airball or no contact
+shot-191313-2-59,-1,-1.9,2.12,23.8,long (22+ ft),FALSE,6,-1,rim first
+shot-191313-2-61,-12.5,1.8,12.59,24,long (22+ ft),FALSE,25,-1,rim first
+shot-191313-2-64,-4.7,-6.7,8.21,2,short (<10 ft),TRUE,55,-1,backboard first
+shot-191313-2-66,-1,-1.7,1.99,6.3,short (<10 ft),FALSE,31,-1,rim first
+shot-191313-2-67,-1.1,2.2,2.45,22.3,long (22+ ft),FALSE,53,1,backboard first
+shot-191313-2-68,-14,17.7,22.55,5,short (<10 ft),TRUE,108,-1,blocked
+shot-191313-2-70,-0.7,3.3,3.34,1.6,short (<10 ft),TRUE,23,1,putback or tip
+shot-191313-3-71,-1.4,5.6,5.74,21.4,mid (10-22 ft),TRUE,93,-1,rim first
+shot-191313-3-72,-0.4,0.1,0.44,2.9,short (<10 ft),FALSE,94,-1,rim first
+shot-191313-3-73,-2.7,0.7,2.76,21.3,mid (10-22 ft),FALSE,68,1,backboard first
+shot-191313-3-76,4.7,5.9,7.53,3.3,short (<10 ft),FALSE,19,1,rim first
+shot-191313-3-77,-22.3,13.3,26,24.6,long (22+ ft),TRUE,64,-1,putback or tip
+shot-191313-3-78,-9.1,0.5,9.07,14.1,mid (10-22 ft),TRUE,36,-1,rim first
+shot-191313-3-81,0.1,5,5.03,22.9,long (22+ ft),FALSE,172,-1,airball or no contact
+shot-191313-3-82,-1,3.5,3.6,22.1,long (22+ ft),FALSE,100,-1,backboard first
+shot-191313-3-83,-0.2,0.1,0.22,3.8,short (<10 ft),FALSE,58,-1,rim first
+shot-191313-3-84,-6.3,-9.8,11.61,6.4,short (<10 ft),FALSE,46,-1,rim first
+shot-191313-3-85,-14.2,6,15.42,23.7,long (22+ ft),FALSE,47,1,rim first
+shot-191313-3-86,-8.2,-3,8.75,3.4,short (<10 ft),FALSE,27,1,rim first
+shot-191313-3-87,-1.7,-0.3,1.73,2.8,short (<10 ft),TRUE,41,-1,putback or tip
+shot-191313-3-91,-0.1,-3.3,3.3,23.6,long (22+ ft),FALSE,122,1,backboard first
+shot-191313-3-92,-4,-8.9,9.72,2.4,short (<10 ft),FALSE,23,-1,blocked
+shot-191313-3-93,-1.1,0.5,1.2,20.9,mid (10-22 ft),TRUE,30,-1,putback or tip
+shot-191313-3-95,-18.6,-21.1,28.11,23.3,long (22+ ft),TRUE,13,-1,rim first
+shot-191313-3-104,-0.1,-11.1,11.1,22.5,long (22+ ft),FALSE,2,-1,rim first
+shot-191313-3-106,1.3,-1.5,2.03,3,short (<10 ft),FALSE,83,1,rim first
+shot-191313-4-110,-3.8,0.4,3.83,24.2,long (22+ ft),TRUE,25,-1,putback or tip
+shot-191313-4-115,-5.9,-2.8,6.49,23.1,long (22+ ft),FALSE,36,1,rim first
+shot-191313-4-119,1,-3.8,3.89,22.6,long (22+ ft),FALSE,169,1,rim first
+shot-191313-4-120,-2.2,-4.9,5.41,24.2,long (22+ ft),FALSE,93,1,rim first
+shot-191313-4-121,-6.5,0.2,6.5,25.7,long (22+ ft),TRUE,2,1,rim first
+shot-191313-4-125,-5.1,0.5,5.1,22.5,long (22+ ft),TRUE,17,-1,rim first
+shot-191313-4-128,-5.3,2.6,5.88,11.4,mid (10-22 ft),FALSE,9,1,rim first
+shot-191313-4-134,-6.7,-4.8,8.23,22,long (22+ ft),FALSE,129,1,backboard first
+shot-191313-4-137,-5.3,5.5,7.67,21.9,mid (10-22 ft),TRUE,11,1,rim first

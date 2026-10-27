@@ -17,8 +17,10 @@ export interface ReboundStep {
   team: [number, number, number, number, number];
   /** Where the ball would first reach the floor if nobody touched it: a sample of simulated miss paths. */
   land: [number, number][];
-  /** Mean of the first reachable points of the simulated paths. */
-  target: [number, number];
+  /** The same landings as a density on the game file's `heat` grid: flat (column, row, weight 3-100) triplets. */
+  heat: number[];
+  /** Share of simulated landings outside the court's lines. */
+  out: number;
   /** Obstruction now: blocker b stands in opponent o's way to the reachable ball with strength s (0 to 1). */
   box: { b: number; o: number; s: number }[];
 }
@@ -41,11 +43,23 @@ export interface ReboundEpisode {
   anticipation: { pid: number; gain: number; team: number; exposure: number; moved: number }[];
 }
 
+/** The landing-density grid: cell (c, r) is centred at x0 + cell * (c + 0.5), y0 + cell * (r + 0.5) in feet. */
+export interface HeatGrid {
+  x0: number;
+  y0: number;
+  cell: number;
+  nx: number;
+  ny: number;
+}
+
 export interface ReboundGame {
   game: number;
   talent: boolean;
+  heat: HeatGrid;
   episodes: ReboundEpisode[];
 }
+
+export type LandingView = "heat" | "dots" | "off";
 
 export interface ReboundReading {
   episode: ReboundEpisode;
@@ -89,33 +103,53 @@ export function sides(step: ReboundStep): { off: number; def: number; unresolved
   return { off: step.team[0] + step.team[2], def: step.team[1] + step.team[3], unresolved: step.team[4] };
 }
 
-export const REBOUND_COLORS = { land: "#7A3E00", target: "#0B0E14" };
+// One violet hue for the landing forecast, so it never reads as either team (teams own the court control shading).
+export const LANDING_COLOR: [number, number, number] = [74, 52, 196];
+const LANDING_ALPHA = 0.85;
+
+let raster: HTMLCanvasElement | null = null;
+
+/** The landing density as a smoothed raster: violet, stronger where more simulated misses would first land. */
+function drawHeat(ctx: CanvasRenderingContext2D, L: Layout, grid: HeatGrid, heat: number[]): void {
+  raster ??= document.createElement("canvas");
+  if (raster.width !== grid.nx || raster.height !== grid.ny) { raster.width = grid.nx; raster.height = grid.ny; }
+  const rc = raster.getContext("2d")!, img = rc.createImageData(grid.nx, grid.ny);
+  for (let k = 0; k + 2 < heat.length; k += 3) {
+    // raster rows run top (largest y) to bottom
+    const at = 4 * ((grid.ny - 1 - heat[k + 1]) * grid.nx + heat[k]), w = heat[k + 2] / 100;
+    img.data[at] = LANDING_COLOR[0]; img.data[at + 1] = LANDING_COLOR[1]; img.data[at + 2] = LANDING_COLOR[2];
+    img.data[at + 3] = Math.round(255 * LANDING_ALPHA * Math.sqrt(w));
+  }
+  rc.putImageData(img, 0, 0);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  const top = grid.y0 + grid.ny * grid.cell;
+  ctx.drawImage(raster, L.ox + grid.x0 * L.s, L.oy - top * L.s, grid.nx * grid.cell * L.s, grid.ny * grid.cell * L.s);
+  ctx.restore();
+}
 
 /**
- * Draw a forecast under the players: the untouched landing sample and the box-out links between the players'
- * current positions. Each link runs from the blocker to the opponent he obstructs, as thick as it is strong.
+ * Draw a forecast under the players: where the ball would first land untouched (a density or the sample of
+ * simulated landings) and the box-out links between the players' current positions. Each link runs from the
+ * blocker to the opponent he obstructs, as thick as it is strong.
  * @param at Where each player is drawn now, by player id.
  * @param mark Each player's team outline colour, by player id.
  */
-export function drawReboundUnder(ctx: CanvasRenderingContext2D, L: Layout, r: ReboundReading, at: Map<number, [number, number]>,
-                                 mark: Map<number, string>): void {
+export function drawReboundUnder(ctx: CanvasRenderingContext2D, L: Layout, r: ReboundReading, grid: HeatGrid | null,
+                                 view: LandingView, at: Map<number, [number, number]>, mark: Map<number, string>): void {
   const px = (x: number) => L.ox + x * L.s, py = (y: number) => L.oy - y * L.s;
+  if (view === "heat" && grid && r.step.heat?.length) drawHeat(ctx, L, grid, r.step.heat);
   ctx.save();
-  ctx.globalAlpha = 0.55;
-  ctx.fillStyle = REBOUND_COLORS.land;
-  for (const [x, y] of r.step.land) {
-    ctx.beginPath();
-    ctx.arc(px(x), py(y), Math.max(2, 0.28 * L.s), 0, 2 * Math.PI);
-    ctx.fill();
+  if (view === "dots") {
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = `rgb(${LANDING_COLOR.join(",")})`;
+    for (const [x, y] of r.step.land) {
+      ctx.beginPath();
+      ctx.arc(px(x), py(y), Math.max(2.5, 0.3 * L.s), 0, 2 * Math.PI);
+      ctx.fill();
+    }
   }
-  ctx.globalAlpha = 0.9;
-  const [tx, ty] = r.step.target, k = Math.max(4, 0.6 * L.s);
-  ctx.strokeStyle = REBOUND_COLORS.target;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(px(tx) - k, py(ty) - k); ctx.lineTo(px(tx) + k, py(ty) + k);
-  ctx.moveTo(px(tx) - k, py(ty) + k); ctx.lineTo(px(tx) + k, py(ty) - k);
-  ctx.stroke();
   ctx.lineCap = "round";
   for (const link of r.step.box) {
     const a = at.get(link.b), b = at.get(link.o);
