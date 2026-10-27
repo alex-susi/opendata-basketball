@@ -4,6 +4,7 @@
 
 import { decodePlay } from "./decode";
 import type { ControlParams } from "./control";
+import type { ReboundGame } from "./rebounding";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
 declare const __DATA_STAMP__: string;
@@ -66,6 +67,36 @@ export async function loadPlay(row: PlayRow): Promise<Play> {
   const header = index.plays[row.id];
   if (!header) throw new Error(`${row.id} is missing from ${row.file}.json`);
   return decodePlay(buffer, header);
+}
+
+// The rebounding files are re-exported on their own (src/rebounding/run_export.R) without a new play export, so
+// they cannot rely on the play stamp: rebounding.json is revalidated on every load and its own `built` stamp is
+// sent with each game's file.
+let reboundDoc: Promise<{ built: string }> | null = null;
+/** Every table the Rebounding tab shows (rebounding.json). */
+export function loadReboundDoc<T>(): Promise<T> {
+  reboundDoc ??= fetch(`${base}rebounding.json`, { cache: "no-cache" }).then((r) => {
+    if (!r.ok) throw new Error(`Could not load rebounding.json (${r.status})`);
+    return r.json();
+  });
+  reboundDoc.catch(() => { reboundDoc = null; });
+  return reboundDoc as Promise<T>;
+}
+
+const rebounds = new Map<number, Promise<ReboundGame | null>>();
+/** One game's rebound forecasts (rebounding/<game>.json), or null when the export has none. */
+export function loadRebounds(game: number): Promise<ReboundGame | null> {
+  let p = rebounds.get(game);
+  if (!p) {
+    p = loadReboundDoc<{ built: string }>()
+      .then((doc) => fetch(`${base}rebounding/${game}.json?v=${encodeURIComponent(doc.built)}`))
+      .then((r) => (r.ok ? (r.json() as Promise<ReboundGame>) : null))
+      .catch(() => null);
+    // A failed load is not remembered, so the next play of the game asks again.
+    p.then((g) => { if (!g) rebounds.delete(game); });
+    rebounds.set(game, p);
+  }
+  return p;
 }
 
 let control: Promise<ControlParams | null> | null = null;

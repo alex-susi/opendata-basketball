@@ -820,3 +820,63 @@ the training-fold constant (0.314), falling back to the constant where a row has
 - **Rebuild order now:** `build_epv.R` (feature tables; stops if rebound prices are missing), then
   `src/court_control/build_control.R`, `src/court_control/price_rebounds.R`, `build_epv.R --refit`,
   `web/scripts/export_data.R`, `web/scripts/parity_reference.R`.
+
+## 2026-10-27 — Rebounding models from the physics-informed framework
+
+Status: exploration at the owner's direction, built from "Physics-informed rebounding: research and model framework"
+(2026-10-27). Not the entry's question. Code `src/rebounding/`, record and rerun order `docs/project/rebounding.md`,
+tables `outputs/rebounding/`, site: Rebounding tab and a rebounding panel beside the court.
+
+### Audit findings that changed the design
+
+- All 17 event counts in the framework's section 2 reproduce exactly. 707 non-fouled misses are eligible (rebound row,
+  ball track over 80% of the episode, no gap over 12 frames); 5 are out for poor ball coverage, 1 untracked, 29 have no
+  rebound row and stay out of every likelihood.
+- **Tracking files skip `frameIdx` values** (1,760 to 5,844 in five games). Reading lines by position silently shifted
+  255 windows; lines are now matched on `frameIdx`.
+- **Ball `isDetected` is 0 on every frame of every game**, and 44% of ball positions are the exact midpoint of their
+  neighbours (about 12.5 Hz keyframes, interpolated). Filters read keyframes only; no strict real-time claim.
+- **The ball frame is offset from the player frame at height**: made shots cross rim height 1.1 to 1.7 ft short of the
+  nominal hoop at the camera's right end and 0.6 to 1.1 ft past it at the left. Ball physics runs relative to each game
+  end's calibrated hoop (from that game's made shots); ball positions are shifted to the player frame in proportion to height.
+- **Effective floor 0.98 ft** (bounce minima), not the 0.40 ft ball radius; restitution 0.89.
+- The recorded rebound frame falls between the first possible touch (median 0.3 s earlier) and a held-ball proxy
+  (0.36 s later), so collection is scored on who got the ball, not when.
+
+### Models and held-out results (leave one game out)
+
+- **Flight**: launch prior (40 nearest tracked attempts, made or missed) → particle filter (400 particles, Student-t
+  keyframe likelihood) with a torus rim, backboard and floor; restitution range, normal jitter and observation scale
+  picked per fold by multi-step predictive score; miss scenarios only. Just before contact, 0.2 s ahead: error 1.6 ft
+  against 2.8 ft without contacts, 90% coverage 97% (Kalman 56%). From contact + 0.2 s: 90% coverage 92% at 0.4 s, 36%
+  at 1.0 s. **Untouched landing is not validated**: on about 31 naturally untouched bounces errors are 11–13 ft and
+  coverage 39–59%.
+- **First build was overconfident**: with the observation scale fixed at its one-step-likelihood floor (0.2 ft),
+  post-contact 90% coverage was 11–64%. The scale is now part of the contact grid (0.8 ft chosen in every fold, the
+  grid's edge; restitution 0.75–0.9 and jitter also at edges in several folds).
+- **Collection** (competing risks over 0.08 s steps, 48 paths, access from reaction + 18.1 ft/s + 10.5 ft reach,
+  information policy picked per fold): individual log loss (12 outcomes) at release 2.148 vs team prior 2.375, gain
+  0.232 ± 0.034, 10 of 10 games; geometry classifier 2.173. Just before the rim 2.084 vs 2.368 (geometry classifier
+  2.063). Team log loss 0.611 (release), 0.591 (rim) vs 0.626 / 0.621. Obstruction adds 0.006–0.011.
+- **Fix during the build**: a player 400 ft away kept a 0.44% chance through the floor in log(access). Players with
+  access below 1e-4 at a step are now excluded from it and outcomes get a 0.1% uniform floor; all opportunity, skills and
+  site outputs were refitted. All eight scenario checks pass (`outputs/rebounding/checks/scenario_checks.csv`).
+- **Anticipation reference policy replaced**: role-matched moves without momentum predicted held-out movement worse
+  than damped velocity (2.04 vs 0.90 ft). Now damped momentum plus role-matched residuals (0.84 ft), though its spread
+  is too wide (98% inside its 80% region).
+
+### What is not supported
+
+- **No player effect passes its identification test, so the site shows the population model only.** Anticipation:
+  player sd 0.6 points of probability, significant within games (LR 349) but cross-game r 0.24 for the 25 two-game
+  players. Box-outs (spatial proxy): sd 0.32 on the logit, cross-game r −0.47, no held-out gain. Collection: held-out
+  gain on seen rebounders −0.0001, simulated recovery r 0.45 at a true sd of 0.3.
+- Box-out labels and contact/touch/control timings are automated rules, not reviewed video; 60 episodes are listed for
+  review in `outputs/rebounding/audit/review_sample.csv`.
+- Maintaining an established box-out is barely predictable (best log loss 0.678 vs 0.692 base, 7 of 10 games).
+- Replay mode only: no dragging players, no hypothetical misses of made shots, no transition value.
+
+### Open choices
+
+- Whether to review the 60-episode sample against the viewer; whether to widen the contact/observation grid past its edges.
+- Whether rebound collection should replace EPV's constant offensive-rebound rate (not attempted here).

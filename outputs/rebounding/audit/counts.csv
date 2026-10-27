@@ -1,0 +1,20 @@
+quantity,count,framework
+"Shot records, including fouled misses",1459,1459
+Made shot records,606,606
+Missed records including fouled attempts,853,853
+Fouled misses,111,111
+Non-fouled misses,742,742
+Linked field-goal rebound records,713,713
+Player-secured field-goal rebounds,635,635
+Offensive player rebounds,177,177
+Defensive player rebounds,458,458
+Team field-goal rebounds,78,78
+Offensive team rebounds,54,54
+Defensive team rebounds,24,24
+Non-fouled misses without a rebound row,29,29
+"Blocked, non-fouled misses",51,51
+Canonical players appearing in chance_players,205,205
+Players appearing in one game,180,180
+Players appearing in two games,25,25
+Rebound rows pointing to a made or fouled shot,0,
+Shots with more than one rebound row,0,

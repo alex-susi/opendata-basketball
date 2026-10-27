@@ -14,7 +14,7 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
 | `public/data/` | `meta.json`, `plays.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
 | `src/lib/` | Decoding, filters, playback sequence, EPV lookup, shot steps, court and scene drawing — no framework code |
-| `src/components/`, `src/App.svelte` | The two tabs: the viewer (filters, play list, court, transport bar, side panel) and Archetypes |
+| `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, transport bar, side panel with the rebounding panel), Archetypes and Rebounding |
 | `tests/parity.test.ts` | Checks the site's filters and decoded plays against the Shiny app |
 
 ## Commands
@@ -53,6 +53,18 @@ copies them to `public/data/control.json`, and copies their reference cases to `
 Rscript web/scripts/export_data.R --control
 ```
 
+The rebounding panel beside the court, its overlay and the Rebounding tab read `public/data/rebounding.json` and
+`public/data/rebounding/<gameId>.json`, written by the rebounding pipeline (`src/rebounding/`, see
+`docs/project/rebounding.md`), whose last step is:
+
+```bash
+Rscript src/rebounding/run_export.R
+```
+
+It leaves the play data and its stamp untouched. `rebounding.json` is revalidated on every load and carries its own
+build stamp for the per-game files, so a rebounding-only export is never paired with stale files. The Rebounding
+tab's wording is in `src/components/Rebounding.svelte`; its numbers all come from `rebounding.json`.
+
 To change only the wording of the Archetypes tab, edit `src/play_viewer/R/archetype_page.R` and rewrite the page
 alone. This leaves the play data and its stamp untouched, so the parity reference stays valid.
 
@@ -72,7 +84,8 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 ## Differences from the Shiny app
 
 - Multi-select filters are a custom dropdown with checkboxes and a search box instead of selectize.
-- The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes`.
+- The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes` and the Rebounding tab `#/rebounding`.
+- The rebounding panel, its court overlay and the Rebounding tab exist only on the site.
 - The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
   `src/play_viewer/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.
 - On narrow screens the court comes first, then options and rosters, then filters and the play list.

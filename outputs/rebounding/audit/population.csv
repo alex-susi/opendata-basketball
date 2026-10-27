@@ -1,0 +1,11 @@
+status,outcome,N
+eligible,def player,457
+eligible,def team award,22
+eligible,off player,177
+eligible,off team award,51
+fouled miss,,111
+made,,606
+miss without rebound row,,29
+"miss, ball not tracked",,1
+"miss, poor ball coverage",def team award,2
+"miss, poor ball coverage",off team award,3

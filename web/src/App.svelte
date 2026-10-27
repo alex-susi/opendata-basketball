@@ -1,9 +1,11 @@
 <script lang="ts">
-  // Two tabs. The play viewer: filters and play list on the left, court and transport in the middle,
-  // display options and rosters on the right. The Archetypes tab explains the tags beside each player's name.
+  // Three tabs. The play viewer: filters and play list on the left, court and transport in the middle,
+  // display options, the rebounding forecast and rosters on the right. The Archetypes tab explains the tags beside
+  // each player's name; the Rebounding tab documents the rebounding models, their validation and their limits.
   // Static counterpart of src/play_viewer/app.R.
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
+  import Rebounding from "./components/Rebounding.svelte";
   import Filters from "./components/Filters.svelte";
   import PlayList from "./components/PlayList.svelte";
   import ShotPanel from "./components/ShotPanel.svelte";
@@ -19,7 +21,9 @@
 
   const ROUTE = "#/play/";
   const ARCHETYPES = "#/archetypes";
-  type Tab = "viewer" | "archetypes";
+  const REBOUNDING = "#/rebounding";
+  type Tab = "viewer" | "archetypes" | "rebounding";
+  const tabOfHash = (h: string): Tab => (h === ARCHETYPES ? "archetypes" : h === REBOUNDING ? "rebounding" : "viewer");
 
   let meta = $state.raw<Meta | null>(null);
   let plays = $state.raw<PlayRow[]>([]);
@@ -27,9 +31,11 @@
   let selectedId = $state<string | null>(null);
   let filters = $state(emptyFilters());
   let problem = $state("");
-  let tab = $state<Tab>(location.hash === ARCHETYPES ? "archetypes" : "viewer");
-  let opened = $state(location.hash === ARCHETYPES);   // the Archetypes page is fetched the first time it is shown
-  viewer.hidden = location.hash === ARCHETYPES;
+  const first = tabOfHash(location.hash);
+  let tab = $state<Tab>(first);
+  // Each document tab is fetched the first time it is shown.
+  let opened = $state({ archetypes: first === "archetypes", rebounding: first === "rebounding" });
+  viewer.hidden = first !== "viewer";
 
   const rows = $derived(filterPlays(plays, filters));
   const seq = $derived(play ? buildSeq(play, viewer.skipDead) : []);
@@ -39,17 +45,18 @@
   const subtitle = $derived(play ? [play.who ? `${play.result} (${play.who})` : play.result, ...play.types].join(" · ") : "");
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
 
-  // The address names the selected play, or the Archetypes tab while it is open.
+  // The address names the selected play, or the document tab while one is open.
   function address(): string {
     if (tab === "archetypes") return ARCHETYPES;
+    if (tab === "rebounding") return REBOUNDING;
     return selectedId ? ROUTE + selectedId : location.pathname + location.search;
   }
 
   function show(next: Tab): void {
     tab = next;
     viewer.hidden = next !== "viewer";
-    if (viewer.hidden) {
-      opened = true;
+    if (next !== "viewer") {
+      opened[next] = true;
       viewer.playing = false;
     }
     history.replaceState(null, "", address());
@@ -94,7 +101,8 @@
 
   // A shared link names its play in the address (#/play/<id>). Open it, clearing filters that would hide it.
   function openLinked(): void {
-    if (location.hash === ARCHETYPES) return show("archetypes");
+    const target = tabOfHash(location.hash);
+    if (target !== "viewer") return show(target);
     if (tab !== "viewer") show("viewer");
     const linked = location.hash.startsWith(ROUTE) ? decodeURIComponent(location.hash.slice(ROUTE.length)) : null;
     if (!linked || linked === selectedId || !plays.some((r) => r.id === linked)) return;
@@ -115,6 +123,7 @@
   <span class="brand">ACB play viewer</span>
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
+  <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
 </nav>
 
 <div class="app" hidden={tab !== "viewer"}>
@@ -164,5 +173,9 @@
 </div>
 
 <main class="doc" hidden={tab !== "archetypes"}>
-  {#if opened}<Archetypes />{/if}
+  {#if opened.archetypes}<Archetypes />{/if}
+</main>
+
+<main class="doc" hidden={tab !== "rebounding"}>
+  {#if opened.rebounding}<Rebounding />{/if}
 </main>

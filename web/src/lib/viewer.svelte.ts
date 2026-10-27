@@ -2,6 +2,7 @@
 
 import type { ControlMode } from "./controlLayer";
 import type { CourtView } from "./court";
+import type { ReboundEpisode, ReboundReading } from "./rebounding";
 
 export const viewer = $state({
   /** Playback position: an index into the current play's frame sequence, fractional between frames. */
@@ -25,6 +26,8 @@ export const viewer = $state({
   /** Court control under the players (the rebound surface while a shot is in the air). */
   showControl: false,
   controlMode: "control" as ControlMode,
+  /** The rebounding forecast while a missed shot is live: landing sample, box-out links, collection chances. */
+  showRebound: true,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */
@@ -45,4 +48,9 @@ export const live = $state({
   shot: -1,
   /** Court control readout at the frame drawn: which surface is showing and its numbers. */
   control: null as { kind: string; cells: [string, string][] } | null,
+  /** The rebound forecast live at the frame drawn (the side panel reads it), or null. */
+  rebound: null as ReboundReading | null,
+  /** The play's missed shots with rebound forecasts, and whether talent-aware chances exist for its game. */
+  reboundEpisodes: [] as ReboundEpisode[],
+  reboundTalent: false,
 });

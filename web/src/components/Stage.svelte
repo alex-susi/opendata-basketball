@@ -2,9 +2,10 @@
   // The court canvas: runs the animation clock, draws each frame and records video on request.
   import { onMount } from "svelte";
   import type { ControlParams } from "../lib/control";
-  import { loadControl } from "../lib/data";
+  import { loadControl, loadRebounds } from "../lib/data";
   import { drawScene } from "../lib/draw";
-  import { FPS } from "../lib/sequence";
+  import { episodesInPlay, gameOf, reboundAt, type ReboundEpisode } from "../lib/rebounding";
+  import { FPS, cursorAt } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -19,6 +20,23 @@
   const NO_READOUT: [string, string][] = [["EPV", "–"], ["TOV% (ROP)", "–"], ["Cum. TOV", "–"]];
   let control: ControlParams | null = null;   // court control parameters, once control.json has loaded
   loadControl().then((p) => { control = p; });
+  // Rebound forecasts of the play's game, loaded when the play changes.
+  let episodes: ReboundEpisode[] = [];
+  let talent = false;
+  $effect(() => {
+    const current = play;
+    episodes = [];
+    live.reboundEpisodes = [];
+    live.rebound = null;
+    if (!current) return;
+    loadRebounds(gameOf(current)).then((g) => {
+      if (play !== current) return;
+      episodes = episodesInPlay(current, g);
+      talent = g?.talent ?? false;
+      live.reboundEpisodes = episodes;
+      live.reboundTalent = talent;
+    });
+  });
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -37,7 +55,11 @@
   }
 
   function render(ctx: CanvasRenderingContext2D): void {
-    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed, control);
+    const frame = play && seq.length ? play.frames[cursorAt(play, seq, viewer.pos).i0] : -1;
+    const reading = episodes.length ? reboundAt(episodes, frame) : null;
+    if (reading?.step !== live.rebound?.step || reading?.resolved !== live.rebound?.resolved) live.rebound = reading;
+    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed, control,
+                           reading ? { reading, talent } : null);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;

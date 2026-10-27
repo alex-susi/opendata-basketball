@@ -7,6 +7,7 @@ import type { ControlParams } from "./control";
 import { controlAt, drawControl, type ControlMode } from "./controlLayer";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
 import { epvAt, type EpvReading } from "./epv";
+import { collectionLabels, drawReboundUnder, type ReboundReading } from "./rebounding";
 import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
 import { shotIndexAt } from "./shots";
@@ -30,7 +31,15 @@ export interface DrawOptions {
   showBestPass: boolean;
   showControl: boolean;
   controlMode: ControlMode;
+  /** The rebounding forecast on the court (landing sample, box-out links, collection chances). */
+  showRebound: boolean;
   hoverPid: number | null;
+}
+
+/** A rebound forecast to draw, and whether its talent-aware chances are the ones labelled. */
+export interface ReboundDraw {
+  reading: ReboundReading;
+  talent: boolean;
 }
 
 /** What the page shows beside the canvas about the frame just drawn: rosters, clocks and the EPV readout. */
@@ -248,10 +257,12 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[])
  * Draw the scene at playback position `pos` (an index into `seq`, fractional between frames).
  * @param header Draw the clock, score and EPV readout on the canvas too (while a video is recorded).
  * @param control Court control parameters; null draws no court control.
+ * @param rebound The rebound forecast live at this moment, or null.
  * @returns what is on court at that moment, or null when there is no play to draw.
  */
 export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, dpr: number, play: Play | null, seq: number[],
-                          pos: number, o: DrawOptions, header = false, control: ControlParams | null = null): FrameInfo | null {
+                          pos: number, o: DrawOptions, header = false, control: ControlParams | null = null,
+                          rebound: ReboundDraw | null = null): FrameInfo | null {
   const L = courtLayout(W, H, o.view, header ? HEADER_TOP : PAD.top);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.paper;
@@ -292,8 +303,22 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
       ctx.stroke();
     }
   }
+  // The rebound forecast sits over court control and under the players; its chances are labelled after them.
+  const rb = rebound && o.showRebound ? rebound : null;
+  if (rb) {
+    const at = new Map<number, [number, number]>(), mark = new Map<number, string>();
+    for (const d of dots.def.concat(dots.off)) { at.set(d.p.id, [d.x, d.y]); mark.set(d.p.id, play.colors[d.p.role].mark); }
+    drawReboundUnder(ctx, L, rb.reading, at, mark);
+  }
   for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
   if (ep && o.showEpv) drawOptions(ctx, L, dots.off, r, ep, o);
+  if (rb) {
+    const chance = collectionLabels(rb.reading, rb.talent);
+    for (const d of dots.def.concat(dots.off)) {
+      const p = chance.get(d.p.id);
+      if (p != null) drawTag(ctx, L.ox + d.x * L.s + r + 3, L.oy - d.y * L.s + r + 4, `${Math.round(p * 100)}%`, play.colors[d.p.role].text, 11, "left");
+    }
+  }
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;
   if (bx != null && by != null) {
     ctx.beginPath();

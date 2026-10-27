@@ -1,0 +1,17 @@
+checkpoint,model,rebounder_seen,log_loss,n
+release,effects_sd0.3,FALSE,2.15014676346452,588
+release,effects_sd0.15,FALSE,2.15035978918992,588
+release,access_obstruction,FALSE,2.15061056269454,588
+release,effects_sd0.6,FALSE,2.15151413580428,588
+release,effects_sd0.15,TRUE,2.1357789542447,115
+release,access_obstruction,TRUE,2.13672676394731,115
+release,effects_sd0.3,TRUE,2.13687846879458,115
+release,effects_sd0.6,TRUE,2.15345111351073,115
+rim,effects_sd0.15,FALSE,2.10201950836753,571
+rim,effects_sd0.3,FALSE,2.10202459707612,571
+rim,access_obstruction,FALSE,2.10217164921289,571
+rim,effects_sd0.6,FALSE,2.10369985744848,571
+rim,effects_sd0.15,TRUE,1.99188029803522,114
+rim,access_obstruction,TRUE,1.99275216586984,114
+rim,effects_sd0.3,TRUE,1.99286219048553,114
+rim,effects_sd0.6,TRUE,2.00632530171346,114

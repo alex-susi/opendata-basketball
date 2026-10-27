@@ -1,0 +1,9 @@
+check,value,pass,detail
+Probabilities non-negative and sum to one,1.33226762955019e-15,TRUE,39 scenes; largest |sum - 1| shown
+Player order within a side does not change anyone's chance,1.11022302462516e-16,TRUE,players shuffled within each side
+A player 400 ft away has no collection chance,8.33333333333333e-05,TRUE,largest chance left to the moved player
+Mirrored court gives the same chances,0,TRUE,every position and path reflected across the long axis
+Collection effects leave the simulated ball paths unchanged,0,TRUE,paths identical; chances moved by up to 0.038
+No tracking after the checkpoint enters a forecast,0,TRUE,forecasts from full and truncated tracks compared at release + 0.4 s
+Replaying an unchanged scene gives the same forecast,0,TRUE,same seed
+"Monte Carlo spread across seeds (48 paths), offense share",0.0139848568400635,TRUE,"mean sd over seeds: offense share 0.014, a player's chance 0.006"

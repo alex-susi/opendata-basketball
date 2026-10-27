@@ -1,0 +1,5 @@
+checkpoint,rebounder_seen,log_loss_access_obstruction,log_loss_effects_sd0.3,n_access_obstruction,n_effects_sd0.3
+release,FALSE,2.15061056269454,2.15014676346452,588,588
+release,TRUE,2.13672676394731,2.13687846879458,115,115
+rim,FALSE,2.10217164921289,2.10202459707612,571,571
+rim,TRUE,1.99275216586984,1.99286219048553,114,114

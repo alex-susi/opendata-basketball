@@ -1,7 +1,9 @@
 <script lang="ts">
-  // Right column: display toggles, the EPV readout and overlay toggles, and the two rosters. Each team keeps its
-  // club colours whichever end it plays. A roster row ends with the player's archetype on that side of the ball:
-  // its name in an outlined pill of the archetype's colour, full name and probability on hover.
+  // Right column: display toggles, court control, the rebounding forecast, the EPV readout and overlay toggles, and
+  // the two rosters. Each team keeps its club colours whichever end it plays. A roster row ends with the player's
+  // archetype on that side of the ball: its name in an outlined pill of the archetype's colour, full name and
+  // probability on hover.
+  import ReboundPanel from "./ReboundPanel.svelte";
   import { CONTROL_COLORS, type ControlMode } from "../lib/controlLayer";
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
@@ -78,6 +80,8 @@
       <p class="note">Nothing to shade at this moment (dead ball or players missing).</p>
     {/if}
   </div>
+
+  <ReboundPanel {play} />
 
   <div class="panel display">
     <h2>Expected Possession Value</h2>
