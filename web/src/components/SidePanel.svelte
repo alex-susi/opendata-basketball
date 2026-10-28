@@ -40,7 +40,7 @@
     <div class="toggle-grid by-column">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
-      <label class="toggle" title="Ring each player on the court in the colour of his archetype, as beside his name below">
+      <label class="toggle" title="Tag each player on the court with his archetype (abbreviated, in its colour), as beside his name below">
         <input type="checkbox" bind:checked={viewer.showArch} />Player archetypes
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>

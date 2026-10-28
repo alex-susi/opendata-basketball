@@ -29,14 +29,12 @@ rate_table <- function(dt, by) {
 
 el <- episodes[status == "eligible"]
 el[, off_ball := outcome %in% c("off player", "off team award")]
-el[, dist_bin := cut(shot_dist, c(0, 4, 8, 12, 16, 20, 23, 26, 50), right = FALSE,
-                     labels = c("0-4", "4-8", "8-12", "12-16", "16-20", "20-23", "23-26", "26+"))]
+el[, shot_range := shot_range(shot_dist, three)]
 
 # ---- 1. outcomes: what is being predicted ------------------------------------------------------------------
 w(el[, .N, by = outcome][, share := N / sum(N)][order(-N)], "outcomes")
-w(rate_table(el, "dist_bin"), "oreb_by_distance")
+w(rate_table(el, "shot_range"), "oreb_by_distance")
 w(rate_table(el, "kind"), "oreb_by_kind")
-w(rate_table(el[, three := fifelse(three, "three", "two")], "three"), "oreb_by_value")
 
 # ---- 2. where rebounds are secured -------------------------------------------------------------------------
 spots <- rbindlist(lapply(bundles, function(b) {
@@ -48,8 +46,8 @@ spots <- rbindlist(lapply(bundles, function(b) {
   rx <- p$x[1] - RIM_X; ry <- p$y[1]
   ang <- atan2(ry, rx) - atan2(sy, sx)
   ang <- (ang + pi) %% (2 * pi) - pi
-  data.table(shot_id = b$id, rx = round(rx, 1), ry = round(ry, 1), r = round(sqrt(rx^2 + ry^2), 2),
-             shot_dist = round(s$shot_dist, 1), range = as.character(s$range), off = !(s$defensive %in% TRUE),
+  data.table(shot_id = b$id, sx = round(sx, 1), sy = round(sy, 1), rx = round(rx, 1), ry = round(ry, 1), r = round(sqrt(rx^2 + ry^2), 2),
+             shot_dist = round(s$shot_dist, 1), range = shot_range(s$shot_dist, s$three), off = !(s$defensive %in% TRUE),
              angle = round(abs(ang) * 180 / pi), sy_sign = sign(sy), kind = s$kind)
 }))
 w(spots, "rebound_spots")

@@ -5,7 +5,7 @@
 
 import type { ControlParams } from "./control";
 import { controlAt, drawControl, type ControlMode } from "./controlLayer";
-import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, type CourtView, type Layout } from "./court";
+import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import { epvAt, type EpvReading } from "./epv";
 import { collectionLabels, drawReboundUnder, type HeatGrid, type LandingView, type ReboundReading } from "./rebounding";
 import { floorColors } from "./teamColors";
@@ -79,6 +79,22 @@ function archColor(slot: string): string {
   return color;
 }
 
+// The archetype tag under a dot is abbreviated; the roster beside the court spells it out.
+const ARCH_ABBR: Record<string, string> = {
+  "Slasher": "Slsh", "Roll & Cut Big": "R&C", "Athletic Finisher": "AthF", "Movement Shooter": "Mvmt",
+  "Primary Ball Handler": "PBH", "Post Scorer": "Post", "Off Screen Shooter": "OffScr", "Stationary Shooter": "Stnry",
+  "Secondary Ball Handler": "SBH", "Versatile Big": "VstlBig", "Point of Attack": "PoA", "Helper": "Hlpr",
+  "Chaser": "Chsr", "Anchor Big": "Anchr",
+};
+
+// A colour mixed with white, like the roster tag's color-mix(in srgb, colour 75%, white).
+function tint(color: string, share = 0.75): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(color.trim());
+  if (!m) return color;
+  const v = parseInt(m[1], 16);
+  return `rgb(${[16, 8, 0].map((s) => Math.round(share * ((v >> s) & 255) + (1 - share) * 255)).join(",")})`;
+}
+
 // Red below the current EPV, neutral at it, green above it.
 function valueColor(delta: number): string {
   const t = clamp(delta / VALUE_SPAN, -1, 1), end = t < 0 ? TEXT_ENDS[0] : TEXT_ENDS[2];
@@ -100,7 +116,7 @@ function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: Te
   if (poly.length < 3) return null;
   if (!show) return polygonArea(poly);
   ctx.beginPath();
-  poly.forEach((q, i) => (i ? ctx.lineTo(L.ox + q[0] * L.s, L.oy - q[1] * L.s) : ctx.moveTo(L.ox + q[0] * L.s, L.oy - q[1] * L.s)));
+  poly.forEach((q, i) => (i ? ctx.lineTo(px(L, q[0]), py(L, q[1])) : ctx.moveTo(px(L, q[0]), py(L, q[1]))));
   ctx.closePath();
   ctx.globalAlpha = 0.5;
   ctx.fillStyle = kit.fill;
@@ -113,23 +129,15 @@ function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: Te
   return polygonArea(poly);
 }
 
-// A player dot in his team's colours: secondary ring, primary centre. Around it, when asked for, a ring in the
-// colour of his archetype on this side of the ball; outside that, the ring that marks the ball handler.
+// A player dot in his team's colours: secondary ring, primary centre; around it, the ring that marks the ball
+// handler (or the hovered player).
 function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, kit: TeamColors, hasBall: boolean, o: DrawOptions): void {
-  const x = L.ox + d.x * L.s, y = L.oy - d.y * L.s, hovered = o.hoverPid === d.p.id;
-  const arch = o.showArch && d.p.arch ? archColor(d.p.arch.slot) : null;
+  const x = px(L, d.x), y = py(L, d.y), hovered = o.hoverPid === d.p.id;
   if (hovered || hasBall) {
     ctx.beginPath();
-    ctx.arc(x, y, r + (arch ? 7.5 : 5.5), 0, 2 * Math.PI);
+    ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = hovered ? COLORS.dark : kit.mark;
-    ctx.stroke();
-  }
-  if (arch) {
-    ctx.beginPath();
-    ctx.arc(x, y, r + 2, 0, 2 * Math.PI);
-    ctx.lineWidth = 3.2;
-    ctx.strokeStyle = arch;
     ctx.stroke();
   }
   ctx.beginPath();
@@ -163,18 +171,22 @@ function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: str
   ctx.fillText(text, left + w / 2, cy + 0.5);
 }
 
-// A label in a team's kit, like its player dots: primary fill, secondary ring, the dot's number colour.
-function drawChip(ctx: CanvasRenderingContext2D, left: number, cy: number, text: string, kit: TeamColors): void {
-  ctx.font = `700 11px ${FONT}`;
-  const w = ctx.measureText(text).width + 10, h = 17;
+// A small pill attached to the right of a dot, like an exponent (above) or a subscript (below): the rebound
+// chance in the team's kit above, the archetype in an outlined pill of its colour below.
+function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, above: boolean, text: string,
+                    fill: string, stroke: string, ink: string): void {
+  const size = Math.round(clamp(0.62 * r, 8.5, 11)), h = size + 4;
+  ctx.font = `700 ${size}px ${FONT}`;
+  const w = ctx.measureText(text).width + 8;
+  const left = px(L, d.x) + 0.62 * r, cy = py(L, d.y) + (above ? -0.82 : 0.82) * r;
   ctx.beginPath();
-  ctx.roundRect(left, cy - h / 2, w, h, 5);
-  ctx.fillStyle = kit.fill;
+  ctx.roundRect(left, cy - h / 2, w, h, h / 2);
+  ctx.fillStyle = fill;
   ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = kit.edge;
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = stroke;
   ctx.stroke();
-  ctx.fillStyle = kit.ink;
+  ctx.fillStyle = ink;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, left + w / 2, cy + 0.5);
@@ -182,7 +194,7 @@ function drawChip(ctx: CanvasRenderingContext2D, left: number, cy: number, text:
 
 // EPV labels around the offense. Player dots themselves are never restyled by the overlay.
 function drawOptions(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: number, ep: EpvReading, o: DrawOptions): void {
-  const at = (d: Dot): Point => [L.ox + d.x * L.s, L.oy - d.y * L.s];
+  const at = (d: Dot): Point => [px(L, d.x), py(L, d.y)];
   const holder = dots.find((d) => d.p.id === ep.holder);
   for (const d of dots) {
     if (d === holder) continue;
@@ -284,7 +296,7 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[])
 export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, dpr: number, play: Play | null, seq: number[],
                           pos: number, o: DrawOptions, header = false, control: ControlParams | null = null,
                           rebound: ReboundDraw | null = null): FrameInfo | null {
-  const L = courtLayout(W, H, o.view, header ? HEADER_TOP : PAD.top);
+  const L = courtLayout(W, H, o.view, header ? HEADER_TOP : PAD.top, play?.leftHoop ? -1 : 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.paper;
   ctx.fillRect(0, 0, W, H);
@@ -316,8 +328,8 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
     if (from && to) {
       ctx.beginPath();
-      ctx.moveTo(L.ox + from.x * L.s, L.oy - from.y * L.s);
-      ctx.lineTo(L.ox + to.x * L.s, L.oy - to.y * L.s);
+      ctx.moveTo(px(L, from.x), py(L, from.y));
+      ctx.lineTo(px(L, to.x), py(L, to.y));
       ctx.lineWidth = 3;
       ctx.lineCap = "round";
       ctx.strokeStyle = COLORS.best;
@@ -332,18 +344,25 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     drawReboundUnder(ctx, L, rb.reading, rb.grid, rb.landing, at, mark);
   }
   for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
+  if (o.showArch) {
+    for (const d of dots.def.concat(dots.off)) {
+      if (!d.p.arch) continue;
+      const tag = tint(archColor(d.p.arch.slot));
+      drawScript(ctx, L, d, r, false, ARCH_ABBR[d.p.arch.name] ?? d.p.arch.short, COLORS.panel, tag, tag);
+    }
+  }
   if (ep && o.showEpv) drawOptions(ctx, L, dots.off, r, ep, o);
   if (rb) {
     const chance = collectionLabels(rb.reading, rb.talent);
     for (const d of dots.def.concat(dots.off)) {
-      const p = chance.get(d.p.id);
-      if (p != null) drawChip(ctx, L.ox + d.x * L.s + r + 3, L.oy - d.y * L.s + r + 4, `${Math.round(p * 100)}%`, play.colors[d.p.role]);
+      const p = chance.get(d.p.id), kit = play.colors[d.p.role];
+      if (p != null) drawScript(ctx, L, d, r, true, `${Math.round(p * 100)}%`, kit.fill, kit.edge, kit.ink);
     }
   }
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;
   if (bx != null && by != null) {
     ctx.beginPath();
-    ctx.arc(L.ox + bx * L.s, L.oy - by * L.s, clamp(0.55 * L.s, 4.5, 10) * (1 + (0.5 * clamp(bz, 0, 14)) / 14), 0, 2 * Math.PI);
+    ctx.arc(px(L, bx), py(L, by), clamp(0.55 * L.s, 4.5, 10) * (1 + (0.5 * clamp(bz, 0, 14)) / 14), 0, 2 * Math.PI);
     ctx.fillStyle = COLORS.ball;
     ctx.fill();
     ctx.lineWidth = 1.2;

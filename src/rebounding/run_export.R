@@ -89,7 +89,13 @@ for (g in if (length(only)) as.integer(only) else games) {
     saveRDS(eps, path)
     message(sprintf("Site forecasts %s: %d episodes, %.0f s", g, length(eps), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
   }
-  jsonlite::write_json(list(game = g, talent = talent, heat = HEAT[c("x0", "y0", "cell", "nx", "ny")], episodes = readRDS(path)), file.path(web, "rebounding", sprintf("%s.json", g)),
+  # the site describes shots by the EDA's ranges (rim, midrange, three), set here so cached forecasts need no refit
+  eps <- lapply(readRDS(path), function(e) {
+    s <- episodes[shot_id == e$id]
+    e$range <- as.character(shot_range(s$shot_dist, s$three))
+    e
+  })
+  jsonlite::write_json(list(game = g, talent = talent, heat = HEAT[c("x0", "y0", "cell", "nx", "ny")], episodes = eps), file.path(web, "rebounding", sprintf("%s.json", g)),
                        auto_unbox = TRUE, digits = NA, null = "null", na = "null")
 }
 

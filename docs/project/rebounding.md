@@ -18,7 +18,7 @@ resumes; `--game=<id>` runs one fold so folds can run as parallel processes. Bac
 | Opportunity and collection (steps 2 and 4) | `run_opportunity.R` | `outputs/rebounding/collection/*.csv`, `scenes_{game}.rds`, `opp_fold_{game}.rds` |
 | Behaviour and skills (steps 3 and 4) | `run_skills.R` | `outputs/rebounding/skills/*.csv`, `skills_{game}.rds`, `final_fits.rds` |
 | Scenario checks (section 13) | `run_checks.R` | `outputs/rebounding/checks/scenario_checks.csv` |
-| Exploratory tables for the Rebounding tab | `run_eda.R` | `outputs/rebounding/eda/*.csv` (each one backs a modelling decision on the tab) |
+| Exploratory tables for the Rebounding tab | `run_eda.R` | `outputs/rebounding/eda/*.csv` (each one backs a modelling decision on the tab; shots described as rim / midrange / three by `shot_range()`) |
 | Site (step 5) | `run_export.R` | `web/public/data/rebounding/{game}.json` (forecasts every 0.2 s with a landing-density grid), `web/public/data/rebounding.json` (validation and EDA tables) |
 
 Modules: `R/extract.R` (reading), `R/audit.R` (timelines and proxies), `R/bundle.R` (episode bundles and the two

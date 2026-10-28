@@ -907,3 +907,57 @@ At the owner's request after reviewing the first version.
   offensive rate little; players carry 85% of their momentum over 0.48 s.
 - **Not used as a feature**: the audit's "putback or tip" kind is defined by the offense getting the ball (100% by
   construction). No model uses it; the tab says so.
+
+## 2026-10-27 (evening) — Shot ranges for description, smoothed rebound maps, court labels
+
+At the owner's request.
+
+- **Shot ranges in the EDA and on the site** are now rim (under 5 ft), midrange (every other two) and three, by
+  `shot_range()` in `src/rebounding/R/audit.R`. They replace the 10/22 ft split and the 4 ft distance bins wherever the
+  data are described (offensive rate by range, rebound distance and angle by range, the per-shot label in the viewer;
+  the episode files are relabelled at export, so cached forecasts needed no refit). **At this point the models still used the old
+  10/22 ft `range` as a covariate** (empirical-density benchmark, anticipation and box-out GAMs); superseded by the refit below; switching them meant
+  refitting run_opportunity.R and run_skills.R. With the new ranges: offensive rate 36% at the rim, 33% midrange, 30%
+  on threes (every interval includes the 32% overall); median rebound distance 3.2 / 4.3 / 6.2 ft.
+- **Where misses go** is drawn as smoothed densities (Gaussian kernel, sd 1.5 ft, 0.5 ft grid) on one shared colour
+  scale, on a neutral floor (the blue ramp turned grey over the viewer's tan). A new click-a-shot map weights every
+  real miss by how alike its shot is (Gaussian in shot position, width chosen by the reader, 2–8 ft), optionally
+  mirrored left/right, and reports the effective sample size. Mirroring is an assumption: sides differ by noise-level
+  amounts here (47% vs 56% of side-shot rebounds on the shooter's half, 156 and 126 misses). The readout uses
+  "within 30° of the shot's line" rather than "shooter's half", since most rebounds come back along the line near the
+  middle of the floor.
+- **Court labels**: a player's collection chance is a small kit-coloured superscript on his dot; his archetype is an
+  abbreviated subscript pill in the roster tag's colour, replacing the archetype ring.
+
+## 2026-10-27 (night) — The play viewer draws plays in the camera's view
+
+At the owner's request: the end of one possession and the start of the next should line up.
+
+- Plays stay stored with the offense attacking +x (every model and overlay assumes it); the site now rotates a play
+  180° back to the broadcast camera's view when its offense attacks the left hoop (`possessions.leftHoop`), at draw
+  time only (`Layout.f`, `px()`/`py()` in `web/src/lib/court.ts`). Court control, the landing heatmap, hulls and
+  labels turn with the players; text stays upright. The half-court view shows the half the offense attacks, left or
+  right. Checked: in game 114243, period 1, the ball's position at the last frame of each possession equals the first
+  frame of the next.
+- `export_data.R` writes `leftHoop` in each play header; the existing export was patched with it (the headers are
+  otherwise byte-identical) and its `generated` stamp moved so browsers fetch the new headers. The parity reference
+  carries the same stamp. The Shiny app is unchanged and still draws every offense attacking right.
+
+## 2026-10-28 — Models refit without the 10/22 ft shot range
+
+At the owner's request. The 10/22 ft split was an untested choice made while building (22 ft is roughly the arc; 10
+ft had no basis) and the framework never asked for it. It entered three models; none of the physics did.
+
+- **Empirical density + Voronoi benchmark** (`fit_voronoi()`): densities now by rim / midrange / three. Held-out log
+  loss 2.475 → 2.478 at release and 2.171 → 2.179 just before the rim: slightly worse, most likely because the
+  under-5-ft group is small (about 120 secured rebounds per training fold) and its density noisier. Still the weakest
+  model at release (better than the prior in 2 of 10 games) and behind every physics model at the rim. Every other
+  model on the ladder is unchanged (largest log-loss change 5e-10: refit from the same cached scenes).
+- **Anticipation and box-out GAMs** (`run_skills.R`): `range` replaced by `s(shot_dist, k = 5) + three`. Box-out
+  maintenance, held out by game: geometry model log loss 0.678 → 0.682 (gain over the base rate 0.012 → 0.009, better
+  in 7 of 10 games either way); with player effects 0.679 → 0.683. Identification: anticipation LR 349 → 352, player sd
+  0.0063 → 0.0064, cross-game r 0.24 → 0.23; box-out LR 29.7 → 28.9, cross-game r −0.47 → −0.46. Neither passes, as
+  before. Player effects barely move (Spearman r 0.999 anticipation, 0.997 box-out).
+- **Conclusion**: the binning was harmless; no result or site decision depended on it. The continuous form is kept
+  because it has no arbitrary cut points, and the old split remains only to stratify the label-review sample. Before
+  and after tables were compared in place; the opportunity folds took about 19 minutes in parallel.

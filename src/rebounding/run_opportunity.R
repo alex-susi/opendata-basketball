@@ -24,6 +24,7 @@ reb_xy <- rbindlist(lapply(bundles, function(b) {
   data.table(shot_id = b$id, rx_pl = if (nrow(p)) p$x[1] else NA_real_, ry_pl = if (nrow(p)) p$y[1] else NA_real_)
 }))
 eps <- merge(episodes[status == "eligible"], reb_xy, by = "shot_id")
+eps[, shot_range := shot_range(shot_dist, three)]
 
 #' Scenes of every bundle at both checkpoints, with the flight fit of one fold (or of all games).
 scenes_for <- function(tag, fit, lib) {
@@ -55,7 +56,7 @@ run_fold <- function(sc_all, g, cp) {
   names(f5) <- paste0("effects_sd", SD_U)
   tr_eps <- eps[shot_id %in% vapply(s_tr, `[[`, "", "id")]
   te_ids <- vapply(s_te, `[[`, "", "id")
-  ranges <- eps$range[match(te_ids, eps$shot_id)]
+  ranges <- eps$shot_range[match(te_ids, eps$shot_id)]
   vor <- fit_voronoi(tr_eps)
   near <- fit_softmax(s_tr, feats_nearest, y_tr)
   geo <- fit_softmax(s_tr, feats_geometry, y_tr)

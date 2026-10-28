@@ -84,15 +84,15 @@ v0 <- rbindlist(lapply(games, function(g) {
   }))
 }))
 ant <- merge(ant, v0, by = c("shot_id", "pid"))
-ant <- merge(ant, episodes[, .(shot_id, range)], by = "shot_id")
+ant <- merge(ant, episodes[, .(shot_id, shot_dist, three)], by = "shot_id")
 ant[, games := uniqueN(game_id), by = canon]
 fwrite(ant, file.path(out_dir, "anticipation_rows.csv"))
 eligible <- ant[w >= EXPOSURE_MIN & !grepl("shooter", role)]
 eligible[, `:=`(canon_f = factor(canon), role_f = factor(role), wt = w / mean(w))]
 lim <- quantile(eligible$gain, c(0.01, 0.99))
 eligible[, gain_w := pmin(pmax(gain, lim[1]), lim[2])]
-a_re <- gam(gain_w ~ s(v0, k = 5) + role_f + range + s(canon_f, bs = "re"), weights = wt, data = eligible, method = "REML")
-a_0 <- gam(gain_w ~ s(v0, k = 5) + role_f + range, weights = wt, data = eligible, method = "REML")
+a_re <- gam(gain_w ~ s(v0, k = 5) + role_f + s(shot_dist, k = 5) + three + s(canon_f, bs = "re"), weights = wt, data = eligible, method = "REML")
+a_0 <- gam(gain_w ~ s(v0, k = 5) + role_f + s(shot_dist, k = 5) + three, weights = wt, data = eligible, method = "REML")
 # player sd of a random intercept: sqrt(scale / smoothing parameter) (scale is 1 for the binomial model)
 re_sd_of <- function(m, term) sqrt(m$sig2 / m$sp[[term]])
 re_sd <- re_sd_of(a_re, "s(canon_f)")
@@ -118,16 +118,16 @@ fwrite(box[, !c("frames", "strength")], file.path(out_dir, "boxout_pairs.csv"))
 bm <- box[established == TRUE & label != "ambiguous"]
 bm[, `:=`(y = as.integer(label == "maintained"), order = as.integer(blocker_hoop < opponent_hoop),
           blk_f = factor(blocker_canon), opp_f = factor(opponent_canon))]
-bm <- merge(bm, episodes[, .(shot_id, range)], by = "shot_id")
+bm <- merge(bm, episodes[, .(shot_id, shot_dist, three)], by = "shot_id")
 logl <- function(p, y) -mean(y * log(pmax(p, 1e-6)) + (1 - y) * log(pmax(1 - p, 1e-6)))
 auc <- function(p, y) { r <- rank(p); n1 <- sum(y == 1); n0 <- sum(y == 0); if (!n1 || !n0) return(NA_real_); (sum(r[y == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0) }
 box_cv <- rbindlist(lapply(games, function(g) {
   tr <- bm[game_id != g]; te <- bm[game_id == g]
   if (!nrow(te)) return(NULL)
   f_ord <- glm(y ~ order, binomial, tr)
-  f_geo <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + range + t_establish,
+  f_geo <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + s(shot_dist, k = 5) + three + t_establish,
                family = binomial, data = tr, method = "REML")
-  f_re <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + range + t_establish +
+  f_re <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + s(shot_dist, k = 5) + three + t_establish +
                 s(blk_f, bs = "re") + s(opp_f, bs = "re"), family = binomial, data = tr, method = "REML")
   te_re <- copy(te)
   # unseen players get the population (zero) effect
@@ -147,9 +147,9 @@ gg <- box_cv[, .(ll = logl(p, y)), by = .(game_id, model)]
 gg <- merge(gg, gg[model == "base_rate", .(game_id, ll0 = ll)], by = "game_id")
 box_sum <- merge(box_sum, gg[, .(gain = mean(ll0 - ll), gain_se = sd(ll0 - ll) / sqrt(.N), games_better = sum(ll < ll0)), by = model], by = "model")
 fwrite(box_sum[order(log_loss)], file.path(out_dir, "boxout_validation.csv"))
-b_re <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + range + t_establish +
+b_re <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + s(shot_dist, k = 5) + three + t_establish +
               s(blk_f, bs = "re") + s(opp_f, bs = "re"), family = binomial, data = bm, method = "REML")
-b_0 <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + range + t_establish,
+b_0 <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + s(shot_dist, k = 5) + three + t_establish,
            family = binomial, data = bm, method = "REML")
 b_lrt <- 2 * (as.numeric(logLik(b_re)) - as.numeric(logLik(b_0)))
 bcoef <- coef(b_re)[grep("s\\(blk_f\\)", names(coef(b_re)))]

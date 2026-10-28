@@ -137,6 +137,9 @@ export interface PlayHeader {
   who: string;
   types: string[];
   colors: Record<Role, TeamColors>;
+  /** The offense attacks the camera's left hoop. Positions are stored rotated so the offense attacks +x; the
+   * viewer rotates them back to the camera's view. Missing from older exports (drawn as stored). */
+  leftHoop?: boolean;
   players: PlayerInfo[];
   priced: number[];
   events: PlayEvent[];

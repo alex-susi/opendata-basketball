@@ -1,4 +1,4 @@
 component,evidence,player_sd,likelihood_ratio,cross_game_r,heldout_gain_repeat,recovery_r,passes,used_in_site
-Anticipation,"5492 player-episodes with exposure, 203 players",0.00632253933639944,348.647903569945,0.236618693613972,,,FALSE,pooled (population) only
-Boxing out (spatial obstruction proxy),"661 established pairs, 179 blockers",0.324687468830467,29.6556818372889,-0.467748450302037,-0.00150556761307725,,FALSE,pooled (population) only
-Collection,"685 rim-checkpoint episodes, 204 players",0.1170758097256,,,-0.000110024615693982,0.449876638248734,FALSE,pooled (population) only
+Anticipation,"5492 player-episodes with exposure, 203 players",0.00637129852313743,352.309971870251,0.227094694093365,,,FALSE,pooled (population) only
+Boxing out (spatial obstruction proxy),"661 established pairs, 179 blockers",0.323191138145652,28.8736938912225,-0.464935805407015,-0.00161206857976278,,FALSE,pooled (population) only
+Collection,"685 rim-checkpoint episodes, 204 players",0.1170758097256,,,-0.000110021933299675,0.449876638248734,FALSE,pooled (population) only

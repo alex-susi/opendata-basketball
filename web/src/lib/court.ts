@@ -25,11 +25,16 @@ export const COLORS = {
 
 export type CourtView = "full" | "half";
 
-/** Where the court sits on the canvas: scale in pixels per foot and the pixel origin of (0, 0) feet. */
+/**
+ * Where the court sits on the canvas: scale in pixels per foot and the pixel origin of (0, 0) feet. Plays are
+ * stored with the offense attacking +x; `f` is -1 when the play is drawn rotated 180° back to the camera's view
+ * (the offense attacking the left hoop), so consecutive plays line up. Map feet to pixels with px() and py().
+ */
 export interface Layout {
   W: number;
   H: number;
   s: number;
+  f: 1 | -1;
   left: number;
   top: number;
   cw: number;
@@ -38,13 +43,20 @@ export interface Layout {
   oy: number;
 }
 
-export function courtLayout(W: number, H: number, view: CourtView, padTop = PAD.top): Layout {
-  const x0 = view === "half" ? -MARGIN : -(HALF_L + MARGIN), x1 = HALF_L + MARGIN;
+/** Pixel position of a point given in the play's stored feet (offense attacking +x). */
+export const px = (L: Layout, x: number): number => L.ox + L.f * x * L.s;
+export const py = (L: Layout, y: number): number => L.oy - L.f * y * L.s;
+
+/** @param f 1 to draw the play as stored (offense attacking right), -1 to rotate it to the camera's view. */
+export function courtLayout(W: number, H: number, view: CourtView, padTop = PAD.top, f: 1 | -1 = 1): Layout {
+  // the half court is the half the offense attacks: on the left when the play is rotated
+  const x0 = view === "half" ? (f > 0 ? -MARGIN : -(HALF_L + MARGIN)) : -(HALF_L + MARGIN);
+  const x1 = view === "half" && f < 0 ? MARGIN : HALF_L + MARGIN;
   const y0 = -(HALF_W + MARGIN), y1 = HALF_W + MARGIN;
   const s = Math.max(1, Math.min((W - 2 * PAD.side) / (x1 - x0), (H - padTop - PAD.bottom) / (y1 - y0)));
   const cw = (x1 - x0) * s, ch = (y1 - y0) * s;
   const left = (W - cw) / 2, top = padTop + (H - padTop - PAD.bottom - ch) / 2;
-  return { W, H, s, left, top, cw, ch, ox: left - x0 * s, oy: top + y1 * s };
+  return { W, H, s, f, left, top, cw, ch, ox: left - x0 * s, oy: top + y1 * s };
 }
 
 function halfCourtLines(ctx: CanvasRenderingContext2D): void {

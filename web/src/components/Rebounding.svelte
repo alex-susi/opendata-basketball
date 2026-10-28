@@ -6,8 +6,10 @@
   import { loadReboundDoc } from "../lib/data";
   import Columns from "./charts/Columns.svelte";
   import CourtMap from "./charts/CourtMap.svelte";
+  import { gridOf, kde, peak } from "./charts/kde";
   import RateDots from "./charts/RateDots.svelte";
   import Scatter from "./charts/Scatter.svelte";
+  import ReboundFinder from "./ReboundFinder.svelte";
   import { SERIES } from "./charts/scale";
 
   type Cell = number | string | boolean | null | undefined;
@@ -72,22 +74,25 @@
   });
   const spots = $derived(E("rebound_spots"));
   const byRange = (range: string) => spots.filter((r) => r.range === range).map((r) => ({ x: n(r.rx), y: n(r.ry) }));
-  const RANGES = ["short (<10 ft)", "mid (10-22 ft)", "long (22+ ft)"];
+  // Shots are described by range: at the rim (under 5 ft), midrange (every other two) and three.
+  const RANGES = ["rim (<5 ft)", "midrange (other 2s)", "three"];
+  const RANGE_TITLE: Record<string, string> = { "rim (<5 ft)": "Rim (under 5 ft)", "midrange (other 2s)": "Midrange (other 2s)", three: "Three" };
+  // One colour scale for the three maps (their densest cell), so the same shade means the same share in each.
+  const mapMax = $derived(Math.max(...RANGES.map((rg) => peak(kde(byRange(rg), gridOf(-30, 5.6, -24.6, 24.6), 1.5)))));
+  const finderSpots = $derived(spots.map((r) => ({ sx: n(r.sx), sy: n(r.sy), rx: n(r.rx), ry: n(r.ry), off: r.off === true || r.off === "TRUE" })));
   const spotScatter = $derived(spots.map((r) => ({ x: n(r.shot_dist), y: n(r.r), g: r.off === true || r.off === "TRUE" ? 0 : 1,
                                                    tip: `Shot from ${f(0)(r.shot_dist)} ft, rebound ${f(1)(r.r)} ft from the hoop` })));
-  const medianLine = $derived.by(() => {
-    const bins: [number, number][] = [];
-    for (let lo = 0; lo < 30; lo += 4) {
-      const v = spots.filter((r) => n(r.shot_dist) >= lo && n(r.shot_dist) < lo + 4).map((r) => n(r.r)).sort((a, b) => a - b);
-      if (v.length >= 10) bins.push([lo + 2, v[Math.floor(v.length / 2)]]);
-    }
-    return bins;
-  });
+  // Each range's median rebound distance, drawn across the shot distances that range covers.
+  const medianLines = $derived(RANGES.map((rg) => {
+    const rows = spots.filter((r) => r.range === rg), d = rows.map((r) => n(r.shot_dist));
+    const m = n(one(E("rebound_distance_by_range"), (r) => r.range === rg)?.median_r);
+    return { points: [[Math.min(...d), m], [Math.max(...d), m]] as [number, number][], label: `median ${f(1)(m)} ft`, color: "var(--ink)" };
+  }).filter((l) => l.points.every((q) => Number.isFinite(q[0]) && Number.isFinite(q[1]))));
   const angleCats = ["0-30°", "30-60°", "60-90°", "90-120°", "120-150°", "150-180°"];
   const angleSeries = $derived(RANGES.map((rg, j) => {
     const rows = E("rebound_angle").filter((r) => r.range === rg);
     const tot = rows.reduce((s, r) => s + n(r.n), 0);
-    return { name: rg, values: rows.map((r) => n(r.n) / tot), color: SERIES[j] };
+    return { name: RANGE_TITLE[rg], values: rows.map((r) => n(r.n) / tot), color: SERIES[j] };
   }));
   const timing = $derived(E("timing"));
   const flightPts = $derived(timing.filter((r) => r.t_contact != null && !Number.isNaN(n(r.t_contact)))
@@ -188,8 +193,9 @@
   {@const k02 = flt("contact", 0.2, "kalman")}
   {@const a04 = flt("after", 0.4, "particle_contact")}
   {@const a10 = flt("after", 1, "particle_contact")}
-  {@const shortR = one(E("rebound_distance_by_range"), (r) => String(r.range).startsWith("short"))}
-  {@const longR = one(E("rebound_distance_by_range"), (r) => String(r.range).startsWith("long"))}
+  {@const shortR = one(E("rebound_distance_by_range"), (r) => r.range === RANGES[0])}
+  {@const midR = one(E("rebound_distance_by_range"), (r) => r.range === RANGES[1])}
+  {@const longR = one(E("rebound_distance_by_range"), (r) => r.range === RANGES[2])}
   <div class="doc-inner rb-doc">
     <h1>Rebounding: from data to model</h1>
     <p class="lead">
@@ -330,15 +336,20 @@
     <!-- 4 ------------------------------------------------------------------------------------------------- -->
     <section id="rb-where">
       <h2>4. Where misses go</h2>
-      <p>Where rebounds are secured (the rebounder's position at the recorded rebound frame), by the range of the shot. The hoop is at the right.</p>
+      <p>
+        Where rebounds are secured (the rebounder's position at the recorded rebound frame), by the range of the shot:
+        at the rim (under 5 ft), midrange (every other two) and three. The hoop is at the right. Each map is smoothed
+        (every rebound spreads as a soft 1.5 ft blob) and all three share one colour scale, so the same shade means the same
+        share of that range's rebounds per square foot. Hover a map to read the share within 3 ft of the pointer.
+      </p>
       <div class="rb-grid three">
-        {#each RANGES as rg (rg)}<CourtMap points={byRange(rg)} title={rg} />{/each}
+        {#each RANGES as rg (rg)}<CourtMap points={byRange(rg)} title={RANGE_TITLE[rg]} vmax={mapMax} />{/each}
       </div>
       <div class="rb-grid two">
         <div>
           <h4>Rebound distance from the hoop against shot distance</h4>
           <Scatter points={spotScatter} groups={["Offensive rebound", "Defensive rebound"]} xlabel="Shot distance (ft)" ylabel="Rebound distance (ft)"
-                   lines={[{ points: medianLine, label: "median", color: "var(--ink)" }]} radius={2.5} opacity={0.45} />
+                   lines={medianLines} radius={2.5} opacity={0.45} />
         </div>
         <div>
           <h4>Angle from the shooter's side (0° = same side as the shot)</h4>
@@ -346,14 +357,42 @@
         </div>
       </div>
       <ul class="facts">
-        <li><b>Longer shots, longer rebounds.</b> The median rebound is {f(1)(shortR?.median_r)} ft from the hoop after a short shot and {f(1)(longR?.median_r)} ft after a long one; {pc(0)(longR?.long_share)} of long-shot rebounds are more than 12 ft out against {pc(0)(shortR?.long_share)} for short ones.</li>
+        <li><b>Longer shots, longer rebounds.</b> The median rebound is {f(1)(shortR?.median_r)} ft from the hoop after a shot at the rim, {f(1)(midR?.median_r)} ft after a midrange shot and {f(1)(longR?.median_r)} ft after a three; {pc(0)(longR?.long_share)} of three-point rebounds are more than 12 ft out against {pc(0)(shortR?.long_share)} at the rim.</li>
         <li><b>Rebounds stay on the shooter's side.</b> The most common direction is within 30° of the shot's own line, for every range. The belief that misses bounce long to the opposite side does not show here.</li>
         <li><b>Most rebounds are close.</b> Even after threes, three quarters are secured within about {f(0)(longR?.q75)} ft of the hoop: the contest happens in a small area.</li>
       </ul>
+
+      <h3>Try it: where do misses from a given spot go?</h3>
+      <p>
+        The maps above pool every shot in a range. Here you pick the shot: click a spot (or a preset) and the map shows
+        where misses from shots like it were rebounded in these ten games.
+      </p>
+      <ReboundFinder spots={finderSpots} />
+      <aside class="concept">
+        <h4>Concept: a conditional density, and how much data backs it</h4>
+        <p>
+          Every real miss votes for the spot where its rebound was secured. Its vote counts more the closer its shot was to
+          the one you clicked (the weight falls off as a bell curve whose width is the slider). The weighted votes are then
+          smoothed into a map, exactly like the maps above. Nothing is fitted: this is the data, smoothed.
+        </p>
+        <p>
+          The width is the classic trade-off. Narrow, and the map uses only near-identical shots: faithful to the spot but
+          built on few misses, so noisy. Wide, and it borrows from shots that are less alike: steadier, but blurred toward
+          the overall pattern. <b>"Worth N misses"</b> is the effective sample size, (sum of weights)² / sum of squared
+          weights: how many equally weighted misses the weights add up to. Below about 15, read the map as a rough sketch.
+        </p>
+        <p>
+          <b>Mirroring</b> assumes a miss from the left behaves like the same miss from the right, reflected. It doubles the
+          data, and it is an assumption: untick it to see what the ten games say on each side alone. This map is also the
+          baseline any landing model should beat; the ball-flight model's untouched-landing forecast has not yet been
+          compared against it.
+        </p>
+      </aside>
+
       <div class="rb-grid two">
         <div>
-          <h4>Offensive ball by shot distance (ft)</h4>
-          <RateDots rows={rates(E("oreb_by_distance"), "dist_bin")} reference={overall} />
+          <h4>Offensive ball by shot range</h4>
+          <RateDots rows={rates(E("oreb_by_distance"), "shot_range", (v) => RANGE_TITLE[String(v)] ?? String(v))} reference={overall} />
         </div>
         <div>
           <h4>Offensive ball by what the ball hit first</h4>
@@ -362,9 +401,10 @@
         </div>
       </div>
       <p>
-        Two things stand out. The offensive rate barely moves with shot distance (every interval overlaps the overall
-        {pc(0)(overall)}), so distance changes <i>where</i> the ball goes much more than <i>who</i> gets it. And what the ball
-        hits first matters little on its own.
+        Two things stand out. The offensive rate drifts only a little with range, from {pc(0)(one(E("oreb_by_distance"), (r) => r.shot_range === RANGES[0])?.rate)}
+        after shots at the rim to {pc(0)(one(E("oreb_by_distance"), (r) => r.shot_range === RANGES[2])?.rate)} after threes, and
+        every interval includes the overall {pc(0)(overall)}: range changes <i>where</i> the ball goes much more than
+        <i>who</i> gets it. And what the ball hits first matters little on its own.
       </p>
       <div class="rb-grid two">
         <div>
@@ -743,6 +783,8 @@ Rscript src/rebounding/run_export.R</pre>
   .concept { margin: 14px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .concept h4 { margin-top: 0; color: var(--ink); }
   .concept p { margin: 0; color: var(--muted); }
+  .concept p + p { margin-top: 8px; }
+  section > h3 { margin-top: 22px; }
   .concept b { color: var(--ink); }
   .rb-note { color: var(--muted); font-size: 12.5px; }
   .rb-note b { color: var(--ink); }

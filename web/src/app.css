@@ -14,7 +14,7 @@
   --missed: #FF8A80;
   --radius: 10px;
   --bar: 41px;          /* height of the tab bar */
-  /* Archetype colours: the roster tags, the rings on the court and the Archetypes tab. One hue per offensive
+  /* Archetype colours: the roster tags, the tags on the court and the Archetypes tab. One hue per offensive
      archetype; a defensive role borrows the hue of the offensive archetype most of its players have. */
   --arch-primary: #9085E9;
   --arch-secondary: #D55181;

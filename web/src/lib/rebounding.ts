@@ -125,7 +125,10 @@ function drawHeat(ctx: CanvasRenderingContext2D, L: Layout, grid: HeatGrid, heat
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   const top = grid.y0 + grid.ny * grid.cell;
-  ctx.drawImage(raster, L.ox + grid.x0 * L.s, L.oy - top * L.s, grid.nx * grid.cell * L.s, grid.ny * grid.cell * L.s);
+  // the grid is in the play's stored frame; a play drawn in the camera's view turns it 180° about centre court
+  ctx.translate(L.ox, L.oy);
+  ctx.scale(L.f, L.f);
+  ctx.drawImage(raster, grid.x0 * L.s, -top * L.s, grid.nx * grid.cell * L.s, grid.ny * grid.cell * L.s);
   ctx.restore();
 }
 
@@ -138,7 +141,7 @@ function drawHeat(ctx: CanvasRenderingContext2D, L: Layout, grid: HeatGrid, heat
  */
 export function drawReboundUnder(ctx: CanvasRenderingContext2D, L: Layout, r: ReboundReading, grid: HeatGrid | null,
                                  view: LandingView, at: Map<number, [number, number]>, mark: Map<number, string>): void {
-  const px = (x: number) => L.ox + x * L.s, py = (y: number) => L.oy - y * L.s;
+  const px = (x: number) => L.ox + L.f * x * L.s, py = (y: number) => L.oy - L.f * y * L.s;
   if (view === "heat" && grid && r.step.heat?.length) drawHeat(ctx, L, grid, r.step.heat);
   ctx.save();
   if (view === "dots") {

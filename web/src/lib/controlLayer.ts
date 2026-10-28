@@ -136,6 +136,9 @@ export function drawControl(ctx: CanvasRenderingContext2D, L: Layout, r: Control
   ctx.clip();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(raster, L.ox - HALF_L * L.s, L.oy - HALF_W * L.s, g.nx * g.cell * L.s, g.ny * g.cell * L.s);
+  // the grid is in the play's stored frame; a play drawn in the camera's view turns it 180° about centre court
+  ctx.translate(L.ox, L.oy);
+  ctx.scale(L.f, L.f);
+  ctx.drawImage(raster, -HALF_L * L.s, -HALF_W * L.s, g.nx * g.cell * L.s, g.ny * g.cell * L.s);
   ctx.restore();
 }

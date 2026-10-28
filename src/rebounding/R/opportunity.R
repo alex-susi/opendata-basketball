@@ -224,17 +224,17 @@ feats_geometry <- function(sc) {
 }
 
 #' Empirical landing density with Voronoi cells (Maheswaran et al. 2014): where training rebounds were
-#' secured, by shot range, as a kernel density on a 1 ft grid; each player gets the density of the cells
-#' nearer to him than to anyone else.
+#' secured, by shot range (rim, midrange, three: `shot_range` from shot_range()), as a kernel density on a
+#' 1 ft grid; each player gets the density of the cells nearer to him than to anyone else.
 fit_voronoi <- function(train_eps) {
   pts <- train_eps[grabbed == TRUE & !is.na(rx_pl)]
   grid <- CJ(x = seq(RIM_X - 34.5, COURT_HALF_L - 0.5, by = 1), y = seq(-COURT_HALF_W + 0.5, COURT_HALF_W - 0.5, by = 1))
-  dens <- lapply(levels(train_eps$range), function(r) {
-    p <- pts[range == r]
+  dens <- lapply(levels(train_eps$shot_range), function(r) {
+    p <- pts[shot_range == r]
     d <- rowSums(outer(grid$x, p$rx_pl, function(a, b) dnorm(a, b, 2.5)) * outer(grid$y, p$ry_pl, function(a, b) dnorm(a, b, 2.5)))
     d / sum(d)
   })
-  names(dens) <- levels(train_eps$range)
+  names(dens) <- levels(train_eps$shot_range)
   list(grid = grid, dens = dens, team = c(mean(train_eps$outcome == "off team award"), mean(train_eps$outcome == "def team award")))
 }
 

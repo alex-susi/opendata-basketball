@@ -198,6 +198,14 @@ classify_episodes <- function(ep) {
   ep[]
 }
 
+#' The shot ranges used to describe the data (EDA and the site): at the rim (under 5 ft), midrange (every other
+#' two) and three. The models use these too (density benchmark) or continuous shot distance (skill GAMs);
+#' `range` above remains only to stratify the review sample.
+SHOT_RANGES <- c("rim (<5 ft)", "midrange (other 2s)", "three")
+shot_range <- function(dist, three) {
+  factor(fifelse(three %in% TRUE, SHOT_RANGES[3], fifelse(dist < 5, SHOT_RANGES[1], SHOT_RANGES[2])), levels = SHOT_RANGES)
+}
+
 #' Counts the framework reports in its section 2, recomputed from the delivered event files.
 audit_counts <- function(ep, chance_players) {
   m <- ep[made == FALSE]

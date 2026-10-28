@@ -100,6 +100,7 @@ play_header <- function(p, offset) {
   list(id = p$id, o = offset, n = length(p$frames), m = length(p$epv$f), game = p$game, period = p$period,
        off = p$off, def = p$def, home = p$home, away = p$away, homeScore = p$homeScore, awayScore = p$awayScore,
        result = p$result, who = p$who, types = I(as.character(p$types)), colors = p$colors,
+       leftHoop = a$app_data$plays[id == p$id]$left_hoop,
        players = lapply(p$players, function(pl) c(pl[c("id", "jersey", "name", "last", "role")], list(arch = pl$arch))),
        priced = I(as.integer(names(p$epv$players))), events = p$events, touches = p$touches, shots = p$shots)
 }
