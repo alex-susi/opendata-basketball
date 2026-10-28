@@ -13,6 +13,11 @@
 // with a team award (offense with probability plogis(g_side)). Outcome probabilities are averaged over
 // particles; the likelihood is the probability of the recorded outcome (not its timing). Players with no access
 // at a step are left out of that step, and outcomes get a small uniform floor (A_MIN, TREMBLE below).
+//
+// Late forecasts (R/late.R) extend the player score with the forecast's time since the ball reached the rim, tau,
+// and each player's arrival margin d (his arrival time at the ball minus the fastest other player's, seconds,
+// capped): b0 + b0_t*tau + ... + (b_acc + b_acc_t*tau)*log(access) - (b_first + b_first_t*tau)*d. With tau and d
+// absent (the cr_* functions) the extra terms are zero and the model is exactly the one above.
 
 #include <Rcpp.h>
 #include <cmath>
@@ -32,13 +37,13 @@ static inline double plogis_(double x) { return 1.0 / (1.0 + std::exp(-x)); }
 //' @param t_info Per particle: seconds after the checkpoint when its contact is visible (0 if already).
 //' @param target Forecast centre (x, y) for policy 2.
 //' @param par c(react, vmax, sigma, z_reach, z_scale, info_lag).
-// [[Rcpp::export]]
-NumericVector access_array(NumericMatrix bx, NumericMatrix by, NumericMatrix bz, NumericMatrix pl,
-                           NumericVector t_info, NumericVector target, NumericVector par, double dt, int policy) {
+// Earliest arrival time T of every player at every path point (P x K x n, players fastest), under the policy.
+static std::vector<double> arrival_times(const NumericMatrix& bx, const NumericMatrix& by, const NumericMatrix& pl,
+                                         const NumericVector& t_info, const NumericVector& target, const NumericVector& par,
+                                         int policy) {
   int P = bx.nrow(), K = bx.ncol(), n = pl.nrow();
-  double react = par[0], vmax = par[1], sigma = par[2], zr = par[3], zs = par[4], lag = par[5];
-  double scale = M_PI / std::sqrt(3.0) / sigma;
-  NumericVector A(P * K * n);
+  double react = par[0], vmax = par[1], lag = par[5];
+  std::vector<double> T((size_t)P * K * n);
   for (int p = 0; p < P; p++) {
     double tsw = std::max(react, t_info[p] + lag);
     for (int i = 0; i < n; i++) {
@@ -51,16 +56,53 @@ NumericVector access_array(NumericMatrix bx, NumericMatrix by, NumericMatrix bz,
         if (go >= d) { sx = target[0]; sy = target[1]; } else if (d > 1e-9) { sx = rx + dx / d * go; sy = ry + dy / d * go; }
       }
       for (int k = 0; k < K; k++) {
-        double t = dt * (k + 1), qx = bx(p, k), qy = by(p, k);
-        double T = react + std::sqrt((qx - rx) * (qx - rx) + (qy - ry) * (qy - ry)) / vmax;
-        if (policy != 0) T = std::max(T, tsw + std::sqrt((qx - sx) * (qx - sx) + (qy - sy) * (qy - sy)) / vmax);
-        double arrived = plogis_((t - T) * scale);
-        double low = plogis_((zr - bz(p, k)) / zs);
-        A[(p * K + k) * n + i] = arrived * low;
+        double qx = bx(p, k), qy = by(p, k);
+        double t = react + std::sqrt((qx - rx) * (qx - rx) + (qy - ry) * (qy - ry)) / vmax;
+        if (policy != 0) t = std::max(t, tsw + std::sqrt((qx - sx) * (qx - sx) + (qy - sy) * (qy - sy)) / vmax);
+        T[((size_t)p * K + k) * n + i] = t;
       }
     }
   }
+  return T;
+}
+
+// [[Rcpp::export]]
+NumericVector access_array(NumericMatrix bx, NumericMatrix by, NumericMatrix bz, NumericMatrix pl,
+                           NumericVector t_info, NumericVector target, NumericVector par, double dt, int policy) {
+  int P = bx.nrow(), K = bx.ncol(), n = pl.nrow();
+  double sigma = par[2], zr = par[3], zs = par[4];
+  double scale = M_PI / std::sqrt(3.0) / sigma;
+  std::vector<double> T = arrival_times(bx, by, pl, t_info, target, par, policy);
+  NumericVector A(P * K * n);
+  for (int p = 0; p < P; p++) for (int k = 0; k < K; k++) {
+    double t = dt * (k + 1), low = plogis_((zr - bz(p, k)) / zs);
+    for (int i = 0; i < n; i++) {
+      size_t at = ((size_t)p * K + k) * n + i;
+      A[at] = plogis_((t - T[at]) * scale) * low;
+    }
+  }
   return A;
+}
+
+//' Arrival margin for one forecast, same layout as access_array(): each player's earliest arrival at the ball's
+//' position minus the earliest of the other nine players', in seconds, capped to [-cap, cap]. Negative means he
+//' would get there first.
+// [[Rcpp::export]]
+NumericVector arrival_margin(NumericMatrix bx, NumericMatrix by, NumericMatrix pl, NumericVector t_info,
+                             NumericVector target, NumericVector par, int policy, double cap) {
+  int P = bx.nrow(), K = bx.ncol(), n = pl.nrow();
+  std::vector<double> T = arrival_times(bx, by, pl, t_info, target, par, policy);
+  NumericVector D(P * K * n);
+  for (size_t c = 0; c < (size_t)P * K; c++) {
+    const double* t = T.data() + c * n;
+    double m1 = INFINITY, m2 = INFINITY;   // fastest and second fastest
+    for (int i = 0; i < n; i++) { if (t[i] < m1) { m2 = m1; m1 = t[i]; } else if (t[i] < m2) m2 = t[i]; }
+    for (int i = 0; i < n; i++) {
+      double other = (t[i] == m1) ? m2 : m1;
+      D[c * n + i] = std::max(-cap, std::min(cap, t[i] - other));
+    }
+  }
+  return D;
 }
 
 struct Model {
@@ -70,10 +112,13 @@ struct Model {
   const double* Z;        // E x n x 2: defense flag, obstruction received
   const int* pidx;        // E x n: index into u, or -1
   const int* y;           // E: outcome, 0..n-1 players, n = offense team award, n+1 = defense team award
+  const double* D;        // E x P x K x n arrival margin, or null (zero)
+  const double* tau;      // E: seconds since the ball reached the rim, or null (zero)
 };
 
-// theta: b0, b_def, b_obs, b_acc, gO, gD, g_side
-static const int NT = 7;
+// theta: b0, b_def, b_obs, b_acc, gO, gD, g_side, then the late terms b0_t, b_acc_t, b_first, b_first_t.
+// NT_BASE of them are what cr_objective() and cr_predict() take; the late ones are zero there.
+static const int NT = 11, NT_BASE = 7;
 // A player with less access than A_MIN at a step cannot collect then (unreachable stays impossible), and every
 // outcome probability is mixed with a uniform floor TREMBLE / 12 so a recorded outcome the physics calls
 // impossible keeps a finite likelihood.
@@ -85,10 +130,12 @@ static inline double tremble(double p) { return (1 - TREMBLE) * p + TREMBLE / 12
 static void episode(const Model& m, int e, const double* th, const double* u, double* prob, bool want_grad,
                     double* g_th, double* g_u) {
   int n = m.n, O = n + 3;   // outcomes: players, team O, team D, continue (index n+2)
+  double tau = m.tau ? m.tau[e] : 0.0;
+  double b_acc = th[3] + th[8] * tau, b_first = th[9] + th[10] * tau;
   std::vector<double> base(n);
   for (int i = 0; i < n; i++) {
     int pi = m.pidx[e * n + i];
-    base[i] = th[0] + th[1] * m.Z[(e * n + i) * 2] + th[2] * m.Z[(e * n + i) * 2 + 1] + (pi >= 0 ? u[pi] : 0.0);
+    base[i] = th[0] + th[7] * tau + th[1] * m.Z[(e * n + i) * 2] + th[2] * m.Z[(e * n + i) * 2 + 1] + (pi >= 0 ? u[pi] : 0.0);
   }
   for (int o = 0; o < n + 3; o++) prob[o] = 0;
   int yy = want_grad ? m.y[e] : -1;
@@ -113,9 +160,14 @@ static void episode(const Model& m, int e, const double* th, const double* u, do
         S = 0;
         break;
       }
-      const double* a = m.A + ((size_t)(e * m.P + p) * m.K + k) * n;
+      size_t at = ((size_t)(e * m.P + p) * m.K + k) * n;
+      const double* a = m.A + at;
+      const double* d = m.D ? m.D + at : nullptr;
       double mx = 0;
-      for (int i = 0; i < n; i++) { s[i] = base[i] + th[3] * std::log(a[i] + 1e-6); mx = std::max(mx, s[i]); }
+      for (int i = 0; i < n; i++) {
+        s[i] = base[i] + b_acc * std::log(a[i] + 1e-6) - (d ? b_first * d[i] : 0.0);
+        mx = std::max(mx, s[i]);
+      }
       s[n] = th[4]; s[n + 1] = th[5]; s[n + 2] = 0;
       mx = std::max(mx, std::max(s[n], s[n + 1]));
       double z = 0;
@@ -126,8 +178,10 @@ static void episode(const Model& m, int e, const double* th, const double* u, do
         // expected score gradient sum_o h_o ds_o/dtheta
         std::fill(dS.begin(), dS.end(), 0.0);
         for (int i = 0; i < n; i++) {
+          double la = std::log(a[i] + 1e-6), di = d ? d[i] : 0.0;
           dS[0] += h[i]; dS[1] += h[i] * m.Z[(e * n + i) * 2]; dS[2] += h[i] * m.Z[(e * n + i) * 2 + 1];
-          dS[3] += h[i] * std::log(a[i] + 1e-6); dS[NT + i] += h[i];
+          dS[3] += h[i] * la; dS[NT + i] += h[i];
+          dS[7] += h[i] * tau; dS[8] += h[i] * tau * la; dS[9] -= h[i] * di; dS[10] -= h[i] * tau * di;
         }
         dS[4] += h[n]; dS[5] += h[n + 1];
         if (yy >= 0 && yy < n + 2) {
@@ -136,8 +190,10 @@ static void episode(const Model& m, int e, const double* th, const double* u, do
           // d log h_y = ds_y - dS
           for (int j = 0; j < NG; j++) num[j] += w * (G[j] - dS[j]);
           if (yy < n) {
+            double la = std::log(a[yy] + 1e-6), dy = d ? d[yy] : 0.0;
             num[0] += w; num[1] += w * m.Z[(e * n + yy) * 2]; num[2] += w * m.Z[(e * n + yy) * 2 + 1];
-            num[3] += w * std::log(a[yy] + 1e-6); num[NT + yy] += w;
+            num[3] += w * la; num[NT + yy] += w;
+            num[7] += w * tau; num[8] += w * tau * la; num[9] -= w * dy; num[10] -= w * tau * dy;
           } else num[yy == n ? 4 : 5] += w;
         }
         // continuing: d log h_c = 0 - dS
@@ -155,25 +211,22 @@ static void episode(const Model& m, int e, const double* th, const double* u, do
 }
 
 static Model make_model(NumericVector A, IntegerVector out_step, NumericVector Z, IntegerVector pidx, IntegerVector y,
-                        IntegerVector dims) {
+                        IntegerVector dims, NumericVector D = NumericVector(0), NumericVector tau = NumericVector(0)) {
   Model m;
   m.E = dims[0]; m.P = dims[1]; m.K = dims[2]; m.n = dims[3]; m.M = dims[4];
   m.A = A.begin(); m.out_step = out_step.begin(); m.Z = Z.begin(); m.pidx = pidx.begin(); m.y = y.begin();
+  m.D = D.size() ? D.begin() : nullptr;
+  m.tau = tau.size() ? tau.begin() : nullptr;
   return m;
 }
 
-//' Negative penalised log likelihood and its gradient over the episodes in `use`.
-//' @param par c(theta (7), u (M)); free Logical of the same length (fixed entries get zero gradient).
-//' @param sd_u Prior sd of the player effects (0: effects held at zero); ridge Small penalty on theta.
-// [[Rcpp::export]]
-List cr_objective(NumericVector par, NumericVector A, IntegerVector out_step, NumericVector Z, IntegerVector pidx,
-                  IntegerVector y, IntegerVector dims, IntegerVector use, LogicalVector free, double sd_u, double ridge) {
-  Model m = make_model(A, out_step, Z, pidx, y, dims);
+// Penalised log likelihood and its gradient; par holds all NT theta then the M player effects.
+static List objective(const Model& m, const std::vector<double>& par, IntegerVector use, const std::vector<bool>& free,
+                      double sd_u, double ridge) {
   int n = m.n, U = use.size(), NG = NT + m.M;
   const int* up = use.begin();
-  const double* pp = par.begin();
-  NumericVector grad(NG);
-  std::vector<double> gsum(NG, 0.0);
+  const double* pp = par.data();
+  std::vector<double> grad(NG), gsum(NG, 0.0);
   double ll = 0;
   #pragma omp parallel
   {
@@ -201,17 +254,13 @@ List cr_objective(NumericVector par, NumericVector A, IntegerVector out_step, Nu
   for (int j = 0; j < m.M; j++) {
     if (sd_u > 0) { pen += 0.5 * par[NT + j] * par[NT + j] / (sd_u * sd_u); grad[NT + j] -= par[NT + j] / (sd_u * sd_u); }
   }
-  for (int j = 0; j < NT + m.M; j++) if (!free[j]) grad[j] = 0;
-  return List::create(_["value"] = -(ll - pen), _["gradient"] = -grad, _["loglik"] = ll);
+  for (int j = 0; j < NG; j++) { if (!free[j]) grad[j] = 0; grad[j] = -grad[j]; }
+  return List::create(_["value"] = -(ll - pen), _["gradient"] = wrap(grad), _["loglik"] = ll);
 }
 
-//' Outcome probabilities (n players, team O, team D, unresolved) for every episode.
-// [[Rcpp::export]]
-NumericMatrix cr_predict(NumericVector par, NumericVector A, IntegerVector out_step, NumericVector Z, IntegerVector pidx,
-                         IntegerVector y, IntegerVector dims) {
-  Model m = make_model(A, out_step, Z, pidx, y, dims);
+static NumericMatrix predict(const Model& m, const std::vector<double>& par) {
   std::vector<double> res((size_t)m.E * (m.n + 3));
-  const double* pp = par.begin();
+  const double* pp = par.data();
   #pragma omp parallel
   {
     std::vector<double> prob(m.n + 3);
@@ -225,6 +274,59 @@ NumericMatrix cr_predict(NumericVector par, NumericVector A, IntegerVector out_s
   NumericMatrix out(m.E, m.n + 3);
   for (int e = 0; e < m.E; e++) for (int o = 0; o < m.n + 3; o++) out(e, o) = res[(size_t)e * (m.n + 3) + o];
   return out;
+}
+
+// The base model's parameters (NT_BASE theta, then effects) widened to all NT theta, the late terms at zero.
+static std::vector<double> widen(const NumericVector& par, int M) {
+  std::vector<double> out(NT + M, 0.0);
+  for (int j = 0; j < NT_BASE; j++) out[j] = par[j];
+  for (int j = 0; j < M && NT_BASE + j < par.size(); j++) out[NT + j] = par[NT_BASE + j];
+  return out;
+}
+
+//' Negative penalised log likelihood and its gradient over the episodes in `use` (base model).
+//' @param par c(theta (7), u (M)); free Logical of the same length (fixed entries get zero gradient).
+//' @param sd_u Prior sd of the player effects (0: effects held at zero); ridge Small penalty on theta.
+// [[Rcpp::export]]
+List cr_objective(NumericVector par, NumericVector A, IntegerVector out_step, NumericVector Z, IntegerVector pidx,
+                  IntegerVector y, IntegerVector dims, IntegerVector use, LogicalVector free, double sd_u, double ridge) {
+  Model m = make_model(A, out_step, Z, pidx, y, dims);
+  std::vector<double> p = widen(par, m.M);
+  std::vector<bool> fr(NT + m.M, false);
+  for (int j = 0; j < NT_BASE; j++) fr[j] = free[j];
+  for (int j = 0; j < m.M; j++) fr[NT + j] = free[NT_BASE + j];
+  List r = objective(m, p, use, fr, sd_u, ridge);
+  NumericVector g = r["gradient"], out(NT_BASE + m.M);
+  for (int j = 0; j < NT_BASE; j++) out[j] = g[j];
+  for (int j = 0; j < m.M; j++) out[NT_BASE + j] = g[NT + j];
+  return List::create(_["value"] = r["value"], _["gradient"] = out, _["loglik"] = r["loglik"]);
+}
+
+//' Outcome probabilities (n players, team O, team D, unresolved) for every episode (base model).
+// [[Rcpp::export]]
+NumericMatrix cr_predict(NumericVector par, NumericVector A, IntegerVector out_step, NumericVector Z, IntegerVector pidx,
+                         IntegerVector y, IntegerVector dims) {
+  Model m = make_model(A, out_step, Z, pidx, y, dims);
+  return predict(m, widen(par, m.M));
+}
+
+//' The late model's objective: par = c(theta (11), u (M)), D the arrival margins (same layout as A) and tau
+//' each episode's seconds since the ball reached the rim.
+// [[Rcpp::export]]
+List crt_objective(NumericVector par, NumericVector A, NumericVector D, NumericVector tau, IntegerVector out_step,
+                   NumericVector Z, IntegerVector pidx, IntegerVector y, IntegerVector dims, IntegerVector use,
+                   LogicalVector free, double sd_u, double ridge) {
+  Model m = make_model(A, out_step, Z, pidx, y, dims, D, tau);
+  std::vector<bool> fr(free.begin(), free.end());
+  return objective(m, std::vector<double>(par.begin(), par.end()), use, fr, sd_u, ridge);
+}
+
+//' The late model's outcome probabilities.
+// [[Rcpp::export]]
+NumericMatrix crt_predict(NumericVector par, NumericVector A, NumericVector D, NumericVector tau, IntegerVector out_step,
+                          NumericVector Z, IntegerVector pidx, IntegerVector y, IntegerVector dims) {
+  Model m = make_model(A, out_step, Z, pidx, y, dims, D, tau);
+  return predict(m, std::vector<double>(par.begin(), par.end()));
 }
 
 //' Obstruction of each player's routes to the target points by each opponent (see obstruction_matrix() in

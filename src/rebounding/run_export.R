@@ -1,6 +1,6 @@
 # Step 5 of the rebounding framework: what the site shows.
 #   Rscript src/rebounding/run_export.R [--refit]
-# Needs run_flight.R, run_opportunity.R and run_skills.R. Writes:
+# Needs run_flight.R, run_opportunity.R, run_skills.R and run_late.R. Writes:
 #   web/public/data/rebounding/{gameId}.json  every eligible miss of a game, forecast every 0.2 s from release
 #                                             until the rebound from the observed prefix only (replay mode)
 #   web/public/data/rebounding.json           every table the Rebounding tab reads
@@ -34,6 +34,8 @@ landing_heat <- function(land) {
 }
 
 final <- readRDS(file.path(cache, "final_fits.rds"))
+late_path <- file.path(cache, "late_final.rds")
+late <- if (file.exists(late_path)) readRDS(late_path) else list(used = FALSE)
 flight_all <- readRDS(file.path(cache, "flight_params_all.rds"))
 ident <- fread(file.path(report, "skills", "identification.csv"))
 talent <- isTRUE(ident[component == "Collection", passes])
@@ -49,12 +51,19 @@ episode_forecasts <- function(i) {
   tm <- bundle_times(b)
   t_end <- min(c(tm$rebound, SITE_MAX), na.rm = TRUE)
   t_rim <- rim_time(b) - 0.04
+  cs <- contact_seen(b)
   steps <- lapply(seq(0, max(0, t_end - 0.04), by = SITE_STEP), function(t) {
     sc <- build_scene(b, t, flight_all, launch_rows_all, seed = i, landing = TRUE)
     if (!length(sc)) return(NULL)
-    f <- final[[if (t < t_rim - 1e-9) "release" else "rim"]]
+    # the late model once the ball's arrival at the rim has been seen (when it passed its held-out test);
+    # otherwise the release model, then the rim model from the recorded rim time
+    late_now <- isTRUE(late$used) && !is.na(cs[[1]]) && t >= cs[[2]] - 1e-9
+    f <- final[[if (late_now || t < t_rim - 1e-9) "release" else "rim"]]
     st <- stack_scenes(list(sc), f$acc, f$players, TRUE)
-    P <- predict_cr(st, f$access_obstruction)[1, ]
+    P <- if (late_now) {
+      sc$tau <- late_tau(t, cs[[1]])
+      predict_late(stack_late(list(sc), late$acc), late$fit)[1, ]
+    } else predict_cr(st, f$access_obstruction)[1, ]
     pairs <- which(sc$O >= 0.15, arr.ind = TRUE)
     land <- sc$land[seq_len(min(nrow(sc$land), LAND_SHOWN)), , drop = FALSE]
     out <- list(f = sc$frame, pid = sc$pl$pid, p = r3(P[1:10]),
@@ -63,7 +72,8 @@ episode_forecasts <- function(i) {
                 heat = landing_heat(sc$land), out = r3(mean(out_of_court(sc$land[, 1], sc$land[, 2]))),
                 box = lapply(seq_len(nrow(pairs)), function(k) list(b = sc$pl$pid[pairs[k, 1]], o = sc$pl$pid[pairs[k, 2]],
                                                                     s = r3(sc$O[pairs[k, 1], pairs[k, 2]]))))
-    if (talent) out$pt <- r3(predict_cr(st, f$effects)[1, 1:10])
+    if (talent && !late_now) out$pt <- r3(predict_cr(st, f$effects)[1, 1:10])
+    if (late_now) out$tau <- round(t - cs[[1]], 2)
     out
   })
   steps <- Filter(Negate(is.null), steps)
@@ -139,6 +149,10 @@ doc <- list(
                 movement_roles = tab("skills", "movement_by_role.csv"), boxout_labels = tab("skills", "boxout_labels.csv"),
                 boxout_validation = tab("skills", "boxout_validation.csv"), variance = tab("skills", "variance_components.csv"),
                 anticipation_players = antp[episodes >= 15][order(-effect)],
-                boxout_players = boxp[obstructing_scenes >= 15][order(-team_value)]))
+                boxout_players = boxp[obstructing_scenes >= 15][order(-team_value)]),
+  late = if (dir.exists(file.path(report, "late"))) {
+    fs <- list.files(file.path(report, "late"), "[.]csv$")
+    setNames(lapply(fs, function(f) fread(file.path(report, "late", f))), sub("[.]csv$", "", fs))
+  } else NULL)
 jsonlite::write_json(doc, file.path(web, "rebounding.json"), auto_unbox = TRUE, digits = 4, dataframe = "rows", null = "null", na = "null")
 message("Wrote ", file.path(web, "rebounding.json"))

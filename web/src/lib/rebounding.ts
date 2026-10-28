@@ -23,6 +23,8 @@ export interface ReboundStep {
   out: number;
   /** Obstruction now: blocker b stands in opponent o's way to the reachable ball with strength s (0 to 1). */
   box: { b: number; o: number; s: number }[];
+  /** Seconds since the ball was seen reaching the rim, on forecasts made by the late model; absent before. */
+  tau?: number;
 }
 
 export interface ReboundEpisode {

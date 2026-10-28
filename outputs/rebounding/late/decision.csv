@@ -1,0 +1,2 @@
+model,gain_over_current,se,games_better,used_on_site,rule
+late_full,0.113468043108568,0.0108020264504149,10,TRUE,used when its held-out log loss beats the current site model on average and in at least 6 of 10 games

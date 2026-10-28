@@ -961,3 +961,33 @@ ft had no basis) and the framework never asked for it. It entered three models; 
 - **Conclusion**: the binning was harmless; no result or site decision depended on it. The continuous form is kept
   because it has no arbitrary cut points, and the old split remains only to stratify the label-review sample. Before
   and after tables were compared in place; the opportunity folds took about 19 minutes in parallel.
+
+## 2026-10-28 — Late forecasts: a collection model for the moments after the rim
+
+At the owner's request, after asking why Samuels had only 32% just before securing a miss (shot-114099-1-19).
+
+- **Diagnosis.** The site reused the rim-checkpoint fit for every forecast after the rim. Fitted where the bounce is
+  still unknown, its access weight was weak (10x the access gave 2.4x the pull); players drifted 0.5 s before reacting;
+  access said only whether a player could reach the ball, not whether he would be first; and the untouched 3.2 s horizon
+  let far players catch up. Given the true ball path it still gave Samuels 35%: the ball forecast was not the limit.
+- **Model** (`src/rebounding/R/late.R`, `run_late.R`; C++ `arrival_margin`, `crt_objective`, `crt_predict`). Scenes at
+  0, 0.2, 0.4, 0.6, 0.8, 1.0 and 1.4 s after the ball reached the rim, while still loose (2,712 scenes from 636 misses
+  over the held-out folds). One pooled competing-risks fit with the baseline and the access weight linear in tau, plus
+  an arrival-margin term (arrival time minus the fastest other player's, capped at ±1 s, its weight also linear in tau).
+  Reaction time (0.05–0.5 s) and information policy (0, 1, 2) chosen per fold on a 700-scene training subsample; ties go
+  to the longest reaction time, because under the drift policy nothing shorter than the ~0.25 s to see the next bounce
+  changes the model. The all-games fit: drift policy, 0.25 s; b_acc 0.50 + 0.47 tau, b_first 3.38 − 1.10 tau.
+- **When the rim is known.** `contact_seen()` reads it from the track seen so far (the audit's contact zones, or the
+  ball below 6 ft; interpolated frames used only up to the last keyframe seen). It matches the audit's rim time to the
+  frame for 77% of misses (86% within 0.08 s) and is known within 0.04 s for 90%; a scenario check confirms cutting the
+  track changes nothing. The old switch used the recorded rim time (hindsight). The site now uses the release model
+  until the rim is known, then the late model; the old rim model is no longer used on the site.
+- **Held-out results** (leave one game out, late scenes only, log loss per scene): late model 1.821; reused rim model
+  1.937 (gain 0.113 ± 0.011, better in 10 of 10 games); geometry classifier refit on late scenes 1.928; team prior
+  2.401. Ablation: refitting the same model on late moments gives 0.094 of the gain, time-varying weights 0.003, the
+  arrival margin 0.016. At tau = 0 the two are close (2.028 vs 2.005); the gain builds over the next half second. The
+  eventual collector's average chance rises from 19% to 24%; the median top player from 24% to 31%. Calibration: the old
+  model's 30–40% calls came true 51% of the time; the late model's 38%, and it tracks across the range.
+- **The Samuels miss**: 25% → 40% at 1.6 s and 32% → 60% at 1.8 s (the held-out fit, without this game, gives the same).
+- **Limits**: nothing is learned after 1.4 s (later forecasts use the 1.4 s weights); scenes are weighted equally, so
+  long scrambles count a little more; many rebounds stay contested, so the typical top player is still near a third.

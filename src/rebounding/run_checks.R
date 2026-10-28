@@ -86,6 +86,63 @@ mc <- rbindlist(lapply(sample_ids[1:10], function(i) {
 add("Monte Carlo spread across seeds (48 paths), offense share", mean(mc$sd_off), mean(mc$sd_off) < 0.03,
     sprintf("mean sd over seeds: offense share %.3f, a player's chance %.3f", mean(mc$sd_off), mean(mc$sd_player)))
 
+# ---- the late model (run_late.R), on scenes after the ball has been seen reaching the rim -------------------
+
+late_path <- file.path(cache, "late_final.rds")
+if (file.exists(late_path)) {
+  late <- readRDS(late_path)
+  # 8. when the ball reached the rim is read from the track seen so far: cutting the track changes nothing
+  cs_all <- lapply(bundles, contact_seen)
+  causal <- vapply(seq_along(bundles), function(i) {
+    cs <- cs_all[[i]]
+    if (is.na(cs[[1]])) return(TRUE)
+    isTRUE(all.equal(contact_seen(bundles[[i]], cs[[2]]), cs)) && is.na(contact_seen(bundles[[i]], cs[[2]] - 0.041)[1])
+  }, NA)
+  add("Late model: the rim time uses no later tracking", sum(!causal), all(causal),
+      sprintf("%d misses; the rim time from a track cut where it became known equals the full track's, and is unknown a frame earlier", length(bundles)))
+  late_scene <- function(i, after = 0.3) {
+    cs <- cs_all[[i]]
+    if (is.na(cs[[1]])) return(list())
+    sc <- build_scene(bundles[[i]], cs[[2]] + after, flight_all, launch_rows_all, seed = i)
+    if (length(sc)) sc$tau <- late_tau(cs[[2]] + after, cs[[1]])
+    sc
+  }
+  lprobs <- function(sc) predict_late(stack_late(list(sc), late$acc), late$fit)[1, ]
+  ls <- Filter(function(s) length(s) > 0L, lapply(sample_ids, late_scene))
+  LP <- t(vapply(ls, lprobs, numeric(13)))
+  add("Late model: probabilities non-negative and sum to one", max(abs(rowSums(LP) - 1)),
+      min(LP) >= 0 && max(abs(rowSums(LP) - 1)) < 1e-6, sprintf("%d scenes 0.3 s after the rim time is known", nrow(LP)))
+  lperm <- max(vapply(ls, function(sc) {
+    o <- c(sample(1:5), sample(6:10))
+    s2 <- sc; s2$pl <- sc$pl[o]; s2$O <- sc$O[o, o]; s2$y <- if (sc$y <= 10) match(sc$y, o) else sc$y
+    max(abs(lprobs(s2)[1:10] - lprobs(sc)[o]))
+  }, 0))
+  add("Late model: player order within a side does not change anyone's chance", lperm, lperm < 1e-9, "players shuffled within each side")
+  lfar <- vapply(ls, function(sc) {
+    s2 <- sc; s2$pl <- copy(sc$pl); s2$pl[1, c("x", "y", "vx", "vy") := .(-400, 0, 0, 0)]
+    s2$O <- obstruction_cpp(s2$pl$x, s2$pl$y, s2$pl$off, sc$tx, sc$ty, CORRIDOR, CLOSE)
+    lprobs(s2)[1]
+  }, 0)
+  add("Late model: a player 400 ft away has no collection chance", max(lfar), max(lfar) < 1e-3, "largest chance left to the moved player")
+  lleak <- max(vapply(sample_ids[1:15], function(i) {
+    cs <- cs_all[[i]]
+    if (is.na(cs[[1]])) return(0)
+    t0 <- cs[[2]] + 0.3
+    b <- bundles[[i]]
+    cut <- b
+    cut$ball <- b$ball[t <= t0 + 1e-9]
+    cut$players <- b$players[frame <= b$shot$f0 + round(t0 * FPS)]
+    s1 <- build_scene(b, t0, flight_all, launch_rows_all, seed = i)
+    s2 <- build_scene(cut, t0, flight_all, launch_rows_all, seed = i)
+    cs2 <- contact_seen(cut, t0)
+    if (!length(s1) || !length(s2)) return(0)
+    s1$tau <- late_tau(t0, cs[[1]]); s2$tau <- late_tau(t0, cs2[[1]])
+    max(abs(lprobs(s1) - lprobs(s2)))
+  }, 0))
+  add("Late model: no tracking after the checkpoint enters a forecast", lleak, lleak < 1e-12,
+      "late forecasts from full and truncated tracks compared 0.3 s after the rim time is known")
+}
+
 res <- rbindlist(checks)
 fwrite(res, file.path(out_dir, "scenario_checks.csv"))
 print(res)

@@ -7,3 +7,8 @@ Collection effects leave the simulated ball paths unchanged,0,TRUE,paths identic
 No tracking after the checkpoint enters a forecast,0,TRUE,forecasts from full and truncated tracks compared at release + 0.4 s
 Replaying an unchanged scene gives the same forecast,0,TRUE,same seed
 "Monte Carlo spread across seeds (48 paths), offense share",0.0139848568400635,TRUE,"mean sd over seeds: offense share 0.014, a player's chance 0.006"
+Late model: the rim time uses no later tracking,0,TRUE,"707 misses; the rim time from a track cut where it became known equals the full track's, and is unknown a frame earlier"
+Late model: probabilities non-negative and sum to one,1.11022302462516e-15,TRUE,31 scenes 0.3 s after the rim time is known
+Late model: player order within a side does not change anyone's chance,1.11022302462516e-16,TRUE,players shuffled within each side
+Late model: a player 400 ft away has no collection chance,8.33333333333333e-05,TRUE,largest chance left to the moved player
+Late model: no tracking after the checkpoint enters a forecast,0,TRUE,late forecasts from full and truncated tracks compared 0.3 s after the rim time is known

@@ -4,7 +4,7 @@
 
 suppressMessages(library(data.table))
 source(file.path(here, "..", "play_viewer", "R", "data.R"))
-for (f in c("geometry.R", "extract.R", "audit.R", "bundle.R", "flight.R", "opportunity.R", "skills.R"))
+for (f in c("geometry.R", "extract.R", "audit.R", "bundle.R", "flight.R", "opportunity.R", "late.R", "skills.R"))
   if (file.exists(file.path(here, "R", f))) source(file.path(here, "R", f))
 
 root <- find_repo_root()

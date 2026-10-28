@@ -16,12 +16,13 @@ resumes; `--game=<id>` runs one fold so folds can run as parallel processes. Bac
 | Audit (framework step 1) | `run_audit.R` | `outputs/rebounding/audit/*.csv`, `episodes.rds` |
 | Ball flight (step 2) | `run_flight.R` | `outputs/rebounding/flight/*.csv`, `flight_fold_{game}.rds`, `flight_params_all.rds` |
 | Opportunity and collection (steps 2 and 4) | `run_opportunity.R` | `outputs/rebounding/collection/*.csv`, `scenes_{game}.rds`, `opp_fold_{game}.rds` |
+| Late forecasts (after the ball reaches the rim) | `run_late.R` | `outputs/rebounding/late/*.csv`, `late_scenes_{game}.rds`, `late_fold_{game}.rds`, `late_final.rds` (the model the site uses after the rim) |
 | Behaviour and skills (steps 3 and 4) | `run_skills.R` | `outputs/rebounding/skills/*.csv`, `skills_{game}.rds`, `final_fits.rds` |
 | Scenario checks (section 13) | `run_checks.R` | `outputs/rebounding/checks/scenario_checks.csv` |
 | Exploratory tables for the Rebounding tab | `run_eda.R` | `outputs/rebounding/eda/*.csv` (each one backs a modelling decision on the tab; shots described as rim / midrange / three by `shot_range()`) |
 | Site (step 5) | `run_export.R` | `web/public/data/rebounding/{game}.json` (forecasts every 0.2 s with a landing-density grid), `web/public/data/rebounding.json` (validation and EDA tables) |
 
-Modules: `R/extract.R` (reading), `R/audit.R` (timelines and proxies), `R/bundle.R` (episode bundles and the two
+Modules: `R/extract.R` (reading), `R/audit.R` (timelines and proxies), `R/late.R` (late forecasts), `R/bundle.R` (episode bundles and the two
 coordinate frames), `R/flight.R` (launch prior, filters, scoring), `R/opportunity.R` (scenes, access, competing risks,
 benchmarks), `R/skills.R` (anticipation, box-outs, team value). C++ through Rcpp: `cpp/ball.cpp` (flight, contacts,
 particle filter, Kalman) and `cpp/opportunity.cpp` (access, competing-risks likelihood with analytic gradient and
@@ -38,7 +39,9 @@ OpenMP, obstruction). Rtools must be on PATH; `load_ball_cpp()` adds `C:/rtools4
   given to any filter.
 - **Checkpoints.** Flight: release, release + 0.32 s, one frame before the inferred contact, contact + 0.2 s.
   Opportunity: release and one frame before the rim (contact, or the shot's end frame when no contact was found).
-  The site: every 0.2 s from release until the rebound.
+  Late: 0, 0.2, 0.4, 0.6, 0.8, 1.0 and 1.4 s after the rim time read from the track seen so far (`contact_seen()`),
+  while the ball is still loose. The site: every 0.2 s from release until the rebound, with the release model until
+  the rim time is known and the late model after it.
 - **Outcome.** Twelve classes: ten players, a team award to either side. Scored on which happened, not when: the
   recorded rebound frame sits between the first possible touch and secure control.
 - **Box-out labels** are rules on the obstruction series, not reviewed video: established at 0.35, held at 0.25 for

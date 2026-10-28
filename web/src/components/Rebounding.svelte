@@ -30,6 +30,8 @@
       identification: Row[]; movement: Row[]; movement_roles: Row[]; boxout_labels: Row[]; boxout_validation: Row[];
       variance: Row[]; anticipation_players: Row[]; boxout_players: Row[];
     };
+    /** The late model (src/rebounding/run_late.R); absent from exports made before it existed. */
+    late?: Record<string, Row[]>;
   }
   interface Col { key: string; label: string; fmt?: (v: Cell, row: Row) => string; num?: boolean; title?: string }
 
@@ -57,6 +59,8 @@
     stationary: "Stationary", damped_velocity: "Damped velocity", role_reference: "Typical moves, no momentum",
     damped_role: "Damped momentum + typical move (used)",
     base_rate: "Base rate", rim_order: "Closer to the hoop", geometry: "Geometry", geometry_player_effects: "Geometry + player effects",
+    current_site: "Rim model reused (before)", late_refit: "Same model, refit on late moments", late_time: "+ weights that change with time",
+    late_full: "+ who gets there first (late model)",
   };
   const model = (v: Cell) => MODEL[String(v)] ?? String(v);
   const CHECK: Record<string, string> = { release: "At release", early: "Release + 0.32 s", contact: "Just before contact", after: "Contact + 0.2 s", rim: "Just before the rim" };
@@ -152,6 +156,46 @@
   const meanOf = (rows: Row[] | undefined, key: string) => { const v = (rows ?? []).map((r) => n(r[key])).filter((x) => !Number.isNaN(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : NaN; };
   const rangeOf = (rows: Row[] | undefined, key: string) => { const v = (rows ?? []).map((r) => n(r[key])); return [Math.min(...v), Math.max(...v)]; };
   const median = (rows: Row[], key: string) => { const v = rows.map((r) => n(r[key])).filter((x) => !Number.isNaN(x)).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : NaN; };
+
+  // ---- the late model ----
+  const LT = (name: string): Row[] => doc?.late?.[name] ?? [];
+  const LATE_LINES = ["current_site", "late_full", "geometry_classifier"];
+  /** Points and lines of one held-out measure against time since the rim, for the three compared models. */
+  const lateCurve = (key: string, digits = 3) => {
+    const rows = LT("validation_by_tau");
+    const pts = (m: string) => rows.filter((r) => r.model === m).sort((a, b) => n(a.tau) - n(b.tau));
+    return {
+      points: LATE_LINES.flatMap((m, g) => pts(m).map((r) => ({ x: n(r.tau), y: n(r[key]), g, tip: `${model(m)}, ${f(1)(r.tau)} s after the rim: ${f(digits)(r[key])} (${int(r.n)} scenes)` }))),
+      lines: [...LATE_LINES.map((m, g) => ({ points: pts(m).map((r): [number, number] => [n(r.tau), n(r[key])]), color: SERIES[g] })),
+              { points: pts("team_prior").map((r): [number, number] => [n(r.tau), n(r[key])]), color: "var(--muted)", dashed: true, label: "team prior" }],
+    };
+  };
+  const LATE_NAMES = ["Rim model reused (before)", "Late model", "Geometry classifier"];
+  const lateLoss = $derived(lateCurve("log_loss"));
+  const lateLossRange = $derived.by((): [number, number] => {
+    const v = lateLoss.lines.flatMap((l) => l.points.map((q) => q[1])).filter(Number.isFinite);
+    return v.length ? [Math.floor(10 * Math.min(...v) - 0.5) / 10, Math.ceil(10 * Math.max(...v) + 0.5) / 10] : [0, 3];
+  });
+  const lateCollector = $derived(lateCurve("collector_chance"));
+  const lateCal = $derived(LT("calibration_players").filter((r) => n(r.n) >= 30).map((r) => ({
+    x: n(r.predicted), y: n(r.observed), g: r.model === "late_full" ? 1 : 0,
+    tip: `${model(r.model)}: predicted ${pc(1)(r.predicted)}, observed ${pc(1)(r.observed)} (${int(r.n)} player-scenes)` })));
+  const lateRow = (m: string) => one(LT("validation_summary"), (r) => r.model === m);
+  const lateAt = (m: string, tau: number, key: string) => n(one(LT("validation_by_tau"), (r) => r.model === m && Math.abs(n(r.tau) - tau) < 1e-6)?.[key]);
+  const lateDecision = $derived(LT("decision")[0] ?? null);
+  const lateParam = (term: string) => n(one(LT("final_parameters"), (r) => r.term === term)?.value);
+  const lateScenes = $derived(LT("scenes_by_tau").reduce((s, r) => s + n(r.scenes), 0));
+  // the worked example, one row per forecast time: what the site said before and says now, and the held-out late fit
+  const lateExample = $derived.by(() => {
+    const rows = LT("example");
+    const times = [...new Set(rows.map((r) => n(r.t)))].sort((a, b) => a - b);
+    const get = (t: number, m: string, s: string) => one(rows, (r) => n(r.t) === t && r.model === m && r.source === s);
+    return times.map((t) => ({ t, before: n(get(t, "before", "all games")?.p_rebounder), now: n(get(t, "now", "all games")?.p_rebounder),
+                               held: n(get(t, "late_full", "held out")?.p_rebounder) }));
+  });
+  const exContact = $derived(n(LT("example")[0]?.contact));
+  const exRebound = $derived(n(LT("example")[0]?.rebound));
+  const POLICY: Record<string, string> = { "0": "run straight at the ball", "1": "keep moving until the bounce is seen", "2": "head for the forecast's centre" };
 
   const SECTIONS = [
     ["rb-question", "1. The question"], ["rb-data", "2. The data"], ["rb-ball", "3. Can we trust the ball?"],
@@ -604,6 +648,121 @@
           ], (doc.collection.summary ?? []).filter((r) => r.checkpoint === cp).sort((a, b) => n(a.log_loss) - n(b.log_loss)), true)}
         {/each}
       </details>
+
+      {#if doc.late}
+        {@const lf = lateRow("late_full")}
+        {@const cur = lateRow("current_site")}
+        {@const prior = lateRow("team_prior")}
+        <h3>Late forecasts: after the ball reaches the rim</h3>
+        <p>
+          The model above is fitted at two moments: release, and a frame before the ball reaches the rim. The site used to
+          reuse that rim fit for every later forecast too. At the rim nobody knows yet which way the ball will bounce, so the fit
+          learned that being able to reach the ball says little about who gets it, and it stayed just as cautious when the play
+          had become obvious. Two more limits made it worse: every player was assumed to drift for half a second before
+          reacting, and two players who could both reach the ball split it almost evenly however much sooner one would get
+          there. Even given the true ball path, it could not give the player about to catch the ball much more than a third.
+        </p>
+        <ol class="steps">
+          <li><h3>Learn from the same moment</h3><p>Every miss contributes scenes 0, 0.2, 0.4, 0.6, 0.8, 1.0 and 1.4 s after the ball reached the rim, while it is still loose: {int(lateScenes)} scenes in all. A forecast 0.4 s after the rim learns from other misses 0.4 s after the rim.</p></li>
+          <li><h3>Weights that change with time</h3><p>The baseline pull and the weight on access each change in a straight line with the time since the rim, so the model can grow more decisive as the ball comes down. One pooled fit, not seven: the late moments are thin, and forecasts should not jump from one moment to the next.</p></li>
+          <li><h3>Who gets there first</h3><p>For every point of every simulated path, each player's arrival margin: how much later than the fastest other player he could reach it, capped at one second either way. Arriving first adds pull; arriving after someone else takes it away.</p></li>
+          <li><h3>Reaction time chosen again</h3><p>Reaction times from 0.05 to 0.5 s and three ways of moving were tried for these moments (run straight at the ball, keep moving until the latest bounce is seen, head for the forecast's centre), chosen by fit on the training games. The all-games fit uses {f(2)(lateParam("react"))} s, and players {POLICY[String(lateParam("policy"))] ?? "–"}.{lateParam("policy") === 1 ? " Shorter reaction times fit no better: a player cannot react to a bounce until he has seen it, about a quarter of a second, and until then he keeps moving as he was." : ""}</p></li>
+          <li><h3>No hindsight about the rim</h3><p>When the ball reached the rim is read from the track seen so far. It becomes known when the next measured ball position arrives (usually the same frame). The old switch used the rim time recorded from the full track. A scenario check confirms that cutting the track changes nothing.</p></li>
+        </ol>
+        {#if lateDecision}
+          {@render decision(lateDecision.used_on_site === true || lateDecision.used_on_site === "TRUE"
+            ? `The site now uses the late model from the moment the ball is seen reaching the rim. On held-out games its log loss beats the reused rim model by ${f(3)(lateDecision.gain_over_current)} ± ${f(3)(lateDecision.se)} per scene, in ${lateDecision.games_better} of 10 games.`
+            : `The late model did not beat the reused rim model on held-out games (gain ${f(3)(lateDecision.gain_over_current)} ± ${f(3)(lateDecision.se)}, better in ${lateDecision.games_better} of 10), so the site keeps the rim model.`)}
+        {/if}
+        <div class="rb-grid two">
+          <div>
+            <h4>Held-out log loss by time since the rim (lower is better)</h4>
+            <Scatter points={lateLoss.points} lines={lateLoss.lines} groups={LATE_NAMES} xlabel="Seconds since the ball reached the rim" ydomain={lateLossRange}
+                     ylabel="Log loss" radius={4} opacity={1} xfmt={(v) => v.toFixed(1)} yfmt={(v) => v.toFixed(1)} />
+          </div>
+          <div>
+            <h4>Average chance given to the player who collected</h4>
+            <Scatter points={lateCollector.points} lines={lateCollector.lines} groups={LATE_NAMES} xlabel="Seconds since the ball reached the rim"
+                     ylabel="Chance" radius={4} opacity={1} ydomain={[0, 0.8]} xfmt={(v) => v.toFixed(1)} yfmt={(v) => `${Math.round(100 * v)}%`} />
+          </div>
+        </div>
+        <p>
+          Over all late scenes the late model's log loss is {f(3)(lf?.log_loss)} against {f(3)(cur?.log_loss)} for the reused rim model and
+          {f(3)(prior?.log_loss)} for the team prior. The player who went on to collect got, on average, {pc(0)(lf?.collector_chance)} from the late
+          model and {pc(0)(cur?.collector_chance)} from the old one; 1.0 s after the rim the figures are {pc(0)(lateAt("late_full", 1, "collector_chance"))}
+          and {pc(0)(lateAt("current_site", 1, "collector_chance"))}. The geometry classifier, refitted on the same late scenes, is the
+          benchmark: a flexible model of distances and speeds with no physics ({f(3)(lateRow("geometry_classifier")?.log_loss)}).
+        </p>
+        <p>
+          <b>Where the gain comes from.</b> Refitting the same model on late moments gives most of it ({f(3)(lateRow("late_refit")?.gain_current)}
+          per scene); weights that change with time add {f(3)(n(lateRow("late_time")?.gain_current) - n(lateRow("late_refit")?.gain_current))}, and
+          the arrival margin {f(3)(n(lf?.gain_current) - n(lateRow("late_time")?.gain_current))}. The gain is not immediate: at the moment the
+          ball reaches the rim the two models are close ({f(3)(lateAt("late_full", 0, "log_loss"))} against {f(3)(lateAt("current_site", 0, "log_loss"))}),
+          and the late model pulls ahead over the next half second, as the bounce becomes visible.
+        </p>
+        <div class="rb-grid two">
+          <div>
+            <h4>Does a player's "40%" mean 40%?</h4>
+            <Scatter points={lateCal} groups={LATE_NAMES.slice(0, 2)}
+                     lines={[{ points: [[0, 0], [0.8, 0.8]], color: "var(--muted)", dashed: true, label: "perfect" }]}
+                     xlabel="Predicted chance a player collects" ylabel="Observed share" xdomain={[0, 0.8]} ydomain={[0, 0.8]}
+                     xfmt={(v) => `${Math.round(100 * v)}%`} yfmt={(v) => `${Math.round(100 * v)}%`} radius={5} opacity={1} />
+          </div>
+          <div class="rb-explain">
+            <h4>The miss Samuels rebounded</h4>
+            <p>
+              Girona–Burgos, first quarter: a three off the rim. The ball reached the rim {f(2)(exContact)} s after release and Samuels
+              secured it at {f(2)(exRebound)} s. His chance at each forecast:
+            </p>
+            {@render table([
+              { key: "t", label: "After release", fmt: (v) => `${f(1)(v)} s` },
+              { key: "before", label: "Site before", num: true, fmt: pc(0) },
+              { key: "now", label: "Site now", num: true, fmt: pc(0) },
+              { key: "held", label: "Late, held out", num: true, fmt: (v) => (Number.isNaN(n(v)) ? "–" : pc(0)(v)), title: "The late model fitted without this game" },
+            ], lateExample as unknown as Row[])}
+          </div>
+        </div>
+        {@const calOld = one(LT("calibration_players"), (r) => r.model === "current_site" && r.band === "(0.3,0.4]")}
+        {@const calNew = one(LT("calibration_players"), (r) => r.model === "late_full" && r.band === "(0.3,0.4]")}
+        <p>
+          The calibration chart is the clearest sign of what was wrong. When the reused rim model gave a player between 30% and 40%,
+          he went on to collect {pc(0)(calOld?.observed)} of the time ({int(calOld?.n)} cases): it was too cautious about the players
+          best placed. The late model's 30–40% calls came true {pc(0)(calNew?.observed)} of the time, and its chances track what
+          happened across the range, including the few it puts above 60%.
+        </p>
+        <aside class="concept">
+          <h4>Concept: one model with time in it</h4>
+          <p>
+            Each player's pull at each step is a sum: a baseline, a defender's edge, a penalty when his route is blocked, a weight
+            times the log of his access, and a weight times his arrival margin. In the late model the baseline and the two weights
+            are not single numbers but straight lines in the time since the rim: <i>weight = a + b × time</i>. That costs four extra
+            numbers, and lets the data say how much more decisive the forecast should become as the ball comes down.
+          </p>
+          <p>
+            The same miss appears at several moments, so its scenes are not independent evidence. That is why the test still
+            holds out whole games: no moment of a held-out miss is ever seen in training.
+          </p>
+        </aside>
+        <details class="rb-more">
+          <summary>Every late model, and the fitted numbers</summary>
+          {@render table([
+            { key: "model", label: "Late scenes, held out", fmt: model }, { key: "n", label: "n", num: true, fmt: int },
+            { key: "log_loss", label: "Log loss", num: true, fmt: f(3) },
+            { key: "gain_current", label: "Gain vs rim model", num: true, fmt: (v, r) => pm(v, r, "gain_current_se") },
+            { key: "better_than_current", label: "Games better", num: true },
+            { key: "collector_chance", label: "Collector's chance", num: true, fmt: pc(0) },
+            { key: "top_median", label: "Top player, median", num: true, fmt: pc(0) },
+          ], LT("validation_summary"), true)}
+          {@render table([
+            { key: "term", label: "All-games late model" }, { key: "value", label: "Value", num: true, fmt: f(3) },
+          ], LT("final_parameters"))}
+          <p class="rb-note">
+            b0 and b0_t: the baseline and its change per second since the rim; b_acc and b_acc_t: the weight on log access; b_first and
+            b_first_t: the weight on the arrival margin (positive means arriving first helps). b_def is the defenders' edge, b_obs the
+            blocked-route penalty, g_off and g_def the team awards.
+          </p>
+        </details>
+      {/if}
     </section>
 
     <!-- 8 ------------------------------------------------------------------------------------------------- -->
@@ -748,6 +907,7 @@
         <li><b>Ten games.</b> Held-out games mostly test new players; only 25 players appear twice.</li>
         <li><b>Associations, not interventions.</b> Movement and box-outs reflect choices and game plans; a model-assessed gain does not prove a different move would have changed the outcome.</li>
         <li><b>The ball is reconstructed</b>, interpolated and biased with height; the hoop calibration uses each game's own made shots.</li>
+        <li><b>Late forecasts stop learning at 1.4 s after the rim.</b> Later forecasts use the 1.4 s weights. Long scrambles are few ({int(n(one(LT("scenes_by_tau"), (r) => n(r.tau) === 1.4)?.misses))} misses still loose at 1.4 s), every scene counts equally (so long scrambles weigh a little more), and even the late model's typical top player is near a third: many rebounds stay genuinely contested.</li>
         <li><b>Contact physics is loosely identified.</b> Several chosen settings sit at the edge of the range searched; they improve forecasts but are not physical measurements.</li>
         <li><b>Shared motion rules</b> for every player: no jumping, body orientation or contact.</li>
         <li><b>Replay only.</b> Dragging players, hypothetical misses of made shots and transition value are not built.</li>

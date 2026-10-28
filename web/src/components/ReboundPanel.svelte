@@ -58,8 +58,9 @@
     {/each}
   </div>
   {#if r && split && play}
-    <p class="rb-when" title="Each forecast uses only the tracking up to its moment; a new one is made every 0.2 s until the rebound">
-      Forecast made {r.since.toFixed(1)} s after release · {r.episode.range} · {r.episode.kind}
+    <p class="rb-when" title="Each forecast uses only the tracking up to its moment; a new one is made every 0.2 s until the rebound. Once the ball has been seen reaching the rim, the late model (fitted on moments after the rim) makes it.">
+      Forecast made {r.since.toFixed(1)} s after release{r.step.tau != null ? ` (${r.step.tau.toFixed(1)} s after the rim, late model)` : ""}
+      · {r.episode.range} · {r.episode.kind}
     </p>
     <div class="rb-sides">
       <div><span><i class="sw" style:background={kitOf("off").fill} style:border-color={kitOf("off").edge}></i>{play.off}</span><b>{pct(split.off)}</b></div>
