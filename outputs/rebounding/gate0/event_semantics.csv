@@ -1,0 +1,15 @@
+quantity,p10,median,p90
+ball height at shots.endFrame (ft),10.3641219652231,11.2202161253281,12.1749917979003
+ball distance from calibrated hoop at endFrame (ft),0.561269329530435,1.34837587473261,3.04156310759869
+frames from endFrame to the ball's closest approach to the hoop,-2,3,8
+frames from endFrame to the contact proxy,-5,0,4
+seconds from endFrame to rebounds.frame,0.32,0.88,2
+seconds from the first-touch proxy to rebounds.frame,-0.16,0.28,1.48
+seconds from rebounds.frame to the control proxy,-0.0679999999999998,0.36,1
+"ball height at rebounds.frame (ft), player rebounds",4.30520525754596,8.95374528379277,9.71602792814951
+"ball speed at rebounds.frame (ft/s), player rebounds",6.64831446850408,11.0664267552493,17.8700684875329
+"rebounder to ball, horizontal, at rebounds.frame (ft)",0.909807508913408,2.4578851718719,4.93714571479689
+"rebounds.location vs tracked rebounder, event frame turned 180 deg (ft)",0,0,0
+"rebounds.location vs tracked rebounder, not turned (ft)",64.0526745728488,77.5293432778214,83.6441070185591
+"shots.location vs tracked shooter at release, turned (ft)",0,0,0
+made shots: frames from endFrame to the rim-height crossing (median per game end),2,3,3

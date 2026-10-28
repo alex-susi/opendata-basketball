@@ -1,0 +1,11 @@
+game_id,shots,made,outcome_na,fouled_na,non_fouled_misses,fouled_misses,and_ones,blocked,blocked_made,blocker_missing,blocker_not_defense,tip_shots,rebound_rows,fg_rebound_rows,ft_rebound_rows,fg_flag_na,fg_flag_vs_reference_mismatch,rebound_reference_missing,rebound_reference_not_found,duplicate_links,rebound_to_made_shot,rebound_to_fouled_shot,non_fouled_miss_without_rebound,grabbed_na,defensive_na,grabbed_without_rebounder,team_award_with_rebounder,rebounder_off_roster,rebounder_team_mismatch,defensive_flag_mismatch,rebound_team_neither,rebound_period_mismatch,rebound_before_shot_end,next_chance_missing,next_chance_not_found,next_chance_team_mismatch,next_chance_type_mismatch,ft_live_misses,ft_live_misses_with_rebound,ft_rebound_to_made_or_not_last
+114243,159,55,0,0,92,12,4,8,0,0,0,6,95,91,4,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,3,0,0,1,12,4,4,0
+114234,144,60,0,0,69,15,3,8,0,0,0,1,77,66,11,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,2,0,0,1,8,11,11,0
+114169,148,54,0,0,86,8,4,6,0,0,0,2,87,85,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,3,0,0,0,11,3,2,0
+114099,150,54,0,0,88,8,3,3,0,0,0,3,87,86,1,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,5,0,0,0,13,1,1,0
+114086,139,64,0,0,62,13,3,2,0,0,0,6,63,61,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,2,2,2,0
+178442,158,73,0,0,75,10,4,2,0,0,0,4,77,70,7,0,0,0,0,0,0,0,5,0,0,0,0,0,0,4,0,0,2,0,0,0,8,8,7,0
+179612,145,64,0,0,72,9,3,4,0,0,0,3,72,67,5,0,0,0,0,0,0,0,5,0,0,0,0,0,0,5,0,0,1,0,0,3,8,4,4,1
+184439,142,60,0,0,70,12,3,6,0,0,0,4,69,66,3,0,0,0,0,0,0,0,4,0,0,0,0,0,0,2,0,0,3,0,0,0,3,3,3,0
+188630,133,56,0,0,63,14,2,7,0,0,0,4,66,60,6,0,0,1,1,0,0,0,3,0,0,0,0,0,0,2,0,0,2,0,0,0,6,5,5,0
+191313,141,66,0,0,65,10,3,5,0,0,0,5,75,61,14,0,0,3,3,0,0,0,4,0,0,0,0,0,0,1,0,0,3,0,0,0,3,11,10,1

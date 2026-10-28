@@ -1,0 +1,7 @@
+quantity,p10,p50,p90
+"rebounder-ball at rebound frame, raw ball (ft)",0.906738337863099,2.45253126508769,4.89475103079587
+"rebounder-ball at rebound frame, shifted ball (ft)",0.945960181691231,2.59408044753813,4.85572816908472
+"closest rebounder-ball, raw ball (ft)",0.284415368472457,1.26327169650791,2.8076593230274
+"closest rebounder-ball, shifted ball (ft)",0.313535230881759,1.28348912000989,2.78807936369696
+ball height at that closest approach (ft),3.28522929995085,6.89104535761162,10.7781998441601
+frames the touch rule moves when the ball is shifted,-2,0,3

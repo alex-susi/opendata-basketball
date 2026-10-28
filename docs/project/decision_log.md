@@ -991,3 +991,107 @@ At the owner's request, after asking why Samuels had only 32% just before securi
 - **The Samuels miss**: 25% → 40% at 1.6 s and 32% → 60% at 1.8 s (the held-out fit, without this game, gives the same).
 - **Limits**: nothing is learned after 1.4 s (later forecasts use the 1.4 s weights); scenes are weighted equally, so
   long scrambles count a little more; many rebounds stay contested, so the typical top player is still near a third.
+
+## 2026-10-28 (evening) — Gated roadmap, Gate 0: rebound event audit and data contract: PASS
+
+At the owner's request, from "Rebound Probability Modeling: Original Response and Implementation Roadmap" (Part III).
+Code `src/rebounding/run_gate0.R`, `run_gate0_review.R`, `R/gate0.R`; evidence `outputs/rebounding/gate0/`
+(`gate_decision.csv` lists each check); record in `rebounding.md`. Thresholds were fixed in `GATE0` before the first
+run; the landmark fallback (5 frames) and the 3 ft identity flag were added after it and are labelled as such.
+
+- **Target fixed for the gated work**: the credited outcome of a non-fouled missed field goal, 12 classes (ten players,
+  a team award to either side), conditional on the miss. Free-throw rebounds are outside it: their 55 rows point to
+  `free_throws` ids (49 of 52 live free-throw misses have one), so no separate join is needed to exclude them.
+- **Enumeration**: 1,459 shots, 768 rebound rows (713 field goal, 55 free throw). No duplicate links, none to a made or
+  fouled shot, no rebounder off the roster or on the wrong team, `rebounded`/`defensive` never null, wallClock =
+  40 × frameIdx on every tracking line, and every shot and rebound wallClock and period equals the tracking line at its
+  frame. The rebound and shot locations are the tracked positions turned 180° (median gap 0 ft).
+- **Found: the `defensive` flag is wrong on 14 team awards** (games 178442 onward): teamId and the next chance's
+  offence both give the defence. Corrected by teamId; team awards become 37 offensive and 36 defensive among the
+  retained, not 51 / 22. **The existing models used the flag** (`classify_episodes()` in `audit.R`), so the 14 sit in
+  the wrong class in every rebounding fit and on the site. `episode_audit()` now sides by teamId (see the next entry);
+  the models and the site have not been refitted.
+- **Found: 4 rebound rows at or before their own shot's release**, all tip or put-back sequences: the rebound of the
+  previous miss is linked to the tip (e.g. shot-191313-2-70; its previous miss 2-69 has no row). Excluded. 21 more
+  fall after release but before `endFrame` (blocks, quick rebounds at the rim); kept.
+- **Semantics.** `shots.endFrame` is when the ball reaches the rim zone (median 11.2 ft high, 1.3 ft from the
+  calibrated hoop; contact proxy at 0 frames median; made shots cross rim height 3 frames later), never more than 40
+  frames after release. `rebounds.frame` is a median 0.88 s after `endFrame`, between the first-touch proxy (0.28 s
+  earlier) and the control proxy (0.36 s later), with the ball at a median 9.0 ft and the rebounder 2.5 ft away (within
+  6 ft 96% of the time, nearest player 64%).
+- **Population**: 742 non-fouled misses, 703 retained. Out: 29 without a rebound row (11 end of period, 2 foul, 16 not
+  explained: heaves at the buzzer, held balls, offence keeping the ball out of bounds; 4 have a matching rebound row
+  with no shotId and `fgReb` false, resolvable by time but left out), 6 for ball coverage, 4 rebound-before-release.
+- **Quality in retained shot-to-rebound windows**: ball present on every frame, keyframes on 55.8% (ball `isDetected`
+  is 0 everywhere, so keyframes are the only direct-observation proxy); players detected 92.2% (`predError` 0.90 ft
+  detected, 3.48 ft extrapolated, 95th percentile 10.6 ft); no index gaps, dead frames, period changes or clock
+  reversals inside any retained window; 10 tracked players with a complete roster match on every landmark.
+- **Landmarks** (release, late flight, contact + 0.2 s, pre-touch): usable ball 99.7 / 94.7 / 95.7 / 92.9%; with the
+  fallback 100 / 100 / 100 / 99.7% (2 abstain). 76 misses have no post-contact landmark (no contact found).
+- **Review**: 72 rebounds (10% of 713) from all ten games, unusual cases oversampled, plus 4 misses without a row,
+  against tracking plots (`review/page_*.png`, verdicts in `review_log.csv`). 56 agree, 9 disagree, 7 unclear. The 4
+  timing and link disagreements are the excluded rebound-before-release rows. In 5 of 64 retained rebounds the
+  credited player never reaches the ball, while a teammate does (tip-outs or tracking swaps; the team always agrees).
+  The 7 unclear are mostly team awards that look like held balls or collectable balls. The `identity_suspect` rule
+  (never within 3 ft) catches 4 of the 5, wrongly flags 1 of the 52 agreed rebounds, and flags 33 of 630 retained
+  player rebounds.
+- **What this does not support**: who physically collected the ball (5 of 64 reviewed credits look wrong in tracking),
+  first touch or tip attribution (Gate 1), or reliability of the review (one reviewer, no video).
+
+### Open choices
+
+- Whether to fix the 14 team-award sides in `classify_episodes()` and refit the opportunity, late and skills models
+  and the site export.
+- Whether to recover the 4 time-matched rebound rows without a shotId, and whether `identity_suspect` rebounds should
+  be dropped in a Gate 2 sensitivity fit.
+
+## 2026-10-28 (night) — Gate 0 rerun clean, rebound side fixed, checks before Gate 1
+
+At the owner's request ("run step 1 and 3"). Code `src/rebounding/run_gate1_prereq.R`, `R/gate1_prereq.R`, the fix in
+`R/audit.R`; tables `outputs/rebounding/gate1_prereq/`.
+
+- **Reproducible.** All ten games' tracking windows were re-extracted from the raw files into a scratch cache: identical
+  to the cached ones. Rerunning `run_audit.R`, `run_gate0.R`, `run_gate0_review.R` and `run_gate0.R` reproduced every
+  audit and Gate 0 output byte for byte, review pages included.
+- **Rebound side fixed at the source.** `episode_audit()` keeps the delivered flag as `defensive_flag` and sets
+  `defensive` from teamId. Exactly the 14 team awards changed (`episodes.csv`: `defensive` and `outcome`, 14 rows each);
+  eligible team awards are now 37 offensive and 36 defensive. `counts.csv` lists both the delivered-flag counts (which
+  match the framework's 54 / 24) and the teamId counts (40 / 38). Gate 0's outputs did not change (it reads the events
+  itself). **The cached bundles, scenes and fits, and the site, still carry the old classes** until the opportunity,
+  late and skills stages are rebuilt.
+- **Free-flight curvature is not gravity.** Fitted downward acceleration is a median 28.3 ft/s² (p10 20.6, p90 31.8;
+  868 segments of at least 0.4 s), 12% below 32.2. Every game and end agrees (medians 27.0–29.3), and so do made and
+  missed shots. It falls with flight length (about 30 under 0.8 s, 28.7 for 0.8–1 s, 27.7 over 1 s), and the leftover
+  scatter grows with it. So a single parabola fits long flights worse. With g fixed at 32.2 the height scatter doubles
+  (median 0.10 → 0.21 ft) and is more than twice as large on half the shots. The cause can't be told apart from here
+  (height scale, smoothing or drag). **`flight.R` fixes g at 32.2** in its launch prior, Kalman filter and floor fit;
+  their held-out coverage already absorbs this, but the models are misspecified. Sideways acceleration is small
+  (−0.7 ft/s² toward the hoop, +0.5 across), and the two ends barely differ.
+- **The track is smooth; `predError` is not its noise.** Around a fitted arc the leftover scatter has sd 0.19 / 0.10 /
+  0.28 ft (x / y / z), median 0.10 ft, p90 0.38 ft (larger under 8 ft, just after release). `predError` averages 1.44
+  ft, so 96% of positions fall inside it. A departure of about 1 ft is therefore well above the scatter. How far the
+  smooth track is from the true ball is not measured here.
+- **The interpolation tolerance is too loose.** Exact midpoints (deviation < 0.0001 ft) are 40.7% of tracked frames.
+  The next 0.0001–0.005 ft band is nearly empty (0.3%), but the audit's 0.015 ft cut also takes the 4.6% between 0.005
+  and 0.015 ft. A real frame in free flight sits about 0.022 ft off the midpoint from curvature alone, so those are real
+  measurements of slow or held balls. At 0.015 ft, 473 of 703 windows show a gap of more than 2 frames between
+  measured positions (up to 20). At 0.001 ft only 6 do (up to 5): the vendor measures every other frame, consecutive
+  frames in a third of cases, and fills single midpoints. y agrees with x and z on 98% of flagged frames. The audit,
+  the models' "keyframes" and Gate 0's landmark usability all use 0.015 ft, so landmark usability is probably
+  understated. Not changed here.
+- **Ball to rebounder.** Shifting the ball to the player frame barely moves the distances (median at the rebound frame
+  2.45 → 2.59 ft; closest approach 1.26 → 1.28 ft). But the 2.5 ft touch rule fires on a different frame in 43% of
+  misses (−2 to +3 frames, 10th–90th percentile). 85% of credited rebounders come within 2.5 ft of the ball (90% within
+  2.8 ft). The ball's height at that closest approach is a median 6.9 ft, p95 11.3 ft, and above the 11 ft reach in
+  7.7%, consistent with the late model picking 11.5 ft at the top of its grid.
+- **Floor.** The lowest measured frame of each bounce (471, dribbles included) is a median 1.52 ft (p10 1.18, p90
+  2.10), with every game between 1.45 and 1.58 and 1.3% below zero. So no game needs its own floor. Sampled minima sit
+  above the contact because a bounce falls between measured frames; the arc intersection of `fit_floor()` (0.98 ft)
+  is the better estimate, though it also fixes g at 32.2.
+
+### Open choices
+
+- Whether to change the interpolation tolerance to 0.001 ft in `ball_track()` (affects the audit proxies, the models'
+  keyframes and Gate 0's landmark rates).
+- Whether `flight.R` should use a fitted vertical acceleration instead of 32.2 ft/s².
+- When to rebuild the cached bundles and refit with the corrected rebound sides.

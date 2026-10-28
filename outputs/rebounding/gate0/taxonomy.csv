@@ -1,0 +1,13 @@
+terminal,retained,N
+secured individual rebound,TRUE,623
+team rebound: out of bounds (ball seen out),TRUE,58
+no rebound row: unexplained,FALSE,16
+no rebound row: end of period,FALSE,11
+team rebound: foul,TRUE,8
+team rebound: other / unclear,TRUE,7
+"player rebound, foul in the scramble",TRUE,7
+rebound row at or before the release (tip sequence linked to the tip),FALSE,4
+team rebound: out of bounds (ball seen out),FALSE,4
+no rebound row: foul,FALSE,2
+secured individual rebound,FALSE,1
+team rebound: foul,FALSE,1

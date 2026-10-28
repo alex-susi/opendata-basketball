@@ -1,0 +1,31 @@
+game_id,event,n,frame_missing,wall_mismatch,period_mismatch,gc_max_abs_diff,dead_at_frame
+114243,shot release (startFrame),159,0,0,0,0.000497070312519554,0
+114243,shot end (endFrame),159,0,0,0,,0
+114243,rebound (frame),95,0,0,0,0.000492675781231355,1
+114234,shot release (startFrame),144,0,0,0,0.000494140625050932,1
+114234,shot end (endFrame),144,0,0,0,,1
+114234,rebound (frame),77,0,0,0,0.000480270385743609,6
+114169,shot release (startFrame),148,0,0,0,0.000498291015617269,0
+114169,shot end (endFrame),148,0,0,0,,1
+114169,rebound (frame),87,0,0,0,0.000499877929684089,5
+114099,shot release (startFrame),150,0,0,0,0.000499603271485682,0
+114099,shot end (endFrame),150,0,0,0,,0
+114099,rebound (frame),87,0,0,0,0.000494506835934772,0
+114086,shot release (startFrame),139,0,0,0,0.000496582031246362,0
+114086,shot end (endFrame),139,0,0,0,,0
+114086,rebound (frame),63,0,0,0,0.000496826171854536,2
+178442,shot release (startFrame),158,0,0,0,0.000424242424287513,0
+178442,shot end (endFrame),158,0,0,0,,0
+178442,rebound (frame),77,0,0,0,2.44140625227374e-05,1
+179612,shot release (startFrame),145,0,0,0,2.44140625227374e-05,0
+179612,shot end (endFrame),145,0,0,0,,0
+179612,rebound (frame),72,0,0,0,2.44140625227374e-05,3
+184439,shot release (startFrame),142,0,0,0,0.000130434782604993,0
+184439,shot end (endFrame),142,0,0,0,,1
+184439,rebound (frame),69,0,0,0,8.69565217556101e-05,2
+188630,shot release (startFrame),133,0,0,0,2.44140625227374e-05,0
+188630,shot end (endFrame),133,0,0,0,,1
+188630,rebound (frame),66,0,0,0,1.70898437090727e-05,2
+191313,shot release (startFrame),141,0,0,0,2.44140625227374e-05,0
+191313,shot end (endFrame),141,0,0,0,,0
+191313,rebound (frame),75,0,0,0,2.44140625227374e-05,1

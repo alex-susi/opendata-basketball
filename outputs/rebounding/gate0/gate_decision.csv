@@ -1,0 +1,13 @@
+item,evidence,pass,status
+"Every shot and rebound row enumerated by game, every link counted","1459 shots, 768 rebound rows (713 FG, 55 FT); 0 duplicate links, 4 null references, 29 misses without a row",TRUE,PASS
+Missed free throws: separate join needed?,FT rebounds point to free_throws ids (49 of 52 live FT misses have one); outside the FG population,TRUE,PASS
+endFrame and rebound frame semantics checked against the ball,"endFrame: ball at the rim zone (median 11.2 ft high, 1.3 ft from the hoop), never > 40 frames after release; rebound frame: between first touch and control",TRUE,PASS
+"Rosters, IDs, teams, orientation, units, 25 fps, clocks",wallClock = 40 x frameIdx on every line; 0 event wallClock and 0 period mismatches; rebounder off roster 0; location turned 180 deg matches tracking (median 0 ft),TRUE,PASS
+Terminal outcome taxonomy defined,taxonomy.csv; tipped-but-unsecured left to Gate 1,TRUE,PASS
+Review of at least 72 rebounds across games and kinds,"72 reviewed from 10 games: 56 agree, 9 disagree, 7 unclear (tracking plots; no video in the release)",TRUE,PASS
+"Ball and player quality in shot-to-rebound windows, detected vs extrapolated","retained windows: ball present 100.0%, keyframes 55.8%, ball isDetected 0%; players detected 92.2%",TRUE,PASS
+PASS 1: retained examples have one outcome label,703 retained; 0 without a label; side by teamId (14 defensive flags overridden),TRUE,PASS
+PASS 2: valid player and team IDs,"rebounder off roster 0, rebounder's team mismatch 0, not in the chance's players 0",TRUE,PASS
+PASS 3: temporally ordered frames,retained with rebound at or before release 0; period changes in windows 0; clock increases 0,TRUE,PASS
+"PASS 4: landmarks usable >= 95%, or a documented abstention","release 99.7% (100.0% after fallback, 0 abstain); late_flight 94.7% (100.0% after fallback, 0 abstain); post_contact 95.7% (100.0% after fallback, 0 abstain); pre_touch 92.9% (99.7% after fallback, 2 abstain)",TRUE,PASS
+PASS 5: uncertain outcomes excluded with counts or flagged,39 excluded by reason (exclusions.csv); 33 retained player rebounds flagged identity_suspect,TRUE,PASS

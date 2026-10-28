@@ -1,0 +1,5 @@
+landmark,retained,defined,not_defined,ball_ok,tracked_complete,tracked_matches_chance,chance_complete,usable,usable_after_fallback,fallback_used,abstain
+release,703,703,0,0.997155049786629,1,1,1,0.997155049786629,1,2,0
+late_flight,703,703,0,0.947368421052632,1,1,1,0.947368421052632,1,37,0
+post_contact,703,627,76,0.956937799043062,1,1,1,0.956937799043062,1,27,0
+pre_touch,703,694,9,0.929394812680115,1,1,1,0.929394812680115,0.997118155619597,47,2

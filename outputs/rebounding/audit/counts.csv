@@ -9,8 +9,8 @@ Player-secured field-goal rebounds,635,635
 Offensive player rebounds,177,177
 Defensive player rebounds,458,458
 Team field-goal rebounds,78,78
-Offensive team rebounds,54,54
-Defensive team rebounds,24,24
+Offensive team rebounds (delivered flag),54,54
+Defensive team rebounds (delivered flag),24,24
 Non-fouled misses without a rebound row,29,29
 "Blocked, non-fouled misses",51,51
 Canonical players appearing in chance_players,205,205
@@ -18,3 +18,5 @@ Players appearing in one game,180,180
 Players appearing in two games,25,25
 Rebound rows pointing to a made or fouled shot,0,
 Shots with more than one rebound row,0,
+Offensive team rebounds (side by teamId),40,
+Defensive team rebounds (side by teamId),38,

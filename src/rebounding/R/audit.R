@@ -147,6 +147,10 @@ episode_audit <- function(raw, hoops) {
                                rx_cam, ry_cam)], by = "shot_id", all.x = TRUE, sort = FALSE)
   ep[, n_reb := rb[, .N, by = shot_id][match(ep$shot_id, shot_id), N]]
   ep[is.na(n_reb), n_reb := 0L]
+  # The delivered defensive flag is wrong on 14 team awards (Gate 0): the side comes from the rebound's teamId,
+  # which the next chance's offence confirms in every disagreement. The flag is kept as defensive_flag.
+  ep[, defensive_flag := defensive]
+  ep[!is.na(rteam), defensive := rteam == def_team]
   # tracked shooter at release against the event location (event frame = ours turned 180 degrees)
   rel <- raw$players[.(ep$f0, ep$pid), on = .(frame, pid), .(x, y)]
   ep[, c("shooter_x", "shooter_y") := .(rot(rel$x, flip), rot(rel$y, flip))]
@@ -216,18 +220,21 @@ audit_counts <- function(ep, chance_players) {
     quantity = c("Shot records, including fouled misses", "Made shot records", "Missed records including fouled attempts",
                  "Fouled misses", "Non-fouled misses", "Linked field-goal rebound records", "Player-secured field-goal rebounds",
                  "Offensive player rebounds", "Defensive player rebounds", "Team field-goal rebounds",
-                 "Offensive team rebounds", "Defensive team rebounds", "Non-fouled misses without a rebound row",
+                 "Offensive team rebounds (delivered flag)", "Defensive team rebounds (delivered flag)",
+                 "Non-fouled misses without a rebound row",
                  "Blocked, non-fouled misses", "Canonical players appearing in chance_players",
                  "Players appearing in one game", "Players appearing in two games",
-                 "Rebound rows pointing to a made or fouled shot", "Shots with more than one rebound row"),
+                 "Rebound rows pointing to a made or fouled shot", "Shots with more than one rebound row",
+                 "Offensive team rebounds (side by teamId)", "Defensive team rebounds (side by teamId)"),
     count = c(nrow(ep), sum(ep$made), nrow(m), sum(m$fouled), sum(!m$fouled), sum(ep$n_reb),
               sum(r$grabbed %in% TRUE), sum(r$grabbed %in% TRUE & r$defensive %in% FALSE),
               sum(r$grabbed %in% TRUE & r$defensive %in% TRUE), sum(r$grabbed %in% FALSE),
-              sum(r$grabbed %in% FALSE & r$defensive %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive %in% TRUE),
+              sum(r$grabbed %in% FALSE & r$defensive_flag %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive_flag %in% TRUE),
               sum(!m$fouled & m$n_reb == 0L), sum(!m$fouled & m$blocked), nrow(games_per),
               sum(games_per$N == 1L), sum(games_per$N == 2L),
-              sum(r$made | r$fouled), sum(ep$n_reb > 1L)),
-    framework = c(1459, 606, 853, 111, 742, 713, 635, 177, 458, 78, 54, 24, 29, 51, 205, 180, 25, NA, NA))
+              sum(r$made | r$fouled), sum(ep$n_reb > 1L),
+              sum(r$grabbed %in% FALSE & r$defensive %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive %in% TRUE)),
+    framework = c(1459, 606, 853, 111, 742, 713, 635, 177, 458, 78, 54, 24, 29, 51, 205, 180, 25, NA, NA, NA, NA))
 }
 
 #' A stratified sample of episodes for review against the play viewer (framework section 5): every kind and

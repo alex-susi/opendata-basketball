@@ -1,0 +1,77 @@
+page,shot_id,game_id,reason,period,f0,f1,rf,kind,terminal,outcome12,side_by_flag,rpid,nearest_pid,reb_ball_dist,z_reb,contact_frame,touch_frame,control_frame,retained
+1,shot-184439-1-5,184439,rebound at or before release,1,2237,2240,2237,blocked,rebound row at or before the release (tip sequence linked to the tip),off player,off,59117,59117,1.70048558206799,7.13070045931761,,2278,2278,FALSE
+1,shot-114234-3-75,114234,rebound at or before release,3,73242,73252,73242,putback or tip,rebound row at or before the release (tip sequence linked to the tip),off player,off,35852,59204,3.6170654335625,9.46189099409453,73250,73250,,FALSE
+1,shot-191313-2-70,191313,rebound at or before release,2,62392,62397,62387,putback or tip,rebound row at or before the release (tip sequence linked to the tip),off player,off,59108,59108,3.03594185163646,10.1488168471129,,62403,,FALSE
+2,shot-179612-3-92,179612,rebound at or before release,3,81130,81132,81125,putback or tip,rebound row at or before the release (tip sequence linked to the tip),off player,off,15487,22729,4.38004512421505,10.0475721784777,81137,81137,81149,FALSE
+2,shot-178442-2-36,178442,defensive flag disagrees with teamId,2,30637,30652,30710,rim first,team rebound: out of bounds (ball seen out),def team award,off,,15369,,3.90881315616798,30651,30654,30715,TRUE
+2,shot-179612-2-58,179612,defensive flag disagrees with teamId,2,46512,46545,46585,rim first,team rebound: out of bounds (ball seen out),def team award,off,,24598,,7.30499507874016,46545,46573,,TRUE
+3,shot-188630-2-59,188630,defensive flag disagrees with teamId,2,53627,53652,53702,backboard first,team rebound: other / unclear,def team award,off,,32336,,2.92456118766404,53659,53671,53696,TRUE
+3,shot-179612-2-44,179612,defensive flag disagrees with teamId,2,31600,31635,31677,rim first,team rebound: out of bounds (ball seen out),def team award,off,,59126,,5.64919619422568,31635,,,TRUE
+3,shot-184439-2-67,184439,defensive flag disagrees with teamId,2,56017,56050,56077,rim first,team rebound: out of bounds (ball seen out),def team award,off,,59117,,6.96537688648294,56050,56099,56097,TRUE
+4,shot-114099-1-6,114099,"team award, no out-of-bounds or foul seen",1,7180,7195,7316,backboard first,team rebound: other / unclear,off team award,off,,31700,,1.3240303580216,7190,7202,7263,TRUE
+4,shot-114243-1-26,114243,"team award, no out-of-bounds or foul seen",1,23087,23090,23186,blocked,team rebound: other / unclear,off team award,off,,59301,,3.46026082677182,,23097,23156,TRUE
+4,shot-114099-4-130,114099,"team award, no out-of-bounds or foul seen",4,122100,122133,122174,rim first,team rebound: other / unclear,def team award,def,,31700,,3.72875143536752,122133,122147,122157,TRUE
+5,shot-184439-3-99,184439,"team award, no out-of-bounds or foul seen",3,88662,88692,88742,rim first,team rebound: other / unclear,def team award,off,,59114,,5.2576740895667,88692,88710,88748,TRUE
+5,shot-114243-3-81,114243,"team award, no out-of-bounds or foul seen",3,74973,74993,75080,backboard first,team rebound: other / unclear,off team award,off,,59220,,3.08539923720463,74986,74993,75058,TRUE
+5,shot-178442-4-131,178442,"team award, no out-of-bounds or foul seen",4,130190,130215,130267,backboard first,team rebound: other / unclear,def team award,off,,59151,,8.50583374343851,130245,130254,130284,TRUE
+6,shot-114099-3-105,114099,foul in the scramble,3,100877,100907,100984,backboard first,team rebound: foul,off team award,off,,59192,,2.82395730807087,100909,100929,100968,TRUE
+6,shot-114169-1-6,114169,foul in the scramble,1,5920,5925,5977,rim first,team rebound: foul,off team award,off,,59091,,8.3251312335957,5943,5958,5985,TRUE
+6,shot-114234-4-142,114234,foul in the scramble,4,156992,157020,157045,backboard first,"player rebound, foul in the scramble",def player,def,59106,59106,3.28224845636934,8.64424417650919,157024,157047,157050,TRUE
+7,shot-114243-4-134,114243,foul in the scramble,4,126066,126074,126088,rim first,"player rebound, foul in the scramble",off player,off,25326,15630,2.26252491131235,9.11970964566929,126081,126083,126094,TRUE
+7,shot-114086-1-8,114086,foul in the scramble,1,5467,5477,5870,backboard first,team rebound: foul,def team award,def,,,,,5527,5527,5615,FALSE
+7,shot-114169-1-23,114169,excluded for ball coverage,1,15969,16000,16527,airball or no contact,team rebound: out of bounds (ball seen out),def team award,def,,,,,,16022,,FALSE
+8,shot-114169-4-143,114169,excluded for ball coverage,4,168445,168475,168932,blocked,team rebound: out of bounds (ball seen out),off team award,off,,,,,,168499,168496,FALSE
+8,shot-114234-2-66,114234,excluded for ball coverage,2,55457,55487,55964,rim first,secured individual rebound,def player,def,59104,,,,,,,FALSE
+8,shot-114234-4-127,114234,rebound before endFrame,4,132950,132980,132957,blocked,secured individual rebound,def player,def,23482,23482,0.981986209264791,9.09920439632546,132952,132952,132971,TRUE
+9,shot-114099-3-81,114099,rebound before endFrame,3,78047,78077,78065,blocked,secured individual rebound,def player,def,22895,22895,3.88878709626068,1.57073413918963,,78070,,TRUE
+9,shot-114099-1-10,114099,rebound before endFrame,1,9787,9817,9802,blocked,secured individual rebound,def player,def,58436,58436,2.28538721160628,3.90753157808445,9790,9790,9808,TRUE
+9,shot-188630-4-130,188630,rebound before endFrame,4,118392,118422,118410,blocked,secured individual rebound,def player,def,94471,94471,0.603031516078636,9.45163836942257,118407,118407,118420,TRUE
+10,shot-179612-3-97,179612,rebounder not nearest / far from ball,3,86892,86925,86967,backboard first,secured individual rebound,off player,off,31918,59142,20.9133087732569,4.40862860892552,86930,86988,86983,TRUE
+10,shot-114243-4-145,114243,rebounder not nearest / far from ball,4,134009,134039,134029,putback or tip,secured individual rebound,off player,off,59181,25326,10.2103493460193,10.617874425853,134019,134024,134070,TRUE
+10,shot-114169-1-27,114169,rebounder not nearest / far from ball,1,20630,20662,20700,rim first,secured individual rebound,def player,def,15362,24504,3.73886129368828,2.70412975721785,20664,20708,20702,TRUE
+11,shot-178442-2-51,178442,rebounder not nearest / far from ball,2,45590,45602,45630,rim first,secured individual rebound,def player,def,59211,11845,6.67482144515767,9.31707267060368,45600,45614,45641,TRUE
+11,shot-114243-3-76,114243,rebounder not nearest / far from ball,3,70326,70338,70361,rim first,secured individual rebound,def player,def,28247,59217,6.33675680246045,9.47726993110236,70333,70340,,TRUE
+11,shot-184439-2-54,184439,rebounder not nearest / far from ball,2,45947,45977,46005,rim first,secured individual rebound,off player,off,36019,59113,6.29705660767232,8.71473097112861,45978,45980,46045,TRUE
+12,shot-114243-2-54,114243,blocked,2,44370,44380,44398,blocked,secured individual rebound,def player,def,59179,25326,4.61665741955211,1.31281654978675,44378,44383,,TRUE
+12,shot-191313-1-29,191313,blocked,1,19642,19672,19702,blocked,team rebound: out of bounds (ball seen out),off team award,off,,28410,,-0.872193984785182,,19687,19702,TRUE
+12,shot-178442-3-84,178442,blocked,3,73287,73292,73300,blocked,secured individual rebound,def player,def,59167,22847,3.45130342581204,8.70832308070866,73293,73293,73310,TRUE
+13,shot-191313-1-18,191313,blocked,1,12117,12147,12120,blocked,secured individual rebound,def player,def,35222,59205,2.18474193557219,8.68269151902887,,12127,12130,TRUE
+13,shot-178442-1-9,178442,airball or no contact,1,7750,7755,7792,airball or no contact,secured individual rebound,def player,def,35376,35376,5.08753958486865,3.47147463500659,,7800,7799,TRUE
+13,shot-114243-3-102,114243,airball or no contact,3,98166,98198,98198,airball or no contact,secured individual rebound,off player,off,59179,59179,2.40417524443017,9.51699885170604,,98198,98206,TRUE
+14,shot-114243-3-101,114243,airball or no contact,3,98378,98413,98443,airball or no contact,secured individual rebound,def player,def,59221,59221,0.368422494184958,8.58016527230939,,98432,98453,TRUE
+14,shot-178442-4-109,178442,airball or no contact,4,101165,101200,101250,airball or no contact,secured individual rebound,off player,off,59147,28155,3.44160391478712,6.34060757053806,,101233,101245,TRUE
+14,shot-114099-3-115,114099,put-back or tip,3,107402,107432,107437,putback or tip,secured individual rebound,off player,off,31700,31700,1.82831698926868,10.7063033136483,107433,107435,,TRUE
+15,shot-114086-4-107,114086,put-back or tip,4,103657,103689,103717,putback or tip,secured individual rebound,off player,off,22724,22724,1.39594081053954,9.34911212270341,103691,103713,103723,TRUE
+15,shot-188630-4-107,188630,put-back or tip,4,96677,96707,96700,putback or tip,secured individual rebound,off player,off,59164,59164,1.63617530044286,9.99630905511811,96710,96712,96728,TRUE
+15,shot-179612-1-23,179612,put-back or tip,1,11617,11627,11637,putback or tip,secured individual rebound,off player,off,59127,59127,0.114352121553117,9.74255659448806,11625,11628,11680,TRUE
+16,shot-114234-4-139,114234,backboard first,4,147920,147955,147987,backboard first,secured individual rebound,def player,def,35222,59206,1.91750947459671,9.24402271981627,147959,147976,148006,TRUE
+16,shot-179612-4-115,179612,backboard first,4,109525,109557,109570,backboard first,secured individual rebound,def player,def,59144,59144,1.63515816494798,9.04794127296588,109556,109569,109574,TRUE
+16,shot-114099-3-95,114099,backboard first,3,93042,93052,93245,backboard first,team rebound: foul,off team award,off,,28032,,1.49864537196522,93048,93048,93078,TRUE
+17,shot-114099-2-40,114099,team award out of bounds,2,37252,37284,37322,rim first,team rebound: out of bounds (ball seen out),def team award,def,,59131,,4.68416789698163,37285,37286,37345,TRUE
+17,shot-114234-1-17,114234,team award out of bounds,1,16465,16495,16521,blocked,team rebound: out of bounds (ball seen out),off team award,off,,35222,,0.523124154158357,16471,16471,16518,TRUE
+17,shot-179612-4-112,179612,team award out of bounds,4,107250,107270,107352,airball or no contact,team rebound: out of bounds (ball seen out),off team award,off,,22729,,3.42629900754584,,107271,107369,TRUE
+18,shot-114243-4-152,114243,ordinary,4,143444,143481,143514,rim first,secured individual rebound,def player,def,25271,25271,4.61717297121376,9.9001906988189,143480,143493,,TRUE
+18,shot-114234-2-43,114234,ordinary,2,38702,38735,38775,airball or no contact,secured individual rebound,def player,def,28410,59103,6.89046091224686,5.71583825459318,,38792,38789,TRUE
+18,shot-114169-2-39,114169,ordinary,2,38420,38445,38465,backboard first,secured individual rebound,def player,def,59096,8673,2.59334428582819,9.33629634186352,38440,38459,38468,TRUE
+19,shot-114099-4-121,114099,ordinary,4,117452,117463,117493,rim first,secured individual rebound,def player,def,58436,58436,1.93149804430948,7.38188976377953,117458,117459,117501,TRUE
+19,shot-114086-1-4,114086,ordinary,1,2657,2677,2692,rim first,secured individual rebound,def player,def,59138,59138,2.1671658054517,8.96848343175849,2674,2688,2695,TRUE
+19,shot-178442-3-101,178442,ordinary,3,89640,89670,89690,airball or no contact,secured individual rebound,def player,def,59146,59146,2.99538592322807,9.643875082021,,89694,89701,TRUE
+20,shot-179612-4-130,179612,ordinary,4,123780,123812,123855,rim first,secured individual rebound,def player,def,446,59125,5.64012694815547,4.47270751312336,123811,123825,123858,TRUE
+20,shot-184439-4-134,184439,ordinary,4,137102,137117,137132,rim first,secured individual rebound,def player,def,34854,59113,2.16272028352809,8.70704150262467,137113,137114,137142,TRUE
+20,shot-188630-3-77,188630,ordinary,3,71117,71150,71167,backboard first,secured individual rebound,def player,def,59160,34962,3.10854090460767,8.99795972769019,71147,71152,71180,TRUE
+21,shot-191313-3-77,191313,ordinary,3,67320,67347,67477,putback or tip,secured individual rebound,off player,off,58474,59107,20.9987833526088,8.78649934383194,67347,67362,67394,TRUE
+21,shot-114169-2-37,114169,ordinary,2,36772,36807,36842,rim first,secured individual rebound,def player,def,59090,59090,3.425541260858,4.4919311843832,36808,36821,36844,TRUE
+21,shot-114169-3-84,114169,ordinary,3,78017,78040,78060,rim first,secured individual rebound,def player,def,59091,59095,2.80477955086594,9.32348056102362,78040,78056,78078,TRUE
+22,shot-114086-2-59,114086,ordinary,2,57320,57350,57398,rim first,secured individual rebound,off player,off,24597,32336,2.0406590810096,4.33493786909449,57349,57373,57390,TRUE
+22,shot-114086-3-97,114086,ordinary,3,95667,95697,95740,rim first,secured individual rebound,off player,off,59137,59137,3.2275991285254,2.2828109621063,95712,95715,95742,TRUE
+22,shot-178442-2-46,178442,ordinary,2,37420,37455,37472,rim first,secured individual rebound,off player,off,59148,59148,0.939359362745036,9.10048597440934,37455,37464,37503,TRUE
+23,shot-114099-1-27,114099,ordinary,1,22587,22592,22600,rim first,secured individual rebound,def player,def,31700,31700,1.29185359378164,9.44523047900262,22595,22595,22623,TRUE
+23,shot-114086-3-82,114086,ordinary,3,82812,82825,82845,putback or tip,secured individual rebound,off player,off,19426,24597,3.28976151925164,11.4124528379265,82835,82878,82880,TRUE
+23,shot-114086-2-49,114086,ordinary,2,47125,47160,47165,backboard first,secured individual rebound,def player,def,59154,59154,6.40735002777342,6.73597440945089,47156,47177,47174,TRUE
+24,shot-114243-4-128,114243,ordinary,4,121151,121154,121223,blocked,team rebound: out of bounds (ball seen out),def team award,def,,59179,,2.87361845882556,121154,121154,121186,TRUE
+24,shot-114243-4-122,114243,ordinary,4,115789,115804,115809,backboard first,secured individual rebound,def player,def,59180,59181,4.50136939094712,8.56734949146982,115797,115803,115817,TRUE
+24,shot-191313-3-86,191313,ordinary,3,72187,72200,72245,rim first,secured individual rebound,def player,def,58474,58474,2.85755913221977,1.39772109785105,72197,72201,,TRUE
+25,shot-114169-2-75,114169,"no rebound row (extra, not counted)",2,68470,68485,,airball or no contact,no rebound row: unexplained,,,,,,,,,,FALSE
+25,shot-191313-4-135,191313,"no rebound row (extra, not counted)",4,125840,125875,,backboard first,no rebound row: unexplained,,,,,,,125874,125891,,FALSE
+25,shot-188630-2-41,188630,"no rebound row (extra, not counted)",2,32255,32270,,airball or no contact,no rebound row: unexplained,,,,,,,,32276,,FALSE
+26,shot-178442-4-138,178442,"no rebound row (extra, not counted)",4,144927,144957,,airball or no contact,no rebound row: unexplained,,,,,,,,144982,145000,FALSE

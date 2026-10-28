@@ -1,0 +1,57 @@
+game_id,terminal,N
+114086,secured individual rebound,59
+114086,team rebound: foul,1
+114086,team rebound: out of bounds (ball seen out),1
+114086,no rebound row: unexplained,1
+114099,secured individual rebound,71
+114099,team rebound: out of bounds (ball seen out),7
+114099,team rebound: foul,5
+114099,team rebound: other / unclear,2
+114099,"player rebound, foul in the scramble",1
+114099,no rebound row: end of period,1
+114099,no rebound row: unexplained,1
+114169,secured individual rebound,70
+114169,team rebound: out of bounds (ball seen out),12
+114169,team rebound: foul,2
+114169,"player rebound, foul in the scramble",1
+114169,no rebound row: unexplained,1
+114234,secured individual rebound,55
+114234,team rebound: out of bounds (ball seen out),7
+114234,no rebound row: end of period,3
+114234,"player rebound, foul in the scramble",2
+114234,rebound row at or before the release (tip sequence linked to the tip),1
+114234,team rebound: foul,1
+114243,secured individual rebound,78
+114243,team rebound: out of bounds (ball seen out),10
+114243,team rebound: other / unclear,2
+114243,no rebound row: unexplained,1
+114243,"player rebound, foul in the scramble",1
+178442,secured individual rebound,62
+178442,team rebound: out of bounds (ball seen out),7
+178442,no rebound row: unexplained,3
+178442,no rebound row: end of period,2
+178442,team rebound: other / unclear,1
+179612,secured individual rebound,57
+179612,team rebound: out of bounds (ball seen out),8
+179612,no rebound row: unexplained,2
+179612,no rebound row: end of period,2
+179612,"player rebound, foul in the scramble",1
+179612,no rebound row: foul,1
+179612,rebound row at or before the release (tip sequence linked to the tip),1
+184439,secured individual rebound,62
+184439,team rebound: out of bounds (ball seen out),2
+184439,no rebound row: unexplained,2
+184439,rebound row at or before the release (tip sequence linked to the tip),1
+184439,no rebound row: foul,1
+184439,team rebound: other / unclear,1
+184439,no rebound row: end of period,1
+188630,secured individual rebound,54
+188630,team rebound: out of bounds (ball seen out),5
+188630,no rebound row: end of period,2
+188630,no rebound row: unexplained,1
+188630,team rebound: other / unclear,1
+191313,secured individual rebound,56
+191313,no rebound row: unexplained,4
+191313,team rebound: out of bounds (ball seen out),3
+191313,"player rebound, foul in the scramble",1
+191313,rebound row at or before the release (tip sequence linked to the tip),1

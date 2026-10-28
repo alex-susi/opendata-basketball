@@ -47,6 +47,53 @@ OpenMP, obstruction). Rtools must be on PATH; `load_ball_cpp()` adds `C:/rtools4
 - **Box-out labels** are rules on the obstruction series, not reviewed video: established at 0.35, held at 0.25 for
   80% of samples through the rim, lost below 0.10, ambiguous when the pair is closer than their mean `predError`.
 
+## Gated roadmap, Gate 0: event audit and data contract
+
+From "Rebound Probability Modeling: Original Response and Implementation Roadmap" (Part III, Gate 0), run 2026-10-28.
+Status **PASS** for the target below; evidence in `outputs/rebounding/gate0/`, decision in `decision_log.md`.
+
+| Step | Script | Writes |
+| --- | --- | --- |
+| Checks and data contract | `run_gate0.R` (module `R/gate0.R`, thresholds in `GATE0`) | `gate0/*.csv`, `gate_decision.csv`, `event_table.csv` (one row per non-fouled miss), cache `gate0.rds` |
+| Review sample and plots | `run_gate0_review.R` | `gate0/review/sample.csv`, `page_*.png`; verdicts by hand in `review_log.csv` |
+
+Run order: `extract_windows.R`, `run_audit.R`, `run_gate0.R`, `run_gate0_review.R`, then `run_gate0.R` again so the
+decision reads the review log. About a minute each.
+
+- **Target.** Who is credited with the rebound of a non-fouled missed field goal: ten players or a team award to
+  either side (12 classes), conditional on the miss. Free-throw rebounds (55 rows, linked to `free_throws` ids) and
+  fouled misses are outside it.
+- **Side of a rebound** comes from `rebounds.teamId` against the shot's defence, not from `defensive`: on 14 team
+  awards (games 178442 onward) the flag says offence while teamId and the next chance's offence both say defence.
+  `event_table.csv` carries both (`side_by_flag`, `side`) and the 12-class `outcome12`.
+- **Retained** (703): audit status eligible, minus misses without a rebound row, end-of-period team awards and the 4
+  rebound rows at or before their own shot's release (tip sequences: the rebound of the previous miss is linked to
+  the tip). `exclusion` gives each reason.
+- **Landmarks** for later gates: release, 2 frames before contact, contact + 0.2 s, one frame before the first-touch
+  proxy. A landmark without a usable ball (tracked, with a keyframe in the 2 frames up to it) moves back up to 5 frames
+  to one that has it, otherwise the forecast abstains there. No contact found means no post-contact landmark.
+- **`identity_suspect`**: a player rebound whose credited rebounder is never within 3 ft of the ball from 0.4 s before
+  to 1 s after the rebound frame (33 retained). Kept, because the official credit is the target; for sensitivity checks.
+- The review was against tracking plots (no video ships with the data, and outside video is not allowed); there is no
+  second reviewer. Gate 1's reliability check still needs one.
+
+## Before Gate 1: assumptions of a path-departure detector
+
+`run_gate1_prereq.R` (module `R/gate1_prereq.R`) writes `outputs/rebounding/gate1_prereq/`; it needs `gate0.rds`.
+Free flight is fitted from release + 2 frames to 2 frames before the contact proxy (or `endFrame`), one quadratic
+per axis on measured frames only, for retained misses and made shots. Results are in `decision_log.md`. What they mean
+for a detector:
+
+- Use the curvature the track actually has (median 28.3 ft/s², lower on long flights), fitted per segment, not 32.2.
+- Set the departure threshold from the leftover scatter around a fitted arc (sd 0.10–0.28 ft by axis), not from
+  `predError` (mean 1.44 ft), which is several times larger.
+- Mark interpolated frames as exact midpoints (tolerance about 0.001 ft). The audit's 0.015 ft also catches real
+  measurements and makes long false gaps.
+- Do not time a touch by a single distance threshold. Shifting the ball to the player frame moves the 2.5 ft crossing
+  by up to 3 frames in 43% of misses.
+- Find floor contacts where the arcs before and after a bounce meet (`fit_floor()`); the lowest measured frame is a
+  median 1.5 ft high.
+
 ## Reviewing the automated labels
 
 `outputs/rebounding/audit/review_sample.csv` lists 60 episodes, stratified by kind (rim, backboard, airball,
