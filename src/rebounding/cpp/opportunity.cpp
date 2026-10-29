@@ -86,20 +86,23 @@ NumericVector access_array(NumericMatrix bx, NumericMatrix by, NumericMatrix bz,
 
 //' Arrival margin for one forecast, same layout as access_array(): each player's earliest arrival at the ball's
 //' position minus the earliest of the other nine players', in seconds, capped to [-cap, cap]. Negative means he
-//' would get there first.
+//' would get there first. With `gate`, each margin is scaled by the access height gate at that point
+//' (plogis((z_reach - z) / z_scale)), so who arrives first counts only while the ball is low enough to grab.
 // [[Rcpp::export]]
-NumericVector arrival_margin(NumericMatrix bx, NumericMatrix by, NumericMatrix pl, NumericVector t_info,
-                             NumericVector target, NumericVector par, int policy, double cap) {
+NumericVector arrival_margin(NumericMatrix bx, NumericMatrix by, NumericMatrix bz, NumericMatrix pl, NumericVector t_info,
+                             NumericVector target, NumericVector par, int policy, double cap, bool gate) {
   int P = bx.nrow(), K = bx.ncol(), n = pl.nrow();
+  double zr = par[3], zs = par[4];
   std::vector<double> T = arrival_times(bx, by, pl, t_info, target, par, policy);
   NumericVector D(P * K * n);
   for (size_t c = 0; c < (size_t)P * K; c++) {
     const double* t = T.data() + c * n;
     double m1 = INFINITY, m2 = INFINITY;   // fastest and second fastest
     for (int i = 0; i < n; i++) { if (t[i] < m1) { m2 = m1; m1 = t[i]; } else if (t[i] < m2) m2 = t[i]; }
+    double low = gate ? plogis_((zr - bz(c / K, c % K)) / zs) : 1.0;   // c = p * K + k
     for (int i = 0; i < n; i++) {
       double other = (t[i] == m1) ? m2 : m1;
-      D[c * n + i] = std::max(-cap, std::min(cap, t[i] - other));
+      D[c * n + i] = low * std::max(-cap, std::min(cap, t[i] - other));
     }
   }
   return D;
@@ -114,6 +117,7 @@ struct Model {
   const int* y;           // E: outcome, 0..n-1 players, n = offense team award, n+1 = defense team award
   const double* D;        // E x P x K x n arrival margin, or null (zero)
   const double* tau;      // E: seconds since the ball reached the rim, or null (zero)
+  const double* w;        // E: weight of each episode in the likelihood, or null (one)
 };
 
 // theta: b0, b_def, b_obs, b_acc, gO, gD, g_side, then the late terms b0_t, b_acc_t, b_first, b_first_t.
@@ -211,12 +215,14 @@ static void episode(const Model& m, int e, const double* th, const double* u, do
 }
 
 static Model make_model(NumericVector A, IntegerVector out_step, NumericVector Z, IntegerVector pidx, IntegerVector y,
-                        IntegerVector dims, NumericVector D = NumericVector(0), NumericVector tau = NumericVector(0)) {
+                        IntegerVector dims, NumericVector D = NumericVector(0), NumericVector tau = NumericVector(0),
+                        NumericVector w = NumericVector(0)) {
   Model m;
   m.E = dims[0]; m.P = dims[1]; m.K = dims[2]; m.n = dims[3]; m.M = dims[4];
   m.A = A.begin(); m.out_step = out_step.begin(); m.Z = Z.begin(); m.pidx = pidx.begin(); m.y = y.begin();
   m.D = D.size() ? D.begin() : nullptr;
   m.tau = tau.size() ? tau.begin() : nullptr;
+  m.w = w.size() ? w.begin() : nullptr;
   return m;
 }
 
@@ -237,8 +243,9 @@ static List objective(const Model& m, const std::vector<double>& par, IntegerVec
       int e = up[k];
       episode(m, e, pp, pp + NT, prob.data(), true, gth.data(), gu.data());
       // gradient of log tremble(p) = (1 - TREMBLE) p / tremble(p) times the gradient of log p
-      double py = prob[m.y[e]], r = (1 - TREMBLE) * py / tremble(py);
-      lloc += std::log(tremble(py));
+      double we = m.w ? m.w[e] : 1.0;
+      double py = prob[m.y[e]], r = we * (1 - TREMBLE) * py / tremble(py);
+      lloc += we * std::log(tremble(py));
       for (int j = 0; j < NT; j++) gloc[j] += r * gth[j];
       for (int i = 0; i < n; i++) { int pi = m.pidx[e * n + i]; if (pi >= 0) gloc[NT + pi] += r * gu[i]; }
     }
@@ -311,12 +318,12 @@ NumericMatrix cr_predict(NumericVector par, NumericVector A, IntegerVector out_s
 }
 
 //' The late model's objective: par = c(theta (11), u (M)), D the arrival margins (same layout as A) and tau
-//' each episode's seconds since the ball reached the rim.
+//' each episode's seconds since the ball reached the rim; w each episode's likelihood weight (empty: all one).
 // [[Rcpp::export]]
 List crt_objective(NumericVector par, NumericVector A, NumericVector D, NumericVector tau, IntegerVector out_step,
                    NumericVector Z, IntegerVector pidx, IntegerVector y, IntegerVector dims, IntegerVector use,
-                   LogicalVector free, double sd_u, double ridge) {
-  Model m = make_model(A, out_step, Z, pidx, y, dims, D, tau);
+                   LogicalVector free, double sd_u, double ridge, NumericVector w) {
+  Model m = make_model(A, out_step, Z, pidx, y, dims, D, tau, w);
   std::vector<bool> fr(free.begin(), free.end());
   return objective(m, std::vector<double>(par.begin(), par.end()), use, fr, sd_u, ridge);
 }

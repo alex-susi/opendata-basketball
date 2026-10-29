@@ -62,7 +62,7 @@ episode_forecasts <- function(i) {
     st <- stack_scenes(list(sc), f$acc, f$players, TRUE)
     P <- if (late_now) {
       sc$tau <- late_tau(t, cs[[1]])
-      predict_late(stack_late(list(sc), late$acc), late$fit)[1, ]
+      predict_late(stack_late(list(sc), late$acc_site), late$fit)[1, ]
     } else predict_cr(st, f$access_obstruction)[1, ]
     pairs <- which(sc$O >= 0.15, arr.ind = TRUE)
     land <- sc$land[seq_len(min(nrow(sc$land), LAND_SHOWN)), , drop = FALSE]
@@ -74,6 +74,8 @@ episode_forecasts <- function(i) {
                                                                     s = r3(sc$O[pairs[k, 1], pairs[k, 2]]))))
     if (talent && !late_now) out$pt <- r3(predict_cr(st, f$effects)[1, 1:10])
     if (late_now) out$tau <- round(t - cs[[1]], 2)
+    if (late_now && isTRUE(late$talent))
+      out$pt <- r3(predict_late(stack_late(list(sc), late$acc_site, names(late$effects$u)), late$effects)[1, 1:10])
     out
   })
   steps <- Filter(Negate(is.null), steps)
@@ -105,7 +107,7 @@ for (g in if (length(only)) as.integer(only) else games) {
     e$range <- as.character(shot_range(s$shot_dist, s$three))
     e
   })
-  jsonlite::write_json(list(game = g, talent = talent, heat = HEAT[c("x0", "y0", "cell", "nx", "ny")], episodes = eps), file.path(web, "rebounding", sprintf("%s.json", g)),
+  jsonlite::write_json(list(game = g, talent = talent || isTRUE(late$talent), heat = HEAT[c("x0", "y0", "cell", "nx", "ny")], episodes = eps), file.path(web, "rebounding", sprintf("%s.json", g)),
                        auto_unbox = TRUE, digits = NA, null = "null", na = "null")
 }
 
@@ -128,7 +130,7 @@ coll <- named(tab("skills", "collection_player.csv"))
 antp <- named(tab("skills", "anticipation_player.csv"))
 boxp <- named(tab("skills", "boxout_player.csv"))
 doc <- list(
-  built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), talent = talent,
+  built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), talent = talent || isTRUE(late$talent),
   episodes = length(bundles), checks = tab("checks", "scenario_checks.csv"),
   eda = { fs <- list.files(file.path(report, "eda"), "[.]csv$"); setNames(lapply(fs, function(f) fread(file.path(report, "eda", f))), sub("[.]csv$", "", fs)) },
   audit = list(counts = tab("audit", "counts.csv"), population = tab("audit", "population.csv"), by_game = tab("audit", "by_game.csv"),

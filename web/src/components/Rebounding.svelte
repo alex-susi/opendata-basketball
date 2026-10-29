@@ -60,7 +60,8 @@
     damped_role: "Damped momentum + typical move (used)",
     base_rate: "Base rate", rim_order: "Closer to the hoop", geometry: "Geometry", geometry_player_effects: "Geometry + player effects",
     current_site: "Rim model reused (before)", late_refit: "Same model, refit on late moments", late_time: "+ weights that change with time",
-    late_full: "+ who gets there first (late model)",
+    late_full: "+ who gets there first", late_height_flat: "+ reach height fitted",
+    late_height: "+ who gets there first only while the ball is low", late_effects: "+ player collection effects",
   };
   const model = (v: Cell) => MODEL[String(v)] ?? String(v);
   const CHECK: Record<string, string> = { release: "At release", early: "Release + 0.32 s", contact: "Just before contact", after: "Contact + 0.2 s", rim: "Just before the rim" };
@@ -159,7 +160,9 @@
 
   // ---- the late model ----
   const LT = (name: string): Row[] => doc?.late?.[name] ?? [];
-  const LATE_LINES = ["current_site", "late_full", "geometry_classifier"];
+  // the late model the site uses (run_late.R picks it on held-out games; decision.csv names it)
+  const siteModel = $derived(String(one(LT("decision"), (r) => String(r.comparison).startsWith("site model"))?.model ?? "late_full"));
+  const LATE_LINES = $derived(["current_site", siteModel, "geometry_classifier"]);
   /** Points and lines of one held-out measure against time since the rim, for the three compared models. */
   const lateCurve = (key: string, digits = 3) => {
     const rows = LT("validation_by_tau");
@@ -178,7 +181,7 @@
   });
   const lateCollector = $derived(lateCurve("collector_chance"));
   const lateCal = $derived(LT("calibration_players").filter((r) => n(r.n) >= 30).map((r) => ({
-    x: n(r.predicted), y: n(r.observed), g: r.model === "late_full" ? 1 : 0,
+    x: n(r.predicted), y: n(r.observed), g: r.model === "current_site" ? 0 : 1,
     tip: `${model(r.model)}: predicted ${pc(1)(r.predicted)}, observed ${pc(1)(r.observed)} (${int(r.n)} player-scenes)` })));
   const lateRow = (m: string) => one(LT("validation_summary"), (r) => r.model === m);
   const lateAt = (m: string, tau: number, key: string) => n(one(LT("validation_by_tau"), (r) => r.model === m && Math.abs(n(r.tau) - tau) < 1e-6)?.[key]);
@@ -191,7 +194,7 @@
     const times = [...new Set(rows.map((r) => n(r.t)))].sort((a, b) => a - b);
     const get = (t: number, m: string, s: string) => one(rows, (r) => n(r.t) === t && r.model === m && r.source === s);
     return times.map((t) => ({ t, before: n(get(t, "before", "all games")?.p_rebounder), now: n(get(t, "now", "all games")?.p_rebounder),
-                               held: n(get(t, "late_full", "held out")?.p_rebounder) }));
+                               held: n(get(t, "late_full", "held out")?.p_rebounder) }));  // "late_full" rows hold the site model, held out
   });
   const exContact = $derived(n(LT("example")[0]?.contact));
   const exRebound = $derived(n(LT("example")[0]?.rebound));
@@ -650,7 +653,7 @@
       </details>
 
       {#if doc.late}
-        {@const lf = lateRow("late_full")}
+        {@const lf = lateRow(siteModel)}
         {@const cur = lateRow("current_site")}
         {@const prior = lateRow("team_prior")}
         <h3>Late forecasts: after the ball reaches the rim</h3>
@@ -668,11 +671,17 @@
           <li><h3>Who gets there first</h3><p>For every point of every simulated path, each player's arrival margin: how much later than the fastest other player he could reach it, capped at one second either way. Arriving first adds pull; arriving after someone else takes it away.</p></li>
           <li><h3>Reaction time chosen again</h3><p>Reaction times from 0.05 to 0.5 s and three ways of moving were tried for these moments (run straight at the ball, keep moving until the latest bounce is seen, head for the forecast's centre), chosen by fit on the training games. The all-games fit uses {f(2)(lateParam("react"))} s, and players {POLICY[String(lateParam("policy"))] ?? "–"}.{lateParam("policy") === 1 ? " Shorter reaction times fit no better: a player cannot react to a bounce until he has seen it, about a quarter of a second, and until then he keeps moving as he was." : ""}</p></li>
           <li><h3>No hindsight about the rim</h3><p>When the ball reached the rim is read from the track seen so far. It becomes known when the next measured ball position arrives (usually the same frame). The old switch used the rim time recorded from the full track. A scenario check confirms that cutting the track changes nothing.</p></li>
+          <li><h3>Ball height</h3><p>A ball counts as reachable through a soft cut-off in height, the same for every player (the data has no player heights and nobody's jump is tracked). Its centre and steepness were fixed at 10.5 ft and 0.35 ft; now they are chosen from 9.5–11.5 ft and 0.2–0.7 ft by fit on the training games. Who gets there first can also count only while the ball is low enough to grab, instead of at every point of the path. Both were tested against the model without them. The all-games fit puts the half-reachable height at {f(1)(lateParam("z_reach"))} ft (fall-off {f(2)(lateParam("z_scale"))} ft){lateParam("z_reach") >= 11.5 ? ", the top of the range tried, so the best value may be higher: balls tracked at 11 ft are still often grabbed, which jumps, tips and the ball's height calibration could all explain" : ""}.</p></li>
         </ol>
         {#if lateDecision}
-          {@render decision(lateDecision.used_on_site === true || lateDecision.used_on_site === "TRUE"
-            ? `The site now uses the late model from the moment the ball is seen reaching the rim. On held-out games its log loss beats the reused rim model by ${f(3)(lateDecision.gain_over_current)} ± ${f(3)(lateDecision.se)} per scene, in ${lateDecision.games_better} of 10 games.`
-            : `The late model did not beat the reused rim model on held-out games (gain ${f(3)(lateDecision.gain_over_current)} ± ${f(3)(lateDecision.se)}, better in ${lateDecision.games_better} of 10), so the site keeps the rim model.`)}
+          {@const site = one(LT("decision"), (r) => String(r.comparison).startsWith("site model"))}
+          {@const hvs = one(LT("decision"), (r) => String(r.comparison).startsWith("late_height"))}
+          {@const yesno = (v: Cell) => v === true || v === "TRUE"}
+          {@render decision(`${yesno(site?.adopted)
+            ? `The site uses the late model from the moment the ball is seen reaching the rim: on held-out games its log loss beats the reused rim model by ${f(3)(site?.gain)} ± ${f(3)(site?.se)} per scene, in ${site?.games_better} of 10 games.`
+            : `The late model did not beat the reused rim model on held-out games (gain ${f(3)(site?.gain)} ± ${f(3)(site?.se)}, better in ${site?.games_better} of 10), so the site keeps the rim model.`} ${yesno(hvs?.adopted)
+            ? `The fitted reach height with the height-gated margin is part of it: ${f(3)(hvs?.gain)} ± ${f(3)(hvs?.se)} better than the fixed height, in ${hvs?.games_better} of 10 games.`
+            : `The fitted reach height with the height-gated margin was not adopted: ${f(3)(hvs?.gain)} ± ${f(3)(hvs?.se)} against the fixed height, better in ${hvs?.games_better} of 10 games.`}`)}
         {/if}
         <div class="rb-grid two">
           <div>
@@ -689,15 +698,18 @@
         <p>
           Over all late scenes the late model's log loss is {f(3)(lf?.log_loss)} against {f(3)(cur?.log_loss)} for the reused rim model and
           {f(3)(prior?.log_loss)} for the team prior. The player who went on to collect got, on average, {pc(0)(lf?.collector_chance)} from the late
-          model and {pc(0)(cur?.collector_chance)} from the old one; 1.0 s after the rim the figures are {pc(0)(lateAt("late_full", 1, "collector_chance"))}
+          model and {pc(0)(cur?.collector_chance)} from the old one; 1.0 s after the rim the figures are {pc(0)(lateAt(siteModel, 1, "collector_chance"))}
           and {pc(0)(lateAt("current_site", 1, "collector_chance"))}. The geometry classifier, refitted on the same late scenes, is the
           benchmark: a flexible model of distances and speeds with no physics ({f(3)(lateRow("geometry_classifier")?.log_loss)}).
         </p>
         <p>
-          <b>Where the gain comes from.</b> Refitting the same model on late moments gives most of it ({f(3)(lateRow("late_refit")?.gain_current)}
-          per scene); weights that change with time add {f(3)(n(lateRow("late_time")?.gain_current) - n(lateRow("late_refit")?.gain_current))}, and
-          the arrival margin {f(3)(n(lf?.gain_current) - n(lateRow("late_time")?.gain_current))}. The gain is not immediate: at the moment the
-          ball reaches the rim the two models are close ({f(3)(lateAt("late_full", 0, "log_loss"))} against {f(3)(lateAt("current_site", 0, "log_loss"))}),
+          <b>Where the gain comes from</b> (held-out log loss per scene, each step against the one before). Refitting the same model on
+          late moments: {f(3)(lateRow("late_refit")?.gain_current)}. Weights that change with time:
+          {f(3)(n(lateRow("late_time")?.gain_current) - n(lateRow("late_refit")?.gain_current))}. Who gets there first:
+          {f(3)(n(lateRow("late_full")?.gain_current) - n(lateRow("late_time")?.gain_current))}. A fitted reach height:
+          {f(3)(n(lateRow("late_height_flat")?.gain_current) - n(lateRow("late_full")?.gain_current))}. Counting who gets there first only while
+          the ball is low: {f(3)(n(lateRow("late_height")?.gain_current) - n(lateRow("late_height_flat")?.gain_current))}. The gain is not immediate: at the moment the
+          ball reaches the rim the two models are close ({f(3)(lateAt(siteModel, 0, "log_loss"))} against {f(3)(lateAt("current_site", 0, "log_loss"))}),
           and the late model pulls ahead over the next half second, as the bounce becomes visible.
         </p>
         <div class="rb-grid two">
@@ -723,13 +735,27 @@
           </div>
         </div>
         {@const calOld = one(LT("calibration_players"), (r) => r.model === "current_site" && r.band === "(0.3,0.4]")}
-        {@const calNew = one(LT("calibration_players"), (r) => r.model === "late_full" && r.band === "(0.3,0.4]")}
+        {@const calNew = one(LT("calibration_players"), (r) => r.model !== "current_site" && r.band === "(0.3,0.4]")}
         <p>
           The calibration chart is the clearest sign of what was wrong. When the reused rim model gave a player between 30% and 40%,
           he went on to collect {pc(0)(calOld?.observed)} of the time ({int(calOld?.n)} cases): it was too cautious about the players
           best placed. The late model's 30–40% calls came true {pc(0)(calNew?.observed)} of the time, and its chances track what
           happened across the range, including the few it puts above 60%.
         </p>
+        {@const li = LT("identification")[0]}
+        {#if li}
+          <p>
+            <b>Player effects, tested again on the late model.</b> Does any player secure reachable balls more often than this model
+            expects? Each player gets an effect, shrunk toward zero (prior sd 0.3), fitted on top of the late model with every miss counted
+            once: a miss's moments share one outcome, so they are not separate evidence. The rule is the one the rim test used (section 10):
+            forecasts must improve on held-out games where the rebounder was seen in training, and effects planted in simulated data must
+            be recovered (correlation above 0.5 for players on court for 20 or more misses). Held-out change: {f(4)(li.heldout_gain_seen)} per
+            scene (better in {li.games_better} of 10 games); recovery: {f(2)(li.recovery_r)}.
+            {li.passes === true || li.passes === "TRUE"
+              ? "Both hold, so the panel's talent-aware chances use these effects."
+              : "It does not pass, so the site stays with the population model: the late moments are sharper, but ten games still cannot tell players apart."}
+          </p>
+        {/if}
         <aside class="concept">
           <h4>Concept: one model with time in it</h4>
           <p>
@@ -759,7 +785,8 @@
           <p class="rb-note">
             b0 and b0_t: the baseline and its change per second since the rim; b_acc and b_acc_t: the weight on log access; b_first and
             b_first_t: the weight on the arrival margin (positive means arriving first helps). b_def is the defenders' edge, b_obs the
-            blocked-route penalty, g_off and g_def the team awards.
+            blocked-route penalty, g_off and g_def the team awards. z_reach and z_scale: the height at which a ball is half reachable and
+            how sharply reach falls off above it (ft); gated_margin is 1 when who gets there first counts only while the ball is low.
           </p>
         </details>
       {/if}

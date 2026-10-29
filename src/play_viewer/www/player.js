@@ -25,6 +25,8 @@
   const END_HOLD = 1.2;                      // seconds to rest on the last frame before looping
   const EPV_STALE = 9;                       // frames after the last price before the overlay is hidden
   const VALUE_SPAN = 0.35;                   // points above/below current EPV at which pass colours saturate
+  const BALL_Z_DOUBLE = 10;                  // ball height (ft) at which the drawn ball is twice its floor size
+  const BALL_Z_MAX = 20;                     // height past which the ball stops growing (tracking noise)
   // The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
   // Team colours come with each play (play.colors, from TEAM_COLORS in R/data.R).
   const COLORS = { paper: '#1B2334', floor: '#F6CFA3', line: '#2B2622', ink: '#E8EDF6', muted: '#93A0B8', ball: '#F59A23',
@@ -468,7 +470,7 @@
     const bx = blend(p.ball.x, c), by = blend(p.ball.y, c), bz = blend(p.ball.z, c) || 0;
     if (bx != null && by != null) {
       ctx.beginPath();
-      ctx.arc(L.ox + bx * L.s, L.oy - by * L.s, clamp(0.55 * L.s, 4.5, 10) * (1 + 0.5 * clamp(bz, 0, 14) / 14), 0, 2 * Math.PI);
+      ctx.arc(L.ox + bx * L.s, L.oy - by * L.s, clamp(0.55 * L.s, 4.5, 10) * (1 + clamp(bz, 0, BALL_Z_MAX) / BALL_Z_DOUBLE), 0, 2 * Math.PI);
       ctx.fillStyle = COLORS.ball;
       ctx.fill();
       ctx.lineWidth = 1.2;

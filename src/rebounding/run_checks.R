@@ -107,7 +107,7 @@ if (file.exists(late_path)) {
     if (length(sc)) sc$tau <- late_tau(cs[[2]] + after, cs[[1]])
     sc
   }
-  lprobs <- function(sc) predict_late(stack_late(list(sc), late$acc), late$fit)[1, ]
+  lprobs <- function(sc) predict_late(stack_late(list(sc), late$acc_site), late$fit)[1, ]
   ls <- Filter(function(s) length(s) > 0L, lapply(sample_ids, late_scene))
   LP <- t(vapply(ls, lprobs, numeric(13)))
   add("Late model: probabilities non-negative and sum to one", max(abs(rowSums(LP) - 1)),

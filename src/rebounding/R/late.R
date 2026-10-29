@@ -13,6 +13,7 @@ MARGIN_CAP <- 1                                  # s: arrival margins are capped
 THETA_LATE <- c(THETA, "b0_t", "b_acc_t", "b_first", "b_first_t")
 LATE_GRID <- CJ(policy = 0:2, react = c(0.05, 0.15, 0.25, 0.35, 0.5))   # policy 0: run at the ball once the bounce is seen
 LATE_GRID_SCENES <- 700L                         # training scenes used to choose the access settings
+LATE_HEIGHT <- CJ(z_reach = c(9.5, 10.5, 11.5), z_scale = c(0.2, 0.35, 0.7))   # ft: reach height and fall-off above it
 
 #' When the ball reached the rim, as known at `t_now`: the first frame, below an earlier high point (the ball is
 #' coming down), inside the audit's rim or backboard contact zones, or below 6 ft (an airball). Frames between
@@ -62,51 +63,73 @@ build_late_scenes <- function(bundles, fit, lib, path, force = FALSE) {
 
 acc_par <- function(acc) c(acc$react, acc$vmax, acc$sigma, acc$z_reach, acc$z_scale, acc$info_lag)
 
-#' Arrival margins of a scene for one access-parameter set (same layout as scene_access()).
+#' Arrival margins of a scene for one access-parameter set (same layout as scene_access()). With acc$gate the
+#' margins count only while the ball is low enough to grab (scaled by the access height gate).
 scene_margin <- function(sc, acc) {
-  arrival_margin(sc$bx, sc$by, as.matrix(sc$pl[, .(x, y, vx, vy)]), sc$t_info, sc$target, acc_par(acc), acc$policy, MARGIN_CAP)
+  arrival_margin(sc$bx, sc$by, sc$bz, as.matrix(sc$pl[, .(x, y, vx, vy)]), sc$t_info, sc$target, acc_par(acc), acc$policy,
+                 MARGIN_CAP, isTRUE(acc$gate))
 }
 
-#' Stack late scenes: stack_scenes() plus the arrival margins D and each scene's tau.
+#' Stack late scenes: stack_scenes() plus the arrival margins D, each scene's tau and its miss's weight (one over
+#' the number of that miss's scenes in the stack, so every miss counts once when weights are used).
 stack_late <- function(scenes, acc, players = character(0)) {
   st <- stack_scenes(scenes, acc, players, TRUE)
   st$D <- unlist(lapply(scenes, scene_margin, acc = acc), use.names = FALSE)
   st$tau <- vapply(scenes, `[[`, 0, "tau")
+  ids <- vapply(scenes, `[[`, "", "id")
+  st$w <- as.numeric(1 / table(ids)[ids])
+  st$ids <- ids
   st
 }
 
 #' Fit the late model by penalised maximum likelihood (BFGS, analytic gradient); `free` says which of THETA_LATE
-#' are estimated, the others stay at `start` (zero by default for the late terms).
-fit_late <- function(st, free = rep(TRUE, 11), start = NULL, use = seq_len(st$dims[1]) - 1L, ridge = 1e-3) {
-  par0 <- if (is.null(start)) c(-6, 0.5, 0, 1, -6, -6, 0.6, 0, 0, 0, 0) else unname(start)
-  dims <- st$dims; dims[5] <- 0L
-  pidx <- rep(-1L, length(st$pidx))
+#' are estimated, the others stay at `start` (zero by default for the late terms). With sd_u > 0 the stack's
+#' players get collection effects with that prior sd; `weighted` counts every miss once (see stack_late()).
+fit_late <- function(st, free = rep(TRUE, 11), start = NULL, use = seq_len(st$dims[1]) - 1L, ridge = 1e-3,
+                     sd_u = 0, weighted = FALSE) {
+  M <- if (sd_u > 0) st$dims[5] else 0L
+  par0 <- c(if (is.null(start)) c(-6, 0.5, 0, 1, -6, -6, 0.6, 0, 0, 0, 0) else unname(start), rep(0, M))
+  free_all <- c(free, rep(TRUE, M))
+  dims <- st$dims; dims[5] <- M
+  pidx <- if (M) st$pidx else rep(-1L, length(st$pidx))
+  w <- if (weighted) st$w else numeric(0)
   f <- function(p) {
-    p[!free] <- par0[!free]
-    crt_objective(p, st$A, st$D, st$tau, st$out_step, st$Z, pidx, st$y, dims, as.integer(use), free, 0, ridge)
+    p[!free_all] <- par0[!free_all]
+    crt_objective(p, st$A, st$D, st$tau, st$out_step, st$Z, pidx, st$y, dims, as.integer(use), free_all, sd_u, ridge, w)
   }
   cache <- new.env()
   val <- function(p) { r <- f(p); cache$g <- r$gradient; cache$p <- p; r$value }
   grd <- function(p) { if (!identical(cache$p, p)) f(p)$gradient else cache$g }
   o <- optim(par0, val, grd, method = "BFGS", control = list(maxit = 500, reltol = 1e-10))
   p <- o$par
-  p[!free] <- par0[!free]
-  list(theta = setNames(p, THETA_LATE), value = o$value, convergence = o$convergence)
+  p[!free_all] <- par0[!free_all]
+  list(theta = setNames(p[1:11], THETA_LATE), u = setNames(p[-(1:11)], if (M) st$players else character(0)),
+       value = o$value, convergence = o$convergence, sd_u = sd_u)
 }
 
-#' Outcome probabilities (scenes x 13) under a late fit.
+#' Outcome probabilities (scenes x 13) under a late fit. Effects apply to the fit's players that are in the
+#' stack's player list; everyone else gets none.
 predict_late <- function(st, fit) {
-  dims <- st$dims; dims[5] <- 0L
-  P <- crt_predict(unname(fit$theta), st$A, st$D, st$tau, st$out_step, st$Z, rep(-1L, length(st$pidx)), st$y, dims)
+  dims <- st$dims
+  u <- if (length(fit$u)) unname(fit$u[st$players]) else numeric(0)
+  if (length(u)) u[is.na(u)] <- 0
+  dims[5] <- length(u)
+  pidx <- if (length(u)) st$pidx else rep(-1L, length(st$pidx))
+  P <- crt_predict(c(unname(fit$theta), u), st$A, st$D, st$tau, st$out_step, st$Z, pidx, st$y, dims)
   colnames(P) <- OUTCOMES
   P
+}
+
+#' A fixed subsample of the training scenes for choosing access settings.
+grid_sample <- function(scenes, seed) {
+  set.seed(seed)
+  scenes[sort(sample(length(scenes), min(length(scenes), LATE_GRID_SCENES)))]
 }
 
 #' Choose the access settings for late scenes: every LATE_GRID setting, the full late model fitted on a fixed
 #' subsample of the training scenes, the one with the best training likelihood kept.
 choose_late_access <- function(scenes, base_acc, seed = 1L) {
-  set.seed(seed)
-  sub <- scenes[sort(sample(length(scenes), min(length(scenes), LATE_GRID_SCENES)))]
+  sub <- grid_sample(scenes, seed)
   grid <- copy(LATE_GRID)
   grid[, nll := mapply(function(pol, re) {
     acc <- modifyList(base_acc, list(policy = pol, react = re))
@@ -118,6 +141,18 @@ choose_late_access <- function(scenes, base_acc, seed = 1L) {
   list(acc = modifyList(base_acc, as.list(best[, .(policy, react)])), grid = grid)
 }
 
+#' Choose the reach height and how sharply access falls off above it (LATE_HEIGHT), with the arrival margin
+#' counting only while the ball is low enough to grab; same subsample and rule as choose_late_access().
+choose_late_height <- function(scenes, acc, seed = 1L) {
+  sub <- grid_sample(scenes, seed)
+  grid <- copy(LATE_HEIGHT)
+  grid[, nll := mapply(function(zr, zs) {
+    fit_late(stack_late(sub, modifyList(acc, list(z_reach = zr, z_scale = zs, gate = TRUE))))$value
+  }, z_reach, z_scale)]
+  best <- grid[which.min(nll)]
+  list(acc = modifyList(acc, list(z_reach = best$z_reach, z_scale = best$z_scale, gate = TRUE)), grid = grid)
+}
+
 #' The ladder of late models on one training set: the base model refitted on late scenes, plus time-varying
 #' weights, plus the arrival margin (the full model).
 fit_late_ladder <- function(st) {
@@ -125,6 +160,34 @@ fit_late_ladder <- function(st) {
   m2 <- fit_late(st, free = c(rep(TRUE, 9), FALSE, FALSE), start = m1$theta)
   m3 <- fit_late(st, start = m2$theta)
   list(late_refit = m1, late_time = m2, late_full = m3)
+}
+
+#' Collection effects on top of a fitted late model: its theta held fixed, one effect per player with prior sd
+#' `sd_u`, every miss counted once (its scenes share one outcome, so they are not independent evidence).
+fit_late_effects <- function(st, base, sd_u = 0.3) {
+  fit_late(st, free = rep(FALSE, 11), start = base$theta, sd_u = sd_u, weighted = TRUE)
+}
+
+#' Parameter recovery for late collection effects: outcomes simulated from `base` plus known effects (one outcome
+#' per miss, drawn from its earliest scene and shared by all its scenes), effects refitted, true and recovered
+#' compared for players on court in at least `min_misses` misses.
+late_recovery <- function(st, base, sd_true = 0.3, reps = 3, min_misses = 20) {
+  players <- st$players
+  first <- !duplicated(st$ids)
+  misses_on <- table(unlist(lapply(which(first), function(e) players[st$pidx[(e - 1) * 10 + 1:10] + 1L])))
+  n_on <- as.numeric(misses_on[players]); n_on[is.na(n_on)] <- 0
+  rbindlist(lapply(seq_len(reps), function(r) {
+    set.seed(200 + r)
+    u_true <- setNames(rnorm(length(players), 0, sd_true), players)
+    P <- predict_late(st, list(theta = base$theta, u = u_true))
+    y_miss <- vapply(which(first), function(e) sample.int(12, 1, prob = P[e, 1:12] / sum(P[e, 1:12])), 0L)
+    st2 <- st
+    st2$y <- as.integer(y_miss[match(st$ids, st$ids[first])] - 1L)
+    f <- fit_late_effects(st2, base, sd_true)
+    keep <- n_on >= min_misses
+    data.table(sd_true = sd_true, rep = r, cor_all = cor(u_true, f$u), cor_20plus = cor(u_true[keep], f$u[keep]),
+               players_20plus = sum(keep), shrink_sd = sd(f$u))
+  }))
 }
 
 #' Late forecast time of a scene or a site forecast: seconds since contact_seen(), capped at the last fitted tau.

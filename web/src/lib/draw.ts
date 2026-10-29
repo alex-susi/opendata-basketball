@@ -79,6 +79,11 @@ function archColor(slot: string): string {
   return color;
 }
 
+// Ball height (ft) at which the drawn ball is twice its floor size, and the height past which it stops growing
+// (tracking noise can throw the ball's z well above any real arc).
+const BALL_Z_DOUBLE = 10;
+const BALL_Z_MAX = 20;
+
 // The archetype tag under a dot is abbreviated; the roster beside the court spells it out.
 const ARCH_ABBR: Record<string, string> = {
   "Slasher": "Slsh", "Roll & Cut Big": "R&C", "Athletic Finisher": "AthF", "Movement Shooter": "Mvmt",
@@ -361,8 +366,10 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   }
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;
   if (bx != null && by != null) {
+    // The ball grows linearly with its height: floor size at z = 0, twice that at BALL_Z_DOUBLE feet.
+    const height = clamp(bz, 0, BALL_Z_MAX);
     ctx.beginPath();
-    ctx.arc(px(L, bx), py(L, by), clamp(0.55 * L.s, 4.5, 10) * (1 + (0.5 * clamp(bz, 0, 14)) / 14), 0, 2 * Math.PI);
+    ctx.arc(px(L, bx), py(L, by), clamp(0.55 * L.s, 4.5, 10) * (1 + height / BALL_Z_DOUBLE), 0, 2 * Math.PI);
     ctx.fillStyle = COLORS.ball;
     ctx.fill();
     ctx.lineWidth = 1.2;

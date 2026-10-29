@@ -1,2 +1,4 @@
-model,gain_over_current,se,games_better,used_on_site,rule
-late_full,0.113468043108568,0.0108020264504149,10,TRUE,used when its held-out log loss beats the current site model on average and in at least 6 of 10 games
+comparison,model,gain,se,games_better,adopted,rule
+late_full vs reused rim model,late_full,0.113468043108568,0.0108020264504149,10,TRUE,adopted when its held-out log loss is better on average and in at least 6 of 10 games
+late_height vs late_full,late_height,0.00185944919024179,0.00107585045865197,7,TRUE,adopted when its held-out log loss is better on average and in at least 6 of 10 games
+site model vs reused rim model,late_height,0.115327492298809,0.0103825479001118,10,TRUE,adopted when its held-out log loss is better on average and in at least 6 of 10 games

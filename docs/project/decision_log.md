@@ -992,6 +992,29 @@ At the owner's request, after asking why Samuels had only 32% just before securi
 - **Limits**: nothing is learned after 1.4 s (later forecasts use the 1.4 s weights); scenes are weighted equally, so
   long scrambles count a little more; many rebounds stay contested, so the typical top player is still near a third.
 
+## 2026-10-28 (later) — Late model: fitted reach height, height-gated margin, player effects retested
+
+At the owner's request.
+
+- **Reach height fitted.** The access height gate (half reachable at z_reach, fall-off z_scale) was fixed at 10.5 and
+  0.35 ft. It is now chosen per fold from 9.5/10.5/11.5 × 0.2/0.35/0.7 ft on the 700-scene training subsample, with the
+  access settings already chosen. The all-games fit picks 11.5 ft and 0.35 ft; seven of ten folds pick 11.5 ft. 11.5 ft
+  is the top of the grid, so the best value may be higher; it is reported as a boundary, not a measured reach
+  (jumps, tips and ball-height calibration could all make tracked balls at 11 ft grabbable). Still one reach for every
+  player: no player heights in the data and player z is always zero.
+- **Height-gated arrival margin** (`arrival_margin(..., gate = TRUE)`): each margin scaled by the height gate, so who
+  gets there first counts only while the ball is low enough to grab (mean |margin| falls 13%).
+- **Held out** (log loss per scene against the fixed-height late model): fitted height alone +0.0006 ± 0.0006 (better
+  in 6 of 10 games); with the gated margin +0.0019 ± 0.0011 (7 of 10). That passes the adoption rule (better on
+  average and in at least 6 of 10 games), so the site's late model is now `late_height` (1.819 against 1.937 for the
+  reused rim model, gain 0.115 ± 0.010, 10 of 10). The improvement is real but small.
+- **Player collection effects retested on the late model**, by the rim test's rule: effects with prior sd 0.3 on top
+  of the late model (theta held fixed), each miss weighted once because its moments share one outcome (new per-scene
+  weights in `crt_objective`). Held-out change where the rebounder was seen in training: −0.009 per scene (worse;
+  better in 1 of 10 games). Recovery of planted effects (sd 0.3, one simulated outcome per miss, players on court for
+  20+ misses): r = 0.40 on average over three replicates (needs 0.5). Fails; the site stays population-only. The
+  export would use late effects for the talent-aware chances if they ever pass.
+
 ## 2026-10-28 (evening) — Gated roadmap, Gate 0: rebound event audit and data contract: PASS
 
 At the owner's request, from "Rebound Probability Modeling: Original Response and Implementation Roadmap" (Part III).
