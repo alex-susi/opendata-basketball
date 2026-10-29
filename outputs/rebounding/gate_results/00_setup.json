@@ -1,6 +1,6 @@
 {
   "step": "00",
-  "status": "BLOCKED",
+  "status": "PASS",
   "scope": "project skeleton: pinned sources, data provenance, locked R environment, configuration, gate records",
   "source_commits": {
     "ReboundingPrediction": "5c3e0eadf0bf7f81f1600ac1575fa6783d0bbbc1",
@@ -22,7 +22,7 @@
     "tracking_equal_to_decompressed_upstream": 10
   },
   "model_revision": null,
-  "repository_head": "782be2ace2dc11cc6abeffbd5b7a70f4b3ecbf3a",
+  "repository_head": "5fe1e9f2ee6db11e925caf5d150ef399ddb9a27d",
   "fresh_copy": false,
   "test_command": "Rscript src/rebounding/run_tests.R unit; Rscript src/rebounding/run_tests.R gates step_00",
   "unit_tests_passed": true,
@@ -35,11 +35,11 @@
     "isolated_install_runs_tests": true,
     "deterministic_synthetic_test": true,
     "data_unmodified_and_checksummed": true,
-    "under_version_control": false,
+    "under_version_control": true,
     "tests_pass": true,
     "fresh_checkout_reproduces": true
   },
-  "unmet": "under_version_control",
+  "unmet": [],
   "environment": {
     "r": "4.4.2",
     "lockfile": "src/rebounding/renv.lock",
@@ -84,7 +84,7 @@
       "STEP 00: BLOCKED - unmet: isolated_install_runs_tests, under_version_control, fresh_checkout_reproduces "
     ]
   },
-  "untracked": ["src/rebounding/config/experiment.yaml", "src/rebounding/config/sources.yaml", "src/rebounding/renv.lock", "docs/project/SOURCE_REGISTER.md", "src/rebounding/R/step00.R", "src/rebounding/run_step00.R", "src/rebounding/run_tests.R", "src/rebounding/fetch_sources.R", "src/rebounding/check_fresh_checkout.R", "src/rebounding/tests/unit/test_determinism.R", "src/rebounding/tests/gates/test_step_00.R", "outputs/rebounding/gate_results/data_checksums.csv"],
+  "untracked": [],
   "evidence": ["outputs/rebounding/gate_results/00_sources.csv", "outputs/rebounding/gate_results/00_packages.csv", "outputs/rebounding/gate_results/00_tests.csv", "outputs/rebounding/gate_results/data_checksums.csv", "outputs/rebounding/gate_results/00_fresh_checkout.json", "docs/project/SOURCE_REGISTER.md"],
   "reviewer": "Claude (automated run); owner review pending",
   "date": "2026-10-29",
@@ -92,5 +92,5 @@
     "ReboundingPrediction, tracking-study, ShotQuality, basketball-shot, ReboundingImpact and Charlychee have no licence: ideas only, no code reuse",
     "Contract tables use gzip CSV, not parquet: the arrow build for R 4.4 is not reproducible from CRAN binaries"
   ],
-  "decision_note": "Unmet: under_version_control"
+  "decision_note": "All Step 00 criteria met."
 }

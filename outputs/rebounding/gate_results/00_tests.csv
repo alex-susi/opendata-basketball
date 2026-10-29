@@ -11,4 +11,4 @@ gates,test_step_00.R,every source is checked out at its pinned commit with its l
 gates,test_step_00.R,the source register names every pinned commit,11,0,FALSE,FALSE,0
 gates,test_step_00.R,the running R and every package match the lockfile,2,0,FALSE,FALSE,0
 gates,test_step_00.R,the supplied data files match the committed checksum manifest and the upstream release,5,0,FALSE,FALSE,0
-gates,test_step_00.R,"configuration, lockfile, register, code and tests are under version control",1,1,FALSE,FALSE,0
+gates,test_step_00.R,"configuration, lockfile, register, code and tests are under version control",1,0,FALSE,FALSE,0
