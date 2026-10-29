@@ -1,0 +1,96 @@
+{
+  "step": "00",
+  "status": "BLOCKED",
+  "scope": "project skeleton: pinned sources, data provenance, locked R environment, configuration, gate records",
+  "source_commits": {
+    "ReboundingPrediction": "5c3e0eadf0bf7f81f1600ac1575fa6783d0bbbc1",
+    "tracking-study": "6555fc9a6677f9f17e97cdc83769ff57d55b1f1e",
+    "shotquality-offensive-rebounding": "8af77017f1c14d0e32d428e3e83c3a3620577e1c",
+    "basketball-shot": "af178baaefb49bae6037b58bfd8d032f8eac6c98",
+    "filterpy": "5df4e095fac07684a05c495bd72d3424f7c68c9c",
+    "Kalman-and-Bayesian-Filters-in-Python": "04b2bea802321086effbd99402fc13c893d11110",
+    "LaurieOnTracking": "7ed3ff857940d3f4611be55f3c08c79525c32171",
+    "TrueImpactShotCharts": "5f2697251581b3e0c3b39fa5c58acc9085c3f292",
+    "ReboundingImpact": "617bca5b2514ca415da9d5cd23aed8a8350779ed",
+    "Basketball-Trajectory-Prediction": "a7d0437da50d357f3df5afc9e1cb074f09f5f53d"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "local_data_commit": "474a543",
+    "manifest": "outputs/rebounding/gate_results/data_checksums.csv",
+    "files": 35,
+    "tracking_equal_to_decompressed_upstream": 10
+  },
+  "model_revision": null,
+  "repository_head": "782be2ace2dc11cc6abeffbd5b7a70f4b3ecbf3a",
+  "fresh_copy": false,
+  "test_command": "Rscript src/rebounding/run_tests.R unit; Rscript src/rebounding/run_tests.R gates step_00",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": null,
+  "acceptance_criteria_version": "manual 2026-10-29, config v1",
+  "criteria": {
+    "sources_pinned_with_licence": true,
+    "environment_matches_lockfile": true,
+    "isolated_install_runs_tests": true,
+    "deterministic_synthetic_test": true,
+    "data_unmodified_and_checksummed": true,
+    "under_version_control": false,
+    "tests_pass": true,
+    "fresh_checkout_reproduces": true
+  },
+  "unmet": "under_version_control",
+  "environment": {
+    "r": "4.4.2",
+    "lockfile": "src/rebounding/renv.lock",
+    "packages": 35,
+    "mismatched": [],
+    "isolated": {
+      "lib": "C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/isolated_lib",
+      "unit_status": 0,
+      "gate_status": 0,
+      "summary": ["TESTS unit: 7 blocks, 34 expectations, 0 failed blocks, 0 skipped", "LIBRARIES C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/isolated_lib | C:/Program Files/R/R-4.4.2/library ", "TESTS gates (step_00): 6 blocks, 32 expectations, 0 failed blocks, 1 skipped", "LIBRARIES C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/isolated_lib | C:/Program Files/R/R-4.4.2/library "]
+    }
+  },
+  "fresh_checkout": {
+    "date": "2026-10-29 13:30",
+    "copy": "C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/fresh_copy",
+    "files_copied": 462,
+    "library": "C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/isolated_lib",
+    "repository_head": "782be2ace2dc11cc6abeffbd5b7a70f4b3ecbf3a",
+    "uncommitted_files_included": 38,
+    "fetch_status": 0,
+    "run_status": 0,
+    "fresh_criteria": {
+      "sources_pinned_with_licence": true,
+      "environment_matches_lockfile": true,
+      "deterministic_synthetic_test": true,
+      "data_unmodified_and_checksummed": true,
+      "tests_pass": true
+    },
+    "fresh_status": "BLOCKED",
+    "fresh_unmet": [
+      "isolated_install_runs_tests",
+      "under_version_control",
+      "fresh_checkout_reproduces"
+    ],
+    "reproduced": true,
+    "tail": [
+      " $ deterministic_synthetic_test   : logi TRUE",
+      " $ data_unmodified_and_checksummed: logi TRUE",
+      " $ under_version_control          : logi NA",
+      " $ tests_pass                     : logi TRUE",
+      " $ fresh_checkout_reproduces      : logi NA",
+      "STEP 00: BLOCKED - unmet: isolated_install_runs_tests, under_version_control, fresh_checkout_reproduces "
+    ]
+  },
+  "untracked": ["src/rebounding/config/experiment.yaml", "src/rebounding/config/sources.yaml", "src/rebounding/renv.lock", "docs/project/SOURCE_REGISTER.md", "src/rebounding/R/step00.R", "src/rebounding/run_step00.R", "src/rebounding/run_tests.R", "src/rebounding/fetch_sources.R", "src/rebounding/check_fresh_checkout.R", "src/rebounding/tests/unit/test_determinism.R", "src/rebounding/tests/gates/test_step_00.R", "outputs/rebounding/gate_results/data_checksums.csv"],
+  "evidence": ["outputs/rebounding/gate_results/00_sources.csv", "outputs/rebounding/gate_results/00_packages.csv", "outputs/rebounding/gate_results/00_tests.csv", "outputs/rebounding/gate_results/data_checksums.csv", "outputs/rebounding/gate_results/00_fresh_checkout.json", "docs/project/SOURCE_REGISTER.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-10-29",
+  "open_risks": [
+    "ReboundingPrediction, tracking-study, ShotQuality, basketball-shot, ReboundingImpact and Charlychee have no licence: ideas only, no code reuse",
+    "Contract tables use gzip CSV, not parquet: the arrow build for R 4.4 is not reproducible from CRAN binaries"
+  ],
+  "decision_note": "Unmet: under_version_control"
+}

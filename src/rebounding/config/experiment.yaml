@@ -1,0 +1,102 @@
+# Experiment configuration for the rebounding manual ("Dynamic Basketball Rebounding Model — Sequential
+# Implementation Manual", revision 2026-10-29). Step 00 creates it; later steps add to it, never edit a value
+# after held-out results have been seen (record any change in docs/project/decision_log.md).
+# Read with yaml::read_yaml(); paths are relative to the repository root.
+
+manual_revision: "2026-10-29"
+config_version: 1
+
+dataset:
+  name: SkillCorner opendata-basketball, ACB 2025-2026 sample
+  upstream_url: https://github.com/SkillCorner/opendata-basketball
+  upstream_commit: 4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66
+  local_data_commit: 474a543          # tracking .jsonl.gz replaced by the decompressed .jsonl
+  checksums: outputs/rebounding/gate_results/data_checksums.csv
+  games: [114243, 114234, 114169, 114099, 114086, 178442, 179612, 184439, 188630, 191313]
+  data_dir: data                      # supplied files, read only
+
+units:
+  fps: 25
+  frame_seconds: 0.04
+  wall_ms_per_frame: 40
+  length: ft
+  speed: ft/s
+  time: s
+  # Tracking is in the camera frame (x along the court, origin at centre court). Every rebound episode is turned
+  # into one attack frame with a single 180-degree rotation chosen once per shot from possessions.leftHoop:
+  # flip = -1 when the offence attacks the camera's left hoop, +1 otherwise; x' = flip * x, y' = flip * y for the
+  # ball and all ten players. The attacked hoop is then at +x. Event-table locations (shots.location,
+  # rebounds.location) are the attack frame turned 180 degrees (offensive hoop at -x), so x' = -event_x.
+  attack_frame: "offence attacks +x; flip = -1 if possessions.leftHoop else 1, applied to x and y"
+
+target:
+  population: non-fouled missed field goals with a rebound row (fgReb true, linked by shotId)
+  conditional_on: the miss (made shots and fouled misses are outside the estimand)
+  outcome: credited rebound, 12 classes - ten on-court players, team award to the offence, team award to the defence
+  side_of_rebound: rebounds.teamId against the shot's defensive team (the delivered `defensive` flag is wrong on 14 team awards)
+  free_throw_rebounds: excluded (they reference free_throws ids, fgReb false)
+  ambiguity: no fabricated player assignment; uncertain credits keep the official label and carry a flag
+
+splits:
+  outer: leave-one-game-out over the ten games
+  unit: rebound episode (every frame, candidate and label of an episode stays in its game's fold)
+  inner: nested grouped folds inside the nine training games, or fixed low-complexity settings decided beforehand
+  fit_on_training_games_only: [encoders, spatial priors, scalers, smoothing, calibration, physics parameters]
+
+seeds: [20261029, 11, 23, 37, 51]
+
+prediction_times:
+  # Information time t: a forecast at t may use only tracking frames with frameIdx <= t and event labels known by t.
+  release: shots.startFrame
+  pre_contact: 2 frames before the contact proxy (located after the fact; Step 03 decides whether a causal version exists)
+  post_contact: contact + 5 frames (0.2 s)
+  post_contact_grid_s: [0.2, 0.4, 0.6, 0.8, 1.0, 1.4]
+  usable_ball: tracked at t and a measured (not interpolated) ball frame in the 2 frames up to t; otherwise fall back up to 5 frames, else abstain
+
+model_ladder:
+  A: prior or rule (uniform eligible player, train-fold role prior, nearest to hoop, inside position, constant OREB rate)
+  B: static grouped conditional logit at release
+  C: release-time spatial prior plus static reach
+  D: causally filtered ball trajectories
+  E: collision uncertainty plus Monte Carlo reach and choice
+  F: validated ability or obstruction additions, if any
+
+# Fixed on 2026-10-29 before the Step 01 checks below were first run.
+step01:
+  orientation:
+    ball_at_end_max_hoop_ft: 6        # rotated ball at shots.endFrame must lie within this of the attacked hoop ...
+    ball_at_end_share_min: 0.98       # ... for at least this share of tracked misses, in each attack direction
+    shooter_gap_median_max_ft: 1.0    # tracked shooter at release vs -shots.location, median per attack direction
+    round_trip_tol_ft: 1.0e-9         # rotating twice must restore the camera coordinates
+  coverage:
+    period_min: 0.75                  # distinct running game-clock values / (25 x period length), per period
+    game_min: 0.85
+    start_gap_max_s: 30
+  order:
+    contact_after_release_frames: 1   # contact proxy at least this many frames after release, else flagged
+  identity:
+    players_at_release: 10            # 5 per side, all on the roster, matching chance_players
+  review:
+    edge_cases_per_kind: 2            # plotted examples per edge case (attack direction, period end, substitution, team award, rebound before endFrame)
+  # Added 2026-10-29 after the first Step 01 run (deviations, recorded in the gate record and decision log):
+  joins:
+    game_clock_tol_s: 0.001           # events store gameClock to the millisecond; the first run's largest gap was 0.0005 s
+  orientation_approach:
+    # The prespecified endFrame check above failed (96.3% / 94.5%) because shots.endFrame is not the ball's arrival
+    # for blocked shots, heaves and some long shots. This check does not depend on endFrame: from release until the
+    # rebound (at most 3 s), the rotated ball must come closer to the attacked hoop than to the opposite hoop.
+    window_frames: 75
+    share_min: 0.98                   # per attack direction, the same share as the prespecified check
+
+paths:
+  # Manual path -> path in this repository (data/ holds only the supplied files; derived tracking stays git-ignored).
+  docs/SOURCE_REGISTER.md: docs/project/SOURCE_REGISTER.md
+  configs/experiment.yaml: src/rebounding/config/experiment.yaml
+  requirements.lock: src/rebounding/renv.lock
+  gate_results/: outputs/rebounding/gate_results/
+  reports/: outputs/rebounding/reports/
+  tests/: src/rebounding/tests/
+  external/: external/
+  data/processed/rebound_episodes.parquet: outputs/rebounding/step01/rebound_episodes.csv
+  data/processed/tracking_frames.parquet: outputs/cache/rebounding/processed/tracking_frames.csv.gz
+  data/annotations/: outputs/rebounding/annotations/

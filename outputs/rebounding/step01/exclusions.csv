@@ -1,0 +1,8 @@
+eligible,exclusion,N
+TRUE,(eligible),703
+FALSE,no rebound row: unexplained,16
+FALSE,no rebound row: end of period,11
+FALSE,"miss, poor ball coverage",5
+FALSE,rebound row at or before the release (tip sequence linked to the tip),4
+FALSE,no rebound row: foul,2
+FALSE,"miss, ball not tracked",1

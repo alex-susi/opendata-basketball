@@ -1,0 +1,35 @@
+shot_id,kind,left_hoop,frames_release_to_end,complex_shot_type,ball_end_hoop_dist,ball_z_end,closest_attacked_hoop,closest_other_hoop,retained
+shot-179612-2-72,airball or no contact,TRUE,7,heave,53.52,14.38,1.86,27.63,FALSE
+shot-184439-2-71,airball or no contact,TRUE,5,heave,50.07,11.46,2.24,24.32,FALSE
+shot-114099-1-38,airball or no contact,TRUE,15,heave,44.3,11.18,7.61,29.03,FALSE
+shot-179612-1-39,airball or no contact,TRUE,10,heave,43.58,15.67,3.26,27.41,FALSE
+shot-114169-2-75,airball or no contact,FALSE,15,heave,29.2,17.84,4.53,44.53,FALSE
+shot-114169-1-36,airball or no contact,TRUE,3,dribblePullUp,23.18,9.89,3.84,56.64,TRUE
+shot-179612-3-107,airball or no contact,TRUE,15,dribblePullUp,19.73,17.98,0.55,59.66,FALSE
+shot-114243-4-141,airball or no contact,TRUE,30,leaner,15.01,4.88,4.66,78.78,TRUE
+shot-114243-3-102,airball or no contact,FALSE,32,dribblePullUp,7.82,9.52,7.82,72.96,TRUE
+shot-184439-4-141,airball or no contact,FALSE,29,offMove,7.75,13.06,6.78,67.5,FALSE
+shot-114169-1-23,airball or no contact,TRUE,31,catchAndShoot,6.51,12.23,6.41,69.55,FALSE
+shot-114086-4-122,airball or no contact,FALSE,30,catchAndShoot,6.35,9.68,4.71,72.15,TRUE
+shot-114243-1-37,backboard first,FALSE,9,heave,53.52,15.27,0.43,28.53,FALSE
+shot-114234-4-143,backboard first,TRUE,10,heave,51.48,15.93,2.85,25.8,FALSE
+shot-188630-2-59,backboard first,FALSE,25,dribblePullUp,7.09,14.66,2.49,53.81,TRUE
+shot-191313-1-29,blocked,FALSE,30,dribblePullUp,23.73,4.07,9.85,77.68,TRUE
+shot-114243-4-140,blocked,TRUE,3,stepback,23.3,8.95,13.89,83.67,TRUE
+shot-184439-3-93,blocked,TRUE,3,dribblePullUp,19.78,10.5,9.21,61.09,TRUE
+shot-114099-3-81,blocked,TRUE,30,layup,15.07,2.96,4.37,76.9,TRUE
+shot-114169-3-77,blocked,TRUE,30,layup,13.91,2.87,2.66,71.37,TRUE
+shot-179612-1-17,blocked,TRUE,2,floater,13.64,6.94,11.37,84.25,TRUE
+shot-188630-1-9,blocked,TRUE,30,hook,13.33,7,9.36,83.17,TRUE
+shot-114169-4-143,blocked,TRUE,30,layup,13.29,4.27,2.78,83.52,FALSE
+shot-184439-2-70,blocked,FALSE,30,layup,12.86,4.01,7.68,69.15,TRUE
+shot-191313-3-92,blocked,FALSE,30,layup,10.5,2.06,1.35,75.17,TRUE
+shot-114234-1-17,blocked,FALSE,30,layup,10.01,2.49,4.12,81.11,TRUE
+shot-114234-2-37,blocked,TRUE,30,layup,9.19,4.54,1.27,81.6,TRUE
+shot-179612-2-70,blocked,FALSE,2,floater,6.95,9.47,6.34,73.63,TRUE
+shot-114243-1-21,blocked,FALSE,30,layup,6.39,1.71,1.87,75.67,TRUE
+shot-114234-3-107,rim first,TRUE,10,heave,37.9,14.92,1.19,40.69,FALSE
+shot-178442-3-103,rim first,TRUE,10,heave,31.77,15.58,0.24,41.22,FALSE
+shot-188630-1-33,rim first,TRUE,5,dribblePullUp,17,11.99,0.97,60.96,FALSE
+shot-184439-3-106,rim first,FALSE,12,dribblePullUp,8.86,13.83,0.22,77.37,FALSE
+shot-114099-3-78,rim first,FALSE,30,layup,8.12,3.67,1.66,73.5,TRUE

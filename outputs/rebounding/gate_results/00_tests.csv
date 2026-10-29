@@ -1,0 +1,14 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_determinism.R,a fixed seed reproduces synthetic scenes bit for bit,3,0,FALSE,FALSE,0
+unit,test_determinism.R,every configured seed is a distinct integer,3,0,FALSE,FALSE,0
+unit,test_orientation.R,"rotating twice restores the camera coordinates exactly, for both directions",4,0,FALSE,FALSE,0
+unit,test_orientation.R,the attacked hoop lands at +x in both directions,2,0,FALSE,FALSE,0
+unit,test_orientation.R,"the transform is a rotation, not a reflection: handedness and distances survive",15,0,FALSE,FALSE,0
+unit,test_orientation.R,one flip per shot: every entity of a frame gets the same rotation,3,0,FALSE,FALSE,0
+unit,test_orientation.R,period coverage counts running frames against 25 x period length,4,0,FALSE,FALSE,0
+gates,test_step_00.R,the experiment configuration has every section the manual asks for,7,0,FALSE,FALSE,0
+gates,test_step_00.R,every source is checked out at its pinned commit with its licence as recorded,6,0,FALSE,FALSE,0
+gates,test_step_00.R,the source register names every pinned commit,11,0,FALSE,FALSE,0
+gates,test_step_00.R,the running R and every package match the lockfile,2,0,FALSE,FALSE,0
+gates,test_step_00.R,the supplied data files match the committed checksum manifest and the upstream release,5,0,FALSE,FALSE,0
+gates,test_step_00.R,"configuration, lockfile, register, code and tests are under version control",1,1,FALSE,FALSE,0

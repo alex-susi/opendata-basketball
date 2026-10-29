@@ -94,6 +94,43 @@ for a detector:
 - Find floor contacts where the arcs before and after a bounce meet (`fit_floor()`); the lowest measured frame is a
   median 1.5 ft high.
 
+## Sequential manual (revision 2026-10-29): Steps 00 and 01
+
+"Dynamic Basketball Rebounding Model — Sequential Implementation Manual" (`Rebound_Probability_Model_Step_by_Step_
+Implementation_Manual.html`) replaces the earlier gated roadmap. Its Step 01 covers what that roadmap called Gate 0,
+so Step 01 reads `gate0.rds` and adds the contract tables and the checks Gate 0 lacked. The manual is written for
+Python; this project uses R, and its paths map as follows (also in `src/rebounding/config/experiment.yaml`, `paths`):
+
+| Manual | Here |
+| --- | --- |
+| `docs/SOURCE_REGISTER.md` | `docs/project/SOURCE_REGISTER.md` (machine list: `src/rebounding/config/sources.yaml`) |
+| `configs/experiment.yaml` | `src/rebounding/config/experiment.yaml` (thresholds per step live here too) |
+| `requirements.lock` | `src/rebounding/renv.lock` (35 packages, R 4.4.2) |
+| `external/` | `external/` (git-ignored; `fetch_sources.R` rebuilds it at the pinned commits) |
+| `tests/unit`, `tests/gates/test_step_NN` | `src/rebounding/tests/unit`, `src/rebounding/tests/gates/test_step_NN.R` (testthat) |
+| `gate_results/` | `outputs/rebounding/gate_results/` (`NN_*.json` status records, data checksums) |
+| `reports/` | `outputs/rebounding/reports/` |
+| `data/processed/rebound_episodes.parquet` | `outputs/rebounding/step01/rebound_episodes.csv` |
+| `data/processed/tracking_frames.parquet` | `outputs/cache/rebounding/processed/tracking_frames.csv.gz` (git-ignored) |
+
+| Step | Run | Writes |
+| --- | --- | --- |
+| 00 | `Rscript src/rebounding/run_step00.R [--write-manifest] [--isolated-lib=PATH]` (about 40 s; `--write-manifest` about 25 s more) | `gate_results/00_setup.json`, `00_sources.csv`, `00_packages.csv`, `00_tests.csv`, `data_checksums.csv` |
+| 00, clean copy | `Rscript src/rebounding/check_fresh_checkout.R --lib=PATH` (about 40 s; fetches the sources from GitHub) | `gate_results/00_fresh_checkout.json` |
+| 01 | `Rscript src/rebounding/run_step01.R` (about a minute; needs `raw_*.rds`, `episodes.rds`, `gate0.rds`) | `step01/*.csv`, `step01/figures/`, `reports/01_join_audit.md`, `gate_results/01_episodes.json` |
+| Tests only | `Rscript src/rebounding/run_tests.R unit` / `run_tests.R gates step_01` | console |
+
+A clean package library for `--isolated-lib` / `--lib`: `renv::restore(lockfile = "src/rebounding/renv.lock", library =
+PATH)` with Rtools on PATH (13 packages build from source; about 3 minutes).
+
+- **Data provenance.** Each local `*_tracking_data.jsonl` is byte-identical to the upstream `.gz` decompressed (the
+  upstream LFS objects are still in `.git/lfs`), and every other `data/` file equals upstream commit `4bbed2e`.
+- **Licences.** Six of the ten code sources have no licence; they are read for ideas only (`SOURCE_REGISTER.md`).
+  ReboundingPrediction's 3.6 GB of NBA SportVU games are kept out of the checkout (outside data).
+- **Orientation** has two independent checks: the ball comes nearer the attacked hoop than the other one (100% at both
+  ends), and the tracked shooter sits on `-shots.location` (median 0 ft). Ball position at `shots.endFrame` is not a
+  valid check, because for blocked shots, heaves and some long shots endFrame is not the ball's arrival.
+
 ## Reviewing the automated labels
 
 `outputs/rebounding/audit/review_sample.csv` lists 60 episodes, stratified by kind (rim, backboard, airball,

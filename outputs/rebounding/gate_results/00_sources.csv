@@ -1,0 +1,11 @@
+name,url,commit,licence,reuse,present,head,at_commit,licence_as_recorded,excluded_paths_present
+ReboundingPrediction,https://github.com/riders994/ReboundingPrediction,5c3e0eadf0bf7f81f1600ac1575fa6783d0bbbc1,none found,ideas,TRUE,5c3e0eadf0bf7f81f1600ac1575fa6783d0bbbc1,TRUE,TRUE,0
+tracking-study,https://github.com/ismayc/tracking-study,6555fc9a6677f9f17e97cdc83769ff57d55b1f1e,none found,ideas,TRUE,6555fc9a6677f9f17e97cdc83769ff57d55b1f1e,TRUE,TRUE,0
+shotquality-offensive-rebounding,https://github.com/timseymour42/shotquality-offensive-rebounding,8af77017f1c14d0e32d428e3e83c3a3620577e1c,none found,ideas,TRUE,8af77017f1c14d0e32d428e3e83c3a3620577e1c,TRUE,TRUE,0
+basketball-shot,https://github.com/djlee9812/basketball-shot,af178baaefb49bae6037b58bfd8d032f8eac6c98,none found,ideas,TRUE,af178baaefb49bae6037b58bfd8d032f8eac6c98,TRUE,TRUE,0
+filterpy,https://github.com/rlabbe/filterpy,5df4e095fac07684a05c495bd72d3424f7c68c9c,MIT,adapt,TRUE,5df4e095fac07684a05c495bd72d3424f7c68c9c,TRUE,TRUE,0
+Kalman-and-Bayesian-Filters-in-Python,https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python,04b2bea802321086effbd99402fc13c893d11110,"text CC BY 4.0, code MIT",adapt,TRUE,04b2bea802321086effbd99402fc13c893d11110,TRUE,TRUE,0
+LaurieOnTracking,https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking,7ed3ff857940d3f4611be55f3c08c79525c32171,MIT,adapt,TRUE,7ed3ff857940d3f4611be55f3c08c79525c32171,TRUE,TRUE,0
+TrueImpactShotCharts,https://github.com/dkStephanos/TrueImpactShotCharts,5f2697251581b3e0c3b39fa5c58acc9085c3f292,MIT,adapt,TRUE,5f2697251581b3e0c3b39fa5c58acc9085c3f292,TRUE,TRUE,0
+ReboundingImpact,https://github.com/MatanK77/ReboundingImpact,617bca5b2514ca415da9d5cd23aed8a8350779ed,none found,ideas,TRUE,617bca5b2514ca415da9d5cd23aed8a8350779ed,TRUE,TRUE,0
+Basketball-Trajectory-Prediction,https://github.com/Charlychee/Basketball-Trajectory-Prediction,a7d0437da50d357f3df5afc9e1cb074f09f5f53d,none found,ideas,TRUE,a7d0437da50d357f3df5afc9e1cb074f09f5f53d,TRUE,TRUE,0

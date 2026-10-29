@@ -28,3 +28,6 @@ site/
 outputs/cache/
 .Rproj.user
 .Rproj.user
+
+# Pinned third-party source checkouts for the rebounding manual (commits in docs/project/SOURCE_REGISTER.md)
+external/

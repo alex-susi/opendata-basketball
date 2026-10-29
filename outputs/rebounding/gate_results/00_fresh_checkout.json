@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-29 13:30",
+  "copy": "C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/fresh_copy",
+  "files_copied": 462,
+  "library": "C:/Users/alexs/AppData/Local/Temp/claude/C--Users-alexs-Desktop-Data-Science-Projects-opendata-basketball/ac026a6f-b6ec-4097-bf9e-7fe9cade8a21/scratchpad/isolated_lib",
+  "repository_head": "782be2ace2dc11cc6abeffbd5b7a70f4b3ecbf3a",
+  "uncommitted_files_included": 38,
+  "fetch_status": 0,
+  "run_status": 0,
+  "fresh_criteria": {
+    "sources_pinned_with_licence": true,
+    "environment_matches_lockfile": true,
+    "deterministic_synthetic_test": true,
+    "data_unmodified_and_checksummed": true,
+    "tests_pass": true
+  },
+  "fresh_status": "BLOCKED",
+  "fresh_unmet": [
+    "isolated_install_runs_tests",
+    "under_version_control",
+    "fresh_checkout_reproduces"
+  ],
+  "reproduced": true,
+  "tail": [" $ deterministic_synthetic_test   : logi TRUE", " $ data_unmodified_and_checksummed: logi TRUE", " $ under_version_control          : logi NA", " $ tests_pass                     : logi TRUE", " $ fresh_checkout_reproduces      : logi NA", "STEP 00: BLOCKED - unmet: isolated_install_runs_tests, under_version_control, fresh_checkout_reproduces "]
+}

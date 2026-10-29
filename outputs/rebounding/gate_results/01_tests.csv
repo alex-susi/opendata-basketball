@@ -1,0 +1,13 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_orientation.R,"rotating twice restores the camera coordinates exactly, for both directions",4,0,FALSE,FALSE,0
+unit,test_orientation.R,the attacked hoop lands at +x in both directions,2,0,FALSE,FALSE,0
+unit,test_orientation.R,"the transform is a rotation, not a reflection: handedness and distances survive",15,0,FALSE,FALSE,0
+unit,test_orientation.R,one flip per shot: every entity of a frame gets the same rotation,3,0,FALSE,FALSE,0
+unit,test_orientation.R,period coverage counts running frames against 25 x period length,4,0,FALSE,FALSE,0
+gates,test_step_01.R,every eligible episode has a unique key and a valid shot association,6,0,FALSE,FALSE,0
+gates,test_step_01.R,"release, contact and rebound are in order, or carry an explicit flag",3,0,FALSE,FALSE,0
+gates,test_step_01.R,"player ids match the roster and the on-court players at release, with documented exceptions",6,0,FALSE,FALSE,0
+gates,test_step_01.R,court orientation is right in both attack directions,6,0,FALSE,FALSE,0
+gates,test_step_01.R,ball and player availability and detection quality are reported by game and stage,4,0,FALSE,FALSE,0
+gates,test_step_01.R,every exclusion is counted by cause and team-only rebounds stay team outcomes,5,0,FALSE,FALSE,0
+gates,test_step_01.R,"edge cases are drawn, including both attack directions and the end of a period",2,0,FALSE,FALSE,0

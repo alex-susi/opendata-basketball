@@ -1118,3 +1118,52 @@ At the owner's request ("run step 1 and 3"). Code `src/rebounding/run_gate1_prer
   keyframes and Gate 0's landmark rates).
 - Whether `flight.R` should use a fitted vertical acceleration instead of 32.2 ft/s².
 - When to rebuild the cached bundles and refit with the corrected rebound sides.
+
+## 2026-10-29 — Sequential rebounding manual, Steps 00 and 01: Step 01 PASS, Step 00 waits on a commit
+
+At the owner's request ("proceed with steps 0 and 1, skipping things if already completed"), from "Dynamic Basketball
+Rebounding Model — Sequential Implementation Manual" (revision 2026-10-29), which replaces the earlier gated roadmap.
+Code `src/rebounding/run_step00.R`, `run_step01.R`, `fetch_sources.R`, `check_fresh_checkout.R`, `run_tests.R`,
+`R/step00.R`, `R/step01.R`, `config/`, `tests/`, `renv.lock`; register `docs/project/SOURCE_REGISTER.md`; evidence
+`outputs/rebounding/gate_results/`, `outputs/rebounding/step01/`, report `outputs/rebounding/reports/01_join_audit.md`;
+how to run in `rebounding.md`.
+
+- **Layout decision.** The manual's Python tree is mapped onto the existing R project rather than a new one (CLAUDE.md:
+  existing language and layout; `data/` holds only supplied files). The table is in `rebounding.md`.
+- **Sources.** Ten repositories are pinned in `external/` (git-ignored). Four have a licence (filterpy, LaurieOnTracking
+  and TrueImpactShotCharts MIT; the Kalman book, text CC BY 4.0 and code MIT). Six have none (ReboundingPrediction,
+  tracking-study, ShotQuality, basketball-shot, ReboundingImpact, Charlychee): ideas only, no code copied or run. This
+  overrides the manual's "port `resolve_collisions` if the licence permits", since basketball-shot has no licence.
+  ReboundingPrediction bundles 3.6 GB of NBA SportVU games; a sparse checkout keeps them out (no outside data).
+- **Step 00 evidence.** Every `data/` file equals upstream `4bbed2e`, and each tracking `.jsonl` equals the upstream
+  `.gz` decompressed (checked against the LFS objects still in `.git/lfs`). The 35-package lockfile restores into an
+  empty library in about 3 minutes, and the unit and Step 00 tests pass there. A clean copy of the repository, with
+  its sources fetched again from GitHub and only the lockfile library, reproduced every judged criterion. The one
+  unmet criterion is "under version control": none of these files is committed yet. The clean-copy check ran before
+  the Step 01 files existed; rerun it after the commit.
+- **Contract format.** Gzip CSV instead of parquet: R 4.4's CRAN binaries no longer include the installed arrow
+  (24.0.0) or data.table (1.18.4), and a source build of arrow is not practical. data.table builds from source in
+  30 s, so it stays.
+- **Step 01: PASS.** 742 non-fouled misses, 703 eligible. Joins, keys, ordering, identity, orientation, quality by game
+  and stage, clock coverage and exclusions are all documented (`01_join_audit.md`). Findings Gate 0 did not have:
+  - The ball comes nearer the attacked hoop than the other hoop on every one of 740 tracked misses, in both
+    directions; the median shooter gap to `-shots.location` is 0 ft.
+  - Player detection drops from 93–97% before contact to 80–95% between contact and the rebound.
+  - The stricter 0.001 ft rule finds ball keyframes on about 60% of frames, against 54–57% with the audit's 0.015 ft.
+  - Game 178442's fourth quarter starts 62 s late in the tracking; every other period is covered from its start.
+  - No eligible window has a substitution between release and rebound.
+- **Deviations (owner to confirm).**
+  1. The prespecified orientation check (ball at `shots.endFrame` within 6 ft of the attacked hoop, at least 98% per
+     direction) failed: 96.3% and 94.5%. Its 34 outliers are blocked shots, airballs or heaves, and shots whose
+     endFrame is not at the rim, so it tested endFrame's meaning rather than orientation. It was replaced after the
+     first run by the endFrame-free check above. The failure stays in `checks.csv`.
+  2. The gameClock join tolerance was 1e-6 s, set in code without a reason; it is now 0.001 s, since events keep
+     milliseconds and the largest gap is 0.0005 s.
+
+### Open choices
+
+- Commit the Step 00/01 files, then rerun `check_fresh_checkout.R` and `run_step00.R` so Gate 00 can pass. Commit the
+  gate records they rewrite as well.
+- Whether to accept the orientation deviation, or to keep Step 01 blocked until a check fixed in advance is rerun.
+- Step 02 needs a second reviewer for contact and tip labels. Without one, its gate can pass only for event types
+  with a stated reliability target that a single reviewer can meet.

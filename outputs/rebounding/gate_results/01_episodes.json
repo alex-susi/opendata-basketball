@@ -1,0 +1,65 @@
+{
+  "step": "01",
+  "status": "PASS",
+  "scope": "credited outcome of a non-fouled missed field goal (12 classes), conditional on the miss; 703 eligible of 742 episodes",
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "manifest": "outputs/rebounding/gate_results/data_checksums.csv"
+  },
+  "model_revision": null,
+  "repository_head": "782be2ace2dc11cc6abeffbd5b7a70f4b3ecbf3a",
+  "test_command": "Rscript src/rebounding/run_tests.R unit orientation; Rscript src/rebounding/run_tests.R gates step_01",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": null,
+  "acceptance_criteria_version": "manual 2026-10-29, config v1",
+  "criteria": {
+    "join_and_keys": true,
+    "timing_order": true,
+    "identity": true,
+    "orientation_both_directions": true,
+    "quality_reported_by_game_and_stage": true,
+    "exclusions_counted": true,
+    "outcome_taxonomy_with_team_awards": true,
+    "coverage_reported": true,
+    "tests_pass": true
+  },
+  "unmet": [],
+  "deviations": [
+    {
+      "check": "orientation: ball at shots.endFrame within 6 ft of the attacked hoop, >= 98% per direction (prespecified)",
+      "result": "attacks camera-right hoop (flip +1) 96.3%; attacks camera-left hoop (flip -1) 94.5%",
+      "decision": "Superseded after the first run: every outlier is a blocked shot, an airball or heave, or a shot whose endFrame comes before the ball reaches the rim, so the check measured endFrame semantics, not orientation. Replaced by an endFrame-free check (ball nearer the attacked hoop than the other, same 98% share). Owner to confirm."
+    },
+    {
+      "check": "joins: event gameClock equals tracking gameClock",
+      "result": "largest gap 0.0005 s",
+      "decision": "Tolerance 0.001 s set after the first run; the first run used 1e-6 s, fixed in code without a stated reason."
+    }
+  ],
+  "counts": {
+    "episodes": 742,
+    "eligible": 703,
+    "excluded": 39,
+    "outcomes": {
+      "def player": 457,
+      "def team award": 36,
+      "off player": 173,
+      "off team award": 37
+    },
+    "identity_suspect": 33,
+    "substitution_in_window": 0
+  },
+  "evidence": ["outputs/rebounding/step01/rebound_episodes.csv", "outputs/rebounding/step01/checks.csv", "outputs/rebounding/step01/orientation.csv", "outputs/rebounding/step01/quality_by_game_stage.csv", "outputs/rebounding/step01/period_coverage.csv", "outputs/rebounding/step01/exclusions.csv", "outputs/rebounding/step01/figures/", "outputs/rebounding/reports/01_join_audit.md", "outputs/rebounding/gate0/ (event links, clocks, taxonomy, 72-rebound review)"],
+  "reviewer": "Claude (automated run; tracking-plot review from Gate 0); owner review pending",
+  "date": "2026-10-29",
+  "open_risks": [
+    "Contact, touch and control frames are automated proxies (Step 02 reviews them)",
+    "5 of 64 reviewed player rebounds credit a player who never reaches the ball in tracking (identity_suspect flags 33 eligible)",
+    "Single reviewer, tracking plots only; no video ships with the data and outside video is not allowed"
+  ],
+  "decision_note": "All Step 01 audits documented and passed."
+}

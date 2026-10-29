@@ -1,0 +1,3 @@
+direction,misses_with_ball_at_end,ball_near_attacked_hoop,ball_in_attacked_half,ball_end_hoop_dist_median,ball_nearer_attacked_hoop,closest_attacked_hoop_median,shooter_gap_median,shooter_gap_p90,defenders_in_attacked_half_mean,players_in_attacked_half_mean
+attacks camera-right hoop (flip +1),376,0.962765957446809,0.997340425531915,2.29085773054313,1,1.38028867677788,0,0,4.97074468085106,9.89095744680851
+attacks camera-left hoop (flip -1),364,0.945054945054945,0.986263736263736,1.57182607499151,1,0.73154785722924,0,0.399999999999999,4.91758241758242,9.78846153846154

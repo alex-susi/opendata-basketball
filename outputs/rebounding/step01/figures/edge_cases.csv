@@ -1,0 +1,13 @@
+page,reason,shot_id,game_id,period,left_hoop,flip,f0,f1,rf,outcome12,exclusion_label,substitution_in_window,release_matches_chance
+1,attacks camera-left hoop,shot-114169-2-56,114169,2,TRUE,-1,51250,51255,51265,def player,eligible,FALSE,TRUE
+1,attacks camera-left hoop,shot-114099-1-30,114099,1,TRUE,-1,25415,25422,25437,def player,eligible,FALSE,TRUE
+1,attacks camera-right hoop,shot-114086-2-42,114086,2,FALSE,1,39995,40028,40048,def player,eligible,FALSE,TRUE
+2,attacks camera-right hoop,shot-114234-1-28,114234,1,FALSE,1,22495,22505,22520,off player,eligible,FALSE,TRUE
+2,end of period,shot-114234-3-107,114234,3,TRUE,-1,106670,106680,,,no rebound row: end of period,FALSE,TRUE
+2,end of period,shot-184439-3-106,184439,3,FALSE,1,93155,93167,,,no rebound row: end of period,FALSE,TRUE
+3,offensive team award,shot-114234-1-17,114234,1,FALSE,1,16465,16495,16521,off team award,eligible,FALSE,TRUE
+3,defensive team award,shot-188630-1-16,188630,1,TRUE,-1,11410,11445,11512,def team award,eligible,FALSE,TRUE
+3,rebound before endFrame,shot-114169-2-62,114169,2,FALSE,1,60592,60622,60610,def player,eligible,FALSE,TRUE
+4,rebound before endFrame,shot-114169-4-130,114169,4,TRUE,-1,147382,147412,147400,def player,eligible,FALSE,TRUE
+4,tracked ten differ from chance_players,shot-114234-2-66,114234,2,FALSE,1,55457,55487,55964,def player,"miss, ball not tracked",FALSE,FALSE
+4,tracked ten differ from chance_players,shot-178442-4-138,178442,4,FALSE,1,144927,144957,,,no rebound row: unexplained,FALSE,FALSE

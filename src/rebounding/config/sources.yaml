@@ -1,0 +1,59 @@
+# Pinned third-party sources of the rebounding manual. Human-readable register: docs/project/SOURCE_REGISTER.md.
+# reuse: "adapt" = licence allows adapted code with its notice; "ideas" = no licence found, read only.
+# exclude: paths kept out of the sparse checkout (outside data the competition does not allow).
+
+- name: ReboundingPrediction
+  url: https://github.com/riders994/ReboundingPrediction
+  commit: 5c3e0eadf0bf7f81f1600ac1575fa6783d0bbbc1
+  licence: none found
+  reuse: ideas
+  exclude: [data/, "*.7z"]
+- name: tracking-study
+  url: https://github.com/ismayc/tracking-study
+  commit: 6555fc9a6677f9f17e97cdc83769ff57d55b1f1e
+  licence: none found
+  reuse: ideas
+- name: shotquality-offensive-rebounding
+  url: https://github.com/timseymour42/shotquality-offensive-rebounding
+  commit: 8af77017f1c14d0e32d428e3e83c3a3620577e1c
+  licence: none found
+  reuse: ideas
+- name: basketball-shot
+  url: https://github.com/djlee9812/basketball-shot
+  commit: af178baaefb49bae6037b58bfd8d032f8eac6c98
+  licence: none found
+  reuse: ideas
+- name: filterpy
+  url: https://github.com/rlabbe/filterpy
+  commit: 5df4e095fac07684a05c495bd72d3424f7c68c9c
+  licence: MIT
+  licence_file: LICENSE
+  reuse: adapt
+- name: Kalman-and-Bayesian-Filters-in-Python
+  url: https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python
+  commit: 04b2bea802321086effbd99402fc13c893d11110
+  licence: text CC BY 4.0, code MIT
+  licence_file: license.html
+  reuse: adapt
+- name: LaurieOnTracking
+  url: https://github.com/Friends-of-Tracking-Data-FoTD/LaurieOnTracking
+  commit: 7ed3ff857940d3f4611be55f3c08c79525c32171
+  licence: MIT
+  licence_file: LICENSE
+  reuse: adapt
+- name: TrueImpactShotCharts
+  url: https://github.com/dkStephanos/TrueImpactShotCharts
+  commit: 5f2697251581b3e0c3b39fa5c58acc9085c3f292
+  licence: MIT
+  licence_file: LICENSE
+  reuse: adapt
+- name: ReboundingImpact
+  url: https://github.com/MatanK77/ReboundingImpact
+  commit: 617bca5b2514ca415da9d5cd23aed8a8350779ed
+  licence: none found
+  reuse: ideas
+- name: Basketball-Trajectory-Prediction
+  url: https://github.com/Charlychee/Basketball-Trajectory-Prediction
+  commit: a7d0437da50d357f3df5afc9e1cb074f09f5f53d
+  licence: none found
+  reuse: ideas
