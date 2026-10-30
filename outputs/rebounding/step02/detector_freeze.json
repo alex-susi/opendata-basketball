@@ -1,0 +1,8 @@
+{
+  "frozen_at": "2026-10-29T14:09:35",
+  "break_ft": 0.65,
+  "contact_states_sha256": "ec9cc671e1ac03e0505421d46a42f4293f678295a0c066d25e2cd87c15dc55c5",
+  "config_step02_sha256": "46cfaed58c07252f5c17f6fcefe67ed8925ce01b975545666bd8e0d00ead4e6d",
+  "auto_summary_sha256": "f80b09f8aca9a550635d5d365dcda78a502beccd1dfb7c7deb9779e791fe870a",
+  "note": "Held-aside pages may be drawn only after this record exists; the labeler must not change afterwards."
+}

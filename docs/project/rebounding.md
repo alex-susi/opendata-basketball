@@ -118,6 +118,8 @@ Python; this project uses R, and its paths map as follows (also in `src/reboundi
 | 00 | `Rscript src/rebounding/run_step00.R [--write-manifest] [--isolated-lib=PATH]` (about 40 s; `--write-manifest` about 25 s more) | `gate_results/00_setup.json`, `00_sources.csv`, `00_packages.csv`, `00_tests.csv`, `data_checksums.csv` |
 | 00, clean copy | `Rscript src/rebounding/check_fresh_checkout.R --lib=PATH` (about 40 s; fetches the sources from GitHub) | `gate_results/00_fresh_checkout.json` |
 | 01 | `Rscript src/rebounding/run_step01.R` (about a minute; needs `raw_*.rds`, `episodes.rds`, `gate0.rds`) | `step01/*.csv`, `step01/figures/`, `reports/01_join_audit.md`, `gate_results/01_episodes.json` |
+| 02 | `Rscript src/rebounding/run_step02.R --phase=calibrate`, `sample`, `label --freeze`, `pages --subset=dev\|heldout`, `score`, `gate` (each under 2 minutes; needs `raw_*.rds`, `episodes.rds` and the Step 01 table) | `step02/` (thresholds, sample, automated labels, review pages and sheets, agreement, heights, figures), `annotations/contact_events.csv`, `reports/02_annotation_reliability.md`, `gate_results/02_contact_states.json`, `02_tests.csv` |
+| 03 | `Rscript src/rebounding/run_step03.R` (about 5 minutes; needs `raw_*.rds` and the Step 01 table) | `step03/` (folds, prediction points, baseline predictions, scores, paired comparisons, calibration, leakage checks, `design_freeze.json`), `reports/03_evaluation_design.md`, `gate_results/03_evaluation.json`, `03_tests.csv`; cache `step03_features.rds` |
 | Tests only | `Rscript src/rebounding/run_tests.R unit` / `run_tests.R gates step_01` | console |
 
 A clean package library for `--isolated-lib` / `--lib`: `renv::restore(lockfile = "src/rebounding/renv.lock", library =
@@ -130,6 +132,48 @@ PATH)` with Rtools on PATH (13 packages build from source; about 3 minutes).
 - **Orientation** has two independent checks: the ball comes nearer the attacked hoop than the other one (100% at both
   ends), and the tracked shooter sits on `-shots.location` (median 0 ft). Ball position at `shots.endFrame` is not a
   valid check, because for blocked shots, heaves and some long shots endFrame is not the ball's arrival.
+
+## Sequential manual, Step 02: contact states (BLOCKED)
+
+Labels from `R/contact_states.R` for all 703 eligible misses, reviewed against a held-aside subset; results in
+`outputs/rebounding/reports/02_annotation_reliability.md`. **No label type passed**, so Steps 03–09 use the final
+credited rebounder only, and tip, controlled-catch and securing models stay blocked. What a later step must keep:
+
+- **Order of the phases matters.** The held-aside pages may be drawn only after `label --freeze`; `score` and `gate`
+  refuse to run if `contact_states.R` or `auto_summary.csv` differ from the checksums in `step02/detector_freeze.json`.
+  Changing the labeler means a new version, a new held-aside subset and a new freeze.
+- **Second reviewer.** `step02/review/reviewer2_heldout.csv` is blank. Fill it from the `heldout_*.png` pages with the
+  rubric (`docs/project/ANNOTATION_RUBRIC.md`; frames relative to release, players as the page labels them, e.g.
+  `D9138`), without looking at `reviewer1_heldout.csv` or the automated labels; then rerun `score` and `gate`, which
+  judge the gate on reviewer-to-reviewer agreement.
+- **`contact_events.csv`** holds the automated rows (`labeler = auto_v1`, `gate_status` per type), reviewer 1's
+  held-aside rows and the official rebound frame. None is a landing point.
+- **Ball heights** near the rim read 1–2.5 ft high, and control is capped at 9 ft by the labeler's own rule.
+
+## Sequential manual, Step 03: evaluation harness (PASS)
+
+Modules `R/folds.R` (leave-one-game-out folds), `R/metrics.R` (validation, per-episode scores, calibration, paired
+comparisons, decision rules) and `R/reference_baselines.R` (prediction points, causal features, baselines, leakage
+checks); settings and later steps' decision rules in `config/experiment.yaml` (`step03`, which is the manual's
+`gate_thresholds.yaml`). What every later model must do to be comparable:
+
+- **Hand in** a long table `model, time_point, episode_id, outcome_id, probability` (outcome ids: the ten players'
+  raw ids at release, `team_off`, `team_def`), fitted per outer fold on the other nine games only, and pass
+  `check_predictions()`. Score with `score_episodes()` and compare with `paired_comparison()` against
+  `step03/reference_baselines.csv.gz` on the same episodes and time point.
+- **Information time.** Tracking frames up to t only; ball frame f usable from f + 1 (whether it is measured needs the
+  next frame); nominal hoop, never the calibrated hoops (they use the test game's own later made shots). Features
+  carry `source_frame`; `assert_information_time()` rejects any later than t.
+- **Time points.** `release`, and `rim+s` for s in 0–1.4 s after a causal rim-arrival trigger. A point exists only
+  while the ball is loose (before the credited rebound frame). There is no pre-contact point.
+- **Confirmatory comparisons** are fixed in the config (C1, C2 for Step 04; C3a, C3b for Step 09). Since config v3, C1
+  needs superiority over every baseline and the selected reference, each on its own: call `decide_against()` with
+  C1's `references`. The strongest are role prior by range (2.261), nearest to hoop (2.263) and nearest by range
+  (2.268) at release.
+- **Do not change** the `step03` block or the three modules after a later model has been scored.
+  `step03/design_freeze.json` is written once: `run_step03.R` stops if the config, the modules or the Step 01 table
+  no longer match it, and the gate fails if rerun predictions differ from the frozen ones. A deliberate change needs a
+  decision-log entry, a higher `config_version` and deleting the freeze file by hand.
 
 ## Reviewing the automated labels
 

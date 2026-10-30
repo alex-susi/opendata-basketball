@@ -1,0 +1,31 @@
+shot_id,stratum,game_id,f0,credited_outcome,kind,subset,item
+shot-114169-2-52,team award,114169,49669,off team award,rim first,heldout_v2,1
+shot-178442-4-119,ordinary defensive rebound,178442,113895,def player,rim first,heldout_v2,2
+shot-179612-4-140,team award,179612,134285,off team award,rim first,heldout_v2,3
+shot-191313-3-81,airball or no contact,191313,68502,def player,airball or no contact,heldout_v2,4
+shot-114169-1-6,random,114169,5920,off team award,rim first,heldout_v2,5
+shot-179612-2-51,offensive player rebound,179612,35832,off player,rim first,heldout_v2,6
+shot-114099-3-87,backboard first,114099,82222,def player,backboard first,heldout_v2,7
+shot-184439-3-87,blocked,184439,74205,def player,blocked,heldout_v2,8
+shot-184439-1-23,backboard first,184439,16072,def player,backboard first,heldout_v2,9
+shot-191313-1-4,offensive player rebound,191313,1995,off player,rim first,heldout_v2,10
+shot-114243-4-124,blocked,114243,117156,def team award,blocked,heldout_v2,11
+shot-114086-4-122,airball or no contact,114086,113079,def player,airball or no contact,heldout_v2,12
+shot-178442-4-122,airball or no contact,178442,120920,off player,airball or no contact,heldout_v2,13
+shot-114099-3-98,low tracking quality,114099,98075,def player,rim first,heldout_v2,14
+shot-191313-1-32,backboard first,191313,22845,off player,backboard first,heldout_v2,15
+shot-178442-1-3,blocked,178442,2675,def player,blocked,heldout_v2,16
+shot-191313-2-68,blocked,191313,62035,off player,blocked,heldout_v2,17
+shot-191313-4-137,offensive player rebound,191313,131190,off player,rim first,heldout_v2,18
+shot-114169-4-130,ordinary defensive rebound,114169,147382,def player,rim first,heldout_v2,19
+shot-114234-4-133,backboard first,114234,140277,off player,backboard first,heldout_v2,20
+shot-114169-2-64,ordinary defensive rebound,114169,60812,def player,rim first,heldout_v2,21
+shot-191313-2-44,team award,191313,36570,off team award,rim first,heldout_v2,22
+shot-114243-2-65,airball or no contact,114243,55645,def player,airball or no contact,heldout_v2,23
+shot-184439-2-67,team award,184439,56017,def team award,rim first,heldout_v2,24
+shot-114234-1-2,low tracking quality,114234,1635,def player,rim first,heldout_v2,25
+shot-184439-4-131,low tracking quality,184439,132737,def player,rim first,heldout_v2,26
+shot-114099-1-26,low tracking quality,114099,22330,def player,rim first,heldout_v2,27
+shot-114243-1-0,random,114243,3895,def player,rim first,heldout_v2,28
+shot-114169-1-31,offensive player rebound,114169,27055,off player,putback or tip,heldout_v2,29
+shot-114234-4-141,ordinary defensive rebound,114234,149705,def player,rim first,heldout_v2,30

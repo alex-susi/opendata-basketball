@@ -1,0 +1,9 @@
+from,flight_in,flight_out,on_rim,held,low_loose,impact_rim,impact_board,impact_tip
+flight_in,0.933,0,0.008,0,0.003,0.056,0,0
+flight_out,0,0.896,0.007,0.026,0.047,0.024,0,0
+on_rim,0,0.013,0.846,0.099,0,0,0.041,0
+held,0,0.012,0,0.666,0,0,0,0.322
+low_loose,0,0.017,0,0,0.982,0,0,0.002
+impact_rim,0,0.069,0.001,0.012,0,0.3,0.616,0.002
+impact_board,0,0,0.137,0,0,0.563,0.3,0
+impact_tip,0,0,0,0.608,0.083,0.009,0,0.3

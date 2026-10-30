@@ -1,0 +1,3 @@
+labeler,rim_within_2,touch_both_named,touch_same_player,touch_within_3,tip_vs_catch_same,control_both_named,control_same_player,control_within_3,tip_count_same,terminal_same
+v1 (frozen rules),20/23,15/30,13/15,13/27,17/19,14/30,14/14,10/20,16/30,21/30
+v2 (HMM),5/23,7/30,7/7,8/25,13/20,16/30,12/16,0/19,20/30,20/30

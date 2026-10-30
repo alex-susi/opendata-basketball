@@ -1,0 +1,150 @@
+{
+  "step": "03",
+  "status": "PASS",
+  "scope": "leave-one-game-out harness, reference baselines and scoring for the credited outcome (12 classes) of 703 eligible misses at 8 time points; Step 02 BLOCKED, so no contact-state target",
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "manifest": "outputs/rebounding/gate_results/data_checksums.csv",
+    "episodes_sha256": "1a795b732a75531bb886712d9db2d77158a2650ea4926b19992e17b2f78b4348"
+  },
+  "model_revision": {
+    "model_version": "baseline_v2",
+    "step03_config_sha256": "57805e12f080a4a546bce6089f982fade479c839e0fc5a2dbc02b07d1ec0d71c",
+    "code_sha256": {
+      "folds.R": "5d594d16eb05dcd5e73dfa73ad0ca5ee74a292b0b8485e27406d6de593b81398",
+      "metrics.R": "d77df78a6e9b9a1c3496e8dc87a37566161382f4ae94dae4047d3011ea8d9197",
+      "reference_baselines.R": "1ccf9fc0d9dac275a8986c8c18912f1e6048bec6fa4ef56bc5656c34e04f225d"
+    },
+    "predictions_sha256": "711b744f123ba87dae6abf21b2e22075ae9509cb4dedfa1de0585a196aa0b0c4"
+  },
+  "repository_head": "1a114b499bd51111edbce74aec3062c146494b5b",
+  "test_command": "Rscript src/rebounding/run_tests.R unit evaluation; Rscript src/rebounding/run_tests.R gates step_03",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step03/scores_summary.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step03 first fixed 2026-10-30 before any baseline was scored; v2 added two shot-range baselines and v3 made C1 stricter after the v1/v2 baseline scores were seen; decision log)",
+  "criteria": {
+    "folds_by_game": true,
+    "predictions_valid": true,
+    "baselines_training_only": true,
+    "leakage_checks_fire": true,
+    "causal_points_and_features": true,
+    "reproducible": true,
+    "identical_definitions": true,
+    "harness_outputs": true,
+    "tests_pass": true
+  },
+  "unmet": [],
+  "baselines_at_release": [
+    {
+      "model": "uniform",
+      "log_loss": 2.4724,
+      "top1": 0,
+      "team_log_loss": 0.6938
+    },
+    {
+      "model": "side_prior",
+      "log_loss": 2.3787,
+      "top1": 0,
+      "team_log_loss": 0.6102
+    },
+    {
+      "model": "role_prior",
+      "log_loss": 2.2737,
+      "top1": 0.1266,
+      "team_log_loss": 0.6102
+    },
+    {
+      "model": "nearest_hoop",
+      "log_loss": 2.2625,
+      "top1": 0.1821,
+      "team_log_loss": 0.6195
+    },
+    {
+      "model": "inside_rule",
+      "log_loss": 2.3851,
+      "top1": 0.0925,
+      "team_log_loss": 0.6252
+    },
+    {
+      "model": "role_prior_by_range",
+      "log_loss": 2.2612,
+      "top1": 0.1337,
+      "team_log_loss": 0.6117
+    },
+    {
+      "model": "nearest_hoop_by_range",
+      "log_loss": 2.2675,
+      "top1": 0.1636,
+      "team_log_loss": 0.6166
+    },
+    {
+      "model": "selected_reference",
+      "log_loss": 2.2784,
+      "top1": 0.1494,
+      "team_log_loss": 0.6179
+    }
+  ],
+  "confirmatory": [
+    {
+      "id": "C1",
+      "step": "04",
+      "candidate": "static grouped conditional logit",
+      "reference": "every baseline",
+      "references": ["uniform", "side_prior", "role_prior", "nearest_hoop", "inside_rule", "role_prior_by_range", "nearest_hoop_by_range", "selected_reference"],
+      "time": "release",
+      "score": "12-class log loss",
+      "rule": "superiority over each"
+    },
+    {
+      "id": "C2",
+      "step": "04",
+      "candidate": "binary OREB model",
+      "reference": "constant_oreb",
+      "time": "release",
+      "score": "binary log loss",
+      "rule": "superiority"
+    },
+    {
+      "id": "C3a",
+      "step": "09",
+      "candidate": "dynamic model",
+      "reference": "same-time static conditional logit",
+      "time": "release",
+      "score": "12-class log loss",
+      "rule": "non_inferiority"
+    },
+    {
+      "id": "C3b",
+      "step": "09",
+      "candidate": "dynamic model",
+      "reference": "same-time static conditional logit",
+      "time": "rim+0.2",
+      "score": "12-class log loss",
+      "rule": "superiority"
+    }
+  ],
+  "deviations": [
+    {
+      "item": "pre-contact prediction point",
+      "decision": "Not used: no causal definition exists (contact frames are after-the-fact proxies; Step 02 labels BLOCKED). Replaced by a causal rim-arrival trigger, fixed in config before scoring."
+    },
+    {
+      "item": "file formats and paths",
+      "decision": "CSV / gzip CSV instead of parquet, R instead of Python, as in Steps 00-02 (config `paths`)."
+    }
+  ],
+  "evidence": ["outputs/rebounding/step03/", "outputs/rebounding/reports/03_evaluation_design.md", "outputs/rebounding/step03/design_freeze.json", "outputs/rebounding/step03/leakage_checks.csv"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-10-30",
+  "open_risks": [
+    "Ten game clusters: intervals are indicative only",
+    "Leave one game out trains on later games; season drift untested",
+    "The rim-arrival trigger is not validated against labelled contacts (Step 02 BLOCKED)",
+    "Vendor smoothing of player tracks may use later frames"
+  ],
+  "decision_note": "Folds, information rule, baselines, scoring and decision rules frozen; harness checks pass."
+}

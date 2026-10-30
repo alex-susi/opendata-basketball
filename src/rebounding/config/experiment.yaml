@@ -4,7 +4,7 @@
 # Read with yaml::read_yaml(); paths are relative to the repository root.
 
 manual_revision: "2026-10-29"
-config_version: 1
+config_version: 3                   # v2 (2026-10-30): two baselines fitted per shot range; v3 (same day): C1 must beat every baseline (decision log)
 
 dataset:
   name: SkillCorner opendata-basketball, ACB 2025-2026 sample
@@ -88,6 +88,232 @@ step01:
     window_frames: 75
     share_min: 0.98                   # per attack direction, the same share as the prespecified check
 
+# Fixed on 2026-10-29 before any Step 02 label was drawn, reviewed or scored. The rubric is
+# docs/project/ANNOTATION_RUBRIC.md; it must not change after the held-aside subset is scored.
+step02:
+  states: [released, airborne, rim, board, rim_or_board, block, player_touch, tip, floor, out_of_bounds,
+           controlled, credited_rebound, unknown]
+  detector:
+    # A contact is a departure of the measured ball track from a short ballistic arc fitted to the measured
+    # (non-interpolated) frames just before it: x and y linear in time, z with a fixed downward acceleration.
+    g_track_ft_s2: 28.3               # the track's own free-flight curvature (gate1_prereq median), not 32.2
+    keyframe_tol_ft: 0.001            # a frame within this of its neighbours' midpoint (x and z) is interpolated
+    fit_keys: 6                       # measured frames in the arc used to predict the next one (at least 3)
+    skip_after_release: 2             # frames after release before the ball is free of the hand
+    # break threshold: the 99.5th percentile of one-step prediction residuals on free flight (release + 3 frames to
+    # the Step 01 contact proxy - 3 frames, every eligible episode, no labels used), rounded up to 0.05 ft and
+    # never below the floor below. run_step02.R computes it once and writes it to step02/detector_threshold.csv.
+    break_quantile: 0.995
+    break_floor_ft: 0.30
+    # Deviation, 2026-10-29, after the first calibration run and before any label was reviewed: the rule above gave
+    # 2.20 ft (median residual 0.15 ft) because 11% of misses are not in free flight before the contact proxy
+    # (blocked shots and airballs already low or held, jumpy tracks). Replaced by made shots, whose flight from
+    # release to endFrame is free by construction, at the 99th percentile (at most 1% false breaks per measured frame).
+    break_population: made shots, release + 3 frames to endFrame - 3 frames
+    break_quantile_revised: 0.99
+    # Second revision, same day, still before any label was reviewed: made shots gave 2.25 ft too, because 35 of
+    # 346 "flights" are not free (the ball is still carried after startFrame on layups, or the track jumps). Flights
+    # with any one-step residual above this are excluded from the calibration as not free flight (count reported).
+    break_exclude_flight_above_ft: 1.0
+    rim_pad_ft: 2.3                   # rim zone: horizontal distance to the calibrated hoop <= RIM_R + BALL_R + pad
+    rim_z_below_ft: 1.2               # ... and RIM_Z - this <= z <= RIM_Z + the next value
+    rim_z_above_ft: 3.0               # dev revision (were 0.9 and 1.5): the track puts the ball centre 1-2.5 ft above
+                                      # the ring and up to ~2.7 ft from the calibrated hoop at clear first contacts
+    board_pad_ft: 0.6                 # board zone as in audit.R: in front of the board face, within its width and height
+    floor_z_ft: 2.2                   # a break this low with the ball falling is a floor bounce
+    touch_ft: 3.0                     # ball (shifted to the player frame) within this of a player horizontally ...
+    reach_max_z_ft: 12.5              # ... and no higher than this can be a player contact
+    actor_margin_ft: 1.0              # second-nearest player within this of the nearest: actor unknown
+    control_ft: 2.5                   # control: ball within this of one player horizontally ...
+    control_z_ft: 9.0                 # ... no higher than this (dev revision: 10.5 took slow balls at the apex) ...
+    control_rel_speed_ft_s: 8         # ... moving with the player (horizontal relative speed) ...
+    control_vz_ft_s: 8                # ... without falling or rising fast where the run starts (dev revision: on every
+                                      #     frame of the run it rejected a catch followed at once by a dribble) ...
+    control_frames: 6                 # ... for this many frames, one miss allowed
+    catch_window_frames: 8            # a touch followed by the same player's control within this is a catch, else a tip
+    shared_margin_ft: 0.5             # dev revision: a held ball needs the second player this close to the controller's
+    shared_share: 0.8                 # distance on this share of the control run (1.0 ft on half the run gave 155 held balls)
+    # Dev revisions to the sequence rules (contact_states.R): the first break in the rim or board zone is the rim or
+    # board contact whoever stands below; a block is a defender's touch before both that contact and endFrame; touches
+    # and control are looked for only after the rim contact (or the block, or endFrame when neither is found).
+    window_after_rebound: 25          # labels run to the credited rebound frame + 1 s
+  sample:
+    seed: 20261029
+    per_stratum: 4                    # each of the strata below, for each of the two subsets
+    extra_random: 2
+    strata: [blocked, airball or no contact, backboard first, team award, offensive player rebound,
+             low tracking quality, ordinary defensive rebound]
+    low_quality_quantile: 0.25        # ball keyframe share or player detection share in the lowest quarter
+    # Two disjoint subsets: development (detector and rubric examples; may be inspected repeatedly) and held-aside
+    # (opened only after the detector is frozen, drawn without detector marks or the credited rebounder, labelled
+    # once, scored once).
+  agreement:
+    # Labelers: the frozen automated labeler and a reviewer labelling blind to it; a second human reviewer is added
+    # when one is available. Computed only on the held-aside subset.
+    frame_tol_contact: 2              # frames (0.08 s): the vendor measures the ball every one to two frames
+    frame_tol_player: 3               # frames (0.12 s): touches and control are softer events
+    min_joint: 15                     # fewer jointly resolved episodes than this: the type is not assessable
+    contact_kind_kappa_min: 0.6       # contact (rim, board or rim_or_board) vs none. Dev revision before freezing: the
+                                      # widened rim zone overlaps the board zone and contact heights are biased, so rim
+                                      # vs board is reported among episodes both labelers name specifically, not gated
+    contact_frame_share_min: 0.8
+    contact_resolved_min: 0.7         # both labelers resolve the type on at least this share of the subset
+    first_touch_player_min: 0.8
+    first_touch_frame_share_min: 0.75
+    first_touch_resolved_min: 0.6
+    touch_type_kappa_min: 0.5         # tip vs catch at the first player contact
+    controller_min: 0.85
+    control_frame_share_min: 0.75
+    control_resolved_min: 0.7
+    tip_count_agree_min: 0.75         # 0 / 1 / 2+ tips before control
+    tip_min_episodes: 5               # tips seen by either labeler; fewer: tip chains are not assessable
+
+step02_v2:
+  # Labeler v2 (owner decisions 2026-10-29 evening, docs/project/decision_log.md): a hidden Markov model over per-frame
+  # tracking features, at 25 Hz, filled-in ball frames treated as missing. v1 (step02) stays frozen; this block does not
+  # change it. Gate criteria are step02.agreement, reused unchanged. Development data: the 60 v1 sample episodes.
+  sample:
+    seed: 20261030                    # new seed; drawn once, before any v2 feature or fit, from episodes outside the v1 sample
+    per_stratum: 4                    # strata as step02.sample
+    extra_random: 2
+    min_no_contact: 3                 # rubric v2: at least this many "airball or no contact" episodes in the subset
+  features:
+    smooth_keys: 2                    # measured frames each side of a local fit for velocity (5 points)
+    resid_keys: 4                     # measured frames before a frame for its one-step arc residual
+    dv_keys: 3                        # measured frames each side for the before/after velocity (direction change)
+    # log(value + offset) transforms make distances and speeds closer to normal within a state
+    log_offsets: {resid: 0.05, hspeed: 0.5, hoop: 0.25, near: 0.25, gap: 0.1, relspeed: 0.5, dv: 1.0}
+    board_clip_ft: [-3, 20]           # signed distance to the board face (+ in front), clipped so far balls do not dominate
+  hmm:
+    # Fit 2 (owner 2026-10-29): flight split into incoming (release to first contact) and outgoing (after a contact),
+    # impact self-transitions held fixed. Fit 3 (owner, same day): rim and board impacts merged (reviewer 1 named no
+    # board contact), and the geometric masks below. Fits 1 and 2 are kept in step02_v2/fit1/ and fit2/.
+    states: [flight_in, flight_out, on_rim, held, low_loose, impact_rim_board, impact_tip]
+    # A state is impossible on a measured frame that fails its mask (emission density 0); unmeasured frames are free.
+    masks:
+      rim_states: [on_rim, impact_rim_board]    # inside the v1 rim zone (step02.detector rim_pad_ft, rim_z_below_ft)
+      touch_states: [held, impact_tip]          # nearest player within step02.detector touch_ft, ball below reach_max_z_ft
+      release_guard_frames: 6                   # no impact before release + this; reviewer 1's earliest contact is +7
+                                                # (touch) and +8 (rim), fit 2's false release impact +2 to +4
+    start_state: flight_in
+    impact_stay: 0.3                  # probability that an impact state lasts another frame; FIXED during fitting
+    impact_stay_fixed: true
+    regime_stay: 0.9                  # starting self-transition of the other states (estimated)
+    restarts: 5                       # EM restarts from jittered geometric starts (seeds from `seeds`)
+    em: {maxit: 500, rel_tol: 1.0e-8, min_sd: 0.05}   # own EM (R/hmm_em.R); depmixS4 checks its likelihood
+    min_held_frames: 6                # a held run must last this long to count as control (v1: control_frames)
+    # Geometric seeding of the starting emission parameters: frames meeting these rules start in each state.
+    seed_rules:
+      impact_dv_ft_s: 6               # velocity change above this: an impact frame
+      rim_hoop_ft: 3.5                # ... within this of the hoop and above rim_min_z: rim
+      rim_min_z_ft: 9.0
+      board_face_ft: 1.0              # ... within this of the board face and above the ring: board
+      tip_near_ft: 3.0                # ... within this of a player and further than rim_hoop_ft from the hoop: tip
+      held_near_ft: 2.5               # held: near a player, moving with them, below held_max_z
+      held_rel_ft_s: 8
+      held_max_z_ft: 9.0
+      low_z_ft: 3.0                   # low and loose: below this, not near a player
+    merge_rim_board_if: "development labels cannot tell rim from board (fewer than 3 board contacts named by reviewers)"
+
+# Fixed on 2026-10-30, before any Step 03 baseline was computed or scored. Step 02 is BLOCKED, so the only label is
+# the credited outcome. This block is the manual's configs/gate_thresholds.yaml: later steps read their decision
+# rules from it and must not change it after seeing held-out results (record any change in the decision log and
+# raise config_version). run_step03.R hashes it into step03/design_freeze.json.
+step03:
+  model_version: baseline_v2
+  population: Step 01 eligible episodes (step01/rebound_episodes.csv, eligible TRUE); excluded episodes stay out of every model
+  outcomes:
+    # One choice set per episode: the ten players tracked at release (ids from tracking; the credited rebounder is
+    # always one of them) plus two team awards. Side of a team award as in Step 01 (rebounds.teamId).
+    players: ten tracked at release, outcome_id = raw player id
+    team: [team_off, team_def]
+    oreb: offence secures = credited offensive player or offensive team award
+  folds:
+    outer: leave one game out; fold k holds out the k-th game by date (matches.json date_time)
+    inner: leave one game out within the nine training games (tuning and baseline selection only)
+  information:
+    # A forecast at frame t uses tracking frames <= t only. A ball frame counts as measured when it is not the exact
+    # midpoint of its neighbours, which needs the next frame, so ball frame f is usable from t = f + 1.
+    keyframe_tol_ft: 0.001
+    ball_delay_frames: 1
+    player_carry_frames: 5            # a player without a row at t takes his last row within this many frames before t
+    hoop: nominal                     # (RIM_X, 0) in the attack frame; per-game calibrated hoops use the test game's
+                                      # own made shots (including later ones), so no trigger or feature uses them
+  times:
+    release: shots.startFrame
+    # pre_contact is not used: the only contact frames are after-the-fact proxies (Step 01) and labels (Step 02,
+    # BLOCKED), so choosing t by them would leak when the ball reaches the rim. A causal trigger replaces it:
+    rim_arrival:
+      # first measured ball frame f with f >= release + guard_frames, within hoop_radius_ft of the nominal hoop
+      # horizontally, z in [z_min_ft, z_max_ft], and at least below_peak_ft under the highest measured height since
+      # release (the ball is coming down); known at t = f + ball_delay_frames. Undefined if it never happens.
+      guard_frames: 6
+      hoop_radius_ft: 4.5
+      z_min_ft: 7.0
+      z_max_ft: 14.0
+      below_peak_ft: 0.1
+    post_rim_s: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.4]   # time points rim_arrival + s
+    loose_only: true                  # a point exists only if t < credited rebound frame (forecasts while the ball is
+                                      # loose: a conditional estimand, the same for every model)
+  confirmatory_times: [release, rim+0.2]
+  baselines:
+    # Every 12-class baseline puts the training games' team-award rates (per side, per time point) on the two team
+    # outcomes and spreads the rest over the ten players. Rank tables use additive smoothing.
+    models: [uniform, side_prior, role_prior, nearest_hoop, inside_rule, role_prior_by_range, nearest_hoop_by_range]
+    smoothing: 0.5
+    role: side x rank of distance to the nominal hoop within side (10 roles)
+    nearest_hoop: rank of distance to the nominal hoop among all ten
+    inside_rule: rank of inside_gap among all ten (hoop distance of the nearest opponent minus own; larger is more inside)
+    rank_ties: distance, then player id
+    # Added in config v2, after the v1 baselines' held-out scores were seen (owner, 2026-10-30): the same role and
+    # hoop-distance-rank tables fitted separately for each shot range (Step 01 shot_range: rim under 5 ft, other twos,
+    # threes; known at release). Each range also gets its own outcome-type shares (offensive player, defensive player,
+    # team_off, team_def) with the same additive smoothing, so a range without a training team award keeps some mass
+    # on it. A range with no training episode at a time point falls back to all ranges pooled, smoothed the same way.
+    # They are candidates only: the reference is still chosen by inner leave-one-game-out on the training games.
+    by_range: [role_prior_by_range, nearest_hoop_by_range]
+    range_column: shot_range
+    selected_reference: per outer fold and time point, the baseline with the lowest inner leave-one-game-out log loss
+                        on the nine training games (ties broken by the order of `models`)
+    team_reference: constant_oreb      # training share of offensive outcomes, for the binary OREB score
+  metrics:
+    primary: mean multiclass log loss per episode (natural log)
+    prob_floor: 1.0e-12               # floor applied before the log; any floored probability is flagged
+    sum_tol: 1.0e-9
+    secondary: [multiclass Brier (sum over the 12 outcomes), top-1 and top-3 (pessimistic ties), reciprocal rank]
+    team: [binary log loss, binary Brier] # P(OREB) = offensive players + offensive team award
+    calibration_breaks: [0, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1]   # class-wise, all 12 outcomes pooled
+    team_calibration_breaks: [0, 0.1, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 1]
+  uncertainty:
+    bootstrap: games resampled with replacement
+    bootstrap_reps: 2000
+    seed: 20261029
+    level: 0.95
+    game_t_interval: per-game mean differences, t with 9 df
+    conservative: the wider of the two intervals (lowest lower bound, highest upper bound)
+    warning: ten game clusters are too few for precise inference; intervals are indicative
+  decision:
+    # Paired difference = candidate log loss - reference log loss, per episode, same episodes and time point.
+    superiority: conservative upper bound < 0 and the mean difference stays < 0 when any one game is dropped
+    non_inferiority_margin_nats: 0.02
+    calibration_ece_margin: 0.02      # candidate class-wise ECE at most reference + this
+    team_calibration_in_large_max: 0.03   # |mean P(OREB) - OREB rate| on held-out games
+  confirmatory:
+    # C1 changed in config v3 (owner, 2026-10-30, after the v2 scores): with seven candidates the fold-by-fold
+    # selected reference scored worse at release than its best members, so C1 now needs superiority over every
+    # baseline in `references`, each tested on its own (metrics.R, decide_against()). Stricter than v1 and v2.
+    - {id: C1, step: "04", candidate: static grouped conditional logit, reference: every baseline,
+       references: [uniform, side_prior, role_prior, nearest_hoop, inside_rule, role_prior_by_range,
+                    nearest_hoop_by_range, selected_reference],
+       time: release, score: 12-class log loss, rule: superiority over each}
+    - {id: C2, step: "04", candidate: binary OREB model, reference: constant_oreb, time: release,
+       score: binary log loss, rule: superiority}
+    - {id: C3a, step: "09", candidate: dynamic model, reference: same-time static conditional logit, time: release,
+       score: 12-class log loss, rule: non_inferiority}
+    - {id: C3b, step: "09", candidate: dynamic model, reference: same-time static conditional logit, time: rim+0.2,
+       score: 12-class log loss, rule: superiority}
+  exploratory: every other time point, baseline pair, subset (identity_suspect removed, shot range, game) and metric
+
 paths:
   # Manual path -> path in this repository (data/ holds only the supplied files; derived tracking stays git-ignored).
   docs/SOURCE_REGISTER.md: docs/project/SOURCE_REGISTER.md
@@ -100,3 +326,12 @@ paths:
   data/processed/rebound_episodes.parquet: outputs/rebounding/step01/rebound_episodes.csv
   data/processed/tracking_frames.parquet: outputs/cache/rebounding/processed/tracking_frames.csv.gz
   data/annotations/: outputs/rebounding/annotations/
+  docs/ANNOTATION_RUBRIC.md: docs/project/ANNOTATION_RUBRIC.md
+  data/annotations/contact_events.csv: outputs/rebounding/annotations/contact_events.csv
+  src/labels/contact_states.py: src/rebounding/R/contact_states.R
+  reports/02_annotation_reliability.md: outputs/rebounding/reports/02_annotation_reliability.md
+  src/evaluation/folds.py: src/rebounding/R/folds.R
+  src/evaluation/metrics.py: src/rebounding/R/metrics.R
+  configs/gate_thresholds.yaml: src/rebounding/config/experiment.yaml (step03)
+  data/processed/fold_assignment.parquet: outputs/rebounding/step03/fold_assignment.csv
+  evaluations/03_reference_baselines.parquet: outputs/rebounding/step03/reference_baselines.csv.gz

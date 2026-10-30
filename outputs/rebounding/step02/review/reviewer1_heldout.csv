@@ -1,0 +1,31 @@
+item,episode_id,game_id,first_rim_or_board_rel,contact_kind,first_player_contact_rel,first_contact_player_id,first_contact_type,tips_rel,first_control_rel,controller_id,terminal,label_confidence,note
+1,shot-114086-1-4,114086,20,rim,38,D9138,tip,38:D9138,50,D9138,control,medium,ball rolls on the ring to ~30; flattening at ~38 with D9138 2.6 ft; held from ~50
+2,shot-191313-2-59,191313,33,rim,65,D9107,catch,,65,D9107,control,medium,smooth fall after the bounce; O5222 1.2 ft at 57 without a course change
+3,shot-114243-2-54,114243,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,,45,D9179,control,low,horizontal motion stops ~12 at 2.4 ft from the hoop with D5630 0.9 ft below; floor bounce ~28 near O5326; picked up ~44
+4,shot-179612-4-126,179612,8,rim,38,D9142,catch,,40,D9142,control,medium,ball rolls on the ring to ~22; deceleration at ~38
+5,shot-114169-2-65,114169,27,rim,48,D9092,tip,48:D9092,none,,unresolved,low,floor bounces ~77 and ~98; O9100 near the ball at the end; ball track ends near the sideline
+6,shot-188630-4-121,188630,20,rim,38,UNKNOWN,UNKNOWN,,40,D9295,control,medium,D9295 0.6 ft and D4471 1.4 ft at the catch (within 1 ft)
+7,shot-114243-2-50,114243,36,rim,69,D9180,catch,,70,D9180,control,high,
+8,shot-114086-2-43,114086,33,rim_or_board,69,D4268,catch,,70,D4268,control,low,contact high (12+ ft) at ~1 ft from the hoop; floor bounce ~66
+9,shot-114234-4-131,114234,27,rim,49,UNKNOWN,catch,,50,UNKNOWN,control,low,ball sits on the ring to ~45; D5222 and D3482 equally close when it is taken off
+10,shot-114086-1-9,114086,35,rim,57,D5182,catch,,60,D5182,control,medium,ball sits on the ring to ~45; leaves free fall at ~57
+11,shot-191313-1-29,191313,none,none,44,O8857,tip,44:O8857,none,,out_of_bounds,low,ball moves away from the hoop from release; track drops below the floor after ~55; ends past the baseline
+12,shot-114243-1-22,114243,32,rim,73,UNKNOWN,catch,,75,D9184,control,medium,floor bounce ~71; O9249 and D9184 within 1 ft at the catch
+13,shot-184439-2-70,184439,none,none,7,UNKNOWN,block,,31,D4982,control,low,ball stops rising at 7.7 ft and moves away from the hoop (blocker not on the page); floor bounce ~21; D4982 2.7 ft and D9215 3.4 ft while held
+14,shot-178442-1-23,178442,none,none,none,,none,,none,,out_of_bounds,medium,smooth arc past the hoop; ball leaves the court past the baseline ~43
+15,shot-114243-2-60,114243,UNKNOWN,UNKNOWN,32,UNKNOWN,UNKNOWN,,44,O5326,control,low,ball passes 1.3 ft from the hoop below rim height without a clear kink; crowded
+16,shot-191313-2-64,191313,21,rim,37,UNKNOWN,catch,,38,D9386,control,medium,ball taken high (~9 ft) with D9386 and D9107 within 1 ft; brought down and dribbled ~62
+17,shot-178442-1-15,178442,32,rim,63,D9152,tip,63:D9152,none,,out_of_bounds,medium,D9152 bats the ball away; it leaves the court past the baseline
+18,shot-188630-3-96,188630,31,rim,62,UNKNOWN,UNKNOWN,,70,UNKNOWN,control,low,touch ~62 with D5402 and D2336 within 1 ft; steady dribble from ~70 by a player not identifiable on the page
+19,shot-114234-1-5,114234,30,rim,58,D8771,catch,,58,D8771,control,low,contact at the front of the rim ~2.9 ft from the hoop centre; low bounces near D8771 (2.6-2.9 ft)
+20,shot-179612-3-81,179612,UNKNOWN,UNKNOWN,18,UNKNOWN,tip,18:?,49,D9213,control,low,ball knocked back up at ~9 ft with D4056 and D9124 1.3-1.4 ft away; catch ~48 with O9143 and D9213 equally close
+21,shot-178442-4-109,178442,36,rim_or_board,95,O9147,tip,95:O9147,none,,unresolved,low,floor bounce ~70; O9147 knocks the ball back up ~95
+22,shot-114243-4-151,114243,12,rim,28,O5271,catch,,28,O5271,control,medium,ball sits on the ring to ~27; slower than free fall afterwards
+23,shot-114086-4-130,114086,32,rim_or_board,63,D9153,tip,63:D9153,78,D9153,control,medium,big bounce to 15.9 ft; dribble after ~85
+24,shot-114169-1-15,114169,15,rim,60,D9100,catch,,61,D9100,control,medium,ball sits on the ring 15-28 and pops up
+25,shot-188630-2-51,188630,20,rim,44,UNKNOWN,catch,,46,O5402,control,low,crowded: O5402 D5680 D9160 within 1 ft of each other at the catch
+26,shot-114234-1-23,114234,UNKNOWN,UNKNOWN,12,UNKNOWN,UNKNOWN,,15,UNKNOWN,held_ball,low,ball turns away from the hoop ~10-12; held at ~8 ft between O4280 and D3482 for 15 frames
+27,shot-114099-3-75,114099,33,rim,59,O9188,tip,59:O9188,69,D9133,control,low,ball leaves free fall ~59 near O9188 (2.2 ft); D9133 catches ~68
+28,shot-191313-4-115,191313,34,rim,66,UNKNOWN,catch,,68,D9207,control,medium,D9207 D9206 D5222 within 1 ft at the catch
+29,shot-114099-4-119,114099,32,rim,47,O9188,tip,47:O9188,none,,out_of_bounds,low,floor bounces ~69 and ~92; ball rolls toward the sideline
+30,shot-114099-4-146,114099,20,rim,49,UNKNOWN,catch,,55,D9188,control,low,four players within 1.6 ft at the catch

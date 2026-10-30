@@ -1,0 +1,16 @@
+{
+  "frozen_at": "2026-10-30T14:10:27",
+  "config_version": 1,
+  "step03_config_sha256": "c6a468ddeec6641b6d68d66cbac673c434e64cc6b6f7d44463cd34850b00ae55",
+  "code_sha256": {
+    "folds.R": "5d594d16eb05dcd5e73dfa73ad0ca5ee74a292b0b8485e27406d6de593b81398",
+    "metrics.R": "a372c9177a309512ac6c9cf4f5f5287f2dd07725670be96c4f3c6ea0fb567639",
+    "reference_baselines.R": "324411162e6e53e5b579b0cef722dec86db720713d3ec26011af858bd2ead844"
+  },
+  "episodes_sha256": "1a795b732a75531bb886712d9db2d77158a2650ea4926b19992e17b2f78b4348",
+  "seeds": [20261029, 11, 23, 37, 51],
+  "bootstrap_seed": 20261029,
+  "model_version": "baseline_v1",
+  "note": "Later steps compare against these baselines under these rules; a change needs a new config_version.",
+  "predictions_sha256": "be67c5609e2eb43f7a5a1d0065097624b85efd90ebbcf7a6ed5fcf526b3ca236"
+}

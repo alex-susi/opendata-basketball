@@ -1,0 +1,61 @@
+shot_id,stratum,subset,game_id,f0,credited_outcome,kind,item
+shot-114243-1-28,team award,dev,114243,24917,def team award,rim first,1
+shot-178442-3-84,blocked,dev,178442,73287,def player,blocked,2
+shot-188630-2-37,backboard first,dev,188630,26750,def player,backboard first,3
+shot-114099-4-139,offensive player rebound,dev,114099,130100,off player,rim first,4
+shot-191313-3-72,low tracking quality,dev,191313,62972,def player,rim first,5
+shot-114234-1-30,ordinary defensive rebound,dev,114234,24560,def player,rim first,6
+shot-114099-3-85,backboard first,dev,114099,81487,def team award,backboard first,7
+shot-178442-2-64,airball or no contact,dev,178442,56012,def player,airball or no contact,8
+shot-114243-1-36,blocked,dev,114243,31510,def team award,blocked,9
+shot-179612-2-70,blocked,dev,179612,62825,off player,blocked,10
+shot-114086-1-6,random,dev,114086,4772,def player,backboard first,11
+shot-114169-2-38,team award,dev,114169,37582,off team award,rim first,12
+shot-114243-2-53,offensive player rebound,dev,114243,43820,off player,putback or tip,13
+shot-184439-2-36,low tracking quality,dev,184439,29407,def player,rim first,14
+shot-114234-2-51,team award,dev,114234,45717,off team award,rim first,15
+shot-114169-2-59,ordinary defensive rebound,dev,114169,56240,def player,rim first,16
+shot-188630-3-72,random,dev,188630,66692,def player,rim first,17
+shot-179612-2-58,team award,dev,179612,46512,def team award,rim first,18
+shot-179612-4-135,airball or no contact,dev,179612,130105,def player,airball or no contact,19
+shot-114099-1-15,airball or no contact,dev,114099,13315,def player,airball or no contact,20
+shot-178442-2-39,offensive player rebound,dev,178442,32925,off player,putback or tip,21
+shot-178442-2-66,low tracking quality,dev,178442,57522,def player,rim first,22
+shot-179612-4-130,ordinary defensive rebound,dev,179612,123780,def player,rim first,23
+shot-191313-2-67,backboard first,dev,191313,61482,def player,backboard first,24
+shot-178442-4-124,airball or no contact,dev,178442,123032,def player,airball or no contact,25
+shot-184439-2-55,offensive player rebound,dev,184439,46210,off player,putback or tip,26
+shot-179612-3-105,low tracking quality,dev,179612,94742,def player,rim first,27
+shot-114243-1-12,backboard first,dev,114243,11277,def player,backboard first,28
+shot-114099-1-10,blocked,dev,114099,9787,def player,blocked,29
+shot-191313-1-35,ordinary defensive rebound,dev,191313,25360,def player,rim first,30
+shot-114086-1-4,ordinary defensive rebound,heldout,114086,2657,def player,rim first,1
+shot-191313-2-59,ordinary defensive rebound,heldout,191313,52027,def player,rim first,2
+shot-114243-2-54,blocked,heldout,114243,44370,def player,blocked,3
+shot-179612-4-126,random,heldout,179612,120852,def player,rim first,4
+shot-114169-2-65,team award,heldout,114169,62352,off team award,rim first,5
+shot-188630-4-121,ordinary defensive rebound,heldout,188630,110027,def player,rim first,6
+shot-114243-2-50,low tracking quality,heldout,114243,41843,def player,rim first,7
+shot-114086-2-43,backboard first,heldout,114086,40260,def player,backboard first,8
+shot-114234-4-131,offensive player rebound,heldout,114234,137614,off player,putback or tip,9
+shot-114086-1-9,low tracking quality,heldout,114086,6197,def player,rim first,10
+shot-191313-1-29,blocked,heldout,191313,19642,off team award,blocked,11
+shot-114243-1-22,low tracking quality,heldout,114243,19002,def player,rim first,12
+shot-184439-2-70,blocked,heldout,184439,60902,def player,blocked,13
+shot-178442-1-23,backboard first,heldout,178442,23917,off team award,backboard first,14
+shot-114243-2-60,offensive player rebound,heldout,114243,48100,off player,rim first,15
+shot-191313-2-64,random,heldout,191313,55450,off player,backboard first,16
+shot-178442-1-15,team award,heldout,178442,11100,off team award,rim first,17
+shot-188630-3-96,team award,heldout,188630,90139,off team award,rim first,18
+shot-114234-1-5,airball or no contact,heldout,114234,5520,def player,airball or no contact,19
+shot-179612-3-81,offensive player rebound,heldout,179612,68202,off player,rim first,20
+shot-178442-4-109,airball or no contact,heldout,178442,101165,off player,airball or no contact,21
+shot-114243-4-151,offensive player rebound,heldout,114243,140171,off player,rim first,22
+shot-114086-4-130,airball or no contact,heldout,114086,119982,def player,airball or no contact,23
+shot-114169-1-15,ordinary defensive rebound,heldout,114169,9275,def player,rim first,24
+shot-188630-2-51,backboard first,heldout,188630,45470,def player,backboard first,25
+shot-114234-1-23,blocked,heldout,114234,20367,def player,blocked,26
+shot-114099-3-75,backboard first,heldout,114099,75012,def player,backboard first,27
+shot-191313-4-115,low tracking quality,heldout,191313,96055,def player,rim first,28
+shot-114099-4-119,team award,heldout,114099,114790,def team award,rim first,29
+shot-114099-4-146,airball or no contact,heldout,114099,138253,def player,airball or no contact,30

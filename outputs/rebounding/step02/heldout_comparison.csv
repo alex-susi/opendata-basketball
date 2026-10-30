@@ -1,0 +1,31 @@
+item,episode_id,stratum,contact,rim_rel,touch_rel,touch_player,touch_type,control_rel,controller,terminal,disagree
+1,shot-114086-1-4,ordinary defensive rebound,contact / contact,21 / 20,35 / 38,59138 / 59138,catch / tip,35 / 50,59138 / 59138,control / control,TRUE
+2,shot-191313-2-59,ordinary defensive rebound,contact / contact,33 / 33,66 / 65,59107 / 59107,catch / catch,68 / 65,59107 / 59107,control / control,FALSE
+3,shot-114243-2-54,blocked,none / NA,NA / NA,23 / NA,15630 / NA,tip / NA,45 / 45,59179 / 59179,control / control,FALSE
+4,shot-179612-4-126,random,contact / contact,13 / 8,38 / 38,59142 / 59142,catch / catch,40 / 40,59142 / 59142,control / control,TRUE
+5,shot-114169-2-65,team award,contact / contact,26 / 27,48 / 48,59092 / 59092,tip / tip,NA / NA,NA / NA,out_of_bounds / unresolved,FALSE
+6,shot-188630-4-121,ordinary defensive rebound,contact / contact,21 / 20,33 / 38,NA / NA,NA / NA,39 / 40,59295 / 59295,control / control,TRUE
+7,shot-114243-2-50,low tracking quality,contact / contact,35 / 36,58 / 69,59180 / 59180,tip / catch,70 / 70,59180 / 59180,control / control,TRUE
+8,shot-114086-2-43,backboard first,contact / contact,31 / 33,8 / 69,59138 / 24268,block / catch,66 / 70,24268 / 24268,control / control,TRUE
+9,shot-114234-4-131,offensive player rebound,contact / contact,26 / 27,56 / 49,35222 / NA,catch / catch,56 / 50,35222 / NA,control / control,TRUE
+10,shot-114086-1-9,low tracking quality,contact / contact,36 / 35,58 / 57,25182 / 25182,catch / catch,66 / 60,25182 / 25182,control / control,TRUE
+11,shot-191313-1-29,blocked,NA / none,NA / NA,48 / 44,28857 / 28857,tip / tip,61 / NA,28410 / NA,control / out_of_bounds,TRUE
+12,shot-114243-1-22,low tracking quality,contact / contact,31 / 32,68 / 73,NA / NA,NA / catch,70 / 75,59184 / 59184,control / control,TRUE
+13,shot-184439-2-70,blocked,NA / none,NA / NA,33 / 7,NA / NA,NA / block,NA / 31,NA / 34982,unresolved / control,TRUE
+14,shot-178442-1-23,backboard first,contact / none,36 / NA,NA / NA,NA / NA,none / none,NA / NA,NA / NA,out_of_bounds / out_of_bounds,TRUE
+15,shot-114243-2-60,offensive player rebound,none / NA,NA / NA,31 / 32,NA / NA,NA / NA,33 / 44,25326 / 25326,control / control,TRUE
+16,shot-191313-2-64,random,contact / contact,23 / 21,41 / 37,NA / NA,catch / catch,41 / 38,NA / 59386,held_ball / control,TRUE
+17,shot-178442-1-15,team award,contact / contact,30 / 32,63 / 63,59152 / 59152,tip / tip,NA / NA,NA / NA,out_of_bounds / out_of_bounds,FALSE
+18,shot-188630-3-96,team award,contact / contact,31 / 31,54 / 62,NA / NA,NA / NA,56 / 70,32336 / NA,control / control,TRUE
+19,shot-114234-1-5,airball or no contact,contact / contact,28 / 30,NA / 58,NA / 58771,none / catch,NA / 58,NA / 58771,unresolved / control,FALSE
+20,shot-179612-3-81,offensive player rebound,contact / NA,8 / NA,43 / 18,59143 / NA,tip / tip,NA / 49,NA / 59213,unresolved / control,TRUE
+21,shot-178442-4-109,airball or no contact,contact / contact,35 / 36,68 / 95,28155 / 59147,tip / tip,NA / NA,NA / NA,unresolved / unresolved,TRUE
+22,shot-114243-4-151,offensive player rebound,contact / contact,8 / 12,31 / 28,25271 / 25271,catch / catch,31 / 28,25271 / 25271,control / control,TRUE
+23,shot-114086-4-130,airball or no contact,contact / contact,30 / 32,65 / 63,59153 / 59153,tip / tip,76 / 78,59153 / 59153,control / control,FALSE
+24,shot-114169-1-15,ordinary defensive rebound,contact / contact,8 / 15,48 / 60,59100 / 59100,catch / catch,48 / 61,59100 / 59100,control / control,TRUE
+25,shot-188630-2-51,backboard first,contact / contact,20 / 20,44 / 44,35402 / NA,catch / catch,44 / 46,35402 / 35402,control / control,FALSE
+26,shot-114234-1-23,blocked,none / NA,NA / NA,14 / 12,NA / NA,catch / NA,14 / 15,NA / NA,held_ball / held_ball,FALSE
+27,shot-114099-3-75,backboard first,contact / contact,31 / 33,58 / 59,59188 / 59188,tip / tip,NA / 69,NA / 59133,unresolved / control,FALSE
+28,shot-191313-4-115,low tracking quality,contact / contact,33 / 34,56 / 66,NA / NA,catch / catch,56 / 68,NA / 59207,held_ball / control,TRUE
+29,shot-114099-4-119,team award,contact / contact,31 / 32,48 / 47,59188 / 59188,tip / tip,NA / NA,NA / NA,out_of_bounds / out_of_bounds,FALSE
+30,shot-114099-4-146,airball or no contact,contact / contact,20 / 20,38 / 49,NA / NA,NA / catch,49 / 55,NA / 59188,held_ball / control,TRUE

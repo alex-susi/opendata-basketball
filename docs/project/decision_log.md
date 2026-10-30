@@ -1167,3 +1167,208 @@ how to run in `rebounding.md`.
 - Whether to accept the orientation deviation, or to keep Step 01 blocked until a check fixed in advance is rerun.
 - Step 02 needs a second reviewer for contact and tip labels. Without one, its gate can pass only for event types
   with a stated reliability target that a single reviewer can meet.
+
+## 2026-10-29 (afternoon) — Sequential rebounding manual, Step 02: contact-state labels: BLOCKED
+
+At the owner's request ("proceed with step 2"). Code `src/rebounding/R/contact_states.R`, `run_step02.R`,
+`tests/unit/test_contact_states.R`, `tests/gates/test_step_02.R`; rubric `docs/project/ANNOTATION_RUBRIC.md`;
+thresholds `config/experiment.yaml` (`step02`, fixed before any label was reviewed); evidence
+`outputs/rebounding/step02/`, `outputs/rebounding/annotations/contact_events.csv`; report
+`outputs/rebounding/reports/02_annotation_reliability.md`; record `gate_results/02_contact_states.json`. The Three
+Dimensions of Rebounding PDF in `research/` is password-protected and could not be read; its opportunity / pursuit /
+conversion split is used only as the reason the labels separate touch, tip and control.
+
+- **Labeler.** Contacts are departures of the measured ball track from a short ballistic arc (break threshold
+  0.65 ft), named by where they happen; control is a 6-frame run of the ball staying with one player. All 703 eligible
+  misses are labelled with no time-order problem; the named controller is the credited rebounder in 78% of player
+  rebounds; 6 of 49 official blocks are found.
+- **Review.** Two disjoint stratified subsets of 30. The development subset shaped six labeler revisions (each in the
+  config); the labeler was then frozen by checksum, and only then were the held-aside pages drawn, without the
+  automated marks or the credited rebounder. Reviewer 1 labelled them once; they were scored once.
+- **Result: no label type passed.** Where both labelers name a player they agree (first touch 13/15, controller
+  14/14), and the rim contact is timed within ±2 frames in 20/23. But each labeler leaves about half the touches and
+  controls unnamed, soft events are placed differently in time (first touch within ±3 frames 13/27, control 10/20),
+  tip counts agree in 16/30, and the contact-vs-none kappa is 0 because the subset holds a single "none".
+  Consequence (manual): Steps 03–09 use the final credited rebounder only; tip physics, controlled-catch and securing
+  models stay blocked; Step 08's first-contact validation will be blocked unless these labels are improved.
+- **Ball heights** (descriptive, at unvalidated labels): tips median 8.5 ft, catches 7.5 ft, control 5.3 ft; control is
+  truncated at 9 ft by the labeler's own rule, and the track reads the ball 1–2.5 ft high near the rim.
+- **Deviations (owner to confirm).**
+  1. Break threshold: the prespecified rule (99.5th percentile on misses before the contact proxy) gave 2.20 ft
+     because 11% of those segments are not free flight; made shots gave 2.25 ft for the same reason. Replaced before
+     any review by made-shot flights without a residual above 1 ft (311 of 346), 99th percentile.
+  2. No second human reviewer: reliability is the frozen labeler against a blind reviewer who also wrote it. This is
+     consistency between two tracking-based judgements, not accuracy.
+  3. The contact-kind kappa became contact vs none (rim vs board reported only) before freezing.
+
+### Open choices
+
+- Whether the owner (or another person) fills `step02/review/reviewer2_heldout.csv`; `score` and `gate` then judge the
+  gate on reviewer-to-reviewer agreement.
+- Whether to accept the three deviations above.
+- Whether to try a second labeler version (e.g. catch at the point the ball stops falling, a narrower actor margin)
+  on a **new** held-aside subset, or to proceed to Step 03 with the credited rebounder only.
+
+## 2026-10-29 (evening) — Step 02 labeler v2 (hidden Markov model): owner design decisions, nothing fitted
+
+Labeler v1 stays frozen and its held-aside subset keeps rubric v1; reviewer 2 is filling
+`step02/review/reviewer2_heldout.csv` (1 of 30 rows). Owner decisions for a v2 labeler, made before any v2 code:
+
+- **Model.** A hidden Markov model over per-frame tracking features (R package `depmixS4` 1.5.4, CRAN, installed
+  today). States are regimes (flight, on rim, held, low and loose) plus short impact states; events are read from
+  state changes; the player is still the nearest one, with the crowd rule, so v2 targets timing rather than identity.
+- **Time grid: 25 Hz**, with the vendor's filled-in (midpoint) ball frames treated as missing, not as observations.
+- **Fit population.** A new held-aside subset of 30 is drawn first, with a new seed, and left out of the fit; the
+  60 episodes labelled under v1 (development and the spent held-aside) become v2 development data.
+- **Rubric v2.** A catch is defined by sight (the ball never flies free between the touch and the hold), not by the
+  8-frame window; the sample must hold at least 3 shots with no rim or board contact so contact-vs-none kappa is
+  informative (v1 had 1).
+- **Gate criteria: reused** from v1 unchanged (`step02.agreement`).
+- **Why the 8-frame catch window goes.** It was a judgement, not a measurement. Among the 359 automated episodes
+  whose first toucher is also the controller, the touch-to-control gap falls off smoothly (0 frames: 169; 1–2: 70;
+  3–4: 39; 5–6: 23; 7–8: 18; 9–10: 15; 11–12: 13; 13–16: 11; 31+: 1) with no dip at 8, and rubric v1 copied the
+  same window, so v1 tip-vs-catch agreement partly measured a shared rule.
+
+### Open choices
+
+- Impact states: one, tip vs rim/board, or rim / board / tip separately.
+- Direction-change features (change in velocity across a frame, turning angle, speed ratio, velocity toward the hoop).
+- Smoothing window, allowed transitions, EM restarts, minimum held length.
+- **Owner decision (same evening): impact states.** Three short impact states, rim, board and tip, started from court
+  geometry; rim and board are merged into `rim_or_board` if the development labels cannot tell them apart (the reused
+  gate tests only contact vs none). **Features:** add the five direction-change features (size of the velocity change
+  across the frame, turning angle, speed ratio after/before, velocity toward the hoop, signed distance to the board
+  face) to the eight per-frame features.
+- **First v2 fit (development, not a result).** New held-aside v2 subset drawn first (`step02_v2/review/sample.csv`,
+  30 episodes, seed 20261030, 4 with no contact by the Step 01 proxy); features for all 703 episodes (60% of window
+  frames have a measured ball); EM on the 673 episodes outside it, 5 restarts (4 reach the same log-likelihood,
+  -567,384), about 12 minutes. **The states did not take the intended meanings:** the impact states became long
+  regimes (self-transition 0.75–0.96, not about 0.3), "impact_rim" is the incoming shot near its apex, the near-hoop
+  bouncing regime landed in "impact_board", and "impact_tip" is the slow, near-player regime (the catch/hold), while
+  "held" is the ball falling away from the rim. Not decoded or scored. State means, spreads and transitions moved to
+  `outputs/rebounding/step02_v2/fit1/`.
+- **Owner decision: fit 2.** Impact self-transitions fixed at 0.3; flight split into `flight_in` (release to the
+  first contact; leaves only to a contact, a hold or the floor) and `flight_out` (after a contact; never returns to
+  `flight_in`). 8 states. depmixS4 can hold a parameter fixed only by switching from EM to a general optimizer
+  (Rsolnp), impractical with about 240 parameters, so the fit uses a short EM written for this (`R/hmm_em.R`): same
+  model and missing-data rule, exact constrained M-step. Checked in `tests/unit/test_hmm_em.R`: its log-likelihood for
+  the fit-1 parameters equals depmixS4's (-567,384.42), and it recovers a simulated model with a fixed stay. The 24
+  depmixS4 warnings in fit 1 were `nobs` notices about missing values, not fitting problems.
+- **Fit 2 result (development, not a result).** 5 restarts, about 30 s each, best log-likelihood -569,803 (2
+  restarts at -569,805). `flight_in` is the incoming shot (toward the hoop at 18 ft/s) and `flight_out` the ball
+  leaving the rim, as intended. The fixed stay stopped single impact runs from lasting, but **pairs of states now
+  alternate to form regimes**: rim and board impacts bounce between each other (0.62 and 0.56) for the rattle on the
+  ring, and `held` alternates with `impact_tip` (0.32 and 0.61), so dribbles and gathers read as repeated touches.
+  `impact_board` sits about 1 ft from the hoop centre, not at the board. Decoded labels (all 703): rim contact in 701,
+  board first in none, no-contact in 2 (v1: 60), first touch a catch in 566, no tip as a first touch.
+- **Fit 2 against reviewer 1 on the 30 development episodes** (`step02_v2/dev_comparison.csv`; v1 / v2): rim
+  contact within 2 frames 20/23 / 5/23; first touch both named 15/30 / 7/30, same player 13/15 / 7/7, within 3
+  frames 13/27 / 8/25; tip vs catch 17/19 / 13/20; controller both named 14/30 / 16/30, same 14/14 / 12/16, within 3
+  frames 10/20 / 0/19; tip count 16/30 / 20/30; terminal 21/30 / 20/30. **v2 fit 2 is worse than v1 on timing.**
+  Causes seen in the decoded paths: (1) an "impact" 2–4 frames after release, where the shot leaves the hand, ends
+  `flight_in` early, so the rim contact comes 4 frames (median) to 28 frames early and the real arc is decoded as
+  `flight_out`; (2) `held` includes the ball still falling into the hands (mean vertical speed -8.6 ft/s), so control
+  starts a median 13 frames before the reviewer's. v2 tip-count agreement is higher only because it finds almost no
+  tips (634 of 703 episodes have none).
+- **Rim/board merge condition met.** Reviewer 1 named no board contact among the 30 development episodes (rim 20,
+  rim or board 3, none 3, unknown 4): fewer than the 3 the owner's rule requires, so rim and board impacts are to be
+  merged in the next fit.
+- **Owner decision: fit 3.** Rim and board impacts merged into `impact_rim_board` (7 states), and geometric masks: rim
+  states only inside the v1 rim zone, `held`/`impact_tip` only with the nearest player within `touch_ft` and the ball
+  below `reach_max_z_ft`, no impact state before release + 6 frames (reviewer 1's earliest contact: +7 touch, +8 rim;
+  fit 2's false impact: +2 to +4). A first run applied the masks on measured frames only, and the release impact moved
+  onto the unmeasured frames; corrected so the guard holds on every frame and the geometry is interpolated between
+  measured frames. Only the corrected run is reported. Fit 2 outputs are kept in `step02_v2/fit2/`.
+- **Fit 3 result.** 5 restarts reach the same log-likelihood (-579,903), about 15 s each. Decoded (703): contact 626,
+  none 77 (v1: 60); first touch a catch 495, block 8, tip 4, none 196. Against reviewer 1 (v1 / v2 fit 3): rim within
+  2 frames 20/23 / 7/22; first touch both named 15/30 / 5/30, same 13/15 / 5/5, within 3 frames 13/27 / 5/21; tip vs
+  catch 17/19 / 13/17; controller both named 14/30 / 13/30, same 14/14 / 11/13, within 3 frames 10/20 / 1/16; tip count
+  16/30 / 18/30; terminal 21/30 / 18/30.
+- **Why v2 still misses: its errors are systematic offsets, not noise.** The rim contact is 2–4 frames early in 14 of
+  22 episodes (the before/after velocity windows span 3 measured frames, about 6 frames, so the change shows before the
+  break); control is a median 13 frames early, because `held` starts when the falling ball passes within reach
+  (mean vertical speed -8.5 ft/s) while reviewer 1 marks the ball at rest. `held` and `impact_tip` still alternate
+  through gathers and dribbles (0.32 / 0.60), so almost no tips are found. The release "impact" now decodes as a
+  2-frame `low_loose` run, which reroutes the incoming arc to `flight_out`. **v2 does not address v1's actual failure**
+  (coverage: each labeler leaves about half the touches and controllers unnamed); v2 names fewer.
+
+## 2026-10-30 — Sequential rebounding manual, Step 03: evaluation design, reference baselines, scoring: PASS
+
+At the owner's request ("proceed with step 3"). Step 02 is BLOCKED (labeler v2 was explored but not frozen or
+scored), so Step 03 is built for the credited outcome only. Code `src/rebounding/R/folds.R`, `R/metrics.R`,
+`R/reference_baselines.R`, `run_step03.R`, `tests/unit/test_evaluation.R`, `tests/gates/test_step_03.R`; settings
+`config/experiment.yaml` (`step03`, written before any baseline was computed); evidence `outputs/rebounding/step03/`;
+report `outputs/rebounding/reports/03_evaluation_design.md`; record `gate_results/03_evaluation.json`. Upstream
+`eval/split.py`, `metrics.py`, `baseline.py` and `models/baselines.py` of ReboundingPrediction and tracking-study's
+coverage gate were read for ideas only (no licence): split by game, per-shot ranks with ties counted against the
+model, priors fitted on training games only, same-time comparisons, exclusions reported by game.
+
+- **Design (frozen).** Leave one game out, fold k = k-th game by date; inner leave-one-game-out for tuning only. Choice
+  set: the ten players tracked at release (the credited rebounder is always one of them) plus `team_off`, `team_def`.
+  Information rule: frames up to t; ball frame f usable at f + 1 (its midpoint status needs the next frame); nominal
+  hoop (the calibrated hoops use the test game's own later made shots). Time points: release, and 0–1.4 s after a
+  causal rim-arrival trigger; a point exists only while the ball is loose.
+- **Pre-contact replaced.** No causal pre-contact time exists here: the contact frames are after-the-fact proxies and
+  Step 02's labels failed, and choosing t by them would leak when the ball reaches the rim. The trigger (first measured
+  ball frame ≥ 6 frames after release, within 4.5 ft of the hoop, 7–14 ft high, below an earlier high point) fired in
+  679 of 703 episodes, a median 1.04 s after release and 2 frames before the Step 01 contact proxy (quartiles −4 and
+  +1 frames). Of the 24 it misses, 18 are blocked shots and 5 airballs. It is an arrival time, not a validated contact.
+- **Baselines at release (703 held-out episodes, 12-class log loss / top-1 / top-3):** uniform 2.472 / 0 / 0; side
+  prior 2.379; role prior (side × hoop-distance rank) 2.274 / 12.7% / 48.2%; nearest to hoop 2.263 / 18.2% / 45.7%;
+  inside rule 2.385 / 9.2% / 36.3%. Nearest to hoop has the lowest inner log loss in all ten folds, so it is the
+  selected reference at release, and C1's bar for Step 04 is 2.263. Against uniform it gains 0.210 nats (conservative
+  interval −0.283 to −0.146, better in 10 of 10 games). At rim + 0.2 s (650 episodes): nearest 2.174 / 21.7%, role
+  2.180. From rim + 0.4 s the role prior is selected in most folds.
+- **OREB.** Constant rate (training share, 0.299 held out) scores binary log loss 0.610 at release. The rank-only
+  baselines ignore side and put P(OREB) at 0.377 (nearest) and 0.392 (inside), so their binary scores are worse
+  (0.620, 0.625); side and role priors are calibrated (0.299, 0.300).
+- **Checks, all passed:** folds (703 episodes in exactly one test fold, no test game in training or inner folds),
+  baseline fits use exactly the training episodes, predictions unchanged when test labels are altered, a planted label
+  leak and a planted future feature are both caught, future-frame poisoning (50 episodes, every point) changes nothing,
+  every table valid, same episodes for every model, reruns reproduce predictions and intervals exactly. 68 unit and
+  195 gate expectations pass.
+- **Decision rules for later steps:** superiority = conservative upper bound (wider of game bootstrap and per-game t
+  interval) below 0 and every drop-one-game mean below 0; non-inferiority margin 0.02 nats; calibration margins in the
+  config. Confirmatory: C1 static logit vs selected reference (release), C2 OREB model vs constant rate (release), C3a/b
+  dynamic vs same-time static (release non-inferiority, rim + 0.2 s superiority). All else exploratory.
+- **Limits.** Leave one game out trains on later games (season drift untested); teams recur across games; vendor
+  smoothing of player tracks may use later frames; the loose-ball rule uses the credited rebound frame to decide
+  whether a late point exists (same for every model).
+
+### Open choices
+
+- Whether to accept the causal rim-arrival trigger in place of the manual's pre-contact point.
+- Step 04 (static conditional logit and OREB model) is next; it is scored against these baselines under C1 and C2.
+
+### Config v2 (same day): baselines fitted per shot range
+
+Owner decision after the v1 scores were seen: add the role prior and nearest-to-hoop tables fitted separately for
+each shot range (rim under 5 ft, other twos, threes), with smoothed per-range outcome-type shares, as extra
+candidates. `config_version` 2, `model_version` baseline_v2; the v1 freeze is kept as
+`step03/design_freeze_v1.json`. The five v1 baselines' predictions are unchanged (244,680 rows, largest difference 0).
+All checks and tests pass (77 unit expectations).
+
+- **Why the third-closest player led.** On rim misses the shooter is the closest or second-closest player at release
+  in 86% of cases, and the third-closest gets 34.8% of the player rebounds (closest 14.4%). On other twos the
+  closest leads (21.5%); on threes ranks 1 and 3 tie (17.6%).
+- **Release, held-out log loss:** role prior by range 2.261 (v1 role prior 2.274), nearest by range 2.268 (v1 nearest
+  2.263). Splitting helps the side-aware table slightly and hurts the rank-only one.
+- **The selected reference got weaker.** Inner cross-validation now picks nearest (5 folds), role by range (4) and
+  nearest by range (1) at release, and the fold-by-fold mix scores 2.278, worse than any of the three on its own
+  (selection noise between candidates 0.01 nats apart). C1's bar at release drops from 2.263 to 2.278. At rim + 0.2 s
+  nearest is still chosen in all ten folds (2.174).
+
+### Open choice
+
+- Whether C1 should require Step 04's model to beat every fixed baseline, not only the selected reference. That rule
+  is stricter and does not depend on which baseline looked best on held-out games.
+
+### Config v3 (same day): C1 must beat every baseline
+
+Owner decision on the open choice above: C1 (Step 04's static conditional logit at release) now needs superiority over
+each of the seven baselines and the selected reference, tested one by one with the same rule (`decide_against()` in
+`R/metrics.R`). The binding comparisons are the three strong baselines (2.261–2.268). Reasons: the selected reference
+had become weaker than its best members, and the stricter rule does not depend on which baseline looked best on
+held-out games. Cost: less power, so a real gain of about 0.01 nats will probably not show with ten games; if C1 fails,
+Step 04 is BLOCKED and the best baseline stays the shipped model, as the manual says. C2, C3a and C3b are unchanged.
+Baseline predictions are unchanged from v2; the v2 freeze is kept as `step03/design_freeze_v2.json`.

@@ -1,0 +1,12 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_contact_states.R,a ballistic arc is predicted exactly and a pure arc never breaks,2,0,FALSE,FALSE,0
+unit,test_contact_states.R,"the rim contact, the catch and control are found at the right frames and in order",22,0,FALSE,FALSE,0
+unit,test_contact_states.R,filled-in midpoints are not treated as measured frames,2,0,FALSE,FALSE,0
+unit,test_contact_states.R,"a low bounce away from everyone is a floor bounce, not a player touch",2,0,FALSE,FALSE,0
+unit,test_contact_states.R,sequence checks flag control before the first touch and labels after the ball went out,3,0,FALSE,FALSE,0
+gates,test_step_02.R,"every eligible episode has automated labels, and every labelled sequence is in time order",8,0,FALSE,FALSE,0
+gates,test_step_02.R,the review sample has two disjoint subsets and the held-aside one was drawn after the labeler froze,7,0,FALSE,FALSE,0
+gates,test_step_02.R,"agreement is computed with the prespecified tolerances, respecting 25 Hz frames",5,0,FALSE,FALSE,0
+gates,test_step_02.R,"ball height is stratified by tip, catch and control, with detection quality",3,0,FALSE,FALSE,0
+gates,test_step_02.R,the contract file keeps observed contacts and reviewer labels apart from landing points,4,0,FALSE,FALSE,0
+gates,test_step_02.R,a false-positive and an ambiguous case are drawn from the tracking,2,0,FALSE,FALSE,0

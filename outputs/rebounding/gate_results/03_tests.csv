@@ -1,0 +1,17 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_evaluation.R,"log loss, Brier, pessimistic ranks and the OREB score match hand calculations",14,0,FALSE,FALSE,0
+unit,test_evaluation.R,invalid prediction tables are caught,7,0,FALSE,FALSE,0
+unit,test_evaluation.R,leave-one-game-out folds keep each episode in one test fold and its game out of training,15,0,FALSE,FALSE,0
+unit,test_evaluation.R,"baselines are valid, use training games only, and ignore candidate order",8,0,FALSE,FALSE,0
+unit,test_evaluation.R,by-range baselines learn each shot range's own table and fall back to the pooled fit,9,0,FALSE,FALSE,0
+unit,test_evaluation.R,a feature read after its information time is rejected,2,0,FALSE,FALSE,0
+unit,test_evaluation.R,"the rim-arrival trigger is causal, fires where the rule says, and skips filled-in frames",8,0,FALSE,FALSE,0
+unit,test_evaluation.R,triggers and features are the same in both attack directions,4,0,FALSE,FALSE,0
+unit,test_evaluation.R,"a player missing at t uses his last row within the carry window, else the point is undefined",2,0,FALSE,FALSE,0
+unit,test_evaluation.R,paired comparisons are reproducible with a seed and the decision rules apply as written,12,0,FALSE,FALSE,0
+gates,test_step_03.R,"every rebound is in exactly one outer test fold, and its game never in that fold's training",165,0,FALSE,FALSE,0
+gates,test_step_03.R,"baseline probabilities are finite, normalised, on the episode's choice set and from training games only",3,0,FALSE,FALSE,0
+gates,test_step_03.R,a planted future-only feature and an altered test label make the leakage checks fail,4,0,FALSE,FALSE,0
+gates,test_step_03.R,re-running with the same settings reproduces the predictions; no unlogged choice,10,0,FALSE,FALSE,0
+gates,test_step_03.R,team and player outcomes and exclusions are defined once for every model,5,0,FALSE,FALSE,0
+gates,test_step_03.R,"scores, per-game paired differences, calibration and the report exist for the confirmatory times",10,0,FALSE,FALSE,0
