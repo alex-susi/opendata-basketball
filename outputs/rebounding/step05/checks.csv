@@ -1,0 +1,12 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+every map sums to 1 over the domain (largest error),0,< 1e-9,TRUE
+every map is positive and finite,3515,3515,TRUE
+maps exist for every eligible episode and model,3515,3515,TRUE
+grid cell area (sq ft),1,1,TRUE
+every player rebound has a location inside the domain,630,630,TRUE
+"rebounds.location agrees with the tracked rebounder (median gap, ft)",0,< 0.5,TRUE
+each fold's maps are fitted on exactly its training games' locations,10,10,TRUE
+"one bandwidth and two weights chosen per fold, from the configured grids",TRUE,TRUE,TRUE
+held-out locations never reach their own maps (fold 1's locations moved: its maps unchanged),TRUE,TRUE,TRUE
+re-running reproduces every score exactly,TRUE,TRUE,TRUE

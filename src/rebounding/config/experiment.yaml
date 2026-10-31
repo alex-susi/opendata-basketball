@@ -314,6 +314,142 @@ step03:
        score: 12-class log loss, rule: superiority}
   exploratory: every other time point, baseline pair, subset (identity_suspect removed, shot range, game) and metric
 
+# Fixed on 2026-10-30 before any Step 04 model was fitted or scored. Evaluation, folds, outcomes and decision rules are
+# step03's, unchanged; run_step04.R refuses to run if step03 no longer matches step03/design_freeze.json.
+step04:
+  model_version: static_v1
+  times: [release, rim+0.2]            # release: C1 and C2; rim+0.2: the same-time static model Step 09's C3b needs
+                                       # (exploratory here). Player geometry at t; shot facts are known at release.
+  features:
+    # One row per player per episode, from the ten positions at t (Step 03 features, attack frame, nominal hoop).
+    # Ideas from ReboundingPrediction data/derived.py (no licence; written independently). Lengths in feet.
+    player: [dist_hoop, dist_minus_mean, nearest_opp_dist, inside_gap, opp_inside, mates_inside, abs_rel_bearing,
+             is_offense, is_shooter, dist_x_shot, shooter_x_rim, n_within_6, closeness_share]
+    definitions:
+      opp_inside: opponents nearer the hoop than the player
+      mates_inside: teammates nearer the hoop than the player
+      abs_rel_bearing: angle around the hoop between the player and the shooter at release, 0 to pi
+      dist_x_shot: dist_hoop x shot distance (shots.distance) / 25
+      shooter_x_rim: is_shooter x (shot_range is rim)
+      n_within_6: other players within 6 ft
+      closeness_share: exp(-dist_hoop / 6) / sum over the ten
+    team_alternatives: [team_off, team_def, team_off_x_shot_dist, team_def_x_shot_dist]   # constants unpenalised
+  clogit:
+    # One softmax over the 12 outcomes (ten players and the two team awards). Features standardised on the training
+    # games' player rows; objective = sum of episode log losses + lambda / 2 x sum of squared coefficients (the two
+    # team constants are not penalised). BFGS with the analytic gradient.
+    lambda_grid: [0.3, 1, 3, 10, 30, 100]
+    select: inner leave-one-game-out log loss on the nine training games; ties to the larger lambda
+    maxit: 1000
+  oreb:
+    # Binary: offence secures (offensive player or offensive team award). Episode features at release, ideas from the
+    # ShotQuality notebook (no licence; written independently): sorted offensive and defensive hoop distances and
+    # box-out matchups from the defender-attacker assignment that minimises total distance (all 120 pairings).
+    features: [shot_dist, three, off_d1, off_d2, def_d1, def_d2, off_minus_def_mean, n_off_inside_matchup]
+    lambda_grid: [0.3, 1, 3, 10, 30, 100]
+    select: inner leave-one-game-out binary log loss; ties to the larger lambda
+  gate:
+    # C1 (config step03, v3): superiority over every baseline and the selected reference, release, 12-class log loss;
+    # plus class-wise ECE at most selected reference + step03 calibration_ece_margin.
+    # C2: superiority over constant_oreb, release, binary log loss; plus |mean P(OREB) - OREB rate| <= step03 margin.
+    # Statuses (manual): PASS for a model meeting its comparison; otherwise the best Step 03 baseline stays
+    # (PASS_BASELINE) and the model is BLOCKED.
+    boosted_challenger: not run (the manual makes it optional, only after the logit passes)
+
+# Fixed on 2026-10-30 before any Step 05 model was fitted or scored. Folds and decision rules are step03's.
+step05:
+  model_version: spatial_v1
+  target:
+    # Step 02 is BLOCKED, so there is no first-contact location. The target is where the rebound was credited: the
+    # rebounder's position at the rebound frame (rebounds.location turned 180 degrees into the attack frame, which
+    # matches the tracked rebounder with median gap 0 ft). It is NOT where the ball would land untouched.
+    location: rebounds.location, x' = -x, y' = -y
+    fallback: tracked rebounder at the rebound frame when rebounds.location is missing (flagged)
+    team_awards: no location; outside the spatial target (counted, not imputed)
+    dimensions: 2D floor location only; ball height and time to access are not modelled (no validated labels)
+  domain:
+    # The attacked half court, 1 ft cells. Edges sit 0.07 ft past the baseline and 0.39 ft past each sideline.
+    x_ft: [0, 46]
+    y_ft: [-25, 25]
+    cell_ft: 1
+  inputs_at_release: [shot_range, shot side (sign of the shooter's y at release)]
+  models:
+    uniform: every cell equal
+    zone_bins: hoop-relative zones (distance rings x angle sectors), smoothed counts, spread evenly within each zone
+    pooled_kde: Gaussian kernel (cell mass integrated exactly), bandwidth by inner leave-one-game-out, renormalised
+                over the domain, mixed with the uniform at weight epsilon
+    range_kde: (1 - w) x pooled + w x the shot range's own kernel density (same bandwidth); w by inner leave-one-game-out
+    side_range_kde: as range_kde, with training locations mirrored (y to -y) so every shot comes from the y >= 0 side,
+                    and the density mirrored back for a test shot from y < 0
+  zone_rings_ft: [0, 3, 6, 10, 15, 22, 100]
+  zone_sectors: 6                     # equal sectors of the angle around the hoop
+  zone_smoothing: 0.5
+  bandwidth_grid_ft: [1, 1.5, 2, 3, 4]
+  weight_grid: [0, 0.25, 0.5, 0.75, 1]
+  epsilon_uniform: 0.02
+  select: inner leave-one-game-out mean negative log density; ties to the smoother setting (larger bandwidth, smaller w)
+  scores:
+    primary: negative log density per credited location, natural log, per square foot (lower is better)
+    coverage_levels: [0.5, 0.8, 0.95]   # highest-density regions; coverage = share of held-out locations inside
+    coverage_interval: Wilson 95%
+    sharpness: area (sq ft) of each highest-density region
+  decision:
+    pooled_baseline: pooled_kde superior to uniform (step03 rule) and coverage within coverage_tolerance at every level
+    candidate: side_range_kde (confirmatory; range_kde and zone_bins exploratory)
+    candidate_rule: superior to pooled_kde (step03 rule) and coverage within coverage_tolerance at every level
+    coverage_tolerance: 0.05
+    status: candidate passes -> PASS (candidate); else candidate BLOCKED and pooled_kde PASS_BASELINE if it passes
+  subgroups: [shot range, game, low tracking quality (lowest quarter of ball keyframe or player detection share),
+              identity_suspect, location fallback]
+
+# Fixed on 2026-10-31 before any Step 06 filter was run on real data. Folds and uncertainty settings are step03's.
+step06:
+  model_version: ball_filter_v1
+  state: x, y, z, vx, vy, vz in the attack frame (ft, ft/s)
+  observations:
+    # Measured ball frames only: a frame that is the exact midpoint of its neighbours (step03 keyframe_tol_ft) is the
+    # vendor's fill and is treated as missing. Step 03's information rule holds: frame f is usable from f + 1.
+    # predError is not used as observation noise: it averages 1.44 ft while the track scatters 0.1-0.28 ft around a
+    # fitted arc (decision log, 2026-10-28); it is reported only as a stratum.
+    use: step03 information rule
+  dynamics:
+    # Constant velocity with gravity as a known input on z, white-noise acceleration of spectral density q on every
+    # axis. dt = frame difference x 0.04 s, so gaps and filled frames are crossed in one prediction.
+    gravity_input: true
+  learned_per_fold:
+    # From the nine training games' free-flight segments only.
+    r: per-axis sd of measured positions around a quadratic arc fitted to each segment (pooled residuals)
+    g: median of the segments' fitted downward accelerations (segments of at least 0.4 s)
+    q: the value in q_grid with the highest training innovation log-likelihood; ties to the smaller q
+  q_grid: [1, 3, 10, 30, 100, 300]
+  init:
+    skip_after_release: 2               # frames before the ball is free of the hand (step02 detector)
+    velocity_sd_ft_s: 50                # diffuse prior on velocity at the first observation
+    warmup_observations: 3              # forecasts start once this many observations have been used
+  evaluation:
+    segments: release + skip to the Step 01 contact proxy (or the shot's end frame when none) minus 2 frames
+    free_flight_rule: a segment with a one-step arc residual above 1.0 ft (step02 rule) is tagged not free and left out
+                      of the primary scores
+    horizons_frames: [2, 5, 10]
+    targets: measured frames only
+    baselines:
+      persistence: last usable measured position
+      constant_velocity: last two usable measured positions, no gravity
+      gravity_only: last two usable measured positions, with the fold's g
+    reference: gravity_only
+    collisions: forecasts whose target lies after the contact proxy are scored separately, never in the gate
+  decision:
+    non_inferiority: per-episode mean 3D error, filter minus gravity_only, conservative upper bound (step03) below
+                     margin_ft at every horizon
+    margin_ft: 0.05
+    coverage_levels: [0.5, 0.9]         # 3D Gaussian predictive ellipsoids (chi-square, 3 df)
+    coverage_tolerance: 0.05
+    stability: every covariance finite, symmetric, smallest eigenvalue above -1e-9; variance never shrinks without an
+               observation
+    status: all met -> PASS; else filter BLOCKED and gravity_only kept (PASS_BASELINE if it is valid)
+  strata: [horizon, measured share of the last 10 frames (below or at least 0.5), ball predError tertile at the origin,
+           shot range]
+
 paths:
   # Manual path -> path in this repository (data/ holds only the supplied files; derived tracking stays git-ignored).
   docs/SOURCE_REGISTER.md: docs/project/SOURCE_REGISTER.md
@@ -335,3 +471,16 @@ paths:
   configs/gate_thresholds.yaml: src/rebounding/config/experiment.yaml (step03)
   data/processed/fold_assignment.parquet: outputs/rebounding/step03/fold_assignment.csv
   evaluations/03_reference_baselines.parquet: outputs/rebounding/step03/reference_baselines.csv.gz
+  src/features/static_geometry.py: src/rebounding/R/static_geometry.R
+  src/probabilities/conditional_choice.py: src/rebounding/R/conditional_choice.R
+  src/probabilities/team_rebound.py: src/rebounding/R/team_rebound.R
+  evaluations/04_static_oof.parquet: outputs/rebounding/step04/static_oof.csv.gz
+  reports/04_static_model.md: outputs/rebounding/reports/04_static_model.md
+  src/trajectory/spatial_prior.py: src/rebounding/R/spatial_prior.R
+  data/processed/rebound_spatial_targets.parquet: outputs/rebounding/step05/spatial_targets.csv
+  evaluations/05_spatial_oof.parquet: outputs/rebounding/step05/spatial_oof.csv.gz (per-episode scores; full cell distributions in outputs/cache/rebounding/step05_spatial_prior.rds)
+  reports/figures/05_heatmaps/: outputs/rebounding/step05/figures/
+  src/trajectory/ball_filter.py: src/rebounding/R/ball_filter.R
+  src/trajectory/ball_noise.py: src/rebounding/R/ball_noise.R
+  evaluations/06_ball_forecasts.parquet: outputs/rebounding/step06/ball_forecasts.csv.gz
+  reports/06_filter_diagnostics.md: outputs/rebounding/reports/06_filter_diagnostics.md

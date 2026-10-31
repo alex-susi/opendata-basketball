@@ -1,0 +1,12 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_static_model.R,player features match hand calculations,13,0,FALSE,FALSE,0
+unit,test_static_model.R,"features are unchanged by rotating or mirroring the court about the hoop, and scale with units",17,0,FALSE,FALSE,0
+unit,test_static_model.R,"the conditional logit gradient is exact, its probabilities sum to one, and it recovers a known model",7,0,FALSE,FALSE,0
+unit,test_static_model.R,reordering players changes no player's probability; scalers and fits use training games only,4,0,FALSE,FALSE,0
+unit,test_static_model.R,nested lambda selection uses only the training games and every fold predicts its own game,4,0,FALSE,FALSE,0
+unit,test_static_model.R,box-out matchups minimise total distance and the OREB model is fitted correctly,11,0,FALSE,FALSE,0
+gates,test_step_04.R,"exactly one credited outcome per choice set, team awards as their own outcomes",3,0,FALSE,FALSE,0
+gates,test_step_04.R,"probabilities are valid and do not depend on candidate order, court direction or units",5,0,FALSE,FALSE,0
+gates,test_step_04.R,"feature generation and fitting use the training games only, with the same code for test games",9,0,FALSE,FALSE,0
+gates,test_step_04.R,the logit is compared with every baseline using per-game log loss and calibration,5,0,FALSE,FALSE,0
+gates,test_step_04.R,top-1 is measured once per rebound and the OREB model is scored against the constant rate,6,0,FALSE,FALSE,0

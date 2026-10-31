@@ -1,0 +1,31 @@
+model,subgroup,episodes,nll,coverage_80
+range_kde,identity_suspect,33,6.36221807364753,0.636363636363636
+pooled_kde,identity_suspect,33,6.40015079130532,0.696969696969697
+side_range_kde,identity_suspect,33,6.42565228849758,0.666666666666667
+zone_bins,identity_suspect,33,6.59815819190779,0.575757575757576
+uniform,identity_suspect,33,7.74066440191724,0
+side_range_kde,location from tracking (fallback),5,5.90896719690169,0.8
+range_kde,location from tracking (fallback),5,5.99356046974251,0.6
+pooled_kde,location from tracking (fallback),5,6.00477615209173,0.8
+zone_bins,location from tracking (fallback),5,6.38381043975705,0.8
+uniform,location from tracking (fallback),5,7.74066440191724,0
+side_range_kde,low tracking quality,262,5.72556656449351,0.801526717557252
+range_kde,low tracking quality,262,5.75974645880229,0.809160305343512
+pooled_kde,low tracking quality,262,5.82237165511993,0.82824427480916
+zone_bins,low tracking quality,262,5.83803308659979,0.801526717557252
+uniform,low tracking quality,262,7.74066440191724,0
+side_range_kde,shot range: midrange (other 2s),209,5.79909192005301,0.808612440191388
+pooled_kde,shot range: midrange (other 2s),209,5.80928114147468,0.822966507177033
+range_kde,shot range: midrange (other 2s),209,5.81671715612314,0.808612440191388
+zone_bins,shot range: midrange (other 2s),209,5.89711435774987,0.77511961722488
+uniform,shot range: midrange (other 2s),209,7.74066440191724,0
+range_kde,shot range: rim (<5 ft),132,5.20783918088152,0.871212121212121
+side_range_kde,shot range: rim (<5 ft),132,5.21508824723243,0.863636363636364
+pooled_kde,shot range: rim (<5 ft),132,5.31164589549842,0.931818181818182
+zone_bins,shot range: rim (<5 ft),132,5.31569228007468,0.909090909090909
+uniform,shot range: rim (<5 ft),132,7.74066440191724,0
+side_range_kde,shot range: three,289,6.10220892988146,0.806228373702422
+range_kde,shot range: three,289,6.12669792165197,0.799307958477509
+pooled_kde,shot range: three,289,6.14268221541636,0.785467128027682
+zone_bins,shot range: three,289,6.29253368662997,0.743944636678201
+uniform,shot range: three,289,7.74066440191724,0

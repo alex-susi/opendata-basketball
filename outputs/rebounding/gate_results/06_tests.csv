@@ -1,0 +1,12 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_ball_filter.R,gravity pulls z down at the configured rate and a noise-free arc is tracked exactly,6,0,FALSE,FALSE,0
+unit,test_ball_filter.R,crossing a gap in one prediction equals several single-frame predictions,3,0,FALSE,FALSE,0
+unit,test_ball_filter.R,units and the attack-frame rotation carry through the filter,3,0,FALSE,FALSE,0
+unit,test_ball_filter.R,the state at t is the same whether or not later frames are in the data,9,0,FALSE,FALSE,0
+unit,test_ball_filter.R,"covariance stays finite, symmetric and positive, and grows without observations",2,0,FALSE,FALSE,0
+unit,test_ball_filter.R,"noise, gravity and process noise are recovered from synthetic training flights",4,0,FALSE,FALSE,0
+unit,test_ball_filter.R,origins before the first usable observation return an empty state in their own position,5,0,FALSE,FALSE,0
+gates,test_step_06.R,"online prediction at t does not depend on later frames, and the run reproduces",3,0,FALSE,FALSE,0
+gates,test_step_06.R,covariance stays finite and positive; parameters come from training games only,5,0,FALSE,FALSE,0
+gates,test_step_06.R,"innovations and predictive coverage are reported on held-out games, by detection quality",4,0,FALSE,FALSE,0
+gates,test_step_06.R,"forecast errors are reported by horizon against the simple forecasts, with contacts tagged apart",6,0,FALSE,FALSE,0

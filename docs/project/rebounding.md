@@ -120,6 +120,9 @@ Python; this project uses R, and its paths map as follows (also in `src/reboundi
 | 01 | `Rscript src/rebounding/run_step01.R` (about a minute; needs `raw_*.rds`, `episodes.rds`, `gate0.rds`) | `step01/*.csv`, `step01/figures/`, `reports/01_join_audit.md`, `gate_results/01_episodes.json` |
 | 02 | `Rscript src/rebounding/run_step02.R --phase=calibrate`, `sample`, `label --freeze`, `pages --subset=dev\|heldout`, `score`, `gate` (each under 2 minutes; needs `raw_*.rds`, `episodes.rds` and the Step 01 table) | `step02/` (thresholds, sample, automated labels, review pages and sheets, agreement, heights, figures), `annotations/contact_events.csv`, `reports/02_annotation_reliability.md`, `gate_results/02_contact_states.json`, `02_tests.csv` |
 | 03 | `Rscript src/rebounding/run_step03.R` (about 5 minutes; needs `raw_*.rds` and the Step 01 table) | `step03/` (folds, prediction points, baseline predictions, scores, paired comparisons, calibration, leakage checks, `design_freeze.json`), `reports/03_evaluation_design.md`, `gate_results/03_evaluation.json`, `03_tests.csv`; cache `step03_features.rds` |
+| 04 | `Rscript src/rebounding/run_step04.R` (about 4 minutes; needs the Step 03 outputs and `step03_features.rds`) | `step04/` (out-of-fold predictions, lambda choices, coefficients, comparisons, calibration, subgroups, checks), `reports/04_static_model.md`, `gate_results/04_static.json`, `04_tests.csv` |
+| 05 | `Rscript src/rebounding/run_step05.R` (about 3 minutes; needs the Step 01 table, Step 03 outputs, `step03_features.rds`, `raw_*.rds`) | `step05/` (targets, per-episode scores, coverage, comparisons, selection, figures), `reports/05_spatial_prior.md`, `gate_results/05_spatial.json`, `05_tests.csv`; cache `step05_spatial_prior.rds` (full maps) |
+| 06 | `Rscript src/rebounding/run_step06.R` (about 3 minutes; needs `raw_*.rds`, the Step 01 table and Step 03 outputs) | `step06/` (segments, parameters by fold, q selection, forecasts, errors, coverage, innovations, strata, checks), `reports/06_filter_diagnostics.md`, `gate_results/06_ball_filter.json`, `06_tests.csv` |
 | Tests only | `Rscript src/rebounding/run_tests.R unit` / `run_tests.R gates step_01` | console |
 
 A clean package library for `--isolated-lib` / `--lib`: `renv::restore(lockfile = "src/rebounding/renv.lock", library =
@@ -174,6 +177,43 @@ checks); settings and later steps' decision rules in `config/experiment.yaml` (`
   `step03/design_freeze.json` is written once: `run_step03.R` stops if the config, the modules or the Step 01 table
   no longer match it, and the gate fails if rerun predictions differ from the frozen ones. A deliberate change needs a
   decision-log entry, a higher `config_version` and deleting the freeze file by hand.
+
+## Sequential manual, Step 04: static model (PASS; OREB model BLOCKED)
+
+`R/static_geometry.R` (player and episode features), `R/conditional_choice.R` (12-outcome conditional logit),
+`R/team_rebound.R` (binary OREB model, constant reference). Results in `outputs/rebounding/reports/04_static_model.md`.
+
+- **Shipped static model:** `static_clogit`, out-of-fold predictions in `step04/static_oof.csv.gz` at release and at
+  rim + 0.2 s (Step 09's same-time reference). Release log loss 2.200 against 2.261 for the best baseline.
+- **OREB:** the binary model did not beat the constant rate under the frozen rule, so the constant training rate stays
+  the OREB reference. The logit's implied P(OREB) did better, but only as an exploratory result.
+- `dist_hoop` and `dist_minus_mean` are read together (not separately identified).
+- The run stops if Step 03's freeze is not in force.
+
+## Sequential manual, Step 05: spatial prior (BLOCKED)
+
+`R/spatial_prior.R`: release-time maps of the credited rebound location over the attacked half court (1 ft cells).
+Results in `outputs/rebounding/reports/05_spatial_prior.md`.
+
+- The target is where the rebound was credited, never where the ball would land untouched. Team awards have no
+  location.
+- Kernel maps conditioned on shot range and side score best but cover too much at the 50% level, so no kernel map is
+  validated. Owner decision 2026-10-31: Step 05 stays BLOCKED; the kernel maps are exploratory inputs only (zone bins
+  are calibrated only on average, so they are not a fallback).
+- A map for any eligible episode: `readRDS("outputs/cache/rebounding/step05_spatial_prior.rds")$maps[[model]][[episode_id]]`,
+  a 46 × 50 matrix (x by y, cell edges from `spatial_grid()`).
+
+## Sequential manual, Step 06: ball filter (PASS_BASELINE)
+
+`R/ball_filter.R` (causal Kalman filter: `predict_state()`, `update_state()`, `run_filter()`, `forecast_state()`,
+`baseline_forecasts()`) and `R/ball_noise.R` (r, g and q from training segments). Results in
+`outputs/rebounding/reports/06_filter_diagnostics.md`.
+
+- **Use the gravity-only forecast** (`baseline_forecasts()$gravity_only`: last two usable measured frames plus the
+  fold's g) for free flight in later steps. The Kalman filter is BLOCKED: less accurate and miscalibrated on held-out
+  games. Online uncertainty is not validated, so later steps must not present it as calibrated.
+- Ball frames that are exact midpoints of their neighbours are vendor fill, never observations; frame f is usable from
+  f + 1. The track's own g is about 28.2 ft/s², not 32.2.
 
 ## Reviewing the automated labels
 

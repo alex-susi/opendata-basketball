@@ -1,0 +1,8 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+"every origin covariance finite, symmetric, smallest eigenvalue > -1e-9 (count)",12134,12134,TRUE
+each fold's parameters use only its training games' free segments,10,10,TRUE
+online state at t identical with later frames removed or corrupted (5 episodes per game),TRUE,TRUE,TRUE
+re-running fold 1 reproduces every forecast error,TRUE,TRUE,TRUE
+forecast targets are measured frames only,TRUE,TRUE,TRUE
+free-flight segments (step02 one-step rule),645 of 703,reported,TRUE

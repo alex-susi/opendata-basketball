@@ -1,0 +1,136 @@
+{
+  "step": "05",
+  "status": "BLOCKED",
+  "scope": "release-time 2D map of the credited rebound location (630 player rebounds; team awards outside the target)",
+  "components": {
+    "side_range_kde": "BLOCKED",
+    "pooled_kde": "BLOCKED",
+    "range_kde": "exploratory",
+    "zone_bins": "exploratory"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "TrueImpactShotCharts": "ideas only (MIT), no code copied"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "spatial_v1",
+    "step05_config_sha256": "fb3582ed92081f52a9a9e68a8d73d20c60e9a9b90197ea94d46b968ce5f12d79",
+    "code_sha256": "80d97cbc2e49e4472baaff6f811f96b68d954e79aff0c8237290f9bface5fd46",
+    "scores_sha256": "bc1bd13ec517daa011ccc46e67b42b36dbc4905ed2ba5eea1b23f2ec533639e2"
+  },
+  "repository_head": "6894dbab724d821cd3f24c0cbb32486ba40aab61",
+  "test_command": "Rscript src/rebounding/run_tests.R unit spatial_prior; Rscript src/rebounding/run_tests.R gates step_05",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step05/scores_summary.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step05 fixed before any fit; step03 rules)",
+  "comparisons": [
+    {
+      "candidate": "pooled_kde",
+      "reference": "uniform",
+      "mean_diff": -1.8827,
+      "lo": -2.0013,
+      "hi": -1.7668,
+      "drop_one_max": -1.856,
+      "superior": true,
+      "confirmatory": true
+    },
+    {
+      "candidate": "side_range_kde",
+      "reference": "pooled_kde",
+      "mean_diff": -0.0422,
+      "lo": -0.0631,
+      "hi": -0.0197,
+      "drop_one_max": -0.036,
+      "superior": true,
+      "confirmatory": true
+    },
+    {
+      "candidate": "range_kde",
+      "reference": "pooled_kde",
+      "mean_diff": -0.0266,
+      "lo": -0.0369,
+      "hi": -0.0143,
+      "drop_one_max": -0.0241,
+      "superior": true,
+      "confirmatory": false
+    },
+    {
+      "candidate": "zone_bins",
+      "reference": "pooled_kde",
+      "mean_diff": 0.0987,
+      "lo": 0.0384,
+      "hi": 0.1544,
+      "drop_one_max": 0.1143,
+      "superior": false,
+      "confirmatory": false
+    },
+    {
+      "candidate": "side_range_kde",
+      "reference": "range_kde",
+      "mean_diff": -0.0156,
+      "lo": -0.0373,
+      "hi": 0.0058,
+      "drop_one_max": -0.0111,
+      "superior": false,
+      "confirmatory": false
+    }
+  ],
+  "coverage": [
+    {
+      "model": "pooled_kde",
+      "level": 0.5,
+      "coverage": 0.5587,
+      "within_tol": false
+    },
+    {
+      "model": "side_range_kde",
+      "level": 0.5,
+      "coverage": 0.5873,
+      "within_tol": false
+    },
+    {
+      "model": "pooled_kde",
+      "level": 0.8,
+      "coverage": 0.8286,
+      "within_tol": true
+    },
+    {
+      "model": "side_range_kde",
+      "level": 0.8,
+      "coverage": 0.819,
+      "within_tol": true
+    },
+    {
+      "model": "pooled_kde",
+      "level": 0.95,
+      "coverage": 0.9571,
+      "within_tol": true
+    },
+    {
+      "model": "side_range_kde",
+      "level": 0.95,
+      "coverage": 0.954,
+      "within_tol": true
+    }
+  ],
+  "evidence": ["outputs/rebounding/step05/", "outputs/rebounding/reports/05_spatial_prior.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-10-30",
+  "open_risks": [
+    "Target is the credited location, not the ball's free landing point",
+    "Ten games, 630 locations",
+    "Team awards have no location"
+  ],
+  "fallback": {
+    "rule": "manual hard stop: spatial prior poorly calibrated -> broad train-only prior, no high-precision landing zones",
+    "zone_bins_coverage_within_tolerance": true,
+    "adopted": false,
+    "note": "zone_bins was exploratory, not the prespecified baseline; adopting it needs an owner decision"
+  },
+  "decision_note": "Pooled kernel BLOCKED; side and range kernel BLOCKED."
+}

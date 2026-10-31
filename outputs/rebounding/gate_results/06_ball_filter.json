@@ -1,0 +1,76 @@
+{
+  "step": "06",
+  "status": "PASS_BASELINE",
+  "scope": "causal ball filter in free flight; 703 episodes, 645 free segments, horizons 2/5/10 frames",
+  "components": {
+    "kalman": "BLOCKED",
+    "gravity_only": "reference (fallback if the filter is blocked)"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "filterpy": "ideas only (MIT)"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "ball_filter_v1",
+    "step06_config_sha256": "a82b06f3aa1f519d84db0cb8a6ca666760be93e0be6739c1cab5f2db0fa53ed4",
+    "code_sha256": {
+      "ball_filter.R": "2fca8a763511dc089351c51a7050417d589a050f0b7480cf223bb789f7baf6a3",
+      "ball_noise.R": "e2471a9a2464942d9498109e8ac04d2337ae4f5cff15a4d04b45efe3b41ceedd"
+    }
+  },
+  "repository_head": "6894dbab724d821cd3f24c0cbb32486ba40aab61",
+  "test_command": "Rscript src/rebounding/run_tests.R unit ball_filter; Rscript src/rebounding/run_tests.R gates step_06",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step06/errors_by_horizon.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step06 fixed before any real-data run)",
+  "decision": {
+    "non_inferior": false,
+    "coverage_ok": false,
+    "stable": true,
+    "vs_gravity_only": [
+      {
+        "time_point": "h2",
+        "mean_diff": 0.0721,
+        "hi": 0.0939,
+        "non_inferior": false
+      },
+      {
+        "time_point": "h5",
+        "mean_diff": 0.1214,
+        "hi": 0.1436,
+        "non_inferior": false
+      },
+      {
+        "time_point": "h10",
+        "mean_diff": 0.12,
+        "hi": 0.15,
+        "non_inferior": false
+      }
+    ],
+    "coverage": [
+      {
+        "level": 0.5,
+        "coverage": 0.5585,
+        "within_tol": false
+      },
+      {
+        "level": 0.9,
+        "coverage": 0.8615,
+        "within_tol": true
+      }
+    ]
+  },
+  "evidence": ["outputs/rebounding/step06/", "outputs/rebounding/reports/06_filter_diagnostics.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-10-31",
+  "open_risks": [
+    "Noise is scatter around the vendor's smoothed track, not error against the true ball",
+    "Free flight only; contacts are Step 07"
+  ],
+  "decision_note": "Filter BLOCKED."
+}

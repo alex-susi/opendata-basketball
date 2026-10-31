@@ -1,0 +1,12 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_spatial_prior.R,the grid covers the domain and cells are indexed like the map matrix,6,0,FALSE,FALSE,0
+unit,test_spatial_prior.R,every map is a probability distribution over the domain,62,0,FALSE,FALSE,0
+unit,test_spatial_prior.R,mirroring sends a shot from the other side to the mirrored map,3,0,FALSE,FALSE,0
+unit,test_spatial_prior.R,"scores: negative log density, highest-density coverage and area",4,0,FALSE,FALSE,0
+unit,test_spatial_prior.R,zone bins put each zone's smoothed share on its cells,2,0,FALSE,FALSE,0
+unit,test_spatial_prior.R,settings are chosen inside the training games and maps never read the held-out locations,9,0,FALSE,FALSE,0
+gates,test_step_05.R,the density is normalised over the allowed domain in feet,6,0,FALSE,FALSE,0
+gates,test_step_05.R,"held-out coverage of the prespecified regions is reported with intervals, by shot range and game",10,0,FALSE,FALSE,0
+gates,test_step_05.R,"proper scores are compared with the pooled prior under the frozen rule, and sharpness alone cannot pass",4,0,FALSE,FALSE,0
+gates,test_step_05.R,subgroups are reported and team awards stay outside the location target,5,0,FALSE,FALSE,0
+gates,test_step_05.R,"the realised location is never an input at release, and the run reproduces",6,0,FALSE,FALSE,0

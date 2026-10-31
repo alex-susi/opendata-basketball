@@ -1372,3 +1372,128 @@ had become weaker than its best members, and the stricter rule does not depend o
 held-out games. Cost: less power, so a real gain of about 0.01 nats will probably not show with ten games; if C1 fails,
 Step 04 is BLOCKED and the best baseline stays the shipped model, as the manual says. C2, C3a and C3b are unchanged.
 Baseline predictions are unchanged from v2; the v2 freeze is kept as `step03/design_freeze_v2.json`.
+
+## 2026-10-30 — Sequential rebounding manual, Step 04: static conditional logit PASS (C1), OREB model BLOCKED (C2)
+
+At the owner's request ("Start Step 04"). Code `src/rebounding/R/static_geometry.R`, `R/conditional_choice.R`,
+`R/team_rebound.R`, `run_step04.R`, `tests/unit/test_static_model.R`, `tests/gates/test_step_04.R`; settings
+`config/experiment.yaml` (`step04`, written before any fit); evidence `outputs/rebounding/step04/`; report
+`outputs/rebounding/reports/04_static_model.md`; record `gate_results/04_static.json` (status PASS). Ideas from
+ReboundingPrediction `data/derived.py` and `models/conditional_logit.py`, and the ShotQuality notebook (box-out
+matchups); no code copied (no licences). The run checks that Step 03's freeze is in force before fitting.
+
+- **Model.** One softmax over the 12 outcomes: 13 player features from the ten positions at t (distance to the hoop,
+  distance minus the ten's mean, nearest opponent, inside gap, opponents and teammates nearer the hoop, angle from the
+  shooter's line, offence, shooter, distance × shot distance, shooter on a rim shot, players within 6 ft, closeness
+  share); team awards are alternatives with a constant and a shot-distance slope. Standardised and L2-penalised on
+  each fold's nine training games; lambda by inner leave-one-game-out (3 in all ten folds at release).
+- **C1 passes.** Release, 703 held-out misses: log loss 2.200, top-1 23.5%, top-3 50.8%, against 2.261 for the best
+  baseline (role prior by range). Superior to all eight references under the frozen rule; the smallest gain is 0.061
+  nats over role prior by range (conservative interval −0.100 to −0.030, every drop-one mean negative). Class-wise ECE
+  0.0047 against 0.0075 for the selected reference.
+- **Exploratory, rim + 0.2 s** (650 misses, positions at that time): 2.085 against 2.174 for nearest to hoop, superior
+  to every baseline. This is the same-time static reference for Step 09's C3b.
+- **Where.** Gains are largest on rim shots (−0.14 nats against the selected reference) and on defensive player
+  rebounds (−0.13); it is worse on offensive player rebounds (+0.04 at release, +0.20 at rim + 0.2 s) and on offensive
+  team awards. Top-1 on offensive player rebounds is 11.6%.
+- **Coefficients** (all ten games, per standard deviation; stable in sign across folds unless noted): nearer the hoop
+  and nearer than the ten's mean are likelier; more space to the nearest opponent +0.36; each opponent nearer the hoop
+  −0.23; each teammate nearer +0.19; shooter −0.19; distance × shot distance +0.41 (long shots favour players further
+  out). `dist_hoop` and `dist_minus_mean` are not separately identified (they differ by a per-shot constant). Inside
+  gap, shooter on a rim shot, the offensive team-award constant and its shot slope change sign across folds.
+- **C2 blocked.** The binary OREB model scores 0.6021 against 0.6102 for the constant rate (difference −0.0082, better
+  in 8 of 10 games) but the conservative interval reaches +0.0076, so the constant training rate stays the OREB
+  reference. Exploratory: the conditional logit's implied P(OREB) scores 0.5942 (−0.016, interval −0.032 to −0.0003,
+  every drop-one mean negative). It would pass C2's rule, but C2 named the binary model, so this is not a confirmatory
+  result.
+- **Checks, all passed:** Step 03 freeze in force; valid predictions; one credited outcome per choice set; same
+  episodes as the baselines; scalers and fits use exactly the training games; every fit converged; predictions
+  unchanged when test labels are altered; planted label leak caught; reordering players (largest change 3e-16),
+  metres instead of feet (7e-9) and a mirrored court (0) change nothing; reruns reproduce every prediction. 56 unit and
+  28 gate expectations pass. Boosted challenger not run (optional).
+
+### Open choices
+
+- Whether to make the logit's implied P(OREB) the OREB model in later steps (it would need its own prespecified test).
+- Step 05 (release-time spatial distribution of rebound locations) is next.
+
+## 2026-10-30 — Sequential rebounding manual, Step 05: release-time spatial prior: BLOCKED (coverage at 50%)
+
+At the owner's request ("start step 05"). Code `src/rebounding/R/spatial_prior.R`, `run_step05.R`,
+`tests/unit/test_spatial_prior.R`, `tests/gates/test_step_05.R`; settings `config/experiment.yaml` (`step05`, written
+before any fit); evidence `outputs/rebounding/step05/` (figures in `figures/`); report
+`outputs/rebounding/reports/05_spatial_prior.md`; record `gate_results/05_spatial.json` (status BLOCKED). Full cell maps
+in `outputs/cache/rebounding/step05_spatial_prior.rds` (git-ignored, reproducible). TrueImpactShotCharts (MIT) read
+for its kernel heatmaps and Voronoi rebound chances; no code copied.
+
+- **Target.** The credited rebounder's position (`rebounds.location` turned into the attack frame; median gap to the
+  tracked rebounder 0 ft; 5 missing locations taken from tracking and flagged). Not the ball's free landing point and
+  not first contact (Step 02 BLOCKED); 2D only. All 630 locations lie inside the attacked half court. Team awards (73)
+  have no location and are outside the target.
+- **Models** (1 ft cells, settings by inner leave-one-game-out): uniform; zone bins (6 rings × 6 sectors); pooled
+  Gaussian kernel (bandwidth 1.5 ft in all folds, 2% uniform mix); range kernel (pooled shrunk halfway to the shot
+  range's own map); side and range kernel (as range, with every shot mirrored to one side; weight 0.5 or 0.75).
+- **Scores, 630 held-out locations** (negative log density per sq ft): side and range 5.816, range 5.831, pooled
+  5.858, zone bins 5.957, uniform 7.741. The side and range map beats the pooled map (−0.042, interval −0.063 to −0.020,
+  9 of 10 games, every drop-one mean negative), so conditioning on shot range and side helps the proper score.
+- **Why blocked.** The prespecified rule also needs coverage within 0.05 of 50 / 80 / 95%. The 80% and 95% regions
+  pass for every kernel, but the 50% regions hold too many locations: pooled 0.559 (Wilson 0.520–0.597), side and
+  range 0.587 (0.548–0.625). The cores are too wide (under-confident): rim shots are over-covered (pooled 0.74 at 50%)
+  and threes under-covered (0.45). So the pooled baseline and the candidate are both BLOCKED.
+- **Fallback in the manual** ("spatial prior poorly calibrated: fall back to broad train-only prior; do not assert
+  high-precision landing zones"). Zone bins meet coverage at all three levels (0.478, 0.789, 0.949) but score 0.099
+  worse than the pooled kernel. They were exploratory, not the prespecified baseline, so adopting them is an owner
+  decision.
+- **Fixes during the run, before any decision was read:** a data.table row filter, and the Wilson interval clamped to
+  [0, 1] (a lower bound of 7e-18 above an observed 0 failed a gate test).
+- **Checks, all passed:** maps sum to 1 (error 0) and are positive for all 703 episodes × 5 models; 1 sq ft cells;
+  fits use exactly the training games' locations; moving a held-out game's locations leaves its maps unchanged;
+  reruns reproduce every score. 86 unit and 31 gate expectations pass.
+
+### Open choices
+
+- Adopt zone bins as the Step 05 baseline (a recorded deviation), or keep Step 05 BLOCKED and treat the kernel maps
+  as exploratory in Steps 07 and 09.
+- **Later the same day: zone bins are calibrated only on average.** By shot range their 50% regions hold 0.667 of rim
+  rebounds (Wilson 0.583–0.741), 0.512 of other twos and 0.367 of threes (0.313–0.424); at 80%, 0.909 / 0.775 / 0.744.
+  The opposite errors cancel in the pooled figure. The side and range kernel is closer within ranges at 50% (0.659 /
+  0.603 / 0.543). So zone bins are not a sound fallback; recommendation changed to keeping Step 05 BLOCKED.
+- **Owner decision (2026-10-31): keep Step 05 BLOCKED.** No spatial prior is validated. The kernel maps (best: side
+  and range) stay available as exploratory inputs for Steps 07 and 09, labelled as such; zone bins are not adopted.
+
+## 2026-10-31 — Sequential rebounding manual, Step 06: causal ball filter BLOCKED, gravity-only forecast PASS_BASELINE
+
+At the owner's request ("Start Step 06"). Code `src/rebounding/R/ball_filter.R`, `R/ball_noise.R`, `run_step06.R`,
+`tests/unit/test_ball_filter.R`, `tests/gates/test_step_06.R`; settings `config/experiment.yaml` (`step06`, written
+before any real-data run); evidence `outputs/rebounding/step06/`; report `outputs/rebounding/reports/06_filter_diagnostics.md`;
+record `gate_results/06_ball_filter.json` (status PASS_BASELINE). Filter equations as in filterpy and the Kalman book
+(MIT; written independently in R).
+
+- **Filter.** State (x, y, z, vx, vy, vz), constant velocity with gravity on z, white-noise acceleration q, per-axis
+  observation noise r. Only measured ball frames are observations (single filled frames missing), each usable one frame
+  later. Learned on each fold's training free-flight segments: r = 0.073–0.078 / 0.063–0.068 / 0.137–0.142 ft (x/y/z),
+  g = 28.1–28.4 ft/s², q = 3 in every fold.
+- **Held-out forecasts in free flight** (645 of 703 segments free by the Step 02 one-step rule; 3D error, ft):
+  gravity-only from the last two measured frames 0.20 / 0.42 / 0.87 at 2 / 5 / 10 frames; filter 0.28 / 0.54 / 0.98;
+  constant velocity 0.43 / 1.32 / 3.62; persistence 2.41 / 4.80 / 8.38. The filter is worse than gravity-only at every
+  horizon (by 0.07–0.12 ft, worse in all 10 games), so it fails non-inferiority (margin 0.05 ft).
+- **Coverage fails too.** 50% ellipsoids hold 0.66 / 0.50 / 0.46 at 2 / 5 / 10 frames, 90% ellipsoids 0.92 / 0.84 /
+  0.80; normalised innovations average 1.64 in free flight (3 if the noise were right). Too wide one step ahead, too
+  narrow further out.
+- **Likely cause (not tested):** the vendor track is smooth, so neighbouring errors are correlated, and each flight
+  has its own curvature (p10 20.6 to p90 31.8 ft/s², decision log 2026-10-28). A filter with one g and a stiff q
+  averages over the whole flight and carries that bias forward; two recent points adapt to the flight in hand.
+- **Status per the manual:** filter BLOCKED; use the gravity-only forecast and make no claim of reliable online
+  uncertainty yet. Forecasts across a contact (tagged, not gated) are 2–4 times worse for every method, as Step 07
+  expects.
+- **Checks, all passed:** Step 03 freeze in force; 12,134 origin covariances finite, symmetric, positive; parameters
+  from training games only; the state at t is identical with later frames removed or corrupted; reruns reproduce every
+  error. 32 unit and 18 gate expectations pass. A bug found on the first run (`out[[j]] <- NULL` deletes a list element
+  in R) was fixed and covered by a unit test before any result was read.
+
+### Open choices
+
+- Whether to try a second filter version (for example z-acceleration in the state, or a larger q range) as a recorded,
+  exploratory follow-up; its held-out games have now been seen.
+- Step 07 (rim and board contacts, particle forecasts) is next; its free-flight part would use the gravity-only
+  forecast.

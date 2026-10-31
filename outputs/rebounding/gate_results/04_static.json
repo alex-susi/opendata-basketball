@@ -1,0 +1,122 @@
+{
+  "step": "04",
+  "status": "PASS",
+  "scope": "static models at release on 703 eligible misses (12-class credited outcome; binary OREB); Step 02 BLOCKED",
+  "components": {
+    "static_clogit": "PASS",
+    "oreb_logit": "BLOCKED",
+    "boosted_challenger": "NOT_RUN",
+    "shipped_static_model": "static_clogit"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "static_v1",
+    "step04_config_sha256": "9bcc3655d0dd2d134c4a9a1873fe000a6437d54e01e22f5c6887fa633988c5ab",
+    "code_sha256": {
+      "static_geometry.R": "70619cf3a29f412705c0a1ca7c1325a4d3e514c9438ed8eac9254689afc0bc0e",
+      "conditional_choice.R": "24db4b8efb5fab7f0708d89e2de1713ed9f565bb77003e278308bdf559dd2fc9",
+      "team_rebound.R": "43804ceb406be5ad08bbc8c29c3399853b84a816b92d2ff299c703c0b8dbb574"
+    },
+    "predictions_sha256": "f762b918088d3b90598610faaec47ba52c879219aa0f019bdd94d53eb970210b"
+  },
+  "repository_head": "6894dbab724d821cd3f24c0cbb32486ba40aab61",
+  "test_command": "Rscript src/rebounding/run_tests.R unit static_model; Rscript src/rebounding/run_tests.R gates step_04",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step04/scores_summary.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step03 rules; step04 settings fixed before any fit)",
+  "c1": {
+    "pass": true,
+    "superiority_over_every_reference": true,
+    "ece_ok": true,
+    "by_reference": [
+      {
+        "reference": "uniform",
+        "mean_diff": -0.27224,
+        "lo": -0.35132,
+        "hi": -0.20643,
+        "drop_one_max": -0.25738,
+        "pass": true
+      },
+      {
+        "reference": "side_prior",
+        "mean_diff": -0.1786,
+        "lo": -0.25709,
+        "hi": -0.11379,
+        "drop_one_max": -0.16448,
+        "pass": true
+      },
+      {
+        "reference": "role_prior",
+        "mean_diff": -0.07353,
+        "lo": -0.11344,
+        "hi": -0.03977,
+        "drop_one_max": -0.06663,
+        "pass": true
+      },
+      {
+        "reference": "nearest_hoop",
+        "mean_diff": -0.06239,
+        "lo": -0.08924,
+        "hi": -0.0397,
+        "drop_one_max": -0.05479,
+        "pass": true
+      },
+      {
+        "reference": "inside_rule",
+        "mean_diff": -0.18496,
+        "lo": -0.24132,
+        "hi": -0.13539,
+        "drop_one_max": -0.17584,
+        "pass": true
+      },
+      {
+        "reference": "role_prior_by_range",
+        "mean_diff": -0.0611,
+        "lo": -0.09996,
+        "hi": -0.02968,
+        "drop_one_max": -0.05221,
+        "pass": true
+      },
+      {
+        "reference": "nearest_hoop_by_range",
+        "mean_diff": -0.06741,
+        "lo": -0.09965,
+        "hi": -0.0383,
+        "drop_one_max": -0.06118,
+        "pass": true
+      },
+      {
+        "reference": "selected_reference",
+        "mean_diff": -0.07823,
+        "lo": -0.10997,
+        "hi": -0.04934,
+        "drop_one_max": -0.07106,
+        "pass": true
+      }
+    ]
+  },
+  "c2": {
+    "pass": false,
+    "mean_diff": -0.00819,
+    "lo": -0.02416,
+    "hi": 0.00762,
+    "drop_one_max": -0.00568,
+    "calibration_in_large": 0.00071
+  },
+  "evidence": ["outputs/rebounding/step04/", "outputs/rebounding/reports/04_static_model.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-10-30",
+  "open_risks": [
+    "Ten game clusters: intervals are indicative only",
+    "dist_hoop and dist_minus_mean are not separately identified",
+    "No velocity or ball information at release"
+  ],
+  "decision_note": "C1 PASS, C2 BLOCKED."
+}

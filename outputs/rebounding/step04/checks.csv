@@ -1,0 +1,16 @@
+check,value,expected,pass
+"Step 03 design freeze in force (config, harness code, baseline predictions)",TRUE,TRUE,TRUE
+"prediction tables valid (12 outcomes, finite, non-negative, sum to 1)",2,2,TRUE
+exactly one credited outcome per choice set,703,703,TRUE
+logit scored on exactly the baselines' episodes at each time point,2,2,TRUE
+scalers and fits use exactly the nine training games' episodes,20,20,TRUE
+every fit converged,20,20,TRUE
+logit predictions unchanged when the test game's labels are altered (fold 1),TRUE,TRUE,TRUE
+planted test-label leak is detected,TRUE,TRUE,TRUE
+OREB predictions unchanged when the test game's labels are flipped (fold 1),TRUE,TRUE,TRUE
+"reordering candidate rows changes no player's probability (fold 1, largest change)",3.33e-16,< 1e-7,TRUE
+"features in metres give the same probabilities (fold 1, largest change)",6.91e-09,< 1e-6,TRUE
+"mirroring the court left to right gives the same probabilities (fold 1, largest change)",0,< 1e-6,TRUE
+re-running the release fits reproduces every prediction exactly,TRUE,TRUE,TRUE
+constant OREB reference equals Step 03's,4.77e-15,< 1e-9,TRUE
+top-1 counted once per rebound,1,1,TRUE
