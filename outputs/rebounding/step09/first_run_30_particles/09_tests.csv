@@ -1,0 +1,10 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_dynamic.R,one particle and no access terms reduce the mixture to the Step 04 conditional logit,1,0,FALSE,FALSE,0
+unit,test_dynamic.R,the mixture gradient is exact and probabilities are a distribution that ignores row order,3,0,FALSE,FALSE,0
+unit,test_dynamic.R,a known access effect is recovered and helps,2,0,FALSE,FALSE,0
+unit,test_dynamic.R,"access: margins, the best player per particle, and nobody best when the ball is out of reach",6,0,FALSE,FALSE,0
+unit,test_dynamic.R,predict_rebound returns a coherent distribution and reads inputs only through the caller's function,5,0,FALSE,FALSE,0
+gates,test_step_09.R,"every prediction is finite, non-negative and normalised, with player and team terms consistent",3,0,FALSE,FALSE,0
+gates,test_step_09.R,particle sampling is stable and confidence does not collapse when the ball is seen less,3,1,FALSE,FALSE,0
+gates,test_step_09.R,a causal replay never reads frames after the requested frame,2,0,FALSE,FALSE,0
+gates,test_step_09.R,"comparisons use the same games, labels and times, with per-game results and class and time calibration",7,0,FALSE,FALSE,0

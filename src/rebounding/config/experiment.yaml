@@ -572,6 +572,62 @@ step08:
     reference: [credited rebounder (final credit, not first contact), Step 02 automated first toucher (unvalidated)]
   status: movement rule met -> PASS_BASELINE (validated movement and static baselines; interception BLOCKED); else BLOCKED
 
+# Fixed on 2026-11-05 before any Step 09 model was run on real data. Folds, outcomes and rules are step03's (C3a, C3b);
+# the static reference is step04's out-of-fold conditional logit at the same time point. The ball inputs are
+# exploratory (Steps 05 and 07 BLOCKED); the gate judges only the integrated probabilities on held-out games.
+step09:
+  model_version: dynamic_v1
+  times: [release, rim+0.2]
+  particles:
+    count: 30
+    # Leakage rule: a training episode's map and analog forecast come from models fitted without the fold's test game
+    # and without its own game (nested by game); test episodes use the fold's nine training games. The map uses the
+    # Step 05 settings most often chosen in its folds (bandwidth 1.5 ft; w_side 0.5, tied with 0.75 and broken toward
+    # the smoother as in step05.select), so no inner tuning is needed.
+    map_bandwidth_ft: 1.5
+    map_w_side: 0.5
+    analog_lead_frames: 10
+    # Deviation (owner decision 2026-11-05, after the first run, kept in step09/first_run_30_particles/): with 30
+    # particles at prediction time single predictions moved 0.07-0.13 nats between particle draws (limit 0.02). The
+    # fitted models keep 30 particles per training episode; held-out predictions use prediction_count particles, and the
+    # stability check redraws them with another seed and with twice as many. C3a, C3b and calibration are judged again.
+    prediction_count: 2000
+    release: draws from the Step 05 side-and-range map of the episode (out of fold), uniform within the drawn cell;
+             available at the training games' median time from release to the credited rebound for the shot range;
+             height 0 (the map has no height)
+    rim+0.2: draws from the Step 07 empirical analog forecast of the ball 10 frames (0.4 s) after the origin, with
+             its kernel; available 0.4 s after the origin; height from the draw
+    weights: equal (draws are proportional to the forecast)
+    none: when no ball forecast exists the access features are 0 for every player (the model reduces to static
+          geometry) and the episode is flagged
+  access:
+    # Step 08 arrival rule with the fold's v_max (Step 08 limits), from each player's position and causal velocity
+    margin: available time - arrival time - height cost, clipped to [-1.5, 1.5] s
+    features: [access_margin, best_access]   # best_access: the player with the largest margin for that particle
+  model:
+    # p_i = sum_k w_k softmax_i(U_ik): one softmax over the 12 outcomes per particle, averaged with the weights
+    utility: Step 04 player features (standardised on training rows) + the access features (standardised) for players;
+             Step 04 team constants and shot-distance slopes for the team awards
+    lambda: 3                          # fixed beforehand (Step 04 chose 3 at release in every fold), no inner tuning
+    temperature: none in v1 (the manual allows it only under nested validation; not run)
+    challenger: access_only - access features and team terms only (the spatial-only plus player-geometry alternative)
+  decision:
+    C3a: release, dynamic vs Step 04 static conditional logit, non-inferiority (step03 margin)
+    C3b: rim+0.2, dynamic vs Step 04 static conditional logit at rim+0.2, superiority
+    calibration: class-wise ECE at most the static model's + step03 calibration_ece_margin, at each time
+    status: C3a and C3b and calibration -> PASS; C3a only -> PASS_BASELINE (static at rim+0.2 kept); else BLOCKED
+            (ship the Step 04 model)
+  stability:
+    # prediction-time particle noise: the same fitted model, particles redrawn with another seed and with twice as many
+    seed: 20261105
+    max_mean_abs_diff_nats: 0.02
+    max_mean_diff_nats: 0.01
+  degraded_ball:
+    # confidence must not collapse when the ball is seen less: rim+0.2 with half the measured ball frames before the
+    # origin dropped; the mean top probability may not rise by more than this
+    keep: 0.5
+    max_top_prob_rise: 0.02
+
 paths:
   # Manual path -> path in this repository (data/ holds only the supplied files; derived tracking stays git-ignored).
   docs/SOURCE_REGISTER.md: docs/project/SOURCE_REGISTER.md
@@ -615,3 +671,8 @@ paths:
   src/reachability/catch_envelope.py: src/rebounding/R/reach.R (catch envelope)
   src/reachability/intercept.py: src/rebounding/R/reach.R (arrival time and margins)
   evaluations/08_reachability.parquet: outputs/rebounding/step08/reach_margins.csv.gz
+  src/probabilities/particle_integration.py: src/rebounding/R/particle_integration.R
+  src/probabilities/dynamic_choice.py: src/rebounding/R/dynamic_choice.R (mixture logit and predict_rebound)
+  src/probabilities/calibration.py: not used in v1 (no temperature; step09 model)
+  evaluations/09_dynamic_oof.parquet: outputs/rebounding/step09/dynamic_oof.csv.gz
+  reports/09_model_comparison.md: outputs/rebounding/reports/09_model_comparison.md

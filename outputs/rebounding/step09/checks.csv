@@ -1,0 +1,9 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+"predictions valid (12 outcomes, finite, non-negative, sum to 1)",4,4,TRUE
+"dynamic, access-only and static scored on the same episodes and time points",2,2,TRUE
+"P(OREB) = offensive players + offensive team award, and the 12 outcomes sum to 1",4.31e-14,< 1e-9,TRUE
+every fit converged,40,40,TRUE
+"particle draws stable (second seed, twice the particles)",0.0088 / 0.0044 / 0.0164 / 0.0115,"mean |diff| < 0.02, |mean diff| < 0.01",TRUE
+confidence does not rise when half the ball frames are dropped (mean top probability change),-0.0138,<= 0.02,TRUE
+predict_rebound replays the out-of-fold predictions and ignores corrupted later frames (12 episodes),TRUE,TRUE,TRUE

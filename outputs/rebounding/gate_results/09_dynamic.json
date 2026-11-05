@@ -1,0 +1,67 @@
+{
+  "step": "09",
+  "status": "PASS",
+  "scope": "dynamic 12-outcome probabilities at release and rim + 0.2 s (703 and 650 episodes)",
+  "components": {
+    "dynamic": "PASS",
+    "access_only": "exploratory",
+    "shipped": "dynamic"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "dynamic_v1",
+    "step09_config_sha256": "a3f4b0a3df06cb533ddeb1faa8f0174f8d05afddf59768cd627da1b3360f6a8c",
+    "code_sha256": {
+      "particle_integration.R": "1aaab792f6d6515e1facacb54a158ecdb2a9ad357cf6d8cac7da21aa73a7823f",
+      "dynamic_choice.R": "34cac7a70c2441df26bdcb99a1563c897e42b63d5585572c10c5ee13140b66a8"
+    }
+  },
+  "repository_head": "abb0290ab188c55d4b07d6a2f936d34ec9c8219d",
+  "test_command": "Rscript src/rebounding/run_tests.R unit dynamic; Rscript src/rebounding/run_tests.R gates step_09",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step09/scores_summary.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step09 fixed before any real-data run; step03 C3a/C3b)",
+  "decision": {
+    "C3a": true,
+    "C3b": true,
+    "calibration": true,
+    "tests": [
+      {
+        "test": "C3a (confirmatory)",
+        "mean_diff": -0.0227,
+        "lo": -0.032,
+        "hi": -0.0132,
+        "drop_one_max": -0.0193
+      },
+      {
+        "test": "C3b (confirmatory)",
+        "mean_diff": -0.0618,
+        "lo": -0.0857,
+        "hi": -0.0357,
+        "drop_one_max": -0.0571
+      }
+    ]
+  },
+  "evidence": ["outputs/rebounding/step09/", "outputs/rebounding/reports/09_model_comparison.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-11-05",
+  "open_risks": [
+    "Ball inputs exploratory (Steps 05 and 07 BLOCKED)",
+    "Two time points only",
+    "Ten games"
+  ],
+  "deviations": [
+    {
+      "item": "prediction particles",
+      "decision": "2000 per held-out prediction (first run: 30, failed stability; kept in step09/first_run_30_particles/); training particles 30, unchanged"
+    }
+  ],
+  "decision_note": "C3a TRUE, C3b TRUE, calibration TRUE."
+}

@@ -1,0 +1,5 @@
+run,time_point,episodes,mean_abs_diff,mean_diff,stable
+second seed,release,703,0.00875846840833416,-0.000248248785080002,TRUE
+twice the particles,release,703,0.00443154629156466,-0.000366442984182617,TRUE
+second seed,rim+0.2,650,0.0164131251549397,-0.000492084427424683,TRUE
+twice the particles,rim+0.2,650,0.0115055419559924,-0.00112909947415979,TRUE

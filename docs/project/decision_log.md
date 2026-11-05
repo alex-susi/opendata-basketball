@@ -1573,3 +1573,55 @@ real-data run); evidence `outputs/rebounding/step08/`; report `outputs/reboundin
   fixed-direction forecast stays the "ignores the ball" baseline; Step 08's reach rule (run straight at the realised ball
   after the reaction time) is the perfect-reading bound. Step 10 measures movement toward the likely rebound area
   against the baseline, labelled exploratory while the post-rim ball forecast (Step 07) is unvalidated.
+
+## 2026-11-05 — Sequential rebounding manual, Step 09: dynamic probabilities: C3a and C3b met, BLOCKED by particle stability
+
+At the owner's request ("start step 9"). Code `src/rebounding/R/particle_integration.R`, `R/dynamic_choice.R`,
+`run_step09.R`, `tests/unit/test_dynamic.R`, `tests/gates/test_step_09.R`; settings `config/experiment.yaml` (`step09`,
+written before any real-data run); evidence `outputs/rebounding/step09/`; report
+`outputs/rebounding/reports/09_model_comparison.md`; record `gate_results/09_dynamic.json` (status BLOCKED).
+
+- **Model.** For each of 30 ball particles, one softmax over the 12 outcomes: Step 04's player features plus each
+  player's access margin to the particle (Step 08 arrival rule, fold v_max) and whether he has the best margin; the
+  episode's probabilities average the particles. Particles: the Step 05 release map at release, the Step 07 analog
+  forecast of the ball 0.4 s ahead at rim + 0.2 s. A training episode's map and analogs come from models without the test
+  game and without its own game. Lambda 3, no temperature. One fold takes about 3 minutes, so folds now run as parallel
+  processes (`--fold=k`), each cached; the plain run assembles and scores (13 s).
+- **Held-out results** (log loss / top-1 / top-3): release dynamic 2.181 / 23.9% / 54.3% against static 2.200 / 23.5% /
+  50.8%; rim + 0.2 s dynamic 2.029 / 30.0% / 60.3% against static 2.085 / 21.1% / 55.4%. C3a (release, non-inferiority):
+  −0.019, interval −0.030 to −0.008, better in 9 of 10 games: met (it is superior too). C3b (rim + 0.2 s, superiority):
+  −0.057, interval −0.087 to −0.023, every drop-one mean negative, 9 of 10 games: met. Calibration met at both times.
+  At rim + 0.2 s top-1 rises most on rim shots (41.8% vs 24.6%) and on offensive player rebounds (20.5% vs 10.6%).
+  Access-only (no player geometry) is worse than static at both times; access adds to geometry, it does not replace it.
+- **Why blocked.** The prespecified prediction-time stability check fails: redrawing the 30 particles with another seed
+  moves an episode's log loss by 0.071 (release) and 0.131 (rim + 0.2 s) on average, and twice the particles by 0.036 and
+  0.096, against a 0.02 limit. The mean differences are tiny (−0.002 to −0.007, limit 0.01), so the aggregate scores are
+  stable but single predictions are noisy at this particle budget.
+- **Other checks passed:** valid, normalised predictions; P(OREB) consistent; same episodes as static; every fit
+  converged; halving the ball frames lowers confidence (mean top probability −0.015), it does not raise it;
+  `predict_rebound()` replays the out-of-fold predictions exactly and ignores corrupted later frames. 17 unit
+  expectations pass; the gate test fails only on stability (14 of 15 gate expectations pass).
+
+### Open choices
+
+- Keep Step 09 BLOCKED (ship the Step 04 static model; dynamic exploratory), or rerun the prediction step with a larger
+  particle budget (fitted models unchanged) as a recorded deviation and rejudge stability, C3a and C3b.
+
+### Rerun with 2,000 prediction particles (owner decision, same day): PASS
+
+The owner chose to rerun the prediction step with more particles. Deviation recorded in `config/experiment.yaml`
+(`step09.particles.prediction_count: 2000`): fitted models keep 30 particles per training episode; held-out predictions
+use 2,000, predicted in chunks. The first run is kept in `step09/first_run_30_particles/`. All ten folds ran in parallel
+(143 s); record `gate_results/09_dynamic.json` now PASS.
+
+- **Stability met:** another seed moves an episode's log loss by 0.009 (release) and 0.016 (rim + 0.2 s) on average,
+  4,000 particles by 0.004 and 0.012 (limit 0.02); mean differences under 0.002.
+- **C3a met:** release log loss 2.177 against 2.200 static (−0.023, interval −0.032 to −0.013, better in all 10 games).
+  **C3b met:** rim + 0.2 s 2.023 against 2.085 (−0.062, interval −0.086 to −0.036, 9 of 10 games, every drop-one mean
+  negative). Calibration met (ECE 0.0054 / 0.0047 against 0.0047 / 0.0090). Top-1 at rim + 0.2 s 28.9% against 21.1%;
+  rim shots 39.3% against 24.6%, offensive player rebounds 16.8% against 10.6%.
+- **Other checks passed:** halving the ball frames lowers mean confidence (−0.014); the replay through
+  `predict_rebound()` matches the out-of-fold predictions and ignores corrupted later frames. 17 unit and 15 gate
+  expectations pass.
+- **What it does not show:** the ball inputs (Steps 05 and 07) are still unvalidated; the gain is in held-out
+  rebound scores, not proof that the ball forecasts are right.

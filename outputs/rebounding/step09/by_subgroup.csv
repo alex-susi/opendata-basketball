@@ -1,0 +1,29 @@
+time_point,model,group,n,log_loss,top1
+release,dynamic,outcome: def player,457,1.92032095395721,0.330415754923414
+release,static_clogit,outcome: def player,457,1.94448312310561,0.317286652078775
+release,dynamic,outcome: def team award,36,2.96191410455236,0.0277777777777778
+release,static_clogit,outcome: def team award,36,3.02493923406545,0
+release,dynamic,outcome: off player,173,2.5095851596849,0.104046242774566
+release,static_clogit,outcome: off player,173,2.5271872465926,0.115606936416185
+release,dynamic,outcome: off team award,37,3.03701764314441,0
+release,static_clogit,outcome: off team award,37,3.02588639571782,0
+release,dynamic,shot range: midrange (other 2s),228,2.23183956489069,0.228070175438597
+release,static_clogit,shot range: midrange (other 2s),228,2.23830478666126,0.228070175438597
+release,dynamic,shot range: rim (<5 ft),148,1.99742519734897,0.331081081081081
+release,static_clogit,shot range: rim (<5 ft),148,2.04263609108139,0.290540540540541
+release,dynamic,shot range: three,327,2.22099424813895,0.211009174311927
+release,static_clogit,shot range: three,327,2.24478335519537,0.214067278287462
+rim+0.2,dynamic,outcome: def player,425,1.76317916445744,0.378823529411765
+rim+0.2,static_clogit,outcome: def player,425,1.83770677996389,0.282352941176471
+rim+0.2,dynamic,outcome: def team award,35,2.89783024904081,0
+rim+0.2,static_clogit,outcome: def team award,35,2.87807972447515,0
+rim+0.2,dynamic,outcome: off player,161,2.30244155708371,0.167701863354037
+rim+0.2,static_clogit,outcome: off player,161,2.3577827578095,0.105590062111801
+rim+0.2,dynamic,outcome: off team award,29,3.23225665771836,0
+rim+0.2,static_clogit,outcome: off team award,29,3.24072550962523,0
+rim+0.2,dynamic,shot range: midrange (other 2s),210,2.0707228913465,0.276190476190476
+rim+0.2,static_clogit,shot range: midrange (other 2s),210,2.10781042302004,0.2
+rim+0.2,dynamic,shot range: rim (<5 ft),122,1.76945656840162,0.39344262295082
+rim+0.2,static_clogit,shot range: rim (<5 ft),122,1.93505431187219,0.245901639344262
+rim+0.2,dynamic,shot range: three,318,2.08955417876538,0.257861635220126
+rim+0.2,static_clogit,shot range: three,318,2.12775289542493,0.20440251572327

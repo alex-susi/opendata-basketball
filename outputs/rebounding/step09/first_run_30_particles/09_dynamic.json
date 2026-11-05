@@ -1,0 +1,61 @@
+{
+  "step": "09",
+  "status": "BLOCKED",
+  "scope": "dynamic 12-outcome probabilities at release and rim + 0.2 s (703 and 650 episodes)",
+  "components": {
+    "dynamic": "PASS",
+    "access_only": "exploratory",
+    "shipped": "dynamic"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "dynamic_v1",
+    "step09_config_sha256": "8cd9b7483efac045fae3499d95cdba2d2966f4be64cef04569442b4ee0223148",
+    "code_sha256": {
+      "particle_integration.R": "1aaab792f6d6515e1facacb54a158ecdb2a9ad357cf6d8cac7da21aa73a7823f",
+      "dynamic_choice.R": "d794c6c73e6e47d1821b3aa324449d67db00eb7f4c796231369c322dd72270aa"
+    }
+  },
+  "repository_head": "abb0290ab188c55d4b07d6a2f936d34ec9c8219d",
+  "test_command": "Rscript src/rebounding/run_tests.R unit dynamic; Rscript src/rebounding/run_tests.R gates step_09",
+  "unit_tests_passed": true,
+  "data_audit_passed": false,
+  "heldout_metrics_file": "outputs/rebounding/step09/scores_summary.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step09 fixed before any real-data run; step03 C3a/C3b)",
+  "decision": {
+    "C3a": true,
+    "C3b": true,
+    "calibration": true,
+    "tests": [
+      {
+        "test": "C3a (confirmatory)",
+        "mean_diff": -0.0192,
+        "lo": -0.0298,
+        "hi": -0.0077,
+        "drop_one_max": -0.0144
+      },
+      {
+        "test": "C3b (confirmatory)",
+        "mean_diff": -0.0565,
+        "lo": -0.0868,
+        "hi": -0.023,
+        "drop_one_max": -0.0517
+      }
+    ]
+  },
+  "evidence": ["outputs/rebounding/step09/", "outputs/rebounding/reports/09_model_comparison.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-11-05",
+  "open_risks": [
+    "Ball inputs exploratory (Steps 05 and 07 BLOCKED)",
+    "Two time points only",
+    "Ten games"
+  ],
+  "decision_note": "C3a TRUE, C3b TRUE, calibration TRUE."
+}

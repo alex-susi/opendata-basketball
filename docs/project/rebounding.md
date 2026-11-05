@@ -125,6 +125,7 @@ Python; this project uses R, and its paths map as follows (also in `src/reboundi
 | 06 | `Rscript src/rebounding/run_step06.R` (about 3 minutes; needs `raw_*.rds`, the Step 01 table and Step 03 outputs) | `step06/` (segments, parameters by fold, q selection, forecasts, errors, coverage, innovations, strata, checks), `reports/06_filter_diagnostics.md`, `gate_results/06_ball_filter.json`, `06_tests.csv` |
 | 07 | `Rscript src/rebounding/run_step07.R [--reuse-folds]` (about 7 minutes; needs `raw_*.rds`, Step 01, 02, 03 and 06 outputs) | `step07/` (scores, coverage, comparisons, particle diagnostics, stability, examples and figure; `first_run_exact_frames/`), `reports/07_collision_audit.md`, `gate_results/07_postimpact.json`, `07_tests.csv`; cache `step07_folds.rds` |
 | 08 | `Rscript src/rebounding/run_step08.R` (about 3 minutes; needs `raw_*.rds`, Step 01, 02 and 03 outputs) | `step08/` (movement forecasts and errors, limits and damping by fold, comparisons, reach margins and sensitivity, checks), `reports/08_reachability.md`, `gate_results/08_reachability.json`, `08_tests.csv` |
+| 09 | `Rscript src/rebounding/run_step09.R --fold=k` for k = 1–10 as parallel processes (about 3 minutes each; five at a time took 95 + 177 s), then `Rscript src/rebounding/run_step09.R` (13 s); needs `raw_*.rds` and Step 01, 03–06 and 08 outputs | `step09/` (out-of-fold predictions, scores, C3 comparisons, calibration, stability, degraded ball, subgroups, checks), `reports/09_model_comparison.md`, `gate_results/09_dynamic.json`, `09_tests.csv`; cache `step09_fold_NN.rds` |
 | Tests only | `Rscript src/rebounding/run_tests.R unit` / `run_tests.R gates step_01` | console |
 
 A clean package library for `--isolated-lib` / `--lib`: `renv::restore(lockfile = "src/rebounding/renv.lock", library =
@@ -241,6 +242,18 @@ transitions, mixture scoring). Results in `outputs/rebounding/reports/07_collisi
 - **Reach margins are exploratory**: interception is not validated (no first-contact labels), the height envelope is
   assumed, and the Step 08 margins use the realised ball path. Step 09 must use forecast ball paths.
 - Velocities come from a trailing window (frames up to t), never a centred filter.
+
+## Sequential manual, Step 09: dynamic probabilities (PASS)
+
+`R/particle_integration.R` (particles from the Step 05 map or Step 07 analogs, access features) and `R/dynamic_choice.R`
+(particle-mixture conditional logit, `predict_rebound()` replay interface). Results in
+`outputs/rebounding/reports/09_model_comparison.md`.
+
+- **Shipped model: dynamic** (`step09/dynamic_oof.csv.gz`), better than the Step 04 static model at release and at
+  rim + 0.2 s (C3a, C3b met). Predict with 2,000 particles: with 30, single predictions move too much between particle
+  draws (first run kept in `step09/first_run_30_particles/`). Its ball inputs are still exploratory.
+- Never build a training episode's particles from models that saw its own game (the analog library would find the
+  episode itself).
 
 ## Reviewing the automated labels
 
