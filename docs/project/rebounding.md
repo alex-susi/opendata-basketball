@@ -126,6 +126,7 @@ Python; this project uses R, and its paths map as follows (also in `src/reboundi
 | 07 | `Rscript src/rebounding/run_step07.R [--reuse-folds]` (about 7 minutes; needs `raw_*.rds`, Step 01, 02, 03 and 06 outputs) | `step07/` (scores, coverage, comparisons, particle diagnostics, stability, examples and figure; `first_run_exact_frames/`), `reports/07_collision_audit.md`, `gate_results/07_postimpact.json`, `07_tests.csv`; cache `step07_folds.rds` |
 | 08 | `Rscript src/rebounding/run_step08.R` (about 3 minutes; needs `raw_*.rds`, Step 01, 02 and 03 outputs) | `step08/` (movement forecasts and errors, limits and damping by fold, comparisons, reach margins and sensitivity, checks), `reports/08_reachability.md`, `gate_results/08_reachability.json`, `08_tests.csv` |
 | 09 | `Rscript src/rebounding/run_step09.R --fold=k` for k = 1–10 as parallel processes (about 3 minutes each; five at a time took 95 + 177 s), then `Rscript src/rebounding/run_step09.R` (13 s); needs `raw_*.rds` and Step 01, 03–06 and 08 outputs | `step09/` (out-of-fold predictions, scores, C3 comparisons, calibration, stability, degraded ball, subgroups, checks), `reports/09_model_comparison.md`, `gate_results/09_dynamic.json`, `09_tests.csv`; cache `step09_fold_NN.rds` |
+| 10 | `Rscript src/rebounding/run_step10.R` (about 4 minutes; needs `raw_*.rds`, Step 01, 03, 05, 06, 07 and 08 outputs and the Step 05 map cache) | `step10/` (opportunity and decomposition per player-episode, response onsets, stability and threshold curve, roles, side and shot range, credited-rebounder ranks, exposure, player split and shrunk effects, checks), `reports/10_movement_attribution.md`, `gate_results/10_movement.json`, `10_tests.csv` |
 | Tests only | `Rscript src/rebounding/run_tests.R unit` / `run_tests.R gates step_01` | console |
 
 A clean package library for `--isolated-lib` / `--lib`: `renv::restore(lockfile = "src/rebounding/renv.lock", library =
@@ -254,6 +255,19 @@ transitions, mixture scoring). Results in `outputs/rebounding/reports/07_collisi
   draws (first run kept in `step09/first_run_30_particles/`). Its ball inputs are still exploratory.
 - Never build a training episode's particles from models that saw its own game (the analog library would find the
   episode itself).
+
+## Sequential manual, Step 10: positioning and movement (PASS; player claims PASS)
+
+`R/opportunity_value.R` (`opportunity()`, `decompose_opportunity()`, `damped_state()`), `R/response.R`
+(`response_onset()`) and `R/positioning.R` (roles, game-bootstrap means, empirical-Bayes shrinkage). Results in
+`outputs/rebounding/reports/10_movement_attribution.md`.
+
+- **Use vs_baseline** (access at rim arrival minus the damped forecast that ignores the ball) to compare players.
+  `move` is ≤ 0 by construction and mostly measures flight time.
+- **Report onset times as a curve over the speed threshold** (`step10/response_onset_curve.csv`, 5–8 ft/s), never as
+  one number: for the same player the onset moves about 0.2 s between 6 and 8 ft/s. Classes (responded, already
+  moving, no response) are stable. Small roles (rim protector, safety) have under 10 responders per threshold.
+- Velocity variants need enough player history before release: Step 10 reads 25 frames, not the 5-frame carry.
 
 ## Reviewing the automated labels
 

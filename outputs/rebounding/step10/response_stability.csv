@@ -1,0 +1,7 @@
+variant,players,class_changed,median_onset_shift_frames,rule,stable
+window 4,6780,0.00884955752212389,1,class change and onset shift,TRUE
+window 10,6780,0.020353982300885,2,class change and onset shift,TRUE
+threshold 5 ft/s,6780,0.063716814159292,2,class change only (onset reported as a curve),TRUE
+threshold 7 ft/s,6780,0.0553097345132743,2,class change only (onset reported as a curve),TRUE
+threshold 8 ft/s,6780,0.0943952802359882,5,class change only (onset reported as a curve),TRUE
+position error 1 ft,6780,0.0193215339233038,0,class change and onset shift,TRUE

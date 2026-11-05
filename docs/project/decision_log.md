@@ -1625,3 +1625,58 @@ use 2,000, predicted in chunks. The first run is kept in `step09/first_run_30_pa
   expectations pass.
 - **What it does not show:** the ball inputs (Steps 05 and 07) are still unvalidated; the gain is in held-out
   rebound scores, not proof that the ball forecasts are right.
+
+## 2026-11-05 — Sequential rebounding manual, Step 10: positioning and movement measures: BLOCKED by response-onset stability; player claims PASS
+
+At the owner's request ("Start Step 10"). Code `src/rebounding/R/opportunity_value.R`, `R/response.R`,
+`R/positioning.R`, `run_step10.R`, `tests/unit/test_opportunity.R`, `tests/gates/test_step_10.R`; settings
+`config/experiment.yaml` (`step10`, written before any real-data run); evidence `outputs/rebounding/step10/`; report
+`outputs/rebounding/reports/10_movement_attribution.md`; record `gate_results/10_movement.json` (status BLOCKED).
+
+- **Measures.** Q = a player's chance of reaching the ball, averaged over 500 particles from the Step 05 release map
+  (logistic in his arrival margin from Step 08, sigma 0.45 s). Move = Q at rim arrival minus Q at release on the same
+  particles in absolute time (≤ 0 by construction: the clock runs). vs_baseline = Q at rim arrival minus Q of Step 08's
+  damped forecast that ignores the ball (access gained by reading the shot). Info = Q at release under the Step 07
+  analog forecast minus under the reference. 678 episodes, 6,780 player-episodes.
+- **Change before any real-data run:** the player-effect measure is `vs_baseline`, not `move`. The unit tests showed
+  move mostly measures how long the ball is in the air, not the player.
+- **Bug fix found on the first run:** episode tracks kept only 5 frames of players before release, so the 10-frame
+  velocity variant had no velocity at release (100% "class changed"). Step 10 now reads 25 frames of history; every
+  other result is identical to 1e-15 and the window-10 variant is stable (2.0% class change, 2-frame shift).
+- **Results.** vs_baseline by role: offence other +0.084, defence other +0.071, offence nearest the hoop +0.043,
+  shooter's defender +0.023, rim protector +0.021, safety +0.011 (interval touches 0), shooter −0.053. Larger on threes
+  (+0.08) than rim shots (+0.004 to +0.009). 70–94% of players per role show no sustained move toward the ball before
+  rim arrival + 10 frames; median onsets 0.56–0.92 s. Credited rebounder ranks first by Q at rim arrival in 24.6% of
+  614 episodes (Q at release 20.2%, vs_baseline 11.7%).
+- **Checks passed:** decomposition adds up (1e-16); reference sensitivity Spearman ≥ 0.996 against the pooled and
+  zone maps; a particle redraw moves move / vs_baseline by 0.0076 / 0.0029; split-by-game player reliability r = 0.47
+  over 25 players seen in two games, no sign changes at prior scales 0.5 and 2.
+- **Why blocked.** Raising the response speed threshold from 6 to 8 ft/s shifts the median onset by 5 frames (0.2 s),
+  over the prespecified 3; class changes are 9.4% (limit 20%). Four of five variants are stable. A higher threshold
+  is reached later by construction, so the onset time depends on the chosen speed, not only on the player.
+- **What it does not show:** the reference distribution (Step 05) is unvalidated, so every Q is relative to it;
+  player claims rest on 25 players seen in two games (179 of 204 appear once).
+
+### Open choices
+
+- Keep Step 10 BLOCKED (opportunity and vs_baseline usable as exploratory; onset times not reported as player
+  facts), or report onsets as threshold-dependent (a curve over 5–8 ft/s) as a recorded deviation.
+
+### Onsets reported as a threshold curve (owner decision, same day): PASS
+
+The owner chose to report onset timing as a curve over the speed threshold instead of one time. Deviation recorded in
+`config/experiment.yaml` (`step10.response.threshold_curve: [5, 6, 7, 8]`): threshold variants are judged on class
+change only, since a higher bar is reached later by construction; window and position-error variants keep the full
+rule (class change ≤ 20% and median onset shift ≤ 3 frames). Base classes still use 6 ft/s. New output
+`step10/response_onset_curve.csv`; record `gate_results/10_movement.json` now PASS (measurements and player claims).
+Every other table is byte-identical to the blocked run.
+
+- **Stability met:** 6 of 6 variants; class changes 0.9–9.4%; window 4 / 10 and 1-ft position error shift onsets by 1,
+  2 and 0 frames.
+- **Curve, all players** (share responding / median onset): 5 ft/s 13.3% / 0.60 s, 6 ft/s 11.1% / 0.60 s, 7 ft/s
+  8.6% / 0.64 s, 8 ft/s 7.0% / 0.68 s. Offence "other" responds most (22% to 17%, median 0.52–0.66 s); the shooter
+  and rim protector almost never (under 2.5%).
+- **Gate test added:** a player timed at 6 and 8 ft/s never reaches the higher bar earlier. Shares can move either way
+  (a higher bar also takes players out of "already moving"), so they are not tested for monotonicity.
+- **What it does not show:** onsets for small roles rest on few responders (rim protector 9 players at 6 ft/s, none at
+  8; safety 6); read those cells as descriptive.

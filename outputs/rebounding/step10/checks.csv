@@ -1,0 +1,9 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+decomposition adds up (largest |total - move - info - interaction|),1.11e-16,< 1e-9,TRUE
+movement measured with the same reference distribution at both times (one particle set per episode),TRUE,TRUE,TRUE
+reference sensitivity: Spearman correlation with other Step 05 maps (move and vs_baseline),0.997 / 0.997 / 0.997 / 0.996,>= 0.8,TRUE
+"particle redraw changes Q measures little (mean absolute change, move / vs_baseline)",0.0076 / 0.0029,< 0.02,TRUE
+"response classes stable under smoothing, threshold and position-error variants; onsets stable under smoothing and position error",6,6,TRUE
+player effects reported with exposure (episodes and games per player),204,players,TRUE
+episodes measured (with a rim arrival and ten players at both times) / with a rim arrival,678 / 678,reported,TRUE

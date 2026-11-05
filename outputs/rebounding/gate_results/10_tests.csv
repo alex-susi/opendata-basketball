@@ -1,0 +1,9 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_opportunity.R,"opportunity is a probability, high next to the ball and low far from it",5,0,FALSE,FALSE,0
+unit,test_opportunity.R,the decomposition separates movement from information and adds up,8,0,FALSE,FALSE,0
+unit,test_opportunity.R,the damped state follows Step 08's forecast and decays the velocity,2,0,FALSE,FALSE,0
+unit,test_opportunity.R,"response onset: timed for a player who starts toward the ball, not for one already moving or moving away",5,0,FALSE,FALSE,0
+unit,test_opportunity.R,roles at release and empirical-Bayes shrinkage,8,0,FALSE,FALSE,0
+gates,test_step_10.R,movement uses one reference distribution and the decomposition identity holds,4,0,FALSE,FALSE,0
+gates,test_step_10.R,"response onsets are checked under smoothing, threshold and tracking-error variants",6,0,FALSE,FALSE,0
+gates,test_step_10.R,roles and exposure are reported; player claims follow the prespecified rule,6,0,FALSE,FALSE,0

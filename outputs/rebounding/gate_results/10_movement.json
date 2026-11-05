@@ -1,0 +1,152 @@
+{
+  "step": "10",
+  "status": "PASS",
+  "scope": "opportunity, movement and response measures for 678 episodes (6780 player-episodes); exploratory against the Step 05 reference",
+  "components": {
+    "measurements": "PASS",
+    "player_claims": "PASS"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "LaurieOnTracking": "control-probability logistic adapted (MIT)"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "opportunity_v1",
+    "step10_config_sha256": "d4330ec07870fce35b4cc804d7050a42fa2e90a204b016cb86106bb9342385c7",
+    "code_sha256": {
+      "opportunity_value.R": "fd988a870037472183788b88616b47284d3ca1502db0f26875b3d35ba9eba85d",
+      "response.R": "2d0f5684efc9d8310fd6e6b355d9ceeb20a08c4264c3020bc7801efd050bd150",
+      "positioning.R": "767a6fd47771b73557426f5d84908c423f632477962d0ec787286b49f4384a7b"
+    }
+  },
+  "repository_head": "666c874a87dd5ea9075f72d9ea4a3a7e567878de",
+  "test_command": "Rscript src/rebounding/run_tests.R unit opportunity; Rscript src/rebounding/run_tests.R gates step_10",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step10/by_role.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step10 fixed before any real-data run)",
+  "decision": {
+    "reliability_r": 0.470115380982899,
+    "sign_change": [
+      {
+        "scale": 0.5,
+        "share_sign_change": 0
+      },
+      {
+        "scale": 2,
+        "share_sign_change": 0
+      }
+    ],
+    "reference_rho": {
+      "pooled_move": 0.9974,
+      "zone_move": 0.997,
+      "pooled_vs": 0.9972,
+      "zone_vs": 0.9963
+    },
+    "response_stability": [
+      {
+        "variant": "window 4",
+        "players": 6780,
+        "class_changed": 0.00884955752212389,
+        "median_onset_shift_frames": 1,
+        "rule": "class change and onset shift",
+        "stable": true
+      },
+      {
+        "variant": "window 10",
+        "players": 6780,
+        "class_changed": 0.020353982300885,
+        "median_onset_shift_frames": 2,
+        "rule": "class change and onset shift",
+        "stable": true
+      },
+      {
+        "variant": "threshold 5 ft/s",
+        "players": 6780,
+        "class_changed": 0.063716814159292,
+        "median_onset_shift_frames": 2,
+        "rule": "class change only (onset reported as a curve)",
+        "stable": true
+      },
+      {
+        "variant": "threshold 7 ft/s",
+        "players": 6780,
+        "class_changed": 0.0553097345132743,
+        "median_onset_shift_frames": 2,
+        "rule": "class change only (onset reported as a curve)",
+        "stable": true
+      },
+      {
+        "variant": "threshold 8 ft/s",
+        "players": 6780,
+        "class_changed": 0.0943952802359882,
+        "median_onset_shift_frames": 5,
+        "rule": "class change only (onset reported as a curve)",
+        "stable": true
+      },
+      {
+        "variant": "position error 1 ft",
+        "players": 6780,
+        "class_changed": 0.0193215339233038,
+        "median_onset_shift_frames": 0,
+        "rule": "class change and onset shift",
+        "stable": true
+      }
+    ],
+    "response_onset_curve_all": [
+      {
+        "role": "all players",
+        "threshold_ft_s": 5,
+        "players": 6780,
+        "responded": 0.132890855457227,
+        "onset_q25_s": 0.44,
+        "onset_median_s": 0.6,
+        "onset_q75_s": 0.8
+      },
+      {
+        "role": "all players",
+        "threshold_ft_s": 6,
+        "players": 6780,
+        "responded": 0.110619469026549,
+        "onset_q25_s": 0.44,
+        "onset_median_s": 0.6,
+        "onset_q75_s": 0.8
+      },
+      {
+        "role": "all players",
+        "threshold_ft_s": 7,
+        "players": 6780,
+        "responded": 0.0859882005899705,
+        "onset_q25_s": 0.44,
+        "onset_median_s": 0.64,
+        "onset_q75_s": 0.84
+      },
+      {
+        "role": "all players",
+        "threshold_ft_s": 8,
+        "players": 6780,
+        "responded": 0.06976401179941,
+        "onset_q25_s": 0.48,
+        "onset_median_s": 0.68,
+        "onset_q75_s": 0.88
+      }
+    ]
+  },
+  "deviations": [
+    "Onset timing reported as a curve over 5-8 ft/s; threshold variants judged on class change only (owner, 2026-11-05)",
+    "25 frames of player history before release so every velocity window exists at release (bug fix, 2026-11-05)"
+  ],
+  "evidence": ["outputs/rebounding/step10/", "outputs/rebounding/reports/10_movement_attribution.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-11-05",
+  "open_risks": [
+    "Reference distribution not validated (Step 05 BLOCKED)",
+    "Most players seen in one game only",
+    "Onsets are observed responses, not reaction times; their timing depends on the speed threshold"
+  ],
+  "decision_note": "Measurements robust; player claims supported."
+}

@@ -628,6 +628,62 @@ step09:
     keep: 0.5
     max_top_prob_rise: 0.02
 
+# Fixed on 2026-11-05 before any Step 10 measure was computed on real data. Owner decision (Step 08): anticipation is
+# measured here against the damped "ignores the ball" forecast; the reference ball distribution (Step 05) is not
+# validated, so every measure is labelled exploratory with respect to it.
+step10:
+  model_version: opportunity_v1
+  opportunity:
+    # Q_i(state; B) = mean over particles of a logistic in the arrival margin (Spearman-style, as in LaurieOnTracking's
+    # probability_intercept_ball, MIT): 1 / (1 + exp(-pi / sqrt(3) / sigma x margin)). Margins by the Step 08 rule with
+    # the fold's v_max; times are absolute, so the same ball distribution can be scored from two player states.
+    sigma_s: 0.45
+    particles: 500
+    seed: 20261105
+    reference: Step 05 side-and-range release map of the episode (out of fold), at release + the median release-to-
+               rebound time of the shot range over the other nine games; height 0
+    update: Step 07 analog forecast at the rim-arrival trigger of the ball 10 frames ahead (exploratory)
+    later_time: rim+0                  # the trigger: movement while the ball is in the air before the rim
+  decomposition:
+    # total = Q(s_t; B_t) - Q(s_r; B_ref); move = Q(s_t; B_ref) - Q(s_r; B_ref) (same reference distribution);
+    # info = Q(s_r; B_t) - Q(s_r; B_ref) (player state fixed); interaction = total - move - info. Checked to 1e-9.
+    vs_baseline: Q(s_t; B_ref) - Q(damped forecast of s_r to t; B_ref)   # access gained beyond ignoring the ball
+    reference_sensitivity: [pooled_kde, zone_bins]   # other Step 05 maps; per-episode move must correlate >= min_rho
+    min_rho: 0.8
+  response:
+    # first sustained move toward the reference distribution's centre after release, from causal velocities
+    window_frames: 6
+    toward_ft_s: 6                     # speed toward the target that counts as a move
+    rise_ft_s: 3                       # and at least this much above the speed toward it at release
+    sustain_frames: 5
+    horizon: until rim arrival + 10 frames
+    already_moving: speed toward the target at release >= toward_ft_s (ambiguous, not timed)
+    sensitivity: {window_frames: [4, 10], toward_ft_s: [5, 8], position_error_ft: 1.0}
+    stable_if: share of players changing class <= 0.2 and median onset shift <= 3 frames, for every variant
+    # Deviation (owner decision 2026-11-05, after the first real-data run failed the threshold 8 ft/s variant on onset
+    # shift): onset timing is reported as a curve over these thresholds, by role, instead of one time. Threshold
+    # variants are judged on class change only (a higher bar is reached later by construction); window and
+    # position-error variants keep the full stable_if rule. The base classes still use toward_ft_s = 6.
+    threshold_curve: [5, 6, 7, 8]
+    note: an onset is an observed response, not a physiological reaction time; anticipation and tactical
+          non-crashing (getting back) both delay or remove it
+  roles:
+    defence: [rim protector (defender nearest the hoop at release), shooter's defender (nearest the shooter), others]
+    offence: [shooter, offensive player nearest the hoop, safety (more than 30 ft from the hoop), others]
+  effects:
+    # population and role means first (game bootstrap, step03 settings); player effects only if identifiable
+    player_min_episodes: 20
+    # measure: vs_baseline (access gained over the damped "ignores the ball" forecast, same moment). Changed from move
+    # before any real-data run: with absolute times move is about 0 for ideal pursuit and negative otherwise (it
+    # mixes elapsed time with movement); move is still reported.
+    measure: vs_baseline
+    shrinkage: normal-normal empirical Bayes on the role-adjusted measure, tau by method of moments
+    prior_sensitivity: [0.5, 2]        # tau scaled; share of shrunk effects that change sign must stay <= 0.1
+    reliability: split by game for players seen in two games; Pearson r of their role-adjusted means >= 0.3
+    claim_rule: player-level claims only if reliability and prior sensitivity are both met; else descriptive only
+  status: decomposition identity, reference sensitivity and response stability (rule as amended above) met -> PASS (measurements); player
+          claims PASS or BLOCKED separately
+
 paths:
   # Manual path -> path in this repository (data/ holds only the supplied files; derived tracking stays git-ignored).
   docs/SOURCE_REGISTER.md: docs/project/SOURCE_REGISTER.md
@@ -676,3 +732,7 @@ paths:
   src/probabilities/calibration.py: not used in v1 (no temperature; step09 model)
   evaluations/09_dynamic_oof.parquet: outputs/rebounding/step09/dynamic_oof.csv.gz
   reports/09_model_comparison.md: outputs/rebounding/reports/09_model_comparison.md
+  src/features/opportunity_value.py: src/rebounding/R/opportunity_value.R
+  src/player_ability/positioning.py: src/rebounding/R/positioning.R
+  src/player_ability/response.py: src/rebounding/R/response.R
+  reports/10_movement_attribution.md: outputs/rebounding/reports/10_movement_attribution.md
