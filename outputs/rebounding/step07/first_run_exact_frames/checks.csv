@@ -1,0 +1,7 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+particle weights sum to 1 after every update (largest error),2.22e-16,< 1e-9,TRUE
+effective sample size monitored (updates logged),2124,> 0,TRUE
+hoops come from training games' made shots only,TRUE,TRUE,TRUE
+every model scored on the same targets (targets with all three forecasts / all targets),2222 / 2222,all models equal,TRUE
+forecasts at an origin do not change when later frames are corrupted (3 episodes per game),TRUE,TRUE,TRUE

@@ -1,0 +1,9 @@
+episode_id,step02_auto_kind,label_status,physics_rim,physics_board,physics_none,auto_first_player_contact_frame,trigger_frame
+shot-178442-2-49,rim,unvalidated (Step 02 BLOCKED),0.74,0.21,0.22,44203,44163
+shot-179612-1-34,rim,unvalidated (Step 02 BLOCKED),0.39,0,0.61,21704,21688
+shot-188630-2-59,board,unvalidated (Step 02 BLOCKED),0.56,0.5,0.3,53675,53658
+shot-188630-4-130,board,unvalidated (Step 02 BLOCKED),0,0.02,0.98,118418,118403
+shot-114243-1-12,rim_or_board,unvalidated (Step 02 BLOCKED),0.9,0.06,0.1,11318,11293
+shot-178442-5-148,rim_or_board,unvalidated (Step 02 BLOCKED),0,1,0,152553,152538
+shot-114099-1-36,none,unvalidated (Step 02 BLOCKED),0.74,0.01,0.26,31258,31248
+shot-184439-3-80,none,unvalidated (Step 02 BLOCKED),0.27,0.18,0.64,69588,69578

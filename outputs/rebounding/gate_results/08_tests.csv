@@ -1,0 +1,9 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_reach.R,"causal velocity is exact on straight-line motion, flags extrapolation and ignores later frames",7,0,FALSE,FALSE,0
+unit,test_reach.R,movement forecasts: limits of the damped model and the bounds,6,0,FALSE,FALSE,0
+unit,test_reach.R,"arrival time: reaction first, then straight at top speed to the catch radius",3,0,FALSE,FALSE,0
+unit,test_reach.R,"the height envelope: no jump, a jump, or out of reach; a ball above everyone is not intercepted",6,0,FALSE,FALSE,0
+gates,test_step_08.R,"movement respects speed limits learned from training games, and velocities are causal",6,0,FALSE,FALSE,0
+gates,test_step_08.R,"static and damped-velocity forecasts stay as comparison baselines, by horizon and stratum",4,0,FALSE,FALSE,0
+gates,test_step_08.R,"sensitivity to reaction delay, height, jump timing, position error and missing frames is reported",3,0,FALSE,FALSE,0
+gates,test_step_08.R,"first touch, first control and credit are kept apart; a ball out of reach is never intercepted",4,0,FALSE,FALSE,0

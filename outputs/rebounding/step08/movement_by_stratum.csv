@@ -1,0 +1,113 @@
+horizon,model,stratum,forecasts,mean_err
+5,damped,origin release,6693,0.222313230956018
+5,bounded,origin release,6693,0.224211326744377
+5,constant_velocity,origin release,6693,0.232042862296296
+5,stationary,origin release,6693,0.921057180927743
+5,damped,origin rim+0,6231,0.203041450934341
+5,bounded,origin rim+0,6231,0.203187722201874
+5,constant_velocity,origin rim+0,6231,0.205334348066605
+5,stationary,origin rim+0,6231,0.985702528367294
+5,damped,origin rim+0.4,5277,0.224094770470531
+5,bounded,origin rim+0.4,5277,0.224111633673687
+5,constant_velocity,origin rim+0.4,5277,0.2260222694777
+5,stationary,origin rim+0.4,5277,0.959114536481438
+5,damped,target detected,18201,0.216232176217433
+5,bounded,target detected,18201,0.216985121577718
+5,constant_velocity,target detected,18201,0.221153822107903
+5,stationary,target detected,18201,0.954222052371768
+5,damped,target extrapolated,1529,0.180620147457682
+5,bounded,target extrapolated,1529,0.182531696513162
+5,constant_velocity,target extrapolated,1529,0.183026090834915
+5,stationary,target extrapolated,1529,0.969383966017581
+5,damped,velocity from detected,18507,0.216708959262957
+5,bounded,velocity from detected,18507,0.217388571627535
+5,constant_velocity,velocity from detected,18507,0.221448591254517
+5,stationary,velocity from detected,18507,0.955563944261329
+5,damped,velocity from extrapolated,1223,0.164494959702979
+5,bounded,velocity from extrapolated,1223,0.167806105228023
+5,constant_velocity,velocity from extrapolated,1223,0.169025781459673
+5,stationary,velocity from extrapolated,1223,0.952871416856093
+10,damped,origin release,6669,0.646958492897475
+10,bounded,origin release,6669,0.650739687177306
+10,constant_velocity,origin release,6669,0.687639936534848
+10,stationary,origin release,6669,1.82473264015969
+10,damped,origin rim+0,6117,0.591024344312863
+10,bounded,origin rim+0,6117,0.591337321442034
+10,constant_velocity,origin rim+0,6117,0.606504717356162
+10,stationary,origin rim+0,6117,1.94583945350491
+10,damped,origin rim+0.4,5227,0.669802508372308
+10,bounded,origin rim+0.4,5227,0.669845260724651
+10,constant_velocity,origin rim+0.4,5227,0.682474562640805
+10,stationary,origin rim+0.4,5227,1.89932944297654
+10,damped,target detected,18013,0.634592783798207
+10,bounded,target detected,18013,0.636111394373737
+10,constant_velocity,target detected,18013,0.658588498958643
+10,stationary,target detected,18013,1.88750551894481
+10,damped,target extrapolated,1717,0.491106019424886
+10,bounded,target extrapolated,1717,0.49210678604194
+10,constant_velocity,target extrapolated,1717,0.495097040966705
+10,stationary,target extrapolated,1717,1.9200717258599
+10,damped,velocity from detected,18507,0.632265210861612
+10,bounded,velocity from detected,18507,0.633420028949196
+10,constant_velocity,velocity from detected,18507,0.655021307103758
+10,stationary,velocity from detected,18507,1.89131135296254
+10,damped,velocity from extrapolated,1223,0.468370067451983
+10,bounded,velocity from extrapolated,1223,0.474666739759089
+10,constant_velocity,velocity from extrapolated,1223,0.483039182757666
+10,stationary,velocity from extrapolated,1223,1.87563438820649
+15,damped,origin release,6670,1.2410427879654
+15,bounded,origin release,6670,1.24583264104376
+15,constant_velocity,origin release,6670,1.3436896882591
+15,stationary,origin release,6670,2.71789309696392
+15,damped,origin rim+0,6035,1.14743929079576
+15,bounded,origin rim+0,6035,1.14759846841114
+15,constant_velocity,origin rim+0,6035,1.20371935314608
+15,stationary,origin rim+0,6035,2.86485752372817
+15,damped,origin rim+0.4,5189,1.3182056712533
+15,bounded,origin rim+0.4,5189,1.31828945320939
+15,constant_velocity,origin rim+0.4,5189,1.36039807939687
+15,stationary,origin rim+0.4,5189,2.83192893652852
+15,damped,target detected,17894,1.23184982361769
+15,bounded,target detected,17894,1.23371322484222
+15,constant_velocity,target detected,17894,1.30132793958395
+15,stationary,target detected,17894,2.80052762736646
+15,constant_velocity,target extrapolated,1836,0.937085307535934
+15,damped,target extrapolated,1836,0.93792474794268
+15,bounded,target extrapolated,1836,0.938187463440644
+15,stationary,target extrapolated,1836,2.89129045624036
+15,damped,velocity from detected,18507,1.22436104143129
+15,bounded,velocity from detected,18507,1.22560026958337
+15,constant_velocity,velocity from detected,18507,1.28899661419182
+15,stationary,velocity from detected,18507,2.81128312295599
+15,damped,velocity from extrapolated,1223,0.903925418862613
+15,bounded,velocity from extrapolated,1223,0.912831103045201
+15,constant_velocity,velocity from extrapolated,1223,0.941120553314092
+15,stationary,velocity from extrapolated,1223,2.77402607130511
+25,damped,origin release,6539,2.7966425548134
+25,bounded,origin release,6539,2.80187400486797
+25,constant_velocity,origin release,6539,3.13840939729959
+25,stationary,origin release,6539,4.47529962217746
+25,bounded,origin rim+0,5931,2.70822365259799
+25,damped,origin rim+0,5931,2.70888683755746
+25,constant_velocity,origin rim+0,5931,2.98043843020193
+25,stationary,origin rim+0,5931,4.5936562517534
+25,damped,origin rim+0.4,5148,3.12036587722212
+25,bounded,origin rim+0.4,5148,3.12051195425724
+25,constant_velocity,origin rim+0.4,5148,3.30815593682726
+25,stationary,origin rim+0.4,5148,4.73189865231116
+25,damped,target detected,17618,2.86169241885672
+25,bounded,target detected,17618,2.86345352150679
+25,constant_velocity,target detected,17618,3.13482950058215
+25,stationary,target detected,17618,4.5901222454686
+25,constant_velocity,target extrapolated,2112,2.16760086664022
+25,bounded,target extrapolated,2112,2.16786196321382
+25,damped,target extrapolated,2112,2.16867205563145
+25,stationary,target extrapolated,2112,4.93493997357726
+25,damped,velocity from detected,18507,2.82987223664277
+25,bounded,velocity from detected,18507,2.83057981998603
+25,constant_velocity,velocity from detected,18507,3.0806251239597
+25,stationary,velocity from detected,18507,4.6326451543694
+25,damped,velocity from extrapolated,1223,2.14643248844114
+25,bounded,velocity from extrapolated,1223,2.15969573158853
+25,constant_velocity,velocity from extrapolated,1223,2.28476696850228
+25,stationary,velocity from extrapolated,1223,4.54211207926941

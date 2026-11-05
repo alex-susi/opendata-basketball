@@ -1,0 +1,315 @@
+{
+  "step": "08",
+  "status": "PASS_BASELINE",
+  "scope": "player movement forecasts (703 episodes) and exploratory reach margins at the rim-arrival trigger",
+  "components": {
+    "movement_damped": "PASS",
+    "physical_interception": "BLOCKED (no first-contact labels; Step 02 BLOCKED)",
+    "reach_margins": "exploratory",
+    "static_and_damped_baselines": "kept as comparison baselines"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "LaurieOnTracking": "arrival rule adapted (MIT)"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "reach_v1",
+    "step08_config_sha256": "6f2f766a63349131d97f66e207cea8ece4d3d0e38d094a804c8736f5c8ac2471",
+    "code_sha256": {
+      "player_motion.R": "c79b93d99f7019c74a8039fa6a55efca06a3da7d02c00f6121fcc21806d7dd87",
+      "reach.R": "56084c702e6c34fbf0c0c3e34b39c8260f1ff82d191ca853bbf2a2f8f774aec1"
+    }
+  },
+  "repository_head": "b90570ad68e1b04d6d129003da6dea98ac1020f4",
+  "test_command": "Rscript src/rebounding/run_tests.R unit reach; Rscript src/rebounding/run_tests.R gates step_08",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step08/movement_errors.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step08 fixed before any real-data run)",
+  "decision": {
+    "movement_pass": true,
+    "comparisons": [
+      {
+        "candidate": "damped",
+        "reference": "stationary",
+        "time_point": "h5",
+        "mean_diff": -0.7467,
+        "hi": -0.7143,
+        "superior": true
+      },
+      {
+        "candidate": "damped",
+        "reference": "constant_velocity",
+        "time_point": "h5",
+        "mean_diff": -0.0059,
+        "hi": -0.0045,
+        "superior": true
+      },
+      {
+        "candidate": "bounded",
+        "reference": "damped",
+        "time_point": "h5",
+        "mean_diff": 0.0011,
+        "hi": 0.0021,
+        "superior": false
+      },
+      {
+        "candidate": "damped",
+        "reference": "stationary",
+        "time_point": "h10",
+        "mean_diff": -1.2679,
+        "hi": -1.2086,
+        "superior": true
+      },
+      {
+        "candidate": "damped",
+        "reference": "constant_velocity",
+        "time_point": "h10",
+        "mean_diff": -0.0274,
+        "hi": -0.0215,
+        "superior": true
+      },
+      {
+        "candidate": "bounded",
+        "reference": "damped",
+        "time_point": "h10",
+        "mean_diff": 0.0023,
+        "hi": 0.0043,
+        "superior": false
+      },
+      {
+        "candidate": "damped",
+        "reference": "stationary",
+        "time_point": "h15",
+        "mean_diff": -1.589,
+        "hi": -1.513,
+        "superior": true
+      },
+      {
+        "candidate": "damped",
+        "reference": "constant_velocity",
+        "time_point": "h15",
+        "mean_diff": -0.0766,
+        "hi": -0.0635,
+        "superior": true
+      },
+      {
+        "candidate": "bounded",
+        "reference": "damped",
+        "time_point": "h15",
+        "mean_diff": 0.0027,
+        "hi": 0.0054,
+        "superior": false
+      },
+      {
+        "candidate": "damped",
+        "reference": "stationary",
+        "time_point": "h25",
+        "mean_diff": -1.7496,
+        "hi": -1.6479,
+        "superior": true
+      },
+      {
+        "candidate": "damped",
+        "reference": "constant_velocity",
+        "time_point": "h25",
+        "mean_diff": -0.2902,
+        "hi": -0.2551,
+        "superior": true
+      },
+      {
+        "candidate": "bounded",
+        "reference": "damped",
+        "time_point": "h25",
+        "mean_diff": 0.0025,
+        "hi": 0.006,
+        "superior": false
+      }
+    ],
+    "limit_exceedance": [
+      {
+        "outer_fold": 1,
+        "frames": 62254,
+        "speed_above": 0.00817618145018794,
+        "accel_above": 0.00508963707914298
+      },
+      {
+        "outer_fold": 2,
+        "frames": 46035,
+        "speed_above": 0.00860215053763441,
+        "accel_above": 0.00797263828281637
+      },
+      {
+        "outer_fold": 3,
+        "frames": 55015,
+        "speed_above": 0.00407161683177315,
+        "accel_above": 0.00518062723302898
+      },
+      {
+        "outer_fold": 4,
+        "frames": 63885,
+        "speed_above": 0.00333411598966894,
+        "accel_above": 0.00449777657082725
+      },
+      {
+        "outer_fold": 5,
+        "frames": 39569,
+        "speed_above": 0.00442265409790493,
+        "accel_above": 0.00379553954841391
+      },
+      {
+        "outer_fold": 6,
+        "frames": 51872,
+        "speed_above": 0.00262183837137569,
+        "accel_above": 0.0038266106266859
+      },
+      {
+        "outer_fold": 7,
+        "frames": 46679,
+        "speed_above": 0.00351335718417275,
+        "accel_above": 0.00412356723511322
+      },
+      {
+        "outer_fold": 8,
+        "frames": 39352,
+        "speed_above": 0.0072423256759504,
+        "accel_above": 0.00712102946536208
+      },
+      {
+        "outer_fold": 9,
+        "frames": 39209,
+        "speed_above": 0.00451426968298095,
+        "accel_above": 0.00469877496224199
+      },
+      {
+        "outer_fold": 10,
+        "frames": 42392,
+        "speed_above": 0.00441120966220042,
+        "accel_above": 0.00392660079558578
+      }
+    ],
+    "reach": [
+      {
+        "variant": "base",
+        "episodes": 678,
+        "feasible_mean": 4.523598820059,
+        "none_feasible": 0.163716814159292,
+        "credited_feasible": 0.775244299674267,
+        "credited_top1": 0.464169381107492,
+        "credited_top3": 0.825732899022801,
+        "auto_first_feasible": 0.816017316017316,
+        "auto_first_top1": 0.534632034632035,
+        "earliest_arriver_changes": 0
+      },
+      {
+        "variant": "half the ball frames",
+        "episodes": 678,
+        "feasible_mean": 4.03244837758112,
+        "none_feasible": 0.244837758112094,
+        "credited_feasible": 0.671009771986971,
+        "credited_top1": 0.473941368078176,
+        "credited_top3": 0.812703583061889,
+        "auto_first_feasible": 0.722943722943723,
+        "auto_first_top1": 0.54978354978355,
+        "earliest_arriver_changes": 0.0870206489675516
+      },
+      {
+        "variant": "jump reach 10 ft",
+        "episodes": 678,
+        "feasible_mean": 4.476401179941,
+        "none_feasible": 0.176991150442478,
+        "credited_feasible": 0.758957654723127,
+        "credited_top1": 0.485342019543974,
+        "credited_top3": 0.825732899022801,
+        "auto_first_feasible": 0.807359307359307,
+        "auto_first_top1": 0.541125541125541,
+        "earliest_arriver_changes": 0.0368731563421829
+      },
+      {
+        "variant": "jump reach 12 ft",
+        "episodes": 678,
+        "feasible_mean": 4.53687315634218,
+        "none_feasible": 0.156342182890855,
+        "credited_feasible": 0.778501628664495,
+        "credited_top1": 0.462540716612378,
+        "credited_top3": 0.825732899022801,
+        "auto_first_feasible": 0.816017316017316,
+        "auto_first_top1": 0.534632034632035,
+        "earliest_arriver_changes": 0.00589970501474926
+      },
+      {
+        "variant": "position error 1 ft",
+        "episodes": 678,
+        "feasible_mean": 4.45575221238938,
+        "none_feasible": 0.166666666666667,
+        "credited_feasible": 0.758957654723127,
+        "credited_top1": 0.446254071661238,
+        "credited_top3": 0.828990228013029,
+        "auto_first_feasible": 0.813852813852814,
+        "auto_first_top1": 0.504329004329004,
+        "earliest_arriver_changes": 0.212389380530973
+      },
+      {
+        "variant": "reaction 0.1 s",
+        "episodes": 678,
+        "feasible_mean": 4.96312684365782,
+        "none_feasible": 0.128318584070796,
+        "credited_feasible": 0.827361563517915,
+        "credited_top1": 0.431596091205212,
+        "credited_top3": 0.804560260586319,
+        "auto_first_feasible": 0.859307359307359,
+        "auto_first_top1": 0.491341991341991,
+        "earliest_arriver_changes": 0.0870206489675516
+      },
+      {
+        "variant": "reaction 0.3 s",
+        "episodes": 678,
+        "feasible_mean": 4.04424778761062,
+        "none_feasible": 0.216814159292035,
+        "credited_feasible": 0.706840390879479,
+        "credited_top1": 0.5,
+        "credited_top3": 0.842019543973941,
+        "auto_first_feasible": 0.764069264069264,
+        "auto_first_top1": 0.577922077922078,
+        "earliest_arriver_changes": 0.0737463126843658
+      },
+      {
+        "variant": "takeoff 0.15 s",
+        "episodes": 678,
+        "feasible_mean": 4.87758112094395,
+        "none_feasible": 0.122418879056047,
+        "credited_feasible": 0.832247557003257,
+        "credited_top1": 0.464169381107492,
+        "credited_top3": 0.825732899022801,
+        "auto_first_feasible": 0.87012987012987,
+        "auto_first_top1": 0.534632034632035,
+        "earliest_arriver_changes": 0
+      },
+      {
+        "variant": "takeoff 0.35 s",
+        "episodes": 678,
+        "feasible_mean": 4.14159292035398,
+        "none_feasible": 0.207964601769911,
+        "credited_feasible": 0.697068403908795,
+        "credited_top1": 0.464169381107492,
+        "credited_top3": 0.825732899022801,
+        "auto_first_feasible": 0.753246753246753,
+        "auto_first_top1": 0.534632034632035,
+        "earliest_arriver_changes": 0
+      }
+    ]
+  },
+  "evidence": ["outputs/rebounding/step08/", "outputs/rebounding/reports/08_reachability.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-11-05",
+  "open_risks": [
+    "No first-contact labels",
+    "Height envelope assumed",
+    "Reach uses the realised ball path"
+  ],
+  "decision_note": "Movement PASS; interception BLOCKED; reach exploratory."
+}

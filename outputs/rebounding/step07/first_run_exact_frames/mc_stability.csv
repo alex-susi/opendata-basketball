@@ -1,0 +1,3 @@
+run,targets,mean_abs_diff,mean_diff,stable
+second seed,2222,24.7935737583783,4.65605496231243,FALSE
+twice the particles,2222,21.6922007566099,-2.78436417571859,FALSE

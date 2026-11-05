@@ -450,6 +450,128 @@ step06:
   strata: [horizon, measured share of the last 10 frames (below or at least 0.5), ball predError tertile at the origin,
            shot range]
 
+# Fixed on 2026-10-31 before any Step 07 model was run on real data. Folds, uncertainty and the information rule are
+# step03's; the free-flight forecast and observation noise are step06's (gravity-only, the Kalman filter is BLOCKED).
+# Step 02 is BLOCKED, so no contact state has validated labels: by the manual's Gate 07 the physics collision model
+# cannot PASS whatever it scores; it is built and compared, and the empirical transition model is the candidate for
+# PASS_BASELINE.
+step07:
+  model_version: postimpact_v1
+  states: [FREE_FLIGHT, RIM, BACKBOARD, PLAYER_CONTACT, CONTROLLED, UNKNOWN]
+  origins:
+    anchor: step03 rim_arrival trigger (causal)
+    offsets_frames: [0, 5, 10, 15]     # forecast origins 0 to 0.6 s after the trigger, while the ball is loose
+  horizons_frames: [5, 10, 15]         # 0.2, 0.4, 0.6 s
+  targets: measured ball frames at origin + horizon, before the credited rebound frame
+  # Deviation (2026-10-31, after the first run, which is kept in step07/first_run_exact_frames/): the vendor measures
+  # the ball on a 5-frame cadence and the trigger is always one frame after a measured frame, so with offsets and
+  # horizons in multiples of 5 the exact target frame was never measured in about two thirds of episodes (268 of 679
+  # scored). The target is now the first measured frame 0 to target_slack_frames after origin + horizon, forecast for
+  # that exact frame; the analog library and the gravity residuals are keyed by that exact lead.
+  target_slack_frames: 2
+  player_tag: a player within 3 ft of the ball horizontally with the ball at or below 12.5 ft on any frame after the
+              origin up to the target (step02 touch zone); tags the target, never an input
+  hoop:
+    # Per camera end, learned from the training games only: the median point where their made shots cross rim height
+    # (audit.R hoop_calibration), pooled over the nine games weighted by made shots. Never the test game's own shots.
+    height_ft: RIM_Z
+  models:
+    gravity_gauss: step06 gravity-only forecast from the last two usable measured frames, with a Gaussian of per-axis
+                   training residual RMS per horizon (post-trigger residuals)
+    empirical: analog transitions. State at the origin = position relative to the hoop, velocity from the last two
+               usable measured frames, and the offset since the trigger; the k nearest training states (standardised
+               Euclidean distance; the library holds every training state and its mirror image y -> -y) give their
+               realised displacements h frames later; a Gaussian kernel per analog (Silverman bandwidth per axis plus
+               the observation noise)
+    physics: particle filter started at the trigger from the gravity-only state; free flight under the fold's g with
+             RK4 substeps; collisions with the rim (torus), the backboard face and the floor, each particle carrying
+             its own restitution and friction; weights from each new usable observation, systematic resampling when
+             the effective sample size falls below half, then velocity roughening; forecasts propagate the weighted
+             particles h frames and score them with a Gaussian kernel per particle
+  empirical_k: 30
+  physics:
+    particles: 300
+    substep_s: 0.01
+    velocity_sd_ft_s: 1.5              # spread of the starting velocity around the two-point estimate
+    weight_sd_ft: 0.3                  # observation sd used for particle weights (robust to model error)
+    kernel_sd_ft: 0.25                 # added to the observation noise when scoring a particle cloud
+    roughen_sd_ft_s: 0.5               # velocity jitter after each resampling
+    resample_below: 0.5                # fraction of particles (effective sample size)
+    rim_restitution: [0.4, 0.8]        # uniform priors, sampled per particle (unknown spin and contact)
+    rim_friction: [0, 0.3]
+    board_restitution: [0.5, 0.8]
+    board_friction: [0, 0.3]
+    floor_z_ft: 1.0                    # the track's ball centre at a floor contact (decision log 2026-10-28: 0.98)
+    floor_restitution: 0.75
+    floor_friction: 0.1
+    seeds: [20261029, 11]
+  scores:
+    primary: negative log predictive density of the measured target position (3D, per cubic foot)
+    secondary: [energy score (from 300 draws), error of the forecast mean]
+    coverage_levels: [0.5, 0.9]        # highest-density regions, by the rank of the target's density among draws
+  decision:
+    empirical_baseline: coverage within coverage_tolerance at both levels (all targets) and superior (step03 rule) to
+                        gravity_gauss on per-episode mean negative log density at every horizon -> PASS_BASELINE
+    coverage_tolerance: 0.05
+    physics: BLOCKED by the manual (no validated contact labels); its comparison with empirical is exploratory
+    mc_stability: physics per-episode mean scores with the second seed and with twice the particles; mean absolute
+                  difference below 0.05 nats and mean difference below 0.02 nats
+    status: empirical passes -> PASS_BASELINE; otherwise BLOCKED
+  strata: [horizon, origin offset, player tag, Step 02 automated first-contact kind (unvalidated), shot range]
+  examples: 8 episodes (2 per Step 02 automated kind rim, board, rim_or_board or none, player) drawn with the seed
+
+# Fixed on 2026-11-05 before any Step 08 model was run on real data. Folds and rules are step03's. Step 02 is
+# BLOCKED, so there are no first-contact labels: by the manual's Gate 08 the physical interception validation is
+# BLOCKED and reachability is an exploratory input; the movement models are validated on held-out games.
+step08:
+  model_version: reach_v1
+  velocity:
+    # causal: least-squares slope of the player's positions over the last window_frames frames up to t (frames <= t
+    # only; LaurieOnTracking's centred Savitzky-Golay filter would read future frames)
+    window_frames: 6
+    min_detected: 3                    # fewer detected positions in the window: velocity from all, flagged extrapolated
+  movement:
+    origins: [release, rim+0, rim+0.4]                  # step03 time points (causal)
+    horizons_frames: [5, 10, 15, 25]                    # 0.2, 0.4, 0.6, 1.0 s
+    targets: the player's tracked position at origin + horizon; primary scores on detected targets, extrapolated tagged
+    models:
+      stationary: position at t
+      constant_velocity: p + v tau
+      damped: p + v (1 - exp(-lambda tau)) / lambda, lambda from damping_grid by training mean error, ties to the smaller
+      bounded: damped, with speed capped at v_max and displacement capped at v_max x tau
+    damping_grid_per_s: [0.5, 1, 2, 3, 5, 8]
+    limits: v_max and a_max = 99.5th percentile of training speeds and accelerations on detected frames (causal
+            velocities; acceleration = change of the velocity over window_frames)
+    candidate: damped
+    rule: candidate superior (step03 rule, per-episode mean error) to stationary and to constant_velocity at every
+          horizon, and held-out detected speeds above the training v_max at most limit_exceed_max
+    limit_exceed_max: 0.01
+  reach:
+    # pitch-control arrival (LaurieOnTracking simple_time_to_intercept, MIT, adapted): keep the current velocity for
+    # the reaction time, then run straight at v_max; the ball counts as reached when the player is within catch_radius
+    # of its floor position and the ball is no higher than the reach height.
+    reaction_s: 0.2
+    catch_radius_ft: 2.0
+    standing_reach_ft: 8.5             # ball centre heights the envelope allows without a jump
+    jump_reach_ft: 11.0                # with a jump, which adds takeoff_s to the arrival time
+    takeoff_s: 0.25
+    ball_path: the measured ball track after the rim-arrival trigger up to the credited rebound (after the fact,
+               feasibility given the realised path, not a forecast)
+    origin: rim+0
+    margin: time the ball is available at a point minus the player's arrival time there; a player's margin is the
+            best over the path; feasible = margin >= 0
+    sensitivity:
+      reaction_s: [0.1, 0.3]
+      jump_reach_ft: [10.0, 12.0]
+      takeoff_s: [0.15, 0.35]
+      position_error_ft: 1.0           # every player position jittered by N(0, 1 ft) per axis
+      ball_frames_kept: 0.5            # half the measured ball frames dropped at random
+    obstruction: not modelled in v1 (the manual allows only a geometric penalty here; box-outs are Step 11)
+  labels:
+    # no first-contact labels exist; these are reported for reference only and never as a pass test
+    reference: [credited rebounder (final credit, not first contact), Step 02 automated first toucher (unvalidated)]
+  status: movement rule met -> PASS_BASELINE (validated movement and static baselines; interception BLOCKED); else BLOCKED
+
 paths:
   # Manual path -> path in this repository (data/ holds only the supplied files; derived tracking stays git-ignored).
   docs/SOURCE_REGISTER.md: docs/project/SOURCE_REGISTER.md
@@ -484,3 +606,12 @@ paths:
   src/trajectory/ball_noise.py: src/rebounding/R/ball_noise.R
   evaluations/06_ball_forecasts.parquet: outputs/rebounding/step06/ball_forecasts.csv.gz
   reports/06_filter_diagnostics.md: outputs/rebounding/reports/06_filter_diagnostics.md
+  src/trajectory/physics.py: src/rebounding/R/physics.R
+  src/trajectory/collisions.py: src/rebounding/R/physics.R (collisions with the rim, board and floor)
+  src/trajectory/particle_filter.py: src/rebounding/R/particle_filter.R
+  evaluations/07_postimpact_forecasts.parquet: outputs/rebounding/step07/postimpact_scores.csv.gz
+  reports/07_collision_audit.md: outputs/rebounding/reports/07_collision_audit.md
+  src/reachability/player_motion.py: src/rebounding/R/player_motion.R
+  src/reachability/catch_envelope.py: src/rebounding/R/reach.R (catch envelope)
+  src/reachability/intercept.py: src/rebounding/R/reach.R (arrival time and margins)
+  evaluations/08_reachability.parquet: outputs/rebounding/step08/reach_margins.csv.gz

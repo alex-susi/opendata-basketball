@@ -1497,3 +1497,79 @@ record `gate_results/06_ball_filter.json` (status PASS_BASELINE). Filter equatio
   exploratory follow-up; its held-out games have now been seen.
 - Step 07 (rim and board contacts, particle forecasts) is next; its free-flight part would use the gravity-only
   forecast.
+
+## 2026-10-31 — Sequential rebounding manual, Step 07: post-rim forecasts: BLOCKED (empirical narrowly misses coverage; physics fails)
+
+At the owner's request ("Start Step 07"). Code `src/rebounding/R/physics.R`, `R/particle_filter.R`, `run_step07.R`,
+`tests/unit/test_postimpact.R`, `tests/gates/test_step_07.R`; settings `config/experiment.yaml` (`step07`, written before
+any real-data run); evidence `outputs/rebounding/step07/`; report `outputs/rebounding/reports/07_collision_audit.md`;
+record `gate_results/07_postimpact.json` (status BLOCKED). basketball-shot has no licence, so its physics is not
+ported: textbook rigid-sphere contacts written independently. Resampling ideas from filterpy and the Kalman book (MIT).
+
+- **Gate rule.** Gate 07 passes a collision model only for contact states with reliable labels; Step 02 is BLOCKED,
+  so the physics model was BLOCKED before it ran. The empirical transition model was the PASS_BASELINE candidate.
+- **Setup.** Origins 0, 5, 10, 15 frames after Step 03's causal rim-arrival trigger; targets 5 / 10 / 15 frames ahead
+  before the credited rebound. Hoops per camera end from the training games' made shots (the offset is +0.6 to +1.1 ft at
+  one end and −1.1 to −1.6 ft at the other in every game). g and noise from Step 06 by fold.
+- **Deviation, after the first run.** The vendor measures the ball on a 5-frame cadence and the trigger is always one
+  frame after a measured frame, so exact targets at multiples of 5 frames were unmeasured in about two thirds of
+  episodes (268 of 679 scored). Targets are now the first measured frame 0–2 frames after origin + horizon, forecast
+  for that exact frame by every model; 639 episodes and 5,268 targets per model. The first run is kept in
+  `step07/first_run_exact_frames/` (its decisions were the same).
+- **Results** (negative log density per cubic foot at 5 / 10 / 15 frames): empirical analogs 3.84 / 5.83 / 7.08;
+  gravity-only Gaussian 5.41 / 8.10 / 9.70; physics 43 / 73 / 110. Empirical beats gravity-only at every horizon
+  (−1.5 to −3.0 nats, all intervals below zero). Mean error of the forecast centre: empirical 1.3 / 2.5 / 3.7 ft.
+- **Why empirical is still blocked.** Its 50% regions hold 0.560 and its 90% regions 0.847, just outside the 0.05
+  tolerance (by 0.010 and 0.003): too wide at the core, slightly too narrow in the tails. Coverage is lower for Step 02's
+  unclear cases (90%: 0.69 UNKNOWN, 0.57 no contact, 0.48 board) than for rim contacts (0.85–0.88).
+- **Why physics fails.** Coverage 0.13 / 0.31, 15% of updates degenerate (effective sample size under 10%), and the
+  scores change by about 25 nats per target with another seed or twice the particles (unstable). The example
+  figure shows the likely cause: the ball track does not sit on FIBA fixtures (balls measured behind the board face or
+  above it, 1–2.5 ft above the ring at contacts per Step 02), so contacts on nominal geometry send particles the wrong
+  way, and tight weights then collapse the cloud. Not tested further.
+- **Checks, all passed:** Step 03 freeze in force; weights sum to 1 (error 2e-16); ESS logged for 5,297 updates;
+  hoops from training games only; all models on the same targets; forecasts unchanged when later inputs are corrupted.
+  35 unit and 19 gate expectations pass. Two crashes on empty episodes were fixed before results were read; fold
+  results are cached (`--reuse-folds`). The run takes about 7 minutes.
+
+### Open choices
+
+- Keep Step 07 BLOCKED (the empirical model then enters Step 09 only as an exploratory input), or accept the empirical
+  model as PASS_BASELINE despite the narrow coverage miss (a recorded deviation).
+- **Owner decision (2026-11-05): keep Step 07 BLOCKED.** No post-rim forecast is validated. The empirical analog
+  model enters Step 09 only as a labelled exploratory input; the physics model stays BLOCKED.
+
+## 2026-11-05 — Sequential rebounding manual, Step 08: movement PASS, interception BLOCKED, reach exploratory (PASS_BASELINE)
+
+At the owner's request ("Start Step 08"). Code `src/rebounding/R/player_motion.R`, `R/reach.R`, `run_step08.R`,
+`tests/unit/test_reach.R`, `tests/gates/test_step_08.R`; settings `config/experiment.yaml` (`step08`, written before any
+real-data run); evidence `outputs/rebounding/step08/`; report `outputs/rebounding/reports/08_reachability.md`; record
+`gate_results/08_reachability.json` (status PASS_BASELINE). Arrival rule adapted from LaurieOnTracking's
+`simple_time_to_intercept` (MIT); its centred velocity filter is replaced by a trailing one (no future frames).
+
+- **Gate rule.** Interception can only be validated against first-contact labels; Step 02 is BLOCKED, so the physical
+  interception validation is BLOCKED and the reach margins are exploratory.
+- **Movement** (players' tracked positions 5 / 10 / 15 / 25 frames after release, rim arrival and rim + 0.4 s; error in
+  ft, detected targets): damped velocity 0.22 / 0.63 / 1.23 / 2.86; constant velocity 0.22 / 0.66 / 1.30 / 3.13;
+  stationary 0.95 / 1.89 / 2.80 / 4.59. Damped is superior to both at every horizon (Step 03 rule); the speed-capped
+  version adds nothing. Damping lambda = 0.5 /s in every fold, the smallest value on the grid, so the best value may be
+  below it.
+- **Limits.** Training v_max 15.2–15.4 ft/s and a_max about 20 ft/s² (99.5th percentiles of causal 0.24 s velocities
+  in rebound windows); held-out detected speeds exceed v_max on at most 0.9% of frames. 15 ft/s is a data quantile,
+  well under a sprint, so the arrival model is conservative about who can get there.
+- **Reach at the rim arrival** (realised ball path, so after the fact): about 4.5 players can reach the ball on average,
+  none can in 16% of misses. The credited rebounder can in 78% and has the best margin in 46% (top 3: 83%); Step 02's
+  unvalidated first toucher can in 82% (best margin 53%). Sensitivity: 1 ft position error changes the earliest arriver
+  in 21% of misses, reaction 0.1 / 0.3 s and half the ball frames in 7–9%, jump reach and takeoff barely.
+- **Checks, all passed:** Step 03 freeze in force; velocities unchanged when later frames are corrupted; damping and
+  limits from training games only; a ball above every reach gives no interception; reruns reproduce the errors.
+  22 unit and 17 gate expectations pass. Obstruction is not modelled (Step 11).
+
+### Open choices
+
+- Whether to extend the damping grid below 0.5 /s in a later, recorded revision.
+- Step 09 (combining ball and player access into updated rebound probabilities) is next.
+- **Owner decision (2026-11-05): anticipation is measured at Step 10, not added to Step 08.** The damped
+  fixed-direction forecast stays the "ignores the ball" baseline; Step 08's reach rule (run straight at the realised ball
+  after the reaction time) is the perfect-reading bound. Step 10 measures movement toward the likely rebound area
+  against the baseline, labelled exploratory while the post-rim ball forecast (Step 07) is unvalidated.

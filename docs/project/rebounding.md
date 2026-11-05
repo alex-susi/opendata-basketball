@@ -123,6 +123,8 @@ Python; this project uses R, and its paths map as follows (also in `src/reboundi
 | 04 | `Rscript src/rebounding/run_step04.R` (about 4 minutes; needs the Step 03 outputs and `step03_features.rds`) | `step04/` (out-of-fold predictions, lambda choices, coefficients, comparisons, calibration, subgroups, checks), `reports/04_static_model.md`, `gate_results/04_static.json`, `04_tests.csv` |
 | 05 | `Rscript src/rebounding/run_step05.R` (about 3 minutes; needs the Step 01 table, Step 03 outputs, `step03_features.rds`, `raw_*.rds`) | `step05/` (targets, per-episode scores, coverage, comparisons, selection, figures), `reports/05_spatial_prior.md`, `gate_results/05_spatial.json`, `05_tests.csv`; cache `step05_spatial_prior.rds` (full maps) |
 | 06 | `Rscript src/rebounding/run_step06.R` (about 3 minutes; needs `raw_*.rds`, the Step 01 table and Step 03 outputs) | `step06/` (segments, parameters by fold, q selection, forecasts, errors, coverage, innovations, strata, checks), `reports/06_filter_diagnostics.md`, `gate_results/06_ball_filter.json`, `06_tests.csv` |
+| 07 | `Rscript src/rebounding/run_step07.R [--reuse-folds]` (about 7 minutes; needs `raw_*.rds`, Step 01, 02, 03 and 06 outputs) | `step07/` (scores, coverage, comparisons, particle diagnostics, stability, examples and figure; `first_run_exact_frames/`), `reports/07_collision_audit.md`, `gate_results/07_postimpact.json`, `07_tests.csv`; cache `step07_folds.rds` |
+| 08 | `Rscript src/rebounding/run_step08.R` (about 3 minutes; needs `raw_*.rds`, Step 01, 02 and 03 outputs) | `step08/` (movement forecasts and errors, limits and damping by fold, comparisons, reach margins and sensitivity, checks), `reports/08_reachability.md`, `gate_results/08_reachability.json`, `08_tests.csv` |
 | Tests only | `Rscript src/rebounding/run_tests.R unit` / `run_tests.R gates step_01` | console |
 
 A clean package library for `--isolated-lib` / `--lib`: `renv::restore(lockfile = "src/rebounding/renv.lock", library =
@@ -214,6 +216,31 @@ Results in `outputs/rebounding/reports/05_spatial_prior.md`.
   games. Online uncertainty is not validated, so later steps must not present it as calibrated.
 - Ball frames that are exact midpoints of their neighbours are vendor fill, never observations; frame f is usable from
   f + 1. The track's own g is about 28.2 ft/s², not 32.2.
+
+## Sequential manual, Step 07: post-rim forecasts (BLOCKED)
+
+`R/physics.R` (RK4 flight, rim, board and floor contacts) and `R/particle_filter.R` (particle filter, empirical analog
+transitions, mixture scoring). Results in `outputs/rebounding/reports/07_collision_audit.md`.
+
+- **Best post-rim forecast: empirical analogs** (`analog_library()`, `analog_forecast()`): far better than gravity-only
+  and physics, but its coverage misses the tolerance narrowly, so it is not validated (owner decision 2026-11-05: Step 07
+  stays BLOCKED; empirical is an exploratory input to Step 09 only). Physics is BLOCKED by rule
+  (no validated contact labels) and fails on the data (miscalibrated, unstable).
+- Score targets as the first measured frame 0–2 frames after the nominal time: the vendor's 5-frame measuring cadence
+  makes exact frames at multiples of 5 after the trigger unmeasured for most shots.
+- The ball track does not sit on FIBA fixtures near the rim (balls measured behind the board face); physics on
+  nominal geometry needs that solved first.
+
+## Sequential manual, Step 08: movement and reach (PASS_BASELINE)
+
+`R/player_motion.R` (`causal_velocity()`, `forecast_position()`, limits, damping) and `R/reach.R` (`arrival_time()`,
+`height_cost()`, `player_margins()`, `made_crossings()`). Results in `outputs/rebounding/reports/08_reachability.md`.
+
+- **Use the damped-velocity forecast** for player positions (lambda and v_max per fold in
+  `step08/limits_and_damping_by_fold.csv`); stationary and constant velocity stay as baselines.
+- **Reach margins are exploratory**: interception is not validated (no first-contact labels), the height envelope is
+  assumed, and the Step 08 margins use the realised ball path. Step 09 must use forecast ball paths.
+- Velocities come from a trailing window (frames up to t), never a centred filter.
 
 ## Reviewing the automated labels
 

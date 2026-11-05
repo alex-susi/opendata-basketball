@@ -1,0 +1,9 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+velocities at t unchanged when later frames are corrupted (30 episodes),TRUE,TRUE,TRUE
+damping and limits use the training games only,TRUE,TRUE,TRUE
+"speed limit plausible (training v_max, ft/s)",15.2 to 15.4,15 to 35,TRUE
+held-out detected speeds above the training v_max (largest fold share),0.0086,<= 0.01,TRUE
+a ball above every player's reach gives no interception,TRUE,TRUE,TRUE
+"first touch, first control and final credit kept apart (reach is scored against neither as a pass test)",TRUE,TRUE,TRUE
+re-running fold 1 reproduces every damped forecast error,TRUE,TRUE,TRUE

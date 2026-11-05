@@ -1,0 +1,179 @@
+{
+  "step": "07",
+  "status": "BLOCKED",
+  "scope": "post-rim ball forecasts, 639 episodes, origins 0/5/10/15, horizons 5/10/15 frames",
+  "components": {
+    "empirical": "BLOCKED",
+    "physics": "BLOCKED (no validated contact labels; Step 02 BLOCKED)",
+    "gravity_gauss": "reference"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "filterpy": "ideas only (MIT)",
+    "basketball_shot": "not used (no licence)"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "postimpact_v1",
+    "step07_config_sha256": "50272197b06dc7cb472663169be3a48bf9312fceccf039dbdec45edcc30f0285",
+    "code_sha256": {
+      "physics.R": "c65c2d58f3e4dc76dd9ca3996f44893e33ba5045c683c221005af52ddb2ee51a",
+      "particle_filter.R": "50334a866b678b8f3e2bb6fbc8dcba32b876b144d80e1c0c9c8877c47ccbf48f"
+    }
+  },
+  "repository_head": "b90570ad68e1b04d6d129003da6dea98ac1020f4",
+  "test_command": "Rscript src/rebounding/run_tests.R unit postimpact; Rscript src/rebounding/run_tests.R gates step_07",
+  "unit_tests_passed": true,
+  "data_audit_passed": true,
+  "heldout_metrics_file": "outputs/rebounding/step07/scores_by_horizon.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step07 fixed before any real-data run)",
+  "decision": {
+    "empirical_pass": false,
+    "coverage": [
+      {
+        "model": "gravity_gauss",
+        "level": 0.5,
+        "coverage": 0.6156,
+        "within_tol": false
+      },
+      {
+        "model": "empirical",
+        "level": 0.5,
+        "coverage": 0.5596,
+        "within_tol": false
+      },
+      {
+        "model": "physics",
+        "level": 0.5,
+        "coverage": 0.1285,
+        "within_tol": false
+      },
+      {
+        "model": "gravity_gauss",
+        "level": 0.9,
+        "coverage": 0.8525,
+        "within_tol": true
+      },
+      {
+        "model": "empirical",
+        "level": 0.9,
+        "coverage": 0.8468,
+        "within_tol": false
+      },
+      {
+        "model": "physics",
+        "level": 0.9,
+        "coverage": 0.3073,
+        "within_tol": false
+      }
+    ],
+    "comparisons": [
+      {
+        "candidate": "empirical",
+        "reference": "gravity_gauss",
+        "time_point": "h5",
+        "mean_diff": -1.489,
+        "hi": -1.2646,
+        "superior": true
+      },
+      {
+        "candidate": "empirical",
+        "reference": "gravity_gauss",
+        "time_point": "h10",
+        "mean_diff": -2.3646,
+        "hi": -2.0277,
+        "superior": true
+      },
+      {
+        "candidate": "empirical",
+        "reference": "gravity_gauss",
+        "time_point": "h15",
+        "mean_diff": -2.9865,
+        "hi": -2.8035,
+        "superior": true
+      },
+      {
+        "candidate": "physics",
+        "reference": "empirical",
+        "time_point": "h5",
+        "mean_diff": 35.0875,
+        "hi": 46.5757,
+        "superior": false
+      },
+      {
+        "candidate": "physics",
+        "reference": "empirical",
+        "time_point": "h10",
+        "mean_diff": 61.4324,
+        "hi": 81.0053,
+        "superior": false
+      },
+      {
+        "candidate": "physics",
+        "reference": "empirical",
+        "time_point": "h15",
+        "mean_diff": 86.8884,
+        "hi": 117.8305,
+        "superior": false
+      },
+      {
+        "candidate": "physics",
+        "reference": "gravity_gauss",
+        "time_point": "h5",
+        "mean_diff": 33.5985,
+        "hi": 45.163,
+        "superior": false
+      },
+      {
+        "candidate": "physics",
+        "reference": "gravity_gauss",
+        "time_point": "h10",
+        "mean_diff": 59.0678,
+        "hi": 78.7995,
+        "superior": false
+      },
+      {
+        "candidate": "physics",
+        "reference": "gravity_gauss",
+        "time_point": "h15",
+        "mean_diff": 83.9019,
+        "hi": 114.847,
+        "superior": false
+      }
+    ],
+    "mc_stability": [
+      {
+        "run": "second seed",
+        "targets": 5268,
+        "mean_abs_diff": 26.0931708788689,
+        "mean_diff": 0.942606270703595,
+        "stable": false
+      },
+      {
+        "run": "twice the particles",
+        "targets": 5268,
+        "mean_abs_diff": 23.3578624173271,
+        "mean_diff": -6.66421990157404,
+        "stable": false
+      }
+    ]
+  },
+  "evidence": ["outputs/rebounding/step07/", "outputs/rebounding/reports/07_collision_audit.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-10-31",
+  "open_risks": [
+    "No validated contact labels",
+    "Targets after a player touch are tagged, not removed",
+    "Priors on restitution and friction are broad assumptions"
+  ],
+  "deviations": [
+    {
+      "item": "target frame",
+      "decision": "first measured frame 0-2 frames after origin + horizon; the exact-frame rule scored 268 of 679 episodes (5-frame measuring cadence); first run kept in step07/first_run_exact_frames/"
+    }
+  ],
+  "decision_note": "Empirical BLOCKED; physics BLOCKED by rule."
+}

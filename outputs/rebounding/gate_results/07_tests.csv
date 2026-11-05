@@ -1,0 +1,14 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_postimpact.R,"free flight: gravity is exact under RK4, drag converges with the step, Magnus has the right direction",6,0,FALSE,FALSE,0
+unit,test_postimpact.R,hoop-relative coordinates round-trip and the fixtures sit where FIBA puts them,2,0,FALSE,FALSE,0
+unit,test_postimpact.R,"contacts: rim, board and floor reverse the normal velocity, keep the ball on the surface, never add speed",9,0,FALSE,FALSE,0
+unit,test_postimpact.R,a clean swish meets nothing and a front-rim shot bounces back out,3,0,FALSE,FALSE,0
+unit,test_postimpact.R,the two-point state is exact on a parabola,2,0,FALSE,FALSE,0
+unit,test_postimpact.R,"particle weights stay normalised, resampling follows them, and seeds are local",8,0,FALSE,FALSE,0
+unit,test_postimpact.R,mixture scores: a single Gaussian matches the formula and the coverage rank is calibrated,3,0,FALSE,FALSE,0
+unit,test_postimpact.R,"analog forecasts take the nearest training states, mirrored ones included",2,0,FALSE,FALSE,0
+gates,test_step_07.R,particle weights sum to one and the effective sample size and degeneracy are monitored,3,0,FALSE,FALSE,0
+gates,test_step_07.R,Monte Carlo stability is measured with a second seed and twice the particles,3,0,FALSE,FALSE,0
+gates,test_step_07.R,"rim, board and unclear examples are drawn and classified, or marked unvalidated",3,0,FALSE,FALSE,0
+gates,test_step_07.R,held-out coverage and proper scores are compared with the empirical transitions under fixed rules,5,0,FALSE,FALSE,0
+gates,test_step_07.R,no later contact or rebound location reaches an earlier forecast; hoops come from training games,5,0,FALSE,FALSE,0
