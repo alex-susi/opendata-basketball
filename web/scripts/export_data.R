@@ -125,7 +125,8 @@ generated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 save_json(list(generated = generated, plays = nrow(plays), files = length(unique(plays$file)),
                game = options_of(a$choices$game), team = options_of(a$choices$team), player = options_of(players),
                period = options_of(a$choices$period), types = options_of(a$choices$types),
-               result = options_of(a$choices$result), shotType = options_of(a$choices$shot_type)),
+               result = options_of(a$choices$result), shotType = options_of(a$choices$shot_type),
+               teamColors = lapply(a$TEAM_COLORS, function(pair) I(unname(pair)))),
           "meta.json")
 
 sizes <- file.size(list.files(out_dir, full.names = TRUE))

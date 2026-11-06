@@ -1,4 +1,4 @@
-# ACB play viewer — static site
+# PySport Analytics Cup play viewer — static site
 
 The Shiny play viewer in `src/play_viewer/` as a static site: no server, loads one game period at a time,
 and works on phones. R still does all the data work and modelling; this folder only draws what R exports.

@@ -4,7 +4,8 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 1L          # tracking cache
-INDEX_VERSION <- 4L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4)
+INDEX_VERSION <- 5L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+                             # play types in the order they happen and picks credited to the screener since 5)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -272,7 +273,7 @@ action_labels <- function(type, recs, nm) {
 }
 
 # Which player a timeline tick is credited to, per action family.
-TICK_PLAYER <- c(pick = "ballhandlerId", handoff = "receiverId", off_ball_screen = "cutterId", drive = "ballhandlerId",
+TICK_PLAYER <- c(pick = "screenerId", handoff = "receiverId", off_ball_screen = "cutterId", drive = "ballhandlerId",
                  isolation = "ballhandlerId", post = "ballhandlerId", closeout = "ballhandlerDefId", shot = "shooterId")
 
 #' Short caption for a timeline tick: the play type, or "Made 3" / "Missed 2" for shots.
@@ -412,12 +413,17 @@ game_index <- function(root, game_id, aliases, match_row) {
   events <- rbind(actions, other_events(ev, nm))[!is.na(frame)]
   orphan <- mean(!events$poss_id %in% plays$id)
 
-  transition <- unique(chr_field(ev$chances, "possessionId")[lgl_field(ev$chances, "transition")])
-  type_rows <- rbind(unique(actions[type != "shot", .(poss_id, type)]),
-                     data.table(poss_id = transition, type = rep("transition", length(transition))))
+  # A possession's play types in the order they first happen: each action at its frame, transition at the start of
+  # the chance marked as one.
+  ch <- ev$chances
+  in_transition <- lgl_field(ch, "transition")
+  type_rows <- rbind(actions[type != "shot", .(poss_id, type, frame)],
+                     data.table(poss_id = chr_field(ch, "possessionId")[in_transition], type = "transition",
+                                frame = int_field(ch, "startFrame")[in_transition]))
+  type_rows <- type_rows[order(poss_id, frame, match(type, names(PLAY_TYPES)))][, .(type = unique(type)), by = poss_id]
   types <- split(type_rows$type, type_rows$poss_id)
   shot_types <- split(chr_field(ev$shots, "complexShotType"), chr_field(ev$shots, "possessionId"))
-  plays[, types := lapply(id, function(i) intersect(names(PLAY_TYPES), types[[i]]))]
+  plays[, types := lapply(id, function(i) intersect(types[[i]], names(PLAY_TYPES)))]
   plays[, shot_types := lapply(id, function(i) unique(stats::na.omit(shot_types[[i]])))]
   plays[, result := fifelse(outcome %in% names(RESULT_LABELS), RESULT_LABELS[outcome], outcome)]
   plays[, result_who := result_names(plays, events)]

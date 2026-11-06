@@ -14,7 +14,7 @@
   <div class="filter-grid">
     <MultiSelect label="Game" options={meta.game} placeholder="All games" bind:value={filters.game} />
     <div class="pair">
-      <MultiSelect label="Team" options={meta.team} placeholder="All teams" bind:value={filters.team} />
+      <MultiSelect label="Team" options={meta.team} placeholder="All teams" pills={meta.teamColors} bind:value={filters.team} />
       <label class="field"><span class="field-label">Team is</span>
         <select bind:value={filters.teamSide}>
           <option value="any">Either side</option>

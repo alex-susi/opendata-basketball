@@ -46,10 +46,10 @@ body {
 button, select, input { font: inherit; color: inherit; }
 h1, h2, p, ul { margin: 0; padding: 0; }
 [hidden] { display: none !important; }
-/* Titles, headings and control labels are set in capitals throughout; running text (the write-ups, captions,
-   notes) is not. */
+/* Titles, headings and control labels are in title case (each word capitalised) throughout; running text (the
+   write-ups, captions, notes) is not. */
 .tabs, .tabs button, h1, h2, h3, .filters summary, .plays-head, .game-head, .toggle, .switch, .seg button, .text-btn, .scores th {
-  text-transform: uppercase; letter-spacing: .04em;
+  text-transform: capitalize; letter-spacing: .01em;
 }
 
 /* ---- tab bar ---- */
@@ -60,10 +60,15 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .tabs button {
   padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted);
-  font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
 }
 .tabs button:hover { color: var(--ink); }
 .tabs button.on { color: var(--ink); border-bottom-color: var(--off); }
+/* The data credit, at the right end of the bar. */
+.tabs .credit {
+  display: flex; align-items: center; margin-left: auto; padding-left: 16px; color: var(--muted); font-size: 12px;
+  text-transform: none; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 /* The play's header sits over the centre column only, so the right column starts level with the court. */
 .app {
@@ -109,19 +114,19 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 .field { position: relative; display: block; min-width: 0; margin-bottom: 8px; }
 .field-label {
-  display: block; margin-bottom: 2px; font-size: 11px; font-weight: 600; letter-spacing: .04em;
-  text-transform: uppercase; color: var(--muted);
+  display: block; margin-bottom: 2px; font-size: 12px; font-weight: 600; letter-spacing: .01em;
+  text-transform: capitalize; color: var(--muted);
 }
 /* One filter per row while the column is narrow; a filter and its qualifier side by side once it is wide. */
 .filter-grid { container: filters / inline-size; }
 .pair { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 8px; }
 /* Narrow: each label sits to the left of its control, so a filter takes one short row. */
 .filter-grid .field { display: grid; grid-template-columns: 70px minmax(0, 1fr); align-items: center; column-gap: 8px; margin-bottom: 6px; }
-.filter-grid .field-label { margin: 0; font-size: 10.5px; line-height: 1.2; letter-spacing: .03em; }
+.filter-grid .field-label { margin: 0; font-size: 11.5px; line-height: 1.2; letter-spacing: .01em; }
 .filter-grid .multi-list { left: 78px; }
 @container filters (min-width: 340px) {
   .filter-grid .field { display: block; margin-bottom: 8px; }
-  .filter-grid .field-label { margin-bottom: 2px; font-size: 11px; letter-spacing: .04em; }
+  .filter-grid .field-label { margin-bottom: 2px; font-size: 12px; letter-spacing: .01em; }
   .filter-grid .multi-list { left: 0; }
   .pair { grid-template-columns: minmax(0, 1fr) 112px; }
   .pair.even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -202,6 +207,16 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .pi-tags { grid-area: tags; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
 .pi-tags i { font-style: normal; font-size: 11px; padding: 0 6px; border-radius: 9px; background: #2A3550; color: #C3CDE0; }
 .pi-tags i.oreb { background: #3B2A12; color: #FFC46B; font-weight: 600; }
+/* A team name dressed like its players' dots: primary fill, secondary outline (TeamPill.svelte). */
+.team-pill {
+  display: inline-block; max-width: 100%; padding: 0 8px; border: 1.5px solid; border-radius: 999px;
+  font-size: 12px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere;
+}
+.pi-team .team-pill { margin: 2px 0 1px; }
+.chip.pill-chip { padding: 0; background: none; }
+.chip.pill-chip .team-pill, .multi-option .team-pill { font-size: 11.5px; white-space: nowrap; }
+/* A list of team pills needs more room than the narrow filter column gives it: it may spread over the court. */
+.multi-list:has(.team-pill) { right: auto; min-width: 230px; }
 
 /* ---- centre: header, stage, trace panel, timeline ---- */
 .viewer { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
@@ -272,14 +287,15 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .seg button { padding: 3px 10px; border: 0; background: none; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button.on { background: var(--raised); color: var(--ink); }
-.trace-pick { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.trace-pick { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .01em; text-transform: capitalize; }
 .trace-pick select {
   max-width: 220px; height: 26px; padding: 2px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised);
   color: var(--ink); font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none;
 }
 .trace-read { min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
 .trace-read b { color: var(--ink); }
-.trace-chart { min-height: 132px; }
+.trace-chart { position: relative; min-height: 126px; }
+.trace-captions { position: absolute; pointer-events: none; }
 .trace-chart svg { display: block; cursor: crosshair; touch-action: none; user-select: none; }
 .trace-chart .grid { stroke: #26314A; stroke-width: 1; }
 .trace-chart .axis { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
@@ -287,15 +303,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .trace-chart .sample { fill: none; stroke: #74819C; stroke-width: 1.2; }
 .trace-chart .sample.faint { stroke-dasharray: 2 2; opacity: .55; }
 /* Action marks in the timeline's tick colours (.tick below): actions light, shots by result, turnovers red,
-   fouls and rebounds grey. Font must match LABEL_FONT in TracePanel.svelte. */
+   fouls and rebounds grey. Their captions are the timeline's (.tick-label). */
 .trace-chart .mark { stroke: #A9B6CE; stroke-dasharray: 3 3; opacity: .55; }
 .trace-chart .mark.made { stroke: var(--made); opacity: .8; }
 .trace-chart .mark.missed, .trace-chart .mark.turnover { stroke: var(--missed); opacity: .8; }
 .trace-chart .mark.foul, .trace-chart .mark.rebound { stroke: #6C7A96; opacity: .8; }
-.trace-chart .mark-label { fill: #C3CDE0; font: 600 9.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-.trace-chart .mark-label.made { fill: var(--made); }
-.trace-chart .mark-label.missed, .trace-chart .mark-label.turnover { fill: var(--missed); }
-.trace-chart .mark-label.foul, .trace-chart .mark-label.rebound { fill: #8A97B0; }
 .trace-chart .hover { stroke: var(--muted); stroke-width: 1; }
 .trace-empty { display: grid; place-items: center; height: 132px; margin: 0; padding: 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
 
@@ -357,21 +369,25 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 .side .panel { padding: 10px 12px; }
 .side h2 { margin-bottom: 8px; font-size: 13.5px; font-weight: 700; }
-/* Playback controls, above the display toggles. */
+/* Playback controls, above the display toggles: buttons at the left, time at the right, the speed centred in the
+   space between. */
 .controls {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px;
+  margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
 }
-.controls .speed { margin-left: 4px; }
-.time-label { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.control-buttons { display: flex; align-items: center; gap: 8px; }
+.controls .speed { justify-self: center; }
+.time-label { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .speed { height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
 .toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; }
 .toggle input { margin: 0; accent-color: var(--off); }
 /* Toggles in columns. By default two columns filled row by row; .by-column fills each column top to bottom
-   (three rows, or four with .four). */
+   (three rows, or four with .four, five with .five). */
 .toggle-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px; }
 .toggle-grid .toggle, .toggle-grid .switch { margin: 0; }
 .toggle-grid.by-column { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
 .toggle-grid.by-column.four { grid-template-rows: repeat(4, auto); }
+.toggle-grid.by-column.five { grid-template-rows: repeat(5, auto); }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .panel-head h2 { margin-bottom: 0; }
 /* A small on/off switch: the checkbox stays in the page for the keyboard, the track is what shows. */
@@ -464,7 +480,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .doc h1 { margin: 0 0 8px; font-size: 24px; font-weight: 700; }
 .doc h2 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
 .doc h3 { margin: 0; font-size: 15px; font-weight: 700; }
-.doc h4 { margin: 12px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.doc h4 { margin: 12px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .01em; text-transform: capitalize; color: var(--muted); }
 .doc p { margin: 0 0 10px; }
 .doc section { margin-top: 36px; }
 .doc .lead { max-width: 760px; margin-bottom: 12px; color: var(--muted); font-size: 14px; font-weight: 400; line-height: 1.55; }

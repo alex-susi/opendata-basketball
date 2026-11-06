@@ -1,12 +1,12 @@
 <script lang="ts">
   // The timeline under the court: the play's progress with a tick for each event, captioned with the action above
-  // and the player below (captions can be turned off in the Display panel, leaving a thin bar). Click or drag to
-  // move playback. Its rail lines up with the trace panel's time axis above it. The play/pause, action-stepping and
-  // speed controls are in the Display panel (Controls.svelte); the keyboard shortcuts live here.
+  // and the player below (captions can be turned off in the Display panel, leaving a thin bar; so can the whole
+  // timeline). Click or drag to move playback. Its rail lines up with the trace panel's time axis above it. The
+  // play/pause, action-stepping and speed controls and the keyboard shortcuts are in the Display panel (Controls.svelte).
   import { clamp } from "../lib/geometry";
-  import { FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
+  import { layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
   import type { Play } from "../lib/types";
-  import { togglePlay, viewer } from "../lib/viewer.svelte";
+  import { viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
@@ -35,16 +35,7 @@
     const rail = track.getBoundingClientRect();
     viewer.pos = clamp((ev.clientX - rail.left) / rail.width, 0, 1) * (seq.length - 1);
   }
-
-  function onKey(ev: KeyboardEvent): void {
-    if (!play || viewer.hidden || (ev.target as HTMLElement).closest("input, select, textarea, .multi-list")) return;
-    if (ev.code === "Space") { ev.preventDefault(); togglePlay(seq.length); }
-    if (ev.code === "ArrowLeft") { ev.preventDefault(); viewer.pos = clamp(viewer.pos - FPS, 0, seq.length - 1); }
-    if (ev.code === "ArrowRight") { ev.preventDefault(); viewer.pos = clamp(viewer.pos + FPS, 0, seq.length - 1); }
-  }
 </script>
-
-<svelte:window onkeydown={onKey} />
 
 <div class="transport">
   <!-- svelte-ignore a11y_no_static_element_interactions -->

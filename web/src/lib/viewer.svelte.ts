@@ -20,8 +20,12 @@ export const viewer = $state({
   trace: "ball" as "ball" | "nearest",
   /** The player the nearest-opponent trace follows (clicked on the court or in a roster), or null. */
   focusPid: null as number | null,
-  /** Caption each tick on the timeline with its action and player. Off, the timeline is a thin bar. */
+  /** Caption the actions on the timeline (action and player) and over the trace panel. Off, the timeline is a thin bar. */
   showTickLabels: true,
+  /** The timeline under the court. Hidden, the court takes its height. */
+  showTimeline: true,
+  /** At the end of a play, go on to the next play in the list and play it. */
+  autoNext: false,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */

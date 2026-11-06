@@ -31,8 +31,8 @@
       </button>
     </div>
     <Controls {play} {seq} />
-    <!-- Left column: what is drawn on the court and under it. Right column: how the play runs and how much court shows. -->
-    <div class="toggle-grid by-column four">
+    <!-- Left column: what is drawn on the court and under it. Right column: captions and how the plays run. -->
+    <div class="toggle-grid by-column five">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
       <label class="toggle" title="Tag each player on the court with his archetype (abbreviated, in its colour), as beside his name below">
@@ -41,14 +41,17 @@
       <label class="toggle" title="The panel under the court: ball height, or a player's distance to his nearest opponent">
         <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
       </label>
-      <label class="toggle" title="Caption each tick on the timeline with its action and player">
+      <label class="toggle" title="The timeline under the court; hidden, the court takes its room">
+        <input type="checkbox" bind:checked={viewer.showTimeline} />Timeline
+      </label>
+      <label class="toggle" title="Caption the actions on the timeline (action and player) and over the trace panel">
         <input type="checkbox" bind:checked={viewer.showTickLabels} />Action names
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
-      <label class="toggle"><input type="checkbox" bind:checked={viewer.loop} />Loop</label>
-      <label class="switch" title="Show only the half the offense attacks">
-        <input type="checkbox" role="switch" checked={viewer.view === "half"} onchange={(ev) => (viewer.view = ev.currentTarget.checked ? "half" : "full")} />
-        <span class="switch-track"></span>Half court
+      <label class="toggle" title="Replay this play when it ends (ignored while autoplay next is on)"><input type="checkbox" bind:checked={viewer.loop} />Loop</label>
+      <label class="switch" title="When a play ends, play the next one in the possession list">
+        <input type="checkbox" role="switch" bind:checked={viewer.autoNext} />
+        <span class="switch-track"></span>Autoplay next
       </label>
     </div>
   </div>

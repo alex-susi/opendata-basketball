@@ -5,9 +5,11 @@
   import { tick } from "svelte";
   import { quarter } from "../lib/geometry";
   import type { PlayRow } from "../lib/types";
+  import TeamPill from "./TeamPill.svelte";
 
-  let { rows, selectedId, onselect, wide = false, ontogglewidth }: {
+  let { rows, selectedId, onselect, wide = false, ontogglewidth, teamColors = {} }: {
     rows: PlayRow[]; selectedId: string | null; onselect: (id: string) => void; wide?: boolean; ontogglewidth?: () => void;
+    teamColors?: Record<string, [string, string]>;
   } = $props();
 
   let list: HTMLDivElement;
@@ -39,7 +41,7 @@
       {/if}
       <button type="button" class="play-item" class:active={row.id === selectedId} onclick={() => onselect(row.id)}>
         <span class="pi-top"><b>{quarter(row.q)} {row.clock}</b><span class="pi-secs">{row.secs}s</span></span>
-        <span class="pi-team">{row.off}</span>
+        <span class="pi-team"><TeamPill name={row.off} colors={teamColors[String(row.offTeam)]} /></span>
         <span class="pi-result {outcome(row)}">{row.who ? `${row.result} · ${row.who}` : row.result}</span>
         {#if row.typeLabels || row.oreb > 0}
           <span class="pi-tags">

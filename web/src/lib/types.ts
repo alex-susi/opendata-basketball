@@ -17,6 +17,8 @@ export interface Meta {
   types: Option[];
   result: Option[];
   shotType: Option[];
+  /** Club colours by team id: primary, then secondary (TEAM_COLORS in the Shiny app's R/data.R). */
+  teamColors?: Record<string, [string, string]>;
 }
 
 /** plays.json: one possession's list text plus the fields the filters read. */

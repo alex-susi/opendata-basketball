@@ -1,9 +1,13 @@
 <script lang="ts">
   // A compact multi-select: chosen items show as removable chips; the list opens below with a search box.
-  // Stands in for the selectize inputs of the Shiny app.
+  // Stands in for the selectize inputs of the Shiny app. With `pills` (colours by option value), each option and
+  // chip is drawn as a team pill (TeamPill.svelte).
   import type { Option } from "../lib/types";
+  import TeamPill from "./TeamPill.svelte";
 
-  let { label, options, placeholder, value = $bindable([]) }: { label: string; options: Option[]; placeholder: string; value: string[] } = $props();
+  let { label, options, placeholder, pills, value = $bindable([]) }: {
+    label: string; options: Option[]; placeholder: string; pills?: Record<string, [string, string]>; value: string[];
+  } = $props();
 
   let open = $state(false);
   let query = $state("");
@@ -30,7 +34,7 @@
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="multi-box" class:open onclick={() => (open = true)}>
     {#each chosen as o (o.value)}
-      <span class="chip">{o.label}<button type="button" aria-label="Remove {o.label}" onclick={(ev) => { ev.stopPropagation(); toggle(o.value); }}>×</button></span>
+      <span class="chip" class:pill-chip={!!pills?.[o.value]}>{#if pills?.[o.value]}<TeamPill name={o.label} colors={pills[o.value]} />{:else}{o.label}{/if}<button type="button" aria-label="Remove {o.label}" onclick={(ev) => { ev.stopPropagation(); toggle(o.value); }}>×</button></span>
     {/each}
     <button type="button" class="multi-open" aria-haspopup="true" aria-expanded={open} aria-labelledby="{id}-label"
             onclick={(ev) => { ev.stopPropagation(); open ? close() : (open = true); }}>
@@ -45,7 +49,7 @@
       {/if}
       {#each shown as o (o.value)}
         <label class="multi-option">
-          <input type="checkbox" checked={value.includes(o.value)} onchange={() => toggle(o.value)} />{o.label}
+          <input type="checkbox" checked={value.includes(o.value)} onchange={() => toggle(o.value)} />{#if pills?.[o.value]}<TeamPill name={o.label} colors={pills[o.value]} />{:else}{o.label}{/if}
         </label>
       {:else}
         <p class="multi-empty">No matches</p>

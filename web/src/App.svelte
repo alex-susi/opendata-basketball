@@ -106,6 +106,14 @@
     }).catch((err: Error) => { problem = err.message; });
   }
 
+  // Autoplay Next: at the end of a play, the next one in the filtered list (it starts playing when it loads); after
+  // the last one, stop.
+  function playNext(): void {
+    const at = rows.findIndex((r) => r.id === selectedId);
+    if (at >= 0 && at + 1 < rows.length) select(rows[at + 1].id);
+    else viewer.playing = false;
+  }
+
   // Keep the current frame on screen when dead-ball frames are added to or removed from the sequence.
   function setSkip(skip: boolean): void {
     const frame = play ? play.frames[cursorAt(play, seq, viewer.pos).i0] : 0;
@@ -144,10 +152,11 @@
 <svelte:window onhashchange={openLinked} />
 
 <nav class="tabs">
-  <span class="brand">ACB play viewer</span>
+  <span class="brand">PySport Analytics Cup</span>
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
   <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
+  <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
 
 <div class="app" hidden={tab !== "viewer"} style:--left-w="{leftW}px">
@@ -155,7 +164,7 @@
     {#if meta}
       <Filters {meta} bind:filters />
     {/if}
-    <PlayList {rows} {selectedId} onselect={select} wide={leftW >= LEFT_WIDE}
+    <PlayList {rows} {selectedId} onselect={select} teamColors={meta?.teamColors} wide={leftW >= LEFT_WIDE}
               ontogglewidth={() => setLeft(leftW >= LEFT_WIDE ? LEFT_DEFAULT : LEFT_WIDE)} />
     <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
     <div class="left-resize" role="separator" aria-orientation="vertical" aria-label="Width of the filter and possession column"
@@ -196,12 +205,14 @@
 
   <section class="viewer">
     <div class="stage-row">
-      <Stage {play} {seq} {note} />
+      <Stage {play} {seq} {note} onend={playNext} />
     </div>
     {#if viewer.showTrace}
       <TracePanel {play} {seq} />
     {/if}
-    <Transport {play} {seq} />
+    {#if viewer.showTimeline}
+      <Transport {play} {seq} />
+    {/if}
   </section>
 
   <SidePanel {play} {seq} onskip={setSkip} />

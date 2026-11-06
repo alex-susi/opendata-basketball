@@ -7,13 +7,15 @@
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
-  let { play, seq, note }: { play: Play | null; seq: number[]; note: string } = $props();
+  /** onend: called once when a play has run to its end and Autoplay Next is on (the page moves to the next play). */
+  let { play, seq, note, onend }: { play: Play | null; seq: number[]; note: string; onend?: () => void } = $props();
 
   const END_HOLD = 1.2;   // seconds to rest on the last frame before looping
   let canvas: HTMLCanvasElement;
   let stage: HTMLDivElement;
   let recorder: MediaRecorder | null = null;
   let hold = 0, lastTs = 0, drawn = 0;
+  let ended: Play | null = null;   // the play onend was last called for
   let framed = false;   // the canvas carries its own header: from the start of a recording until its last frame is flushed
   let pointer = $state(false);   // the pointer is over a player
   let hits: { id: number; x: number; y: number; r: number }[] = [];   // player dots last drawn, for clicks
@@ -30,6 +32,13 @@
     }
     hold += dt;
     if (recorder) finishRecording(true);
+    else if (viewer.autoNext && onend) {
+      // Once per play: the next one loads asynchronously and this frame may come round again meanwhile.
+      if (hold >= END_HOLD && ended !== play) {
+        ended = play;
+        onend();
+      }
+    }
     else if (!viewer.loop) viewer.playing = false;
     else if (hold >= END_HOLD) viewer.pos = 0;
   }

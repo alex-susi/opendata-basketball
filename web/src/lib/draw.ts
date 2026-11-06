@@ -56,6 +56,9 @@ function archColor(slot: string): string {
 const BALL_Z_DOUBLE = 10;
 const BALL_Z_MAX = 20;
 
+// Player dots are this much larger than they first were; the archetype tags beside them keep their old size.
+const DOT_GROWTH = 1.15;
+
 // The archetype tag under a dot is abbreviated; the roster beside the court spells it out.
 const ARCH_ABBR: Record<string, string> = {
   "Slasher": "Slsh", "Roll & Cut Big": "R&C", "Athletic Finisher": "AthF", "Movement Shooter": "Mvmt",
@@ -122,17 +125,10 @@ function drawRing(ctx: CanvasRenderingContext2D, x: number, y: number, r: number
 }
 
 // A player dot: a disc of his team's primary colour with the number on it. The ball handler glows in his team's
-// secondary colour; the hovered player (in a roster) has a thin dark ring.
+// secondary colour; the player hovered in a roster is ringed in it.
 function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, kit: TeamColors, hasBall: boolean, o: DrawOptions): void {
   const x = px(L, d.x), y = py(L, d.y);
   if (hasBall) drawHalo(ctx, x, y, r, kit.edge);
-  if (o.hoverPid === d.p.id) {
-    ctx.beginPath();
-    ctx.arc(x, y, r + 2.5, 0, 2 * Math.PI);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = COLORS.dark;
-    ctx.stroke();
-  }
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
   ctx.fillStyle = kit.fill;
@@ -145,6 +141,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(d.p.jersey, x, y + 0.5);
+  if (o.hoverPid === d.p.id) drawRing(ctx, x, y, r, kit.edge, 2.5);
 }
 
 // A small dark label centred on x.
@@ -167,7 +164,7 @@ function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: str
 // archetype, in an outlined pill of its colour, below the dot.
 function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, above: boolean, text: string,
                     fill: string, stroke: string, ink: string): void {
-  const size = Math.round(clamp(0.62 * r, 8.5, 11)), h = size + 4;
+  const size = Math.round(clamp((0.62 * r) / DOT_GROWTH, 8.5, 11)), h = size + 4;   // sized as before the dots grew
   ctx.font = `700 ${size}px ${FONT}`;
   const w = ctx.measureText(text).width + 8;
   const left = px(L, d.x) + 0.62 * r, cy = py(L, d.y) + (above ? -0.82 : 0.82) * r;
@@ -184,18 +181,15 @@ function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.fillText(text, left + w / 2, cy + 0.5);
 }
 
-// The trace panel's pair, under the players: a dark line from the followed player to his nearest opponent with the
-// distance at its middle.
-function drawPairLine(ctx: CanvasRenderingContext2D, L: Layout, a: Dot, b: Dot, dist: number): void {
-  const ax = px(L, a.x), ay = py(L, a.y), bx = px(L, b.x), by = py(L, b.y);
+// The trace panel's pair: a dark line from the followed player to his nearest opponent, drawn under the dots.
+function drawPairLine(ctx: CanvasRenderingContext2D, L: Layout, a: Dot, b: Dot): void {
   ctx.beginPath();
-  ctx.moveTo(ax, ay);
-  ctx.lineTo(bx, by);
+  ctx.moveTo(px(L, a.x), py(L, a.y));
+  ctx.lineTo(px(L, b.x), py(L, b.y));
   ctx.lineWidth = 2.5;
   ctx.lineCap = "round";
   ctx.strokeStyle = "rgba(11, 14, 20, .75)";
   ctx.stroke();
-  drawTag(ctx, (ax + bx) / 2, (ay + by) / 2, `${dist.toFixed(1)} ft`, COLORS.ink, 11);
 }
 
 // The header of a recorded video, on one line above the court: quarter, shot clock, game clock and the score at
@@ -224,22 +218,24 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
   }
 }
 
-// Under the court: both recent event labels if they fit beside the credit, otherwise the latest one.
-function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[]): void {
-  const credit = L.cw >= 420;
-  const room = L.cw - (credit ? 200 : 0);
+export const DATA_CREDIT = "Data: Liga Endesa ACB 2025/2026 via SkillCorner";
+
+// Under the court, centred and bold: both recent event labels if they fit, otherwise the latest one. On the page the
+// data credit is in the tab bar; a recorded video carries it here, at the right, since it leaves the page behind.
+function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[], credit: boolean): void {
+  const y = L.top + L.ch + 14;
   ctx.textBaseline = "middle";
-  ctx.font = `500 13px ${FONT}`;
-  ctx.fillStyle = COLORS.ink;
-  ctx.textAlign = "left";
-  const both = labels.join("   ·   ");
-  ctx.fillText(ctx.measureText(both).width <= room ? both : labels[labels.length - 1] ?? "", L.left, L.top + L.ch + 14, room);
-  if (credit) {
+  if (credit && L.cw >= 420) {
     ctx.textAlign = "right";
     ctx.font = `400 11px ${FONT}`;
     ctx.fillStyle = COLORS.muted;
-    ctx.fillText("Data: SkillCorner open data, Liga ACB", L.left + L.cw, L.top + L.ch + 14);
+    ctx.fillText(DATA_CREDIT, L.left + L.cw, y);
   }
+  ctx.font = `700 13px ${FONT}`;
+  ctx.fillStyle = COLORS.ink;
+  ctx.textAlign = "center";
+  const both = labels.join("   ·   ");
+  ctx.fillText(ctx.measureText(both).width <= L.cw - 16 ? both : labels[labels.length - 1] ?? "", L.left + L.cw / 2, y, L.cw);
 }
 
 /**
@@ -262,7 +258,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     const x = blend(p.x, c), y = blend(p.y, c);
     if (x != null && y != null) dots[p.role].push({ p, x, y });
   }
-  const r = clamp(1.2 * L.s, 9, 22), handler = ballHandler(play, frame);
+  const r = clamp(1.2 * DOT_GROWTH * L.s, 9 * DOT_GROWTH, 22 * DOT_GROWTH), handler = ballHandler(play, frame);
 
   ctx.save();
   ctx.beginPath();
@@ -273,18 +269,20 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
   const all = dots.def.concat(dots.off);
   // The followed player and his nearest opponent: joined by a line under the dots, each ringed in his team's
-  // secondary colour over the dots (the followed player's ring thicker).
-  let pair: [Dot, number][] = [];
+  // secondary colour over the dots (the followed player's ring thicker), the distance on top of everything.
+  let pair: { a: Dot; b: Dot; dist: number } | null = null;
   if (o.focusPid != null) {
     const near = nearestAt(play, o.focusPid, c);
     const a = all.find((d) => d.p.id === o.focusPid), b = near && all.find((d) => d.p.id === near.pid);
     if (a && b && near) {
-      drawPairLine(ctx, L, a, b, near.dist);
-      pair = [[a, 3], [b, 2]];
+      drawPairLine(ctx, L, a, b);
+      pair = { a, b, dist: near.dist };
     }
   }
   for (const d of all) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
-  for (const [d, width] of pair) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
+  if (pair) {
+    for (const [d, width] of [[pair.a, 3], [pair.b, 2]] as const) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
+  }
   if (o.showArch) {
     for (const d of dots.def.concat(dots.off)) {
       if (!d.p.arch) continue;
@@ -304,11 +302,15 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     ctx.strokeStyle = COLORS.ballEdge;
     ctx.stroke();
   }
+  if (pair) {
+    const mx = (px(L, pair.a.x) + px(L, pair.b.x)) / 2, my = (py(L, pair.a.y) + py(L, pair.b.y)) / 2;
+    drawTag(ctx, mx, my, `${pair.dist.toFixed(1)} ft`, COLORS.ink, 11);
+  }
   ctx.restore();
 
   const labels = play.events.filter((e) => frame >= e.f && frame - e.f <= CAPTION_FRAMES).slice(-2).map((e) => e.label);
   if (header) drawHeader(ctx, L, play, c);
-  drawCaption(ctx, L, labels);
+  drawCaption(ctx, L, labels, header);
   return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
            gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]),
            hits: all.map((d) => ({ id: d.p.id, x: px(L, d.x), y: py(L, d.y), r })) };
