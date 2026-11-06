@@ -4,7 +4,7 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 1L          # tracking cache
-INDEX_VERSION <- 3L          # play index (viewing windows and re-homed action markings since 3)
+INDEX_VERSION <- 4L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -421,6 +421,11 @@ game_index <- function(root, game_id, aliases, match_row) {
   plays[, shot_types := lapply(id, function(i) unique(stats::na.omit(shot_types[[i]])))]
   plays[, result := fifelse(outcome %in% names(RESULT_LABELS), RESULT_LABELS[outcome], outcome)]
   plays[, result_who := result_names(plays, events)]
+  # Offensive rebounds a player collected in the possession, from the rebounds table. Team rebounds (the ball went
+  # out of bounds off the defense, nobody secured it) are not counted.
+  rb <- ev$rebounds
+  oreb <- table(chr_field(rb, "possessionId")[!lgl_field(rb, "defensive") & lgl_field(rb, "rebounded")])
+  plays[, n_oreb := fcoalesce(as.integer(oreb[id]), 0L)]
 
   touches <- data.table(game_id = game_id, pid = int_field(ev$touches, "playerId"),
                         f0 = int_field(ev$touches, "startFrame"), f1 = int_field(ev$touches, "endFrame"))
@@ -538,6 +543,8 @@ filter_plays <- function(app, f) {
   if (length(f[["period"]])) keep <- keep & plays$period %in% as.integer(f[["period"]])
   if (length(f[["result"]])) keep <- keep & plays$result %in% f[["result"]]
   if (length(f[["shot_type"]])) keep <- keep & has_any(plays$shot_types, f[["shot_type"]])
+  if (identical(f[["oreb"]], "with")) keep <- keep & plays$n_oreb > 0L
+  if (identical(f[["oreb"]], "without")) keep <- keep & plays$n_oreb == 0L
   if (length(f[["types"]])) {
     keep <- keep & (if (identical(f[["types_mode"]], "all")) has_all else has_any)(plays$types, f[["types"]])
   }
@@ -562,7 +569,7 @@ plays_json <- function(app, plays) {
   rows <- plays[, .(id, game = app$matches$label[match(game_id, app$matches$game_id)], q = period,
                     clock = format_clock(start_gc), off = off_name, def = def_name,
                     types = vapply(types, function(v) paste(PLAY_TYPES[v], collapse = "|"), ""),
-                    result, who = result_who, secs = round(n_run / 25))]
+                    result, who = result_who, secs = round(n_run / 25), oreb = n_oreb)]
   jsonlite::toJSON(rows, dataframe = "rows", na = "null")
 }
 
@@ -580,68 +587,10 @@ player_track <- function(p, pl, frames, flip, info, home_is_off, archetypes) {
        x = I(flip * rows$x[at]), y = I(flip * rows$y[at]), d = I(rows$det[at]))
 }
 
-epv_cache_path <- function(root, game_id) file.path(root, "outputs", "cache", "epv", paste0("epv_", game_id, ".rds"))
-
-#' EPV prices for one game (built by src/epv/build_epv.R), or NULL if they have not been built.
-get_epv <- function(app, game_id) {
-  key <- paste0("epv_", game_id)
-  path <- epv_cache_path(app$root, game_id)
-  if (is.null(app$tracking[[key]]) && file.exists(path)) app$tracking[[key]] <- readRDS(path)
-  app$tracking[[key]]
-}
-
-#' Three-sample centred mean (about a third of a second) to steady the on-screen numbers.
-steady <- function(v) fcoalesce(frollmean(v, 3L, align = "center"), v)
-
-#' EPV prices for one possession, on the pricing grid: holder state plus each offensive player's options.
-epv_payload <- function(app, play) {
-  epv <- get_epv(app, play$game_id)
-  if (is.null(epv)) return(NULL)
-  fr <- epv$frames[poss_id == play$id][order(frame)]
-  if (!nrow(fr)) return(NULL)
-  pl <- epv$players[frame %in% fr$frame]
-  option <- function(p) {
-    at <- match(fr$frame, pl[pid == p]$frame)
-    list(sv = I(round(pl[pid == p]$sv[at], 3)), pv = I(round(steady(pl[pid == p]$pv[at]), 3)),
-         tov = I(round(steady(pl[pid == p]$ptov[at]), 4)))
-  }
-  pids <- unique(pl$pid)
-  list(f = I(fr$frame), v = I(round(steady(fr$epv), 3)), haz = I(round(steady(fr$haz), 4)),
-       rop = I(round(steady(fr$rop), 4)), cum = I(round(fr$cum, 4)), shot = I(round(steady(fr$sv), 3)),
-       pass = I(round(steady(fr$pass_best), 3)), to = I(fr$pass_pid), holder = I(fr$holder),
-       players = setNames(lapply(pids, option), pids))
-}
-
-# Inputs of the xFG context model in the order the viewer lists them (XFG_FEATURES in src/epv/R/models.R),
-# with the decimals each is sent at.
-SHOT_FEATURES <- c(loc_xfg = 4, def1 = 1, def2 = 1, n6 = 0, between = 0, rim_def = 1, closing = 1, speed = 1, sc = 1,
-                   held = 1, drib = 0)
-
-#' The steps behind xFG for each tracked shot of one possession, in order of release: the baseline for the
-#' shot's kind (`zone`: rim, mid or three), each context feature's value at release (`v`) and what it adds to
-#' xFG (`e`), and the result. Only the inputs of the shot's context model (`model`: rim or jump) are listed.
-#' `fixed` flags the features whose effect includes one set from the season aggregates, not fitted.
-#' Empty when the possession has no priced shot or the prices were built before shots were saved.
-shot_payload <- function(app, play) {
-  shots <- get_epv(app, play$game_id)$shots
-  if (is.null(shots)) return(list())
-  sh <- shots[poss_id == play$id][order(frame)]
-  lapply(seq_len(nrow(sh)), function(i) {
-    s <- sh[i]
-    keys <- Filter(function(k) !is.na(s[[paste0("eff_", k)]]), names(SHOT_FEATURES))
-    list(f = s$frame, pid = s$pid, made = s$made, fouled = s$fouled, three = s$three == 1L, zone = s$area, model = s$zone,
-         dist = round(s$dist, 1), rounds = s$rounds, base = round(s$base, 4), xfg = round(s$xfg, 4),
-         fixed = if (nzchar(s$fixed)) lapply(setNames(nm = strsplit(s$fixed, ",")[[1]]), function(k) TRUE),
-         v = lapply(setNames(keys, keys), function(k) round(s[[k]], SHOT_FEATURES[[k]])),
-         e = lapply(setNames(keys, keys), function(k) round(s[[paste0("eff_", k)]], 4)))
-  })
-}
-
 #' Everything the browser needs to animate one possession, as a JSON string.
 #' Tracking is in camera view; possessions.leftHoop says which way the offense attacks. A 180 degree
 #' rotation (not a mirror) puts every offense on the right-hand hoop and keeps left/right handedness.
-#' Frames run over the viewing window (view_start to view_end), which can outlast the delivered possession;
-#' EPV prices exist only inside the delivered one.
+#' Frames run over the viewing window (view_start to view_end), which can outlast the delivered possession.
 play_payload <- function(app, play_id) {
   row <- app$plays[id == play_id]
   if (nrow(row) != 1L) return(NULL)
@@ -666,7 +615,6 @@ play_payload <- function(app, play_id) {
                   frames = I(fr$frame), gc = I(round(fr$gc, 1)), sc = I(round(fr$sc, 1)),
                   stopped = I(as.integer(fr$stopped)),
                   ball = list(x = I(flip * fr$bx), y = I(flip * fr$by), z = I(fr$bz)),
-                  players = players, events = events, touches = touches, epv = epv_payload(app, row),
-                  shots = shot_payload(app, row))
+                  players = players, events = events, touches = touches)
   jsonlite::toJSON(payload, auto_unbox = TRUE, digits = NA, na = "null", null = "null", dataframe = "rows")
 }

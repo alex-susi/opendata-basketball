@@ -20,7 +20,9 @@ export const HEADER_TOP = 40;   // top padding while a video is recorded: room f
 // Team colours come with each play (Play.colors).
 export const COLORS = {
   paper: "#1B2334", floor: "#F6CFA3", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
-  ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", best: "#18A56B", risk: "#F5B02E",
+  ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", risk: "#F5B02E",
+  // The player the trace panel follows and his nearest opponent, on the court and in the panel.
+  pair: "#E0479E",
 };
 
 export type CourtView = "full" | "half";

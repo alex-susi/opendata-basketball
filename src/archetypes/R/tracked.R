@@ -4,9 +4,9 @@
 # order of start frame). Features are ratios of these counts (see spec.R), so they can be recomputed on
 # either half to measure how repeatable they are. Nothing uses a result: no makes, points, turnovers,
 # fouls, blocks or rebounds collected.
-# Tracking positions are rotated so the offense attacks the hoop at +x (as in src/epv/R/features.R).
+# Tracking positions are rotated so the offense attacks the hoop at +x (as in src/archetypes/R/tracking_state.R).
 # Event coordinates put the offensive hoop at -x, so they are rotated by 180 degrees to match.
-# Requires src/play_viewer/R/data.R and src/epv/R/features.R.
+# Requires src/play_viewer/R/data.R and src/archetypes/R/tracking_state.R.
 
 KEY_HALF_W <- 2.45 * FT_PER_M      # half the width of the key
 KEY_LEN <- 5.8 * FT_PER_M          # baseline to free-throw line

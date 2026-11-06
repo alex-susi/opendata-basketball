@@ -31,3 +31,9 @@ outputs/cache/
 
 # Pinned third-party source checkouts for the rebounding manual (commits in docs/project/SOURCE_REGISTER.md)
 external/
+
+# Archived 2026-11-06: caches and third-party checkouts moved with the EPV / court control / rebounding work
+zz_Archive/outputs/cache/
+zz_Archive/external/
+# 145 MB, over the GitHub file limit; never committed
+zz_Archive/outputs/rebounding/step02_v2/fit1/hmm_fit.rds

@@ -21,7 +21,7 @@ plays <- a$app_data$plays
 inputs <- function(...) {
   base <- list(game = character(0), period = character(0), result = character(0), shot_type = character(0),
                types = character(0), types_mode = "any", team = character(0), team_side = "any", player = "",
-               player_role = "any")
+               player_role = "any", oreb = "any")
   utils::modifyList(base, list(...))
 }
 
@@ -49,7 +49,10 @@ cases <- list(none = inputs(),
               player_in_pick = inputs(player = player, player_role = "actor", types = "pick"),
               combined = inputs(game = games[1:5], team = team, team_side = "off", types = c("pick", "closeout"),
                                 types_mode = "all", result = c("Made 2", "Made 3", "Missed 2", "Missed 3")),
-              nothing = inputs(game = games[1], period = "4", shot_type = "heave", result = "Made 2"))
+              nothing = inputs(game = games[1], period = "4", shot_type = "heave", result = "Made 2"),
+              oreb_with = inputs(oreb = "with"),
+              oreb_without = inputs(oreb = "without"),
+              oreb_team = inputs(oreb = "with", team = team, team_side = "off", period = c("1", "3")))
 
 matched <- new.env()
 shiny::testServer(a$server, {
@@ -74,28 +77,17 @@ present <- function(v) sum(!is.na(v))
 #' Sums of every series in one play's payload.
 payload_sums <- function(play_id) {
   p <- app_payload(a, play_id)
-  e <- p$epv
-  list(id = play_id, n = length(p$frames), m = length(e$f), frames = total(p$frames), gc = total(p$gc),
+  list(id = play_id, n = length(p$frames), frames = total(p$frames), gc = total(p$gc),
        sc = total(p$sc), scPresent = present(p$sc), stopped = total(p$stopped),
        ball = I(c(total(p$ball$x), total(p$ball$y), total(p$ball$z))),
        players = lapply(p$players, function(pl) list(id = pl$id, role = pl$role, arch = pl$arch$name, x = total(pl$x),
-                                                     y = total(pl$y), present = present(pl$x), detected = total(pl$d))),
-       shots = lapply(p$shots, function(s) list(f = s$f, pid = s$pid, xfg = s$xfg, values = total(unlist(s$v)),
-                                                effects = total(unlist(s$e)))),
-       epv = list(f = total(e$f), to = total(e$to), holder = total(e$holder), v = total(e$v), shot = total(e$shot),
-                  pass = total(e$pass), haz = total(e$haz), rop = total(e$rop), cum = total(e$cum),
-                  players = lapply(names(e$players), function(k) list(id = as.integer(k), sv = total(e$players[[k]]$sv),
-                                                                      pv = total(e$players[[k]]$pv),
-                                                                      tov = total(e$players[[k]]$tov),
-                                                                      present = present(e$players[[k]]$pv)))))
+                                                     y = total(pl$y), present = present(pl$x), detected = total(pl$d))))
 }
 
 roster_size <- vapply(plays$id, function(i) length(unique(c(plays[id == i]$off_ids[[1]], plays[id == i]$def_ids[[1]]))), 0L)
-# The possession with the most priced shots, so the steps behind xFG are compared too.
-shots_priced <- vapply(plays$id, function(i) length(a$shot_payload(a$app_data, plays[id == i])), 0L)
 sample_ids <- unique(c(plays$id[1], plays$id[which.max(plays$n_live)], plays$id[which.max(roster_size)],
                        plays[game_id == as.integer(games[6])]$id[40], plays[period == max(period)]$id[1],
-                       plays$id[nrow(plays)], plays$id[which.max(shots_priced)]))
+                       plays$id[nrow(plays)]))
 
 reference <- list(export_generated = meta$generated, filters = filter_cases, payloads = lapply(sample_ids, payload_sums))
 out <- file.path(a$root, "web", "tests", "parity_reference.json")

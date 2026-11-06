@@ -13,11 +13,13 @@ export interface FilterState {
   teamSide: "any" | "off" | "def";
   player: string;
   playerRole: "any" | "off" | "def" | "actor";
+  /** Offensive rebounds in the possession: "with" at least one, "without" none. */
+  oreb: "any" | "with" | "without";
 }
 
 export function emptyFilters(): FilterState {
   return { game: [], period: [], result: [], shotType: [], types: [], typesMode: "any", team: [], teamSide: "any",
-           player: "", playerRole: "any" };
+           player: "", playerRole: "any", oreb: "any" };
 }
 
 // R: filter_plays() in src/play_viewer/R/data.R. Checks run in the same order; an empty selection means
@@ -30,6 +32,8 @@ export function filterPlays(plays: PlayRow[], f: FilterState): PlayRow[] {
     if (periods.length && !periods.includes(p.q)) return false;
     if (f.result.length && !f.result.includes(p.result)) return false;
     if (f.shotType.length && !p.shotTypes.some((s) => f.shotType.includes(s))) return false;
+    if (f.oreb === "with" && !(p.oreb > 0)) return false;
+    if (f.oreb === "without" && p.oreb > 0) return false;
     if (f.types.length) {
       const ok = f.typesMode === "all" ? f.types.every((t) => p.types.includes(t)) : p.types.some((t) => f.types.includes(t));
       if (!ok) return false;

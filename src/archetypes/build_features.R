@@ -11,7 +11,7 @@ args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 here <- if (length(script)) dirname(script) else "src/archetypes"
 source(file.path(here, "..", "play_viewer", "R", "data.R"))
-source(file.path(here, "..", "epv", "R", "features.R"))
+source(file.path(here, "R", "tracking_state.R"))
 for (f in c("tracked.R", "season.R", "spec.R", "assemble.R")) source(file.path(here, "R", f))
 
 MIN_CHANCES <- 40L        # tracked chances on one side of the ball for a player to help define the clusters

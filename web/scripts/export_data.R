@@ -1,24 +1,18 @@
 # Export the play viewer's data for the static site in web/.
 #   Rscript web/scripts/export_data.R          (from anywhere inside the repository)
 #   Rscript web/scripts/export_data.R --page   (only archetypes.html, after editing the Archetypes tab's wording)
-#   Rscript web/scripts/export_data.R --control   (only control.json, after src/court_control/build_control.R)
 #
 # Reads the Shiny app's caches through the app's own functions and writes to web/public/data/:
 #   meta.json            filter choices and the export's `generated` stamp
 #   plays.json           one light record per possession: list text plus the fields the filters need
-#   g<game>_p<period>.json   per-play header for one game period: players, events, touches, the steps behind
-#                            each shot's xFG, byte offsets
-#   g<game>_p<period>.bin    that period's tracking and EPV prices
+#   g<game>_p<period>.json   per-play header for one game period: players, events, touches, byte offsets
+#   g<game>_p<period>.bin    that period's tracking
 #   archetypes.html      the app's Archetypes tab, as the app renders it (needs outputs/archetypes/)
-#   control.json         court control parameters and court-value grid (outputs/court_control/params.json);
-#                        its reference cases go to web/tests/control_reference.json
 #
 # Binary layout, little-endian. Each play is one segment starting on a 4-byte boundary:
-#   int32  frames[n], epv.f[m], epv.to[m], epv.holder[m]                      (-1 = null)
+#   int32  frames[n]                                                          (-1 = null)
 #   int16  gc[n]*10, sc[n]*10, ball x[n], y[n], z[n] *100,
-#          per player: x[n], y[n] *100,
-#          epv v, shot, pass [m] *1000; haz, rop, cum [m] *10000,
-#          per priced player: sv[m], pv[m] *1000; tov[m] *10000               (-32768 = null)
+#          per player: x[n], y[n] *100                                       (-32768 = null)
 #   uint8  stopped[n], per player: detected[n]
 # The app already rounds to these precisions, so the integers are exact and the site shows the app's numbers.
 #
@@ -32,21 +26,6 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_a
 a <- load_shiny_app()
 out_dir <- file.path(a$root, "web", "public", "data")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-
-# ---- court control: fitted parameters and the site's test cases, as build_control.R wrote them -----
-
-control_dir <- file.path(a$root, "outputs", "court_control")
-if (file.exists(file.path(control_dir, "params.json"))) {
-  invisible(file.copy(file.path(control_dir, "params.json"), file.path(out_dir, "control.json"), overwrite = TRUE))
-  invisible(file.copy(file.path(control_dir, "reference.json"), file.path(a$root, "web", "tests", "control_reference.json"),
-                      overwrite = TRUE))
-} else {
-  message("No court control parameters yet: run src/court_control/build_control.R. The site runs without the overlay.")
-}
-if ("--control" %in% args) {
-  message("Wrote control.json only.")
-  quit(save = "no")
-}
 
 # ---- the Archetypes tab, rendered by the app's own page function ------------------------------
 
@@ -77,14 +56,9 @@ ids32 <- function(v) {
 
 #' Write one play's segment and return its length in bytes (a multiple of 4).
 write_segment <- function(con, p) {
-  e <- p$epv
-  priced <- e$players
-  i32 <- c(ids32(p$frames), ids32(e$f), ids32(e$to), ids32(e$holder))
+  i32 <- ids32(p$frames)
   i16 <- c(scaled(p$gc, 10), scaled(p$sc, 10), scaled(p$ball$x, 100), scaled(p$ball$y, 100), scaled(p$ball$z, 100),
-           unlist(lapply(p$players, function(pl) c(scaled(pl$x, 100), scaled(pl$y, 100)))),
-           scaled(e$v, 1000), scaled(e$shot, 1000), scaled(e$pass, 1000),
-           scaled(e$haz, 10000), scaled(e$rop, 10000), scaled(e$cum, 10000),
-           unlist(lapply(priced, function(o) c(scaled(o$sv, 1000), scaled(o$pv, 1000), scaled(o$tov, 10000)))))
+           unlist(lapply(p$players, function(pl) c(scaled(pl$x, 100), scaled(pl$y, 100)))))
   u8 <- c(as.integer(p$stopped), unlist(lapply(p$players, function(pl) fcoalesce(as.integer(pl$d), 0L))))
   bytes <- 4L * length(i32) + 2L * length(i16) + length(u8)
   pad <- (4L - bytes %% 4L) %% 4L
@@ -97,19 +71,19 @@ write_segment <- function(con, p) {
 
 #' Everything about a play that is not a per-frame series.
 play_header <- function(p, offset) {
-  list(id = p$id, o = offset, n = length(p$frames), m = length(p$epv$f), game = p$game, period = p$period,
+  list(id = p$id, o = offset, n = length(p$frames), game = p$game, period = p$period,
        off = p$off, def = p$def, home = p$home, away = p$away, homeScore = p$homeScore, awayScore = p$awayScore,
        result = p$result, who = p$who, types = I(as.character(p$types)), colors = p$colors,
        leftHoop = a$app_data$plays[id == p$id]$left_hoop,
        players = lapply(p$players, function(pl) c(pl[c("id", "jersey", "name", "last", "role")], list(arch = pl$arch))),
-       priced = I(as.integer(names(p$epv$players))), events = p$events, touches = p$touches, shots = p$shots)
+       events = p$events, touches = p$touches)
 }
 
 save_json <- function(x, name) {
   write_json(x, file.path(out_dir, name), auto_unbox = TRUE, digits = NA, na = "null", null = "null")
 }
 
-# ---- tracking and prices, one pair of files per game period -------------------------------------
+# ---- tracking, one pair of files per game period -------------------------------------
 
 plays <- copy(a$app_data$plays)
 plays[, file := sprintf("g%d_p%d", game_id, period)]
@@ -138,7 +112,7 @@ light <- lapply(seq_len(nrow(plays)), function(i) {
        clock = shown$clock[i], off = shown$off[i], def = shown$def[i], secs = shown$secs[i], result = shown$result[i],
        who = shown$who[i], typeLabels = shown$types[i], types = I(as.character(plays$types[[i]])),
        shotTypes = I(as.character(plays$shot_types[[i]])), offTeam = plays$off_team[i], defTeam = plays$def_team[i],
-       offIds = I(as.integer(plays$off_ids[[i]])), defIds = I(as.integer(plays$def_ids[[i]])),
+       oreb = plays$n_oreb[i], offIds = I(as.integer(plays$off_ids[[i]])), defIds = I(as.integer(plays$def_ids[[i]])),
        actors = if (is.null(acted)) list() else lapply(seq_len(nrow(acted)), function(j) list(acted$type[j], acted$pid[j])))
 })
 save_json(light, "plays.json")

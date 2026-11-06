@@ -40,6 +40,8 @@ export interface PlayRow {
   offIds: number[];
   defIds: number[];
   actors: [string, number][];
+  /** Offensive rebounds a player collected in the possession (team rebounds are not counted). */
+  oreb: number;
 }
 
 export type Role = "off" | "def";
@@ -92,39 +94,11 @@ export interface Touch {
   f1: number;
 }
 
-/** The steps behind one tracked shot's xFG at its release (explain_xfg() in src/epv/R/models.R). */
-export interface ShotSteps {
-  /** Release frame. */
-  f: number;
-  pid: number;
-  made: boolean;
-  fouled: boolean;
-  three: boolean;
-  /** The kind of shot: jump shots are split into midrange and three. */
-  zone: "rim" | "mid" | "three";
-  /** Which context model priced it. */
-  model: "rim" | "jump";
-  /** Feet from the hoop. */
-  dist: number;
-  /** Trees in that context model; 0 means only fixed effects move xFG from the baseline. */
-  rounds: number;
-  /** The model's xFG for an average shot of this kind: where the effects start from. */
-  base: number;
-  /** Features whose effect includes one set from the season aggregates, not fitted (null if none). */
-  fixed: Record<string, boolean> | null;
-  xfg: number;
-  /** Each input of the shot's context model at release, by its name in the model; null where it was not measured. */
-  v: Record<string, number | null>;
-  /** What each feature adds to xFG. The effects sum to xfg - base. */
-  e: Record<string, number | null>;
-}
-
 /** One play's entry in g<game>_p<period>.json. `o` is its byte offset in the matching .bin file. */
 export interface PlayHeader {
   id: string;
   o: number;
   n: number;
-  m: number;
   game: string;
   period: number;
   off: string;
@@ -141,11 +115,8 @@ export interface PlayHeader {
    * viewer rotates them back to the camera's view. Missing from older exports (drawn as stored). */
   leftHoop?: boolean;
   players: PlayerInfo[];
-  priced: number[];
   events: PlayEvent[];
   touches: Touch[];
-  /** Missing from exports made before shots were priced one by one. */
-  shots?: ShotSteps[];
 }
 
 export interface PeriodIndex {
@@ -159,38 +130,16 @@ export type Series = Float64Array;
 export interface PlayerTrack extends PlayerInfo {
   x: Series;
   y: Series;
+  /** 1 where the position was detected on screen, 0 where it was extrapolated. */
   d: Uint8Array;
 }
 
-export interface OptionPrices {
-  sv: Series;
-  pv: Series;
-  tov: Series;
-}
-
-/** EPV prices on the pricing grid (about every third frame). */
-export interface Epv {
-  f: Int32Array;
-  to: Int32Array;
-  holder: Int32Array;
-  v: Series;
-  shot: Series;
-  pass: Series;
-  haz: Series;
-  rop: Series;
-  cum: Series;
-  players: Map<number, OptionPrices>;
-}
-
 /** Everything needed to animate one possession: the Shiny app's "play" message, decoded. */
-export interface Play extends Omit<PlayHeader, "players" | "o" | "n" | "m" | "priced" | "shots"> {
+export interface Play extends Omit<PlayHeader, "players" | "o" | "n"> {
   frames: Int32Array;
   gc: Series;
   sc: Series;
   stopped: Uint8Array;
   ball: { x: Series; y: Series; z: Series };
   players: PlayerTrack[];
-  epv: Epv | null;
-  /** Tracked shots of the possession in order of release. */
-  shots: ShotSteps[];
 }

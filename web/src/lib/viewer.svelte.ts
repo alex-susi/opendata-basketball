@@ -1,8 +1,6 @@
-// Playback and display state shared by the stage, the transport bar and the side panel.
+// Playback and display state shared by the stage, the transport bar, the trace panel and the side panel.
 
-import type { ControlMode } from "./controlLayer";
 import type { CourtView } from "./court";
-import type { LandingView, ReboundEpisode, ReboundModel, ReboundReading, Step09Step } from "./rebounding";
 
 export const viewer = $state({
   /** Playback position: an index into the current play's frame sequence, fractional between frames. */
@@ -16,29 +14,19 @@ export const viewer = $state({
   loop: true,
   /** Ring each player on the court in his archetype's colour. */
   showArch: true,
-  /** The EPV labels on the court. The readout beside the court shows whenever the play has prices. */
-  showEpv: true,
-  showPassValues: true,
-  showPassTov: true,
-  showBallTov: true,
-  showShotPass: true,
-  showBestPass: true,
-  /** Court control under the players (the rebound surface while a shot is in the air). */
-  showControl: false,
-  controlMode: "control" as ControlMode,
-  /** The rebounding forecast while a missed shot is live: landing sample, box-out links, collection chances. */
-  showRebound: true,
-  /** How the untouched-landing forecast is drawn: 50% and 90% regions, a density, the simulated landings as dots, or not at all. */
-  reboundLanding: "regions" as LandingView,
-  /** Whose collection chances are shown: Step 09's validated model (held out), or the first build's. */
-  reboundModel: "step09" as ReboundModel,
+  /** The trace panel under the court. */
+  showTrace: true,
+  /** What it follows: the ball's height, or one player's distance to the closest opponent. */
+  trace: "ball" as "ball" | "nearest",
+  /** The player the nearest-opponent trace follows (clicked on the court or in a roster), or null. */
+  focusPid: null as number | null,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */
   hidden: false,
 });
 
-/** The frame last drawn, as the page shows it around the canvas: rosters, header clocks, the EPV readout and the shot panel. */
+/** The frame last drawn, as the page shows it around the canvas: rosters, header clocks and the trace panel. */
 export const live = $state({
   onCourt: [] as number[],
   handler: null as number | null,
@@ -46,17 +34,4 @@ export const live = $state({
   areaDef: null as number | null,
   gameClock: "",
   shotClock: "",
-  /** Readout cells (label, value); values are dashes where nothing is priced. */
-  readout: [] as [string, string][],
-  /** Index in the play's shots of the one the shot panel shows, or -1. */
-  shot: -1,
-  /** Court control readout at the frame drawn: which surface is showing and its numbers. */
-  control: null as { kind: string; cells: [string, string][] } | null,
-  /** The rebound forecast live at the frame drawn (the side panel reads it), or null. */
-  rebound: null as ReboundReading | null,
-  /** The play's missed shots with rebound forecasts, and whether talent-aware chances exist for its game. */
-  reboundEpisodes: [] as ReboundEpisode[],
-  reboundTalent: false,
-  /** Step 09's held-out forecasts of the play's misses, by episode id (empty when the export has none). */
-  reboundStep09: new Map<string, Step09Step[]>(),
 });

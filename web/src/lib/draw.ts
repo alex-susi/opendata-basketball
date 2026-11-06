@@ -1,52 +1,27 @@
-// Draws one moment of a possession on the canvas: court, court control, hulls, players, ball, EPV labels and
-// the caption. The clock, score and EPV readout are on the page, not the canvas, except in a recorded video
-// (drawHeader). Ported from draw(), drawPlayer(), drawTag(), drawOptions(), drawHeader() and drawCaption() in
-// the Shiny app's www/player.js; court control exists only on the site.
+// Draws one moment of a possession on the canvas: court, hulls, players, ball, the trace panel's pair and the
+// caption. The clock and score are on the page, not the canvas, except in a recorded video (drawHeader). Ported
+// from draw(), drawPlayer(), drawHeader() and drawCaption() in the Shiny app's www/player.js.
 
-import type { ControlParams } from "./control";
-import { controlAt, drawControl, type ControlMode } from "./controlLayer";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
-import { epvAt, type EpvReading } from "./epv";
-import { collectionLabels, drawReboundUnder, type HeatGrid, type LandingView, type ReboundReading } from "./rebounding";
-import { floorColors } from "./teamColors";
-import { clamp, clock, convexHull, pct, polygonArea, quarter, type Point } from "./geometry";
+import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
-import { shotIndexAt } from "./shots";
+import { nearestAt } from "./trace";
 import type { Play, PlayerTrack, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 const CAPTION_FRAMES = 62;   // how long an event label stays up
-const VALUE_SPAN = 0.35;     // points above/below current EPV at which pass-value colours saturate
-const TEXT_ENDS = [[255, 138, 128], [241, 243, 248], [125, 240, 180]];
 
 export interface DrawOptions {
   view: CourtView;
   showDef: boolean;
   showOff: boolean;
   showArch: boolean;
-  showEpv: boolean;
-  showPassValues: boolean;
-  showPassTov: boolean;
-  showBallTov: boolean;
-  showShotPass: boolean;
-  showBestPass: boolean;
-  showControl: boolean;
-  controlMode: ControlMode;
-  /** The rebounding forecast on the court (landing sample, box-out links, collection chances). */
-  showRebound: boolean;
+  /** The player whose nearest opponent is shown: both ringed and joined by a line. Null shows no pair. */
+  focusPid: number | null;
   hoverPid: number | null;
 }
 
-/** A rebound forecast to draw, whether its talent-aware chances are the ones labelled, the game's landing grid
- * and how landings are shown. */
-export interface ReboundDraw {
-  reading: ReboundReading;
-  talent: boolean;
-  grid: HeatGrid | null;
-  landing: LandingView;
-}
-
-/** What the page shows beside the canvas about the frame just drawn: rosters, clocks and the EPV readout. */
+/** What the page shows beside the canvas about the frame just drawn: rosters and clocks. */
 export interface FrameInfo {
   onCourt: number[];
   handler: number | null;
@@ -54,12 +29,8 @@ export interface FrameInfo {
   areaDef: number | null;
   gameClock: string;
   shotClock: string;
-  /** Readout cells in display order, or null when nothing is priced at this frame. */
-  readout: [string, string][] | null;
-  /** Index in play.shots of the shot the panel beside the half court shows, or -1. */
-  shot: number;
-  /** Court control readout, or null when the overlay is off or has nothing to show. */
-  control: { kind: string; cells: [string, string][] } | null;
+  /** Every player dot drawn, in CSS pixels, so a click on the canvas can find the player under it. */
+  hits: { id: number; x: number; y: number; r: number }[];
 }
 
 interface Dot {
@@ -100,19 +71,7 @@ function tint(color: string, share = 0.75): string {
   return `rgb(${[16, 8, 0].map((s) => Math.round(share * ((v >> s) & 255) + (1 - share) * 255)).join(",")})`;
 }
 
-// Red below the current EPV, neutral at it, green above it.
-function valueColor(delta: number): string {
-  const t = clamp(delta / VALUE_SPAN, -1, 1), end = t < 0 ? TEXT_ENDS[0] : TEXT_ENDS[2];
-  return `rgb(${TEXT_ENDS[1].map((m, i) => Math.round(m + (end[i] - m) * Math.abs(t))).join(",")})`;
-}
-
 const shotClockText = (seconds: number): string => (Number.isNaN(seconds) ? "–" : String(Math.ceil(seconds)));
-
-/** EPV, turnover odds for the rest of the possession, and cumulative turnover risk so far. */
-function readoutCells(ep: EpvReading): [string, string][] {
-  return [["EPV", ep.value == null ? "–" : ep.value.toFixed(2)], ["TOV% (ROP)", ep.rop == null ? "–" : pct(ep.rop, 1)],
-          ["Cum. TOV", ep.cum == null ? "–" : pct(ep.cum, 1)]];
-}
 
 // A team's hull: filled in its primary colour, outlined in whichever of its colours shows best on the floor.
 // Returns its area in square feet whether or not it is drawn, or null when fewer than three players are placed.
@@ -160,10 +119,10 @@ function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.fillText(d.p.jersey, x, y + 0.5);
 }
 
-// A small dark label. `anchor` is "center" (x is its middle) or "left" (x is its left edge).
-function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: string, color: string, size: number, anchor: "center" | "left"): void {
+// A small dark label centred on x.
+function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: string, color: string, size: number): void {
   ctx.font = `700 ${size}px ${FONT}`;
-  const w = ctx.measureText(text).width + 10, h = size + 7, left = anchor === "left" ? x : x - w / 2;
+  const w = ctx.measureText(text).width + 10, h = size + 7, left = x - w / 2;
   ctx.fillStyle = COLORS.panel;
   ctx.globalAlpha = 0.92;
   ctx.beginPath();
@@ -176,8 +135,8 @@ function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: str
   ctx.fillText(text, left + w / 2, cy + 0.5);
 }
 
-// A small pill attached to the right of a dot, like an exponent (above) or a subscript (below): the rebound
-// chance in the team's kit above, the archetype in an outlined pill of its colour below.
+// A small pill attached to the right of a dot, like an exponent (above) or a subscript (below). Used for the
+// archetype, in an outlined pill of its colour, below the dot.
 function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, above: boolean, text: string,
                     fill: string, stroke: string, ink: string): void {
   const size = Math.round(clamp(0.62 * r, 8.5, 11)), h = size + 4;
@@ -197,66 +156,36 @@ function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.fillText(text, left + w / 2, cy + 0.5);
 }
 
-// EPV labels around the offense. Player dots themselves are never restyled by the overlay.
-function drawOptions(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: number, ep: EpvReading, o: DrawOptions): void {
-  const at = (d: Dot): Point => [px(L, d.x), py(L, d.y)];
-  const holder = dots.find((d) => d.p.id === ep.holder);
-  for (const d of dots) {
-    if (d === holder) continue;
-    const [x, y] = at(d), pv = ep.option(d.p.id, "pv"), tov = ep.option(d.p.id, "tov");
-    if (o.showPassValues && pv != null) drawTag(ctx, x, y - r - 12, pv.toFixed(2), valueColor(pv - (ep.value ?? pv)), 12, "center");
-    if (o.showPassTov && tov != null) drawTag(ctx, x + r + 5, y, `${pct(tov, 1)} TOV`, COLORS.ink, 10.5, "left");
-  }
-  if (!holder) return;
-  const [x, y] = at(holder);
-  if (o.showShotPass && ep.shot != null) {
-    const w = 96, h = 34, top = y - r - 9 - h;
-    ctx.fillStyle = COLORS.panel;
-    ctx.globalAlpha = 0.92;
+// The trace panel's pair, under the players: a line from the followed player to his nearest opponent with the
+// distance at its middle, and a ring around each (thicker around the followed player).
+function drawPair(ctx: CanvasRenderingContext2D, L: Layout, a: Dot, b: Dot, r: number, dist: number): void {
+  const ax = px(L, a.x), ay = py(L, a.y), bx = px(L, b.x), by = py(L, b.y);
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = COLORS.pair;
+  ctx.stroke();
+  for (const [x, y, w] of [[ax, ay, 3.5], [bx, by, 2]]) {
     ctx.beginPath();
-    ctx.roundRect(x - w / 2, top, w, h, 5);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const cells: [string, number | null, number][] = [["SHOT", ep.shot, x - w / 4], ["PASS", ep.pass, x + w / 4]];
-    for (const [label, value, cx] of cells) {
-      ctx.font = `700 8.5px ${FONT}`;
-      ctx.fillStyle = COLORS.muted;
-      ctx.fillText(label, cx, top + 10);
-      ctx.font = `700 12.5px ${FONT}`;
-      ctx.fillStyle = COLORS.ink;
-      ctx.fillText(value == null ? "–" : value.toFixed(2), cx, top + 23);
-    }
+    ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
+    ctx.lineWidth = w;
+    ctx.stroke();
   }
-  if (o.showPassValues && ep.value != null) drawTag(ctx, x, y + r + 12, ep.value.toFixed(2), COLORS.ink, 12, "center");
-  if (o.showBallTov && ep.haz != null) {
-    const bx = x + r * 0.95, by = y - r * 0.95;
-    ctx.beginPath();
-    ctx.arc(bx, by, 13.5, 0, 2 * Math.PI);
-    ctx.fillStyle = COLORS.risk;
-    ctx.fill();
-    ctx.fillStyle = COLORS.dark;
-    ctx.font = `700 10px ${FONT}`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(pct(ep.haz, ep.haz < 0.0995 ? 1 : 0), bx, by + 0.5);
-  }
+  drawTag(ctx, (ax + bx) / 2, (ay + by) / 2, `${dist.toFixed(1)} ft`, COLORS.pair, 11);
 }
 
-// The header of a recorded video, on one line above the court: quarter, shot clock, game clock, the score at
-// the start of the possession, and the EPV readout where the frame is priced. On the page these live outside
-// the canvas, so a saved video would otherwise not say what it shows.
-function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor, ep: EpvReading | null, o: DrawOptions): void {
+// The header of a recorded video, on one line above the court: quarter, shot clock, game clock and the score at
+// the start of the possession. On the page these live outside the canvas, so a saved video would otherwise not
+// say what it shows.
+function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor): void {
   const homeIsOff = play.off === play.home, gap = "   ·   ";
   const home = homeIsOff ? play.colors.off : play.colors.def, away = homeIsOff ? play.colors.def : play.colors.off;
   const parts: [string, string, number][] = [
     [`${quarter(play.period)}  `, COLORS.ink, 700], [shotClockText(play.sc[c.i0]), COLORS.risk, 700],
     [`  ${clock(play.gc[c.i0])}`, COLORS.ink, 700], [gap, COLORS.muted, 400], [play.home, home.text, 700],
     [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.ink, 700], [play.away, away.text, 700]];
-  if (ep) {
-    for (const [label, value] of readoutCells(ep)) parts.push([`${label === "EPV" ? gap : "   "}${label} `, COLORS.muted, 400], [value, COLORS.ink, 700]);
-  }
   const span = (size: number) => parts.reduce((sum, [text, , weight]) => {
     ctx.font = `${weight} ${size}px ${FONT}`;
     return sum + ctx.measureText(text).width;
@@ -293,14 +222,11 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[])
 
 /**
  * Draw the scene at playback position `pos` (an index into `seq`, fractional between frames).
- * @param header Draw the clock, score and EPV readout on the canvas too (while a video is recorded).
- * @param control Court control parameters; null draws no court control.
- * @param rebound The rebound forecast live at this moment, or null.
+ * @param header Draw the clock and score on the canvas too (while a video is recorded).
  * @returns what is on court at that moment, or null when there is no play to draw.
  */
 export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, dpr: number, play: Play | null, seq: number[],
-                          pos: number, o: DrawOptions, header = false, control: ControlParams | null = null,
-                          rebound: ReboundDraw | null = null): FrameInfo | null {
+                          pos: number, o: DrawOptions, header = false): FrameInfo | null {
   const L = courtLayout(W, H, o.view, header ? HEADER_TOP : PAD.top, play?.leftHoop ? -1 : 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.paper;
@@ -314,8 +240,6 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     const x = blend(p.x, c), y = blend(p.y, c);
     if (x != null && y != null) dots[p.role].push({ p, x, y });
   }
-  // Prices are read whether or not the court overlay is on: the readout beside the court always shows them.
-  const ep = epvAt(play.epv, frame + c.t);
   const r = clamp(1.2 * L.s, 9, 22), handler = ballHandler(play, frame);
 
   ctx.save();
@@ -325,43 +249,18 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.clip();
   const areaDef = drawHull(ctx, L, dots.def, play.colors.def, o.showDef);
   const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
-  // Court control goes over the hulls (their fill would hide it) and under the players. It is computed at the
-  // tracking frame, not blended between frames.
-  const cc = control && o.showControl ? controlAt(play, c.i0, o.controlMode, control) : null;
-  if (cc) drawControl(ctx, L, cc, floorColors(play));
-  if (ep && o.showEpv && o.showBestPass && ep.target != null) {
-    const from = dots.off.find((d) => d.p.id === ep.holder), to = dots.off.find((d) => d.p.id === ep.target);
-    if (from && to) {
-      ctx.beginPath();
-      ctx.moveTo(px(L, from.x), py(L, from.y));
-      ctx.lineTo(px(L, to.x), py(L, to.y));
-      ctx.lineWidth = 3;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = COLORS.best;
-      ctx.stroke();
-    }
+  const all = dots.def.concat(dots.off);
+  if (o.focusPid != null) {
+    const near = nearestAt(play, o.focusPid, c);
+    const a = all.find((d) => d.p.id === o.focusPid), b = near && all.find((d) => d.p.id === near.pid);
+    if (a && b && near) drawPair(ctx, L, a, b, r, near.dist);
   }
-  // The rebound forecast sits over court control and under the players; its chances are labelled after them.
-  const rb = rebound && o.showRebound ? rebound : null;
-  if (rb) {
-    const at = new Map<number, [number, number]>(), mark = new Map<number, string>();
-    for (const d of dots.def.concat(dots.off)) { at.set(d.p.id, [d.x, d.y]); mark.set(d.p.id, play.colors[d.p.role].mark); }
-    drawReboundUnder(ctx, L, rb.reading, rb.grid, rb.landing, at, mark);
-  }
-  for (const d of dots.def.concat(dots.off)) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
+  for (const d of all) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
   if (o.showArch) {
     for (const d of dots.def.concat(dots.off)) {
       if (!d.p.arch) continue;
       const tag = tint(archColor(d.p.arch.slot));
       drawScript(ctx, L, d, r, false, ARCH_ABBR[d.p.arch.name] ?? d.p.arch.short, COLORS.panel, tag, tag);
-    }
-  }
-  if (ep && o.showEpv) drawOptions(ctx, L, dots.off, r, ep, o);
-  if (rb) {
-    const chance = collectionLabels(rb.reading, rb.talent);
-    for (const d of dots.def.concat(dots.off)) {
-      const p = chance.get(d.p.id), kit = play.colors[d.p.role];
-      if (p != null) drawScript(ctx, L, d, r, true, `${Math.round(p * 100)}%`, kit.fill, kit.edge, kit.ink);
     }
   }
   const bx = blend(play.ball.x, c), by = blend(play.ball.y, c), bz = blend(play.ball.z, c) ?? 0;
@@ -379,9 +278,9 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.restore();
 
   const labels = play.events.filter((e) => frame >= e.f && frame - e.f <= CAPTION_FRAMES).slice(-2).map((e) => e.label);
-  if (header) drawHeader(ctx, L, play, c, ep, o);
+  if (header) drawHeader(ctx, L, play, c);
   drawCaption(ctx, L, labels);
   return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
-           gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]), readout: ep ? readoutCells(ep) : null,
-           shot: shotIndexAt(play.shots, frame), control: cc ? { kind: cc.kind, cells: cc.readout } : null };
+           gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]),
+           hits: all.map((d) => ({ id: d.p.id, x: px(L, d.x), y: py(L, d.y), r })) };
 }

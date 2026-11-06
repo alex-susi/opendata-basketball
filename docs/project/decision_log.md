@@ -1816,3 +1816,29 @@ first build back.
 - **Code:** `web/src/lib/rebounding.ts` (`step09At()`, `withStep09()`), `data.ts` (`loadStep09()`), `Stage.svelte`,
   `ReboundPanel.svelte`, `viewer.svelte.ts`; three new tests. Checks: svelte-check 0 errors, 52 tests pass, build passes;
   checked in the preview on game 114243 (values equal the export; the switch works both ways).
+
+## 2026-11-06 — EPV, court control and rebounding models archived; viewer simplified
+
+Decided by the owner: the modelling work had become a black box to them, so it is set aside until it can be rebuilt
+one understood step at a time. Nothing was deleted; everything moved to `zz_Archive/` under its original path.
+
+- **Archived:** `src/epv/`, `src/court_control/`, `src/rebounding/`; `outputs/epv/`, `outputs/court_control/`,
+  `outputs/rebounding/`; the caches `outputs/cache/{epv,court_control,rebounding}/` and `external/` (git-ignored, also
+  under `zz_Archive/`); `BUILD_SPEC.md`, the rebounding manual HTML, `docs/project/{rebounding.md,
+  ANNOTATION_RUBRIC.md,REVIEWER2_GUIDE.*,SOURCE_REGISTER.md}`; the site's EPV, court control, shot (xFG) and rebound
+  panels, their libraries and tests, and their data files. The earlier entries in this log still describe that work;
+  their paths now sit under `zz_Archive/`.
+- **Kept:** the Rebounding tab's descriptive sections (data, ball-track audit, where misses go, the rebound finder),
+  read from `web/public/data/rebounding_eda.json`, frozen from the archived `rebounding.json`. Its "decision" boxes,
+  which pointed at the models, are now plain takeaways. The archetypes (`src/archetypes/`) keep working: the few
+  tracking helpers they borrowed from `src/epv/R/features.R` are copied, unchanged, to
+  `src/archetypes/R/tracking_state.R`.
+- **Export:** the play binary no longer carries EPV prices or shot steps (`web/scripts/export_data.R`, `decode.ts`).
+  `plays.json` gains `oreb`: offensive rebounds a player collected in the possession (rebounds table, `defensive` false
+  and `rebounded` true; team rebounds are not counted). 166 of 1,557 possessions have one.
+- **Viewer:** a filter for offensive rebounds (in the Shiny app's `filter_plays()` too, with three parity cases); an
+  "Off. rebound" tag on list entries; a narrower, resizable left column (one filter per row; pairs return when it is
+  dragged past 340 px); a trace panel between the court and the transport bar showing the ball's height, or a clicked
+  player's floor distance to the nearest opponent, sampled every 0.2 s of playback, with extrapolated positions marked.
+- **Checks:** export and parity reference rerun (`INDEX_VERSION` 4), svelte-check 0 errors, 39 tests pass, checked in
+  the preview. The Shiny viewer's front end still holds its EPV and shot-panel code; with no prices it hides them.

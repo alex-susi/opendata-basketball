@@ -13,8 +13,8 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/parity_reference.R` | Runs filter cases through the real Shiny server and writes `tests/parity_reference.json` |
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
 | `public/data/` | `meta.json`, `plays.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
-| `src/lib/` | Decoding, filters, playback sequence, EPV lookup, shot steps, court and scene drawing — no framework code |
-| `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, transport bar, side panel with the rebounding panel), Archetypes and Rebounding |
+| `src/lib/` | Decoding, filters, playback sequence, the trace panel's samples, court and scene drawing — no framework code |
+| `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, trace panel, transport bar, side panel), Archetypes and Rebounding |
 | `tests/parity.test.ts` | Checks the site's filters and decoded plays against the Shiny app |
 
 ## Commands
@@ -39,31 +39,17 @@ Rscript web/scripts/export_data.R
 Rscript web/scripts/parity_reference.R
 ```
 
-The export needs the viewer's caches (`outputs/cache/play_viewer/`, built on the Shiny app's first start) and,
-for the EPV overlay and the shot panel beside the half court, the prices from `Rscript src/epv/build_epv.R`. The archetype tags beside each player's name
+The export needs the viewer's caches (`outputs/cache/play_viewer/`, built on the Shiny app's first start). The archetype tags beside each player's name
 and the Archetypes tab come from `outputs/archetypes/` (`Rscript src/archetypes/build_features.R`, then
 `Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters.
 
-The court control overlay is computed in the browser (`src/lib/control.ts`, mirroring
-`src/court_control/R/control.R`) from parameters fitted by `Rscript src/court_control/build_control.R`. The export
-copies them to `public/data/control.json`, and copies their reference cases to `tests/control_reference.json`
-(checked by `tests/control.test.ts`). To refresh only these, without touching the play data or its stamp:
+The Rebounding tab reads `public/data/rebounding_eda.json`: descriptive tables of the ten games' misses, frozen on
+2026-11-06 from the rebounding pipeline when it was archived (`zz_Archive/src/rebounding/`; see
+`docs/project/decision_log.md`). No script rewrites it. The tab's wording is in `src/components/Rebounding.svelte`;
+its numbers all come from that file.
 
-```bash
-Rscript web/scripts/export_data.R --control
-```
-
-The rebounding panel beside the court, its overlay and the Rebounding tab read `public/data/rebounding.json` and
-`public/data/rebounding/<gameId>.json`, written by the rebounding pipeline (`src/rebounding/`, see
-`docs/project/rebounding.md`), whose last step is:
-
-```bash
-Rscript src/rebounding/run_export.R
-```
-
-It leaves the play data and its stamp untouched. `rebounding.json` is revalidated on every load and carries its own
-build stamp for the per-game files, so a rebounding-only export is never paired with stale files. The Rebounding
-tab's wording is in `src/components/Rebounding.svelte`; its numbers all come from `rebounding.json`.
+The EPV, court control and rebounding models, their panels and their data files are archived in `zz_Archive/`
+(same paths as before).
 
 To change only the wording of the Archetypes tab, edit `src/play_viewer/R/archetype_page.R` and rewrite the page
 alone. This leaves the play data and its stamp untouched, so the parity reference stays valid.
@@ -85,11 +71,10 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 
 - Multi-select filters are a custom dropdown with checkboxes and a search box instead of selectize.
 - The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes` and the Rebounding tab `#/rebounding`.
-- The rebounding panel, its court overlay and the Rebounding tab exist only on the site.
+- The Rebounding tab, the trace panel under the court and the resizable left column exist only on the site.
 - The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
   `src/play_viewer/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.
 - On narrow screens the court comes first, then options and rosters, then filters and the play list.
-- Court control (Display panel, "Court control") exists only on the site.
-- Coordinates and prices are stored as scaled integers at the precision the Shiny app already rounds to.
+- Coordinates are stored as scaled integers at the precision the Shiny app already rounds to.
 
 Data: SkillCorner open basketball data (Liga ACB 2025-2026), MIT licence.

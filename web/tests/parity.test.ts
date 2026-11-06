@@ -9,7 +9,7 @@ import { decodePlay } from "../src/lib/decode";
 import { filterPlays, type FilterState } from "../src/lib/filters";
 import { convexHull, polygonArea, type Point } from "../src/lib/geometry";
 import { buildSeq, stepAction } from "../src/lib/sequence";
-import { shotIndexAt, shotRows } from "../src/lib/shots";
+import { nearestOpponent, traceSamples } from "../src/lib/trace";
 import type { Meta, PeriodIndex, PlayRow, Series } from "../src/lib/types";
 
 const DATA = join(__dirname, "..", "public", "data");
@@ -23,15 +23,13 @@ const bytes = (name: string): ArrayBuffer => {
 interface FilterCase {
   name: string;
   inputs: { game: string[]; period: string[]; result: string[]; shot_type: string[]; types: string[]; types_mode: "any" | "all";
-            team: string[]; team_side: "any" | "off" | "def"; player: string; player_role: "any" | "off" | "def" | "actor" };
+            team: string[]; team_side: "any" | "off" | "def"; player: string; player_role: "any" | "off" | "def" | "actor";
+            oreb: "any" | "with" | "without" };
   ids: string[];
 }
-interface OptionSums { id: number; sv: number; pv: number; tov: number; present: number }
 interface PayloadSums {
-  id: string; n: number; m: number; frames: number; gc: number; sc: number; scPresent: number; stopped: number; ball: number[];
+  id: string; n: number; frames: number; gc: number; sc: number; scPresent: number; stopped: number; ball: number[];
   players: { id: number; role: string; arch: string | null; x: number; y: number; present: number; detected: number }[];
-  shots: { f: number; pid: number; xfg: number; values: number; effects: number }[];
-  epv: { f: number; to: number; holder: number; v: number; shot: number; pass: number; haz: number; rop: number; cum: number; players: OptionSums[] };
 }
 interface Reference { export_generated: string; filters: FilterCase[]; payloads: PayloadSums[] }
 
@@ -47,6 +45,10 @@ const total = (v: ArrayLike<number>): number => {
 const present = (v: Series): number => v.reduce((n, x) => n + (Number.isNaN(x) ? 0 : 1), 0);
 // Sums of values stored to 2-4 decimals: agree with R to rounding error of the summation only.
 const close = (got: number, want: number) => expect(Math.abs(got - want)).toBeLessThan(1e-6 * Math.max(1, Math.abs(want)));
+const loadPlay = (id: string) => {
+  const row = plays.find((p) => p.id === id)!;
+  return decodePlay(bytes(`${row.file}.bin`), json<PeriodIndex>(`${row.file}.json`).plays[row.id]);
+};
 
 describe("export", () => {
   it("matches the reference's export stamp (rerun scripts/parity_reference.R after an export)", () => {
@@ -70,13 +72,20 @@ describe("export", () => {
       for (const h of Object.values(index.plays)) {
         expect(h.o).toBe(at);
         expect(listed.has(`${file}/${h.id}`)).toBe(true);
-        const size = 4 * (h.n + 3 * h.m) + 2 * (5 * h.n + 2 * h.n * h.players.length + 6 * h.m + 3 * h.m * h.priced.length) + h.n * (1 + h.players.length);
+        const size = 4 * h.n + 2 * (5 * h.n + 2 * h.n * h.players.length) + h.n * (1 + h.players.length);
         at += size + ((4 - (size % 4)) % 4);
         seen++;
       }
       expect(at).toBe(index.bytes);
     }
     expect(seen).toBe(plays.length);
+  });
+
+  it("counts offensive rebounds on every play, and some plays have them", () => {
+    expect(plays.every((p) => Number.isInteger(p.oreb) && p.oreb >= 0)).toBe(true);
+    const withOreb = plays.filter((p) => p.oreb > 0).length;
+    expect(withOreb).toBeGreaterThan(50);
+    expect(withOreb).toBeLessThan(plays.length / 2);
   });
 });
 
@@ -90,40 +99,12 @@ describe("archetypes", () => {
   });
 });
 
-describe("shots", () => {
-  const headers = readdirSync(DATA).filter((f) => /^g\d+_p\d+\.json$/.test(f)).flatMap((f) => Object.values(json<PeriodIndex>(f).plays));
-  const shots = headers.flatMap((h) => (h.shots ?? []).map((shot) => ({ h, shot })));
-
-  it("every shot is taken by an offensive player of its play, and its effects add up to xFG minus the baseline", () => {
-    expect(shots.length).toBeGreaterThan(1000);
-    for (const { h, shot } of shots) {
-      expect(h.players.find((p) => p.id === shot.pid)?.role).toBe("off");
-      const rows = shotRows(shot);
-      expect(rows.length).toBe(Object.keys(shot.e).length);
-      // Each effect is stored to four decimals.
-      expect(Math.abs(rows.reduce((sum, row) => sum + row.effect, 0) - (shot.xfg - shot.base))).toBeLessThan(1e-3);
-      // Without trees only the effects set from the season can move xFG, and only jump shots carry them.
-      if (shot.rounds === 0) expect(rows.every((row) => row.effect === 0 || Boolean(shot.fixed?.[row.key]))).toBe(true);
-      expect(Object.keys(shot.fixed ?? {})).toEqual(shot.model === "jump" ? ["def1", "held"] : []);
-      expect("rim_def" in shot.e).toBe(shot.model === "rim");
-    }
-  });
-
-  it("the panel follows playback: the first shot until the next one is released", () => {
-    const { h } = shots.find((s) => (s.h.shots ?? []).length > 1)!, [first, second] = h.shots!;
-    expect(shotIndexAt([], first.f)).toBe(-1);
-    expect(shotIndexAt(h.shots!, first.f - 50)).toBe(0);
-    expect(shotIndexAt(h.shots!, second.f - 1)).toBe(0);
-    expect(shotIndexAt(h.shots!, second.f)).toBe(1);
-  });
-});
-
 describe("filters match the Shiny server", () => {
   for (const c of reference.filters) {
     it(`${c.name}: ${c.ids.length} plays`, () => {
       const f: FilterState = { game: c.inputs.game, period: c.inputs.period, result: c.inputs.result, shotType: c.inputs.shot_type,
                                types: c.inputs.types, typesMode: c.inputs.types_mode, team: c.inputs.team, teamSide: c.inputs.team_side,
-                               player: c.inputs.player, playerRole: c.inputs.player_role };
+                               player: c.inputs.player, playerRole: c.inputs.player_role, oreb: c.inputs.oreb };
       expect(filterPlays(plays, f).map((p) => p.id)).toEqual(c.ids);
     });
   }
@@ -136,8 +117,7 @@ describe("filters match the Shiny server", () => {
 describe("decoded plays match the Shiny payload", () => {
   for (const want of reference.payloads) {
     it(want.id, () => {
-      const row = plays.find((p) => p.id === want.id)!;
-      const play = decodePlay(bytes(`${row.file}.bin`), json<PeriodIndex>(`${row.file}.json`).plays[row.id]);
+      const play = loadPlay(want.id);
       expect(play.frames.length).toBe(want.n);
       close(total(play.frames), want.frames);
       close(total(play.gc), want.gc);
@@ -152,28 +132,36 @@ describe("decoded plays match the Shiny payload", () => {
         expect(present(p.x)).toBe(want.players[i].present);
         close(total(p.d), want.players[i].detected);
       });
-      expect(play.shots.map((s) => [s.f, s.pid, s.xfg])).toEqual(want.shots.map((s) => [s.f, s.pid, s.xfg]));
-      play.shots.forEach((s, i) => {
-        close(total(Object.values(s.v).map((v) => v ?? NaN)), want.shots[i].values);
-        close(total(Object.values(s.e).map((v) => v ?? NaN)), want.shots[i].effects);
-      });
-      expect(play.epv?.f.length ?? 0).toBe(want.m);
-      if (!play.epv) return;
-      const e = play.epv;
-      close(total(e.f), want.epv.f);
-      close(total(Array.from(e.to).filter((v) => v >= 0)), want.epv.to);
-      close(total(e.holder), want.epv.holder);
-      for (const key of ["v", "shot", "pass", "haz", "rop", "cum"] as const) close(total(e[key]), want.epv[key]);
-      expect([...e.players.keys()]).toEqual(want.epv.players.map((p) => p.id));
-      for (const p of want.epv.players) {
-        const got = e.players.get(p.id)!;
-        close(total(got.sv), p.sv);
-        close(total(got.pv), p.pv);
-        close(total(got.tov), p.tov);
-        expect(present(got.pv)).toBe(p.present);
-      }
     });
   }
+});
+
+describe("trace panel", () => {
+  const play = loadPlay(reference.payloads[1].id);
+  const seq = buildSeq(play, true);
+
+  it("finds the nearest opponent by brute force", () => {
+    const off = play.players.find((p) => p.role === "off" && seq.slice(0, 200).some((i) => !Number.isNaN(p.x[i])))!;
+    for (const i of seq.slice(0, 200)) {
+      const got = nearestOpponent(play, off.id, i);
+      if (Number.isNaN(off.x[i])) { expect(got).toBeNull(); continue; }
+      let best = Infinity, who = -1;
+      for (const q of play.players) {
+        if (q.role === off.role || Number.isNaN(q.x[i])) continue;
+        const d = Math.hypot(q.x[i] - off.x[i], q.y[i] - off.y[i]);
+        if (d < best) { best = d; who = q.id; }
+      }
+      if (who < 0) expect(got).toBeNull();
+      else { expect(got!.pid).toBe(who); close(got!.dist, best); }
+    }
+  });
+
+  it("samples the ball's height every 5 sequence steps, on the transport's clock", () => {
+    const s = traceSamples(play, seq, { kind: "ball" });
+    expect(s.length).toBe(Math.floor((seq.length - 1) / 5) + 1);
+    expect(s[1].t).toBeCloseTo(5 / 25, 9);
+    for (const p of s) if (p.v != null) expect(p.v).toBe(play.ball.z[seq[p.k]]);
+  });
 });
 
 describe("geometry and sequence helpers", () => {
@@ -185,8 +173,7 @@ describe("geometry and sequence helpers", () => {
   });
 
   it("drops dead-ball frames only when asked, and steps between actions", () => {
-    const row = plays.find((p) => p.id === reference.payloads[0].id)!;
-    const play = decodePlay(bytes(`${row.file}.bin`), json<PeriodIndex>(`${row.file}.json`).plays[row.id]);
+    const play = loadPlay(reference.payloads[0].id);
     expect(buildSeq(play, false).length).toBe(play.frames.length);
     expect(buildSeq(play, true).length).toBeLessThan(play.frames.length);
     expect(stepAction([10, 50, 90], 50, 1, 120)).toBe(90);

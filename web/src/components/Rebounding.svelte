@@ -1,72 +1,39 @@
 <script lang="ts">
-  // The Rebounding tab: a walk through the rebounding models in the order they were built. Each stage shows what the
-  // ten games' data say, the modelling decision that follows from it, and how that decision was checked on games the
-  // model never saw. Every number is read from rebounding.json (src/rebounding/run_eda.R and run_export.R write it
-  // from outputs/rebounding/), so the text cannot drift from the results; only the explanations are written here.
-  import { loadReboundDoc } from "../lib/data";
+  // The Rebounding tab: a descriptive look at the ten tracked games' missed shots. What the data hold, how far the
+  // ball's track can be trusted, and where misses go and who gets them. No model is fitted here beyond a straight
+  // line and smoothing; every number comes from rebounding_eda.json, frozen from the archived rebounding pipeline
+  // (zz_Archive/src/rebounding/run_audit.R, run_eda.R, run_export.R), so the text cannot drift from the tables.
+  import { loadReboundEda } from "../lib/data";
   import Columns from "./charts/Columns.svelte";
   import CourtMap from "./charts/CourtMap.svelte";
   import { gridOf, kde, peak } from "./charts/kde";
   import RateDots from "./charts/RateDots.svelte";
   import Scatter from "./charts/Scatter.svelte";
   import ReboundFinder from "./ReboundFinder.svelte";
-  import ReboundingManual from "./ReboundingManual.svelte";
   import { SERIES } from "./charts/scale";
 
   type Cell = number | string | boolean | null | undefined;
   type Row = Record<string, Cell>;
   interface Doc {
     built: string;
-    talent: boolean;
     episodes: number;
-    checks: Row[] | null;
     eda: Record<string, Row[]>;
-    audit: Record<"counts" | "population" | "by_game" | "quality" | "hoops" | "gaps" | "timeline" | "held", Row[]>;
-    flight: { params: Record<string, Record<string, number>>; summary: Row[]; landing: Row[]; folds: Row[]; grid: Row[] };
-    collection: {
-      summary: Row[]; calibration: Row[]; contested: Row[]; folds: Row[]; access_grid: Row[]; sensitivity: Row[]; recovery: Row[];
-      theta: Record<string, Record<string, number>>; acc: Record<string, Record<string, number>>; players: Row[];
-    };
-    skills: {
-      identification: Row[]; movement: Row[]; movement_roles: Row[]; boxout_labels: Row[]; boxout_validation: Row[];
-      variance: Row[]; anticipation_players: Row[]; boxout_players: Row[];
-    };
-    /** The late model (src/rebounding/run_late.R); absent from exports made before it existed. */
-    late?: Record<string, Row[]>;
+    audit: Record<"counts" | "population" | "quality" | "hoops" | "gaps", Row[]>;
   }
   interface Col { key: string; label: string; fmt?: (v: Cell, row: Row) => string; num?: boolean; title?: string }
 
   let doc = $state.raw<Doc | null>(null);
   let problem = $state("");
-  loadReboundDoc<Doc>().then((d) => { doc = d; }).catch((err: Error) => { problem = err.message; });
+  loadReboundEda<Doc>().then((d) => { doc = d; }).catch((err: Error) => { problem = err.message; });
 
   // ---- formatting ----
   const n = (v: Cell) => (typeof v === "number" ? v : Number(v));
   const f = (d: number) => (v: Cell) => (v == null || Number.isNaN(n(v)) ? "–" : n(v).toFixed(d));
   const int = (v: Cell) => (v == null || Number.isNaN(n(v)) ? "–" : Math.round(n(v)).toLocaleString("en-US"));
   const pc = (d = 0) => (v: Cell) => (v == null || Number.isNaN(n(v)) ? "–" : `${(100 * n(v)).toFixed(d)}%`);
-  const pm = (v: Cell, row: Row, se = "gain_se") => `${f(3)(v)} ± ${f(3)(row[se])}`;
-  const yes = (v: Cell) => (v === true || v === "TRUE" ? "yes" : "no");
   const one = (rows: Row[] | undefined, pred: (r: Row) => boolean) => (rows ?? []).find(pred) ?? null;
   const E = (name: string): Row[] => doc?.eda?.[name] ?? [];
   const val = (name: string, key: string, term: string) => n(one(E(name), (r) => r.term === term)?.[key]);
-
-  const MODEL: Record<string, string> = {
-    team_prior: "Team prior", empirical_voronoi: "Empirical density + Voronoi", nearest_to_forecast: "Nearest to the forecast",
-    geometry_classifier: "Geometry classifier (benchmark)", access: "Access (physics)", access_obstruction: "Access + obstruction (used)",
-    "effects_sd0.15": "+ player effects, sd 0.15", "effects_sd0.3": "+ player effects, sd 0.3", "effects_sd0.6": "+ player effects, sd 0.6",
-    particle_contact: "Particle filter with contacts (used)", particle_no_contact: "Particle filter, no contacts",
-    empirical_bounce: "Empirical bounce library", kalman: "Kalman filter", ballistic: "Ballistic fit", cv: "Constant velocity",
-    stationary: "Stationary", damped_velocity: "Damped velocity", role_reference: "Typical moves, no momentum",
-    damped_role: "Damped momentum + typical move (used)",
-    base_rate: "Base rate", rim_order: "Closer to the hoop", geometry: "Geometry", geometry_player_effects: "Geometry + player effects",
-    current_site: "Rim model reused (before)", late_refit: "Same model, refit on late moments", late_time: "+ weights that change with time",
-    late_full: "+ who gets there first", late_height_flat: "+ reach height fitted",
-    late_height: "+ who gets there first only while the ball is low", late_effects: "+ player collection effects",
-  };
-  const model = (v: Cell) => MODEL[String(v)] ?? String(v);
-  const CHECK: Record<string, string> = { release: "At release", early: "Release + 0.32 s", contact: "Just before contact", after: "Contact + 0.2 s", rim: "Just before the rim" };
-  const chk = (v: Cell) => CHECK[String(v)] ?? String(v);
   const OUT: Record<string, string> = { "def player": "Defense collects", "off player": "Offense collects", "off team award": "Offense awarded", "def team award": "Defense awarded" };
 
   // ---- derived inputs for charts ----
@@ -124,88 +91,13 @@
   const allMinima = $derived(E("bounce_minima").reduce((s, r) => s + n(r.n), 0));
   const crossings = $derived(E("hoop_crossings").map((r) => ({ x: n(r.dx), y: n(r.dy), g: r.end === "camera right" ? 0 : 1,
                                                                tip: `Game ${r.game_id}, ${r.end}: ${f(2)(r.dx)} ft along, ${f(2)(r.dy)} ft across` })));
-  const rankCats = Array.from({ length: 10 }, (_, i) => String(i + 1));
-  const rankSeries = (name: string) => ["release", "rim"].map((cp, j) => ({
-    name: chk(cp), color: SERIES[j],
-    values: rankCats.map((k) => n(one(E(name), (r) => r.checkpoint === cp && String(r.rank) === k)?.share ?? 0)),
-  }));
-  const nearestWins = (cp: string) => n(one(E("nearest_team_wins"), (r) => r.checkpoint === cp)?.nearest_team_wins);
-  const movePts = $derived(E("movement_sample").map((r) => ({ x: n(r.proj), y: n(r.moved), g: r.off === true || r.off === "TRUE" ? 0 : 1 })));
-  const damp = $derived(val("damping", "value", "position_factor"));
-  const roleRows = $derived(E("movement_by_role"));
-  const players = $derived(E("player_evidence"));
-  const league = $derived(n(E("player_league_rate")[0]?.league_rate));
-  const funnel = $derived(players.map((r) => ({ x: n(r.scenes), y: n(r.rebounds) / n(r.scenes), g: n(r.def_share) >= 0.5 ? 1 : 0,
-                                                tip: `${r.rebounds} rebounds in ${r.scenes} misses on court (${r.games} game${n(r.games) > 1 ? "s" : ""})` })));
-  const band = (sign: number): [number, number][] => Array.from({ length: 46 }, (_, i) => {
-    const m = 2 + 2 * i;
-    return [m, Math.max(0, league + sign * 1.645 * Math.sqrt((league * (1 - league)) / m))];
-  });
-  const flightCover = $derived.by(() => ["particle_contact", "particle_no_contact", "kalman"].map((m, j) => ({
-    label: model(m), color: SERIES[j],
-    points: (doc?.flight.summary ?? []).filter((r) => r.checkpoint === "contact" && r.model === m)
-      .map((r): [number, number] => [n(r.horizon), n(r.cover90)]).sort((a, b) => a[0] - b[0]),
-  })));
-  const calPts = (cp: string) => (doc?.collection.calibration ?? []).filter((r) => r.checkpoint === cp && n(r.n) >= 10)
-    .map((r) => ({ x: n(r.predicted), y: n(r.observed), g: cp === "release" ? 0 : 1, tip: `${chk(cp)}: predicted ${pc(1)(r.predicted)}, observed ${pc(1)(r.observed)} (n ${r.n})` }));
-  const ladder = (cp: string) => (doc?.collection.summary ?? []).filter((r) => r.checkpoint === cp && r.model !== "team_prior")
-    .sort((a, b) => n(b.gain) - n(a.gain))
-    .map((r) => ({ label: model(r.model), rate: n(r.gain), lo: n(r.gain) - 1.645 * n(r.gain_se), hi: n(r.gain) + 1.645 * n(r.gain_se), n: n(r.n) }));
-  const best = (cp: string, m = "access_obstruction") => one(doc?.collection.summary, (r) => r.checkpoint === cp && r.model === m);
-  const flt = (cp: string, h: number, m: string) => one(doc?.flight.summary, (r) => r.checkpoint === cp && n(r.horizon) === h && r.model === m);
-  const ident = (c: string) => one(doc?.skills.identification, (r) => String(r.component).startsWith(c));
-  const fp = $derived((doc?.flight.params ?? {}) as Record<string, Record<string, number>>);
   const meanOf = (rows: Row[] | undefined, key: string) => { const v = (rows ?? []).map((r) => n(r[key])).filter((x) => !Number.isNaN(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : NaN; };
   const rangeOf = (rows: Row[] | undefined, key: string) => { const v = (rows ?? []).map((r) => n(r[key])); return [Math.min(...v), Math.max(...v)]; };
   const median = (rows: Row[], key: string) => { const v = rows.map((r) => n(r[key])).filter((x) => !Number.isNaN(x)).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : NaN; };
 
-  // ---- the late model ----
-  const LT = (name: string): Row[] => doc?.late?.[name] ?? [];
-  // the late model the site uses (run_late.R picks it on held-out games; decision.csv names it)
-  const siteModel = $derived(String(one(LT("decision"), (r) => String(r.comparison).startsWith("site model"))?.model ?? "late_full"));
-  const LATE_LINES = $derived(["current_site", siteModel, "geometry_classifier"]);
-  /** Points and lines of one held-out measure against time since the rim, for the three compared models. */
-  const lateCurve = (key: string, digits = 3) => {
-    const rows = LT("validation_by_tau");
-    const pts = (m: string) => rows.filter((r) => r.model === m).sort((a, b) => n(a.tau) - n(b.tau));
-    return {
-      points: LATE_LINES.flatMap((m, g) => pts(m).map((r) => ({ x: n(r.tau), y: n(r[key]), g, tip: `${model(m)}, ${f(1)(r.tau)} s after the rim: ${f(digits)(r[key])} (${int(r.n)} scenes)` }))),
-      lines: [...LATE_LINES.map((m, g) => ({ points: pts(m).map((r): [number, number] => [n(r.tau), n(r[key])]), color: SERIES[g] })),
-              { points: pts("team_prior").map((r): [number, number] => [n(r.tau), n(r[key])]), color: "var(--muted)", dashed: true, label: "team prior" }],
-    };
-  };
-  const LATE_NAMES = ["Rim model reused (before)", "Late model", "Geometry classifier"];
-  const lateLoss = $derived(lateCurve("log_loss"));
-  const lateLossRange = $derived.by((): [number, number] => {
-    const v = lateLoss.lines.flatMap((l) => l.points.map((q) => q[1])).filter(Number.isFinite);
-    return v.length ? [Math.floor(10 * Math.min(...v) - 0.5) / 10, Math.ceil(10 * Math.max(...v) + 0.5) / 10] : [0, 3];
-  });
-  const lateCollector = $derived(lateCurve("collector_chance"));
-  const lateCal = $derived(LT("calibration_players").filter((r) => n(r.n) >= 30).map((r) => ({
-    x: n(r.predicted), y: n(r.observed), g: r.model === "current_site" ? 0 : 1,
-    tip: `${model(r.model)}: predicted ${pc(1)(r.predicted)}, observed ${pc(1)(r.observed)} (${int(r.n)} player-scenes)` })));
-  const lateRow = (m: string) => one(LT("validation_summary"), (r) => r.model === m);
-  const lateAt = (m: string, tau: number, key: string) => n(one(LT("validation_by_tau"), (r) => r.model === m && Math.abs(n(r.tau) - tau) < 1e-6)?.[key]);
-  const lateDecision = $derived(LT("decision")[0] ?? null);
-  const lateParam = (term: string) => n(one(LT("final_parameters"), (r) => r.term === term)?.value);
-  const lateScenes = $derived(LT("scenes_by_tau").reduce((s, r) => s + n(r.scenes), 0));
-  // the worked example, one row per forecast time: what the site said before and says now, and the held-out late fit
-  const lateExample = $derived.by(() => {
-    const rows = LT("example");
-    const times = [...new Set(rows.map((r) => n(r.t)))].sort((a, b) => a - b);
-    const get = (t: number, m: string, s: string) => one(rows, (r) => n(r.t) === t && r.model === m && r.source === s);
-    return times.map((t) => ({ t, before: n(get(t, "before", "all games")?.p_rebounder), now: n(get(t, "now", "all games")?.p_rebounder),
-                               held: n(get(t, "late_full", "held out")?.p_rebounder) }));  // "late_full" rows hold the site model, held out
-  });
-  const exContact = $derived(n(LT("example")[0]?.contact));
-  const exRebound = $derived(n(LT("example")[0]?.rebound));
-  const POLICY: Record<string, string> = { "0": "run straight at the ball", "1": "keep moving until the bounce is seen", "2": "head for the forecast's centre" };
-
   const SECTIONS = [
     ["rb-question", "1. The question"], ["rb-data", "2. The data"], ["rb-ball", "3. Can we trust the ball?"],
-    ["rb-where", "4. Where misses go"], ["rb-flight", "5. Ball-flight model"], ["rb-who", "6. Who gets the ball"],
-    ["rb-collect", "7. Collection model"], ["rb-move", "8. Movement and anticipation"], ["rb-box", "9. Box-outs"],
-    ["rb-players", "10. Player effects"], ["rb-checks", "11. Checks and limits"], ["rb-manual", "12. Step-by-step rebuild"],
+    ["rb-where", "4. Where misses go"], ["rb-limits", "5. What this shows and does not"],
   ];
   // Plain scrolling: the page's address names the tab (#/rebounding), so section links must not change it.
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -224,39 +116,22 @@
   </div>
 {/snippet}
 
-{#snippet decision(text: string)}
-  <div class="decision"><b>Decision</b><span>{text}</span></div>
+{#snippet takeaway(text: string)}
+  <div class="decision"><b>Takeaway</b><span>{text}</span></div>
 {/snippet}
 
 {#if !doc}
   <div class="doc-inner"><p class="lead">{problem || "Loading…"}</p></div>
 {:else}
-  {@const rel = best("release")}
-  {@const rim = best("rim")}
-  {@const pr = best("release", "team_prior")}
-  {@const geoRel = best("release", "geometry_classifier")}
-  {@const geoRim = best("rim", "geometry_classifier")}
-  {@const c02 = flt("contact", 0.2, "particle_contact")}
-  {@const nc02 = flt("contact", 0.2, "particle_no_contact")}
-  {@const k02 = flt("contact", 0.2, "kalman")}
-  {@const a04 = flt("after", 0.4, "particle_contact")}
-  {@const a10 = flt("after", 1, "particle_contact")}
   {@const shortR = one(E("rebound_distance_by_range"), (r) => r.range === RANGES[0])}
   {@const midR = one(E("rebound_distance_by_range"), (r) => r.range === RANGES[1])}
   {@const longR = one(E("rebound_distance_by_range"), (r) => r.range === RANGES[2])}
   <div class="doc-inner rb-doc">
-    <h1>Rebounding: from data to model</h1>
+    <h1>Rebounding: what the ten games show</h1>
     <p class="lead">
-      A missed shot becomes a forecast: where the ball goes, who can reach it, and who ends up with it. This page walks
-      through how that forecast was built from the ten tracked ACB games, in the order the decisions were made. Each step
-      shows <b>what the data say</b>, the <b>decision</b> that follows, and <b>how it was checked</b> on games the model
-      never saw. It doubles as a tutorial: the modelling ideas are explained where they first appear.
-    </p>
-    <p class="rb-update">
-      <b>Update (November 2026).</b> Sections 1–11 describe the first build. Every piece was then rebuilt one step at a
-      time, with each pass rule fixed before its results were seen; <button type="button" class="link" onclick={() => go("rb-manual")}>section 12</button>
-      shows what passed and what was blocked. Where they disagree, section 12 holds, and the box-outs of section 9 in
-      particular are not validated.
+      A descriptive look at the missed shots in the ten tracked ACB games: what is recorded, how far the ball's track can
+      be trusted, and where misses go and who ends up with them. Everything here is counting, averaging and smoothing of
+      the data; no model is fitted beyond one straight line, which is labelled where it appears.
     </p>
     <nav class="rb-toc" aria-label="On this page">
       {#each SECTIONS as [id, label] (id)}<button type="button" class="link" onclick={() => go(id)}>{label}</button>{/each}
@@ -266,17 +141,15 @@
     <section id="rb-question">
       <h2>1. The question</h2>
       <p>
-        When a shot goes up, two things are uncertain: whether it goes in, and if it misses, which team gets the ball.
-        This work is only about the second. Every forecast here assumes the shot misses, and is made at a moment
-        <i>t</i> after the release using only the tracking seen up to <i>t</i>. The forecast at release knows where everyone
-        stands and where the shot came from; the forecast a second later also knows how the ball came off the rim.
+        When a shot misses, which team gets the ball, and where? This page only describes what happened in these ten
+        games. It does not forecast anything, and it says nothing about whether the shot should have been taken.
       </p>
-      <p>The framework asks for three outputs and keeps them apart, because each needs different evidence:</p>
-      {@render table([{ key: "q", label: "Output" }, { key: "t", label: "What it means" }, { key: "s", label: "Where it stands" }], [
-        { q: "Untouched landing", t: "Where the ball would first hit the floor if nobody touched it", s: "On the court in violet. Almost never observed (someone usually touches it first), and where it is observed the forecast is off: treat it as an illustration (section 5)." },
-        { q: "Who gets the ball", t: "Each player's chance of collecting it, and each team's chance of being awarded it, within 3.2 s", s: "In the panel and beside the players. Validated on held-out games (section 7)." },
-        { q: "Player skills", t: "Anticipation, boxing out, converting access into the ball", s: "Estimated, but none could be told apart from noise with ten games, so none is used (section 10)." },
-      ], true)}
+      <p>Three things are worth knowing before any rebounding analysis, and each section answers one:</p>
+      {@render table([{ key: "q", label: "Question" }, { key: "s", label: "Section" }], [
+        { q: "How many misses are there, and how does each one end?", s: "2. The data" },
+        { q: "Can the ball's position and height be taken at face value?", s: "3. Can we trust the ball?" },
+        { q: "Where do misses go, how long do they take, and which team gets them?", s: "4. Where misses go" },
+      ])}
     </section>
 
     <!-- 2 ------------------------------------------------------------------------------------------------- -->
@@ -286,7 +159,7 @@
         The ten games have {int(one(doc.audit.counts, (r) => r.quantity === "Shot records, including fouled misses")?.count)} shot records.
         Fouled misses go to the free-throw line and made shots have no rebound, which leaves
         {int(one(doc.audit.counts, (r) => r.quantity === "Non-fouled misses")?.count)} live misses. Of those, {int(doc.episodes)}
-        have a recorded rebound and a usable ball track; they are the population every model and chart below uses.
+        have a recorded rebound and a usable ball track; they are the population every chart below uses.
       </p>
       <div class="rb-grid two">
         <div>
@@ -303,15 +176,15 @@
             of misses and go to the offense more often than not.
           </p>
           <p>
-            Overall the offense keeps the ball after {pc(0)(overall)} of misses. That base rate is the "team prior" every
-            model below has to beat.
+            Overall the offense keeps the ball after {pc(0)(overall)} of misses. That base rate is the reference line in
+            the rate charts below: a group above it rebounds its own misses more often than average.
           </p>
         </div>
       </div>
-      {@render decision("Predict one of twelve outcomes: which of the ten players collects, or which team is awarded the ball. Team chances are sums of those. The 29 misses with no rebound row are left out and reported, not counted as defensive rebounds.")}
+      {@render takeaway("A miss ends one of four ways: either team's player collects it, or either team is awarded it. The 29 misses with no rebound row are left out and reported, not counted as defensive rebounds.")}
       <details class="rb-more">
-        <summary>The framework's event audit, recomputed</summary>
-        {@render table([{ key: "quantity", label: "Quantity" }, { key: "count", label: "This build", num: true, fmt: int }, { key: "framework", label: "Framework", num: true, fmt: int }], doc.audit.counts)}
+        <summary>The event audit: where the shot counts come from</summary>
+        {@render table([{ key: "quantity", label: "Quantity" }, { key: "count", label: "This build", num: true, fmt: int }, { key: "framework", label: "Expected", num: true, fmt: int }], doc.audit.counts)}
         {@render table([{ key: "status", label: "Status" }, { key: "outcome", label: "Outcome", fmt: (v) => (v == null ? "–" : String(v)) }, { key: "N", label: "Shots", num: true, fmt: int }], doc.audit.population)}
       </details>
     </section>
@@ -320,8 +193,8 @@
     <section id="rb-ball">
       <h2>3. Can we trust the ball?</h2>
       <p>
-        A physics model of the ball is only as good as the ball's track, so the track was audited before anything was
-        fitted. Four findings shaped the models.
+        Every chart on this page leans on the ball's track, and so does the ball height in the trace panel under the
+        court. Before trusting either, it helps to know how the track is made and where it is wrong. Four findings.
       </p>
       <div class="rb-grid two">
         <div>
@@ -343,7 +216,7 @@
           </p>
         </div>
       </div>
-      {@render decision("Filters read keyframes only, and no strict real-time claim is made.")}
+      {@render takeaway("About half the ball positions are filled in, not measured. Treat the ball height between keyframes as a straight-line guess, and remember a filled-in point already knows where the ball goes next.")}
       <div class="rb-grid two">
         <div>
           <h4>Lowest point of the ball at each bounce</h4>
@@ -355,12 +228,11 @@
           <h4>It never reaches the floor</h4>
           <p>
             A ball's centre touches down at its radius, 0.40 ft. In the data, bounce minima pile up between 1.0 and 1.6 ft,
-            consistent with keyframes skipping the instant of contact ({pc(0)(belowZero / allMinima)} of minima are even below zero, calibration noise, and left off the chart). The fitted effective floor is
-            {f(2)(fp.floor?.z_floor)} ft with restitution {f(2)(fp.floor?.e_floor)} (how much vertical speed survives a bounce).
+            consistent with keyframes skipping the instant of contact ({pc(0)(belowZero / allMinima)} of minima are even below zero, calibration noise, and left off the chart).
           </p>
         </div>
       </div>
-      {@render decision(`The simulated ball bounces at an effective floor of ${f(2)(fp.floor?.z_floor)} ft, fitted from observed bounces, not at its true radius.`)}
+      {@render takeaway("A bounce shows up about a foot above the floor. Low ball heights are not exact, so do not read a bounce's height to the inch.")}
       <div class="rb-grid two">
         <div>
           <h4>Where made shots pass rim height, relative to the nominal hoop</h4>
@@ -379,11 +251,11 @@
           </p>
         </div>
       </div>
-      {@render decision("Ball physics runs relative to each game end's calibrated hoop (the median crossing point). Ball positions are shifted back to the players' frame in proportion to height: none at 4 ft, the full offset at 10 ft.")}
+      {@render takeaway("High in the air the ball's position is off by a foot or more along the court, in a consistent direction at each end. Compare the ball with players near the floor, not at the top of its arc.")}
       <p class="rb-note">
         <b>Also found:</b> the tracking files skip frame numbers (up to {int(rangeOf(doc.audit.gaps, "missing_indices")[1])} in one game). The first
         version of the reader assumed line number equals frame number and silently put 255 shots on the wrong frames. Lines
-        are now matched on their frame number.
+        are now matched on their frame number. A reminder that a join can fail without an error.
       </p>
     </section>
 
@@ -437,9 +309,7 @@
         </p>
         <p>
           <b>Mirroring</b> assumes a miss from the left behaves like the same miss from the right, reflected. It doubles the
-          data, and it is an assumption: untick it to see what the ten games say on each side alone. This map is also the
-          baseline any landing model should beat; the ball-flight model's untouched-landing forecast has not yet been
-          compared against it.
+          data, and it is an assumption: untick it to see what the ten games say on each side alone.
         </p>
       </aside>
 
@@ -477,497 +347,24 @@
         recorded rebound frame is fuzzy: it falls a median {f(2)(-median(timing, "touch_vs_rebound"))} s after the first moment a player could
         touch the ball and {f(2)(median(timing, "control_vs_rebound"))} s before the ball looks held.
       </p>
-      {@render decision("Forecast the ball's path itself rather than a fixed map of rebound spots: where it goes depends on the shot and on how it comes off the rim. Score models on who got the ball, not on when, because the timing label is too loose.")}
+      {@render takeaway("Where a miss goes depends on the shot (range, side), but who gets it barely moves with range. The recorded rebound moment is loose by a few tenths of a second, so do not lean on exact rebound timing.")}
     </section>
 
     <!-- 5 ------------------------------------------------------------------------------------------------- -->
-    <section id="rb-flight">
-      <h2>5. The ball-flight model</h2>
-      <aside class="concept">
-        <h4>Concept: a particle filter</h4>
-        <p>
-          Instead of one guess of where the ball is, keep a few hundred guesses ("particles"), each a position and a
-          velocity. Move every particle forward with physics; when the next keyframe arrives, give more weight to particles
-          close to it and drop the unlikely ones. What survives is a cloud of plausible states. To forecast, keep simulating
-          the cloud with no new data: its spread is the uncertainty, and it can split in two when the ball might go either
-          way off the rim.
-        </p>
-      </aside>
-      <ol class="steps">
-        <li><h3>Before the flight is seen: a launch prior</h3><p>At release only the release point is known. The time to the basket and the aim point are drawn from the 40 tracked attempts (made or missed) nearest in distance, which fixes each particle's launch velocity.</p></li>
-        <li><h3>Through the air: gravity plus noise</h3><p>Particles fly under gravity with a small random acceleration ({f(1)(Math.sqrt(fp.kalman?.q ?? NaN))} ft/s per √s, fitted) and are re-weighted at every keyframe.</p></li>
-        <li><h3>At the rim: contact physics</h3><p>The ring is a torus, the backboard a plane, the floor the effective floor from section 3. Bounciness is drawn at each contact and the contact direction is jittered, standing in for spin and the exact point of impact. Those settings were chosen in each fold by how well the cloud predicted the next 0.6 s after contacts in the training games.</p></li>
-        <li><h3>Misses only</h3><p>Simulated continuations that drop through the hoop are removed: every forecast is conditional on a miss.</p></li>
-      </ol>
-      <aside class="concept">
-        <h4>Concept: leave one game out, and coverage</h4>
-        <p>
-          Every number below comes from a game the model never saw: fit on nine games, score on the tenth, ten times. Two
-          scores matter for a forecast cloud. <b>Error</b>: how far its centre was from where the ball went. <b>Coverage</b>:
-          how often the ball landed inside the region the model called 90% likely. An honest model covers about 90%; an
-          overconfident one much less.
-        </p>
-      </aside>
-      <div class="rb-grid two">
-        <div>
-          <h4>90% coverage after a forecast made just before contact</h4>
-          <Scatter lines={[...flightCover, { points: [[0.1, 0.9], [1.05, 0.9]], color: "var(--muted)", dashed: true, label: "honest: 90%" }]} xlabel="Seconds ahead" ylabel="Share inside the 90% region" ydomain={[0, 1]} xdomain={[0.1, 1.05]}
-                   yfmt={(v) => `${Math.round(100 * v)}%`} points={flightCover.flatMap((s, j) => s.points.map(([x, y]) => ({ x, y, g: j, tip: `${s.label}: ${Math.round(100 * y)}% at ${x} s` })))}
-                   groups={flightCover.map((s) => s.label)} radius={4} opacity={1} />
-        </div>
-        <div class="rb-explain">
-          <h4>What the checks show</h4>
-          <p>
-            Modelling the contact is what makes this work. A forecast made just before contact misses the ball's position 0.2 s
-            later by {f(1)(c02?.err_ft)} ft with contact physics, against {f(1)(nc02?.err_ft)} ft without it, and only the contact model's
-            90% region is honest ({pc(0)(c02?.cover90)} against {pc(0)(k02?.cover90)} for a Kalman filter that ignores the rim).
-          </p>
-          <p>
-            Calibration fades with time: from 0.2 s after a contact the 90% region covers {pc(0)(a04?.cover90)} of positions 0.4 s
-            ahead but only {pc(0)(a10?.cover90)} a second ahead, when players start touching the ball and the loose ball's
-            path is unpredictable.
-          </p>
-        </div>
-      </div>
-      <p class="rb-note">
-        <b>A correction during the build:</b> the first version fixed the observation noise at the smallest value the
-        one-step fit allowed, and its post-contact 90% regions covered as little as 11%. The noise level is now part of the
-        settings chosen by multi-step forecasts.
-      </p>
-      <h4>Untouched landing: not validated</h4>
-      <p>
-        Only about {int(meanOf(doc.flight.landing, "n"))} held-out misses bounced with nobody within 4 ft before anyone held the ball,
-        the only cases where a first landing is actually seen. Forecasts miss them by about {f(0)(meanOf(doc.flight.landing, "err_xy_ft"))} ft
-        and land too early. Those bounces may include tips nobody recorded, but either way the violet heatmap on the court is
-        an illustration of the model, not a calibrated map.
-      </p>
-      <details class="rb-more">
-        <summary>Every flight score by checkpoint and horizon</summary>
-        {@render table([
-          { key: "checkpoint", label: "Forecast made", fmt: chk }, { key: "horizon", label: "Ahead (s)", num: true, fmt: f(1) },
-          { key: "model", label: "Model", fmt: model }, { key: "n", label: "n", num: true, fmt: int },
-          { key: "logscore", label: "Log score", num: true, fmt: f(2) }, { key: "err_ft", label: "Error (ft)", num: true, fmt: f(2) },
-          { key: "cover90", label: "90% coverage", num: true, fmt: pc() }, { key: "radius90_ft", label: "90% radius (ft)", num: true, fmt: f(1) },
-        ], (doc.flight.summary ?? []).filter((r) => ["particle_contact", "particle_no_contact", "kalman", "empirical_bounce"].includes(String(r.model))), true)}
-      </details>
-    </section>
-
-    <!-- 6 ------------------------------------------------------------------------------------------------- -->
-    <section id="rb-who">
-      <h2>6. Who gets the ball</h2>
-      <p>
-        Knowing where the ball goes, who gets it? The simplest idea, that the player nearest the basket wins, is checked
-        first against the idea the model is built on: that the winner is whoever can get to the ball first.
-      </p>
-      <div class="rb-grid two">
-        <div>
-          <h4>The rebounder's rank by distance to the hoop</h4>
-          <Columns categories={rankCats} series={rankSeries("rank_by_hoop")} format={(v) => `${Math.round(100 * v)}%`} xlabel="1 = nearest of the ten" />
-        </div>
-        <div>
-          <h4>The rebounder's rank by distance to where the ball was secured</h4>
-          <Columns categories={rankCats} series={rankSeries("rank_by_spot")} format={(v) => `${Math.round(100 * v)}%`} xlabel="1 = nearest of the ten" />
-        </div>
-      </div>
-      <p>
-        Being nearest the hoop helps a little (the nearest player gets {pc(0)(one(E("rank_by_hoop"), (r) => r.checkpoint === "rim" && n(r.rank) === 1)?.share)}
-        of rebounds just before the rim). Being nearest to where the ball ends up is decisive: that player gets
-        {pc(0)(one(E("rank_by_spot"), (r) => r.checkpoint === "rim" && n(r.rank) === 1)?.share)} of them just before the rim, and the team of that player
-        gets the ball {pc(0)(nearestWins("rim"))} of the time ({pc(0)(nearestWins("release"))} measured at release). The catch is that nobody knows
-        that spot in advance. Hence the model: forecast the ball's path, then ask who can reach it.
-      </p>
-      <div class="rb-grid two">
-        <div>
-          <h4>Offensive ball by offensive players within 12 ft at release</h4>
-          <RateDots rows={rates(E("oreb_by_offense_inside"), "off_in", (v) => (n(v) >= 3 ? "3 or more" : String(v)))} reference={overall} />
-        </div>
-        <div>
-          <h4>Offensive ball by net box-outs just before the rim</h4>
-          <RateDots rows={rates(E("oreb_by_net_boxouts"), "net", (v) => (n(v) > 0 ? `defense +${v}` : n(v) < 0 ? `offense +${-n(v)}` : "even"))} reference={overall} />
-          <p class="rb-note">Players within 15 ft of the hoop whose route to the reachable ball is blocked (strength 0.35+); "defense +1" means one more offensive player blocked than defensive.</p>
-        </div>
-      </div>
-      <p>
-        Counting bodies is a weak signal: sending three or more players inside lifts the offensive rate to
-        {pc(0)(one(E("oreb_by_offense_inside"), (r) => n(r.off_in) === 3)?.rate)}, and box-out counts barely move it at all. Positions only
-        matter through where the ball goes.
-      </p>
-      {@render decision("Model each player's physical access to the ball along every simulated path (can he be there while it is low enough to grab?) and let obstruction lower an opponent's access, instead of predicting from crowd counts or a fixed rebound map.")}
-    </section>
-
-    <!-- 7 ------------------------------------------------------------------------------------------------- -->
-    <section id="rb-collect">
-      <h2>7. The collection model</h2>
-      <ol class="steps">
-        <li><h3>Access</h3><p>For every simulated path and every 0.08 s step, each player's chance of being at the ball while it is below a reach of 10.5 ft. He keeps his current velocity for a reaction time, then runs at up to 18.1 ft/s. Until the ball has visibly come off the rim he cannot know which path it takes: in each fold the data chose between keeping on moving and heading for the forecast's centre.</p></li>
-        <li><h3>Competing risks</h3><p>At every step, the ten players, a team award to either side and "still loose" compete for that moment. A player's pull rises with his access; a blocked route lowers it; defenders get a small edge. A ball that lands out of bounds ends in an award. Averaging over paths gives every player's chance, and the chances add up to one.</p></li>
-        <li><h3>Impossible stays impossible</h3><p>A player with no access at a step cannot collect then, and every outcome keeps a 0.1% floor so a rebound the physics calls impossible does not break the fit. A scenario check confirms a player 400 ft away is left with essentially nothing.</p></li>
-      </ol>
-      <aside class="concept">
-        <h4>Concept: log loss and the model ladder</h4>
-        <p>
-          Log loss is how surprised a model was by what happened: minus the log of the probability it gave the actual
-          outcome, averaged over misses. Lower is better, and a model that says "45%" for the eventual rebounder scores much
-          better than one that said "5%". Each model below is compared with the team prior on the same held-out games; the
-          gain is the average improvement per game, with a 90% interval across the ten games.
-        </p>
-      </aside>
-      <div class="rb-grid two">
-        <div>
-          <h4>Gain in log loss over the team prior, at release</h4>
-          <RateDots rows={ladder("release")} reference={0} min={-0.15} max={0.4} format={(v, d = 2) => v.toFixed(d)} unit="gain" refLabel="prior" color={SERIES[0]} labelWidth={240} />
-        </div>
-        <div>
-          <h4>Gain in log loss over the team prior, just before the rim</h4>
-          <RateDots rows={ladder("rim")} reference={0} min={-0.15} max={0.4} format={(v, d = 2) => v.toFixed(d)} unit="gain" refLabel="prior" color={SERIES[0]} labelWidth={240} />
-        </div>
-      </div>
-      <p>
-        At release the access model's log loss is {f(3)(rel?.log_loss)} against {f(3)(pr?.log_loss)} for the team prior, better in
-        {rel?.games_better} of 10 held-out games, and a little better than a flexible geometry classifier ({f(3)(geoRel?.log_loss)}) that uses
-        distances, ranks and speeds directly. Just before the rim it reaches {f(3)(rim?.log_loss)}, where the geometry classifier is
-        slightly ahead ({f(3)(geoRim?.log_loss)}). Obstruction adds a little; player effects add nothing (section 10).
-      </p>
-      <div class="rb-grid two">
-        <div>
-          <h4>Does "offense 35%" mean 35%?</h4>
-          <Scatter points={[...calPts("release"), ...calPts("rim")]} groups={["At release", "Just before the rim"]}
-                   lines={[{ points: [[0.1, 0.1], [0.6, 0.6]], color: "var(--muted)", dashed: true, label: "perfect" }]}
-                   xlabel="Predicted chance the offense gets the ball" ylabel="Observed share" xdomain={[0.1, 0.6]} ydomain={[0, 0.7]}
-                   xfmt={(v) => `${Math.round(100 * v)}%`} yfmt={(v) => `${Math.round(100 * v)}%`} radius={5} opacity={1} />
-        </div>
-        <div class="rb-explain">
-          <h4>Calibration</h4>
-          <p>
-            Group held-out misses by the offense's predicted chance and compare with how often the offense actually got the
-            ball (groups of 10 or more). Points near the dashed line mean the percentages can be read at face value. Most of
-            the forecasts sit between 25% and 40%; the model rarely sees a rebound as a sure thing, which matches how
-            contested they are.
-          </p>
-          <p>Team-level log loss: {f(3)(rel?.team_log_loss)} at release and {f(3)(rim?.team_log_loss)} just before the rim, against {f(3)(pr?.team_log_loss)} for the prior.</p>
-        </div>
-      </div>
-      <details class="rb-more">
-        <summary>Every model at both checkpoints</summary>
-        {#each ["release", "rim"] as cp (cp)}
-          {@render table([
-            { key: "model", label: chk(cp), fmt: model }, { key: "n", label: "n", num: true, fmt: int },
-            { key: "log_loss", label: "Log loss", num: true, fmt: f(3) }, { key: "gain", label: "Gain vs prior", num: true, fmt: (v, r) => pm(v, r) },
-            { key: "games_better", label: "Games better", num: true }, { key: "team_log_loss", label: "Team log loss", num: true, fmt: f(3) },
-            { key: "team_auc", label: "Team AUC", num: true, fmt: f(2) },
-          ], (doc.collection.summary ?? []).filter((r) => r.checkpoint === cp).sort((a, b) => n(a.log_loss) - n(b.log_loss)), true)}
-        {/each}
-      </details>
-
-      {#if doc.late}
-        {@const lf = lateRow(siteModel)}
-        {@const cur = lateRow("current_site")}
-        {@const prior = lateRow("team_prior")}
-        <h3>Late forecasts: after the ball reaches the rim</h3>
-        <p>
-          The model above is fitted at two moments: release, and a frame before the ball reaches the rim. The site used to
-          reuse that rim fit for every later forecast too. At the rim nobody knows yet which way the ball will bounce, so the fit
-          learned that being able to reach the ball says little about who gets it, and it stayed just as cautious when the play
-          had become obvious. Two more limits made it worse: every player was assumed to drift for half a second before
-          reacting, and two players who could both reach the ball split it almost evenly however much sooner one would get
-          there. Even given the true ball path, it could not give the player about to catch the ball much more than a third.
-        </p>
-        <ol class="steps">
-          <li><h3>Learn from the same moment</h3><p>Every miss contributes scenes 0, 0.2, 0.4, 0.6, 0.8, 1.0 and 1.4 s after the ball reached the rim, while it is still loose: {int(lateScenes)} scenes in all. A forecast 0.4 s after the rim learns from other misses 0.4 s after the rim.</p></li>
-          <li><h3>Weights that change with time</h3><p>The baseline pull and the weight on access each change in a straight line with the time since the rim, so the model can grow more decisive as the ball comes down. One pooled fit, not seven: the late moments are thin, and forecasts should not jump from one moment to the next.</p></li>
-          <li><h3>Who gets there first</h3><p>For every point of every simulated path, each player's arrival margin: how much later than the fastest other player he could reach it, capped at one second either way. Arriving first adds pull; arriving after someone else takes it away.</p></li>
-          <li><h3>Reaction time chosen again</h3><p>Reaction times from 0.05 to 0.5 s and three ways of moving were tried for these moments (run straight at the ball, keep moving until the latest bounce is seen, head for the forecast's centre), chosen by fit on the training games. The all-games fit uses {f(2)(lateParam("react"))} s, and players {POLICY[String(lateParam("policy"))] ?? "–"}.{lateParam("policy") === 1 ? " Shorter reaction times fit no better: a player cannot react to a bounce until he has seen it, about a quarter of a second, and until then he keeps moving as he was." : ""}</p></li>
-          <li><h3>No hindsight about the rim</h3><p>When the ball reached the rim is read from the track seen so far. It becomes known when the next measured ball position arrives (usually the same frame). The old switch used the rim time recorded from the full track. A scenario check confirms that cutting the track changes nothing.</p></li>
-          <li><h3>Ball height</h3><p>A ball counts as reachable through a soft cut-off in height, the same for every player (the data has no player heights and nobody's jump is tracked). Its centre and steepness were fixed at 10.5 ft and 0.35 ft; now they are chosen from 9.5–11.5 ft and 0.2–0.7 ft by fit on the training games. Who gets there first can also count only while the ball is low enough to grab, instead of at every point of the path. Both were tested against the model without them. The all-games fit puts the half-reachable height at {f(1)(lateParam("z_reach"))} ft (fall-off {f(2)(lateParam("z_scale"))} ft){lateParam("z_reach") >= 11.5 ? ", the top of the range tried, so the best value may be higher: balls tracked at 11 ft are still often grabbed, which jumps, tips and the ball's height calibration could all explain" : ""}.</p></li>
-        </ol>
-        {#if lateDecision}
-          {@const site = one(LT("decision"), (r) => String(r.comparison).startsWith("site model"))}
-          {@const hvs = one(LT("decision"), (r) => String(r.comparison).startsWith("late_height"))}
-          {@const yesno = (v: Cell) => v === true || v === "TRUE"}
-          {@render decision(`${yesno(site?.adopted)
-            ? `The site uses the late model from the moment the ball is seen reaching the rim: on held-out games its log loss beats the reused rim model by ${f(3)(site?.gain)} ± ${f(3)(site?.se)} per scene, in ${site?.games_better} of 10 games.`
-            : `The late model did not beat the reused rim model on held-out games (gain ${f(3)(site?.gain)} ± ${f(3)(site?.se)}, better in ${site?.games_better} of 10), so the site keeps the rim model.`} ${yesno(hvs?.adopted)
-            ? `The fitted reach height with the height-gated margin is part of it: ${f(3)(hvs?.gain)} ± ${f(3)(hvs?.se)} better than the fixed height, in ${hvs?.games_better} of 10 games.`
-            : `The fitted reach height with the height-gated margin was not adopted: ${f(3)(hvs?.gain)} ± ${f(3)(hvs?.se)} against the fixed height, better in ${hvs?.games_better} of 10 games.`}`)}
-        {/if}
-        <div class="rb-grid two">
-          <div>
-            <h4>Held-out log loss by time since the rim (lower is better)</h4>
-            <Scatter points={lateLoss.points} lines={lateLoss.lines} groups={LATE_NAMES} xlabel="Seconds since the ball reached the rim" ydomain={lateLossRange}
-                     ylabel="Log loss" radius={4} opacity={1} xfmt={(v) => v.toFixed(1)} yfmt={(v) => v.toFixed(1)} />
-          </div>
-          <div>
-            <h4>Average chance given to the player who collected</h4>
-            <Scatter points={lateCollector.points} lines={lateCollector.lines} groups={LATE_NAMES} xlabel="Seconds since the ball reached the rim"
-                     ylabel="Chance" radius={4} opacity={1} ydomain={[0, 0.8]} xfmt={(v) => v.toFixed(1)} yfmt={(v) => `${Math.round(100 * v)}%`} />
-          </div>
-        </div>
-        <p>
-          Over all late scenes the late model's log loss is {f(3)(lf?.log_loss)} against {f(3)(cur?.log_loss)} for the reused rim model and
-          {f(3)(prior?.log_loss)} for the team prior. The player who went on to collect got, on average, {pc(0)(lf?.collector_chance)} from the late
-          model and {pc(0)(cur?.collector_chance)} from the old one; 1.0 s after the rim the figures are {pc(0)(lateAt(siteModel, 1, "collector_chance"))}
-          and {pc(0)(lateAt("current_site", 1, "collector_chance"))}. The geometry classifier, refitted on the same late scenes, is the
-          benchmark: a flexible model of distances and speeds with no physics ({f(3)(lateRow("geometry_classifier")?.log_loss)}).
-        </p>
-        <p>
-          <b>Where the gain comes from</b> (held-out log loss per scene, each step against the one before). Refitting the same model on
-          late moments: {f(3)(lateRow("late_refit")?.gain_current)}. Weights that change with time:
-          {f(3)(n(lateRow("late_time")?.gain_current) - n(lateRow("late_refit")?.gain_current))}. Who gets there first:
-          {f(3)(n(lateRow("late_full")?.gain_current) - n(lateRow("late_time")?.gain_current))}. A fitted reach height:
-          {f(3)(n(lateRow("late_height_flat")?.gain_current) - n(lateRow("late_full")?.gain_current))}. Counting who gets there first only while
-          the ball is low: {f(3)(n(lateRow("late_height")?.gain_current) - n(lateRow("late_height_flat")?.gain_current))}. The gain is not immediate: at the moment the
-          ball reaches the rim the two models are close ({f(3)(lateAt(siteModel, 0, "log_loss"))} against {f(3)(lateAt("current_site", 0, "log_loss"))}),
-          and the late model pulls ahead over the next half second, as the bounce becomes visible.
-        </p>
-        <div class="rb-grid two">
-          <div>
-            <h4>Does a player's "40%" mean 40%?</h4>
-            <Scatter points={lateCal} groups={LATE_NAMES.slice(0, 2)}
-                     lines={[{ points: [[0, 0], [0.8, 0.8]], color: "var(--muted)", dashed: true, label: "perfect" }]}
-                     xlabel="Predicted chance a player collects" ylabel="Observed share" xdomain={[0, 0.8]} ydomain={[0, 0.8]}
-                     xfmt={(v) => `${Math.round(100 * v)}%`} yfmt={(v) => `${Math.round(100 * v)}%`} radius={5} opacity={1} />
-          </div>
-          <div class="rb-explain">
-            <h4>The miss Samuels rebounded</h4>
-            <p>
-              Girona–Burgos, first quarter: a three off the rim. The ball reached the rim {f(2)(exContact)} s after release and Samuels
-              secured it at {f(2)(exRebound)} s. His chance at each forecast:
-            </p>
-            {@render table([
-              { key: "t", label: "After release", fmt: (v) => `${f(1)(v)} s` },
-              { key: "before", label: "Site before", num: true, fmt: pc(0) },
-              { key: "now", label: "Site now", num: true, fmt: pc(0) },
-              { key: "held", label: "Late, held out", num: true, fmt: (v) => (Number.isNaN(n(v)) ? "–" : pc(0)(v)), title: "The late model fitted without this game" },
-            ], lateExample as unknown as Row[])}
-          </div>
-        </div>
-        {@const calOld = one(LT("calibration_players"), (r) => r.model === "current_site" && r.band === "(0.3,0.4]")}
-        {@const calNew = one(LT("calibration_players"), (r) => r.model !== "current_site" && r.band === "(0.3,0.4]")}
-        <p>
-          The calibration chart is the clearest sign of what was wrong. When the reused rim model gave a player between 30% and 40%,
-          he went on to collect {pc(0)(calOld?.observed)} of the time ({int(calOld?.n)} cases): it was too cautious about the players
-          best placed. The late model's 30–40% calls came true {pc(0)(calNew?.observed)} of the time, and its chances track what
-          happened across the range, including the few it puts above 60%.
-        </p>
-        {@const li = LT("identification")[0]}
-        {#if li}
-          <p>
-            <b>Player effects, tested again on the late model.</b> Does any player secure reachable balls more often than this model
-            expects? Each player gets an effect, shrunk toward zero (prior sd 0.3), fitted on top of the late model with every miss counted
-            once: a miss's moments share one outcome, so they are not separate evidence. The rule is the one the rim test used (section 10):
-            forecasts must improve on held-out games where the rebounder was seen in training, and effects planted in simulated data must
-            be recovered (correlation above 0.5 for players on court for 20 or more misses). Held-out change: {f(4)(li.heldout_gain_seen)} per
-            scene (better in {li.games_better} of 10 games); recovery: {f(2)(li.recovery_r)}.
-            {li.passes === true || li.passes === "TRUE"
-              ? "Both hold, so the panel's talent-aware chances use these effects."
-              : "It does not pass, so the site stays with the population model: the late moments are sharper, but ten games still cannot tell players apart."}
-          </p>
-        {/if}
-        <aside class="concept">
-          <h4>Concept: one model with time in it</h4>
-          <p>
-            Each player's pull at each step is a sum: a baseline, a defender's edge, a penalty when his route is blocked, a weight
-            times the log of his access, and a weight times his arrival margin. In the late model the baseline and the two weights
-            are not single numbers but straight lines in the time since the rim: <i>weight = a + b × time</i>. That costs four extra
-            numbers, and lets the data say how much more decisive the forecast should become as the ball comes down.
-          </p>
-          <p>
-            The same miss appears at several moments, so its scenes are not independent evidence. That is why the test still
-            holds out whole games: no moment of a held-out miss is ever seen in training.
-          </p>
-        </aside>
-        <details class="rb-more">
-          <summary>Every late model, and the fitted numbers</summary>
-          {@render table([
-            { key: "model", label: "Late scenes, held out", fmt: model }, { key: "n", label: "n", num: true, fmt: int },
-            { key: "log_loss", label: "Log loss", num: true, fmt: f(3) },
-            { key: "gain_current", label: "Gain vs rim model", num: true, fmt: (v, r) => pm(v, r, "gain_current_se") },
-            { key: "better_than_current", label: "Games better", num: true },
-            { key: "collector_chance", label: "Collector's chance", num: true, fmt: pc(0) },
-            { key: "top_median", label: "Top player, median", num: true, fmt: pc(0) },
-          ], LT("validation_summary"), true)}
-          {@render table([
-            { key: "term", label: "All-games late model" }, { key: "value", label: "Value", num: true, fmt: f(3) },
-          ], LT("final_parameters"))}
-          <p class="rb-note">
-            b0 and b0_t: the baseline and its change per second since the rim; b_acc and b_acc_t: the weight on log access; b_first and
-            b_first_t: the weight on the arrival margin (positive means arriving first helps). b_def is the defenders' edge, b_obs the
-            blocked-route penalty, g_off and g_def the team awards. z_reach and z_scale: the height at which a ball is half reachable and
-            how sharply reach falls off above it (ft); gated_margin is 1 when who gets there first counts only while the ball is low.
-          </p>
-        </details>
-      {/if}
-    </section>
-
-    <!-- 8 ------------------------------------------------------------------------------------------------- -->
-    <section id="rb-move">
-      <h2>8. Movement and anticipation</h2>
-      <p>
-        Anticipation means moving early to where the ball is likely to go. To grade it, a player's actual first 0.48 s
-        after release is compared with moves a player in his spot would typically make, holding the ball forecast at what
-        was known at release. That needs a believable model of "typical moves", so movement was checked first.
-      </p>
-      <div class="rb-grid two">
-        <div>
-          <h4>Distance moved in 0.48 s against where momentum alone would take him</h4>
-          <Scatter points={movePts} groups={["Offense", "Defense"]} xlabel="Current speed × 0.48 s (ft)" ylabel="Actual distance moved (ft)"
-                   lines={[{ points: [[0, 0], [8, 8 * damp]], label: `${f(2)(damp)} × momentum`, color: "var(--ink)" }]} radius={2} opacity={0.35} xdomain={[0, 8]} ydomain={[0, 9]} />
-        </div>
-        <div>
-          <h4>Movement toward the hoop by role (ft in 0.48 s)</h4>
-          <Columns categories={roleRows.map((r) => String(r.role))} series={[{ name: "Toward the hoop", values: roleRows.map((r) => n(r.toward_hoop_ft)) }]}
-                   format={(v) => v.toFixed(1)} />
-        </div>
-      </div>
-      <p>
-        Momentum explains most short-term movement: players carry on at about {f(0)(100 * damp)}% of their current pace. A first
-        reference model that ignored momentum and used only typical moves for the role predicted worse than plain
-        momentum and was replaced.
-      </p>
-      {@render table([
-        { key: "model", label: "Movement model", fmt: model }, { key: "n", label: "n", num: true, fmt: int }, { key: "error_ft", label: "Error (ft)", num: true, fmt: f(2) },
-        { key: "log_score", label: "Log score", num: true, fmt: f(2) }, { key: "cover80", label: "80% coverage", num: true, fmt: pc() },
-      ], doc.skills.movement)}
-      <p>
-        The reference used (damped momentum plus a typical residual move for the role) has the lowest error, but it is too
-        spread out: {pc(0)(one(doc.skills.movement, (r) => r.model === "damped_role")?.cover80)} of real moves fall inside its 80% region, so the reference
-        moves are more varied than real ones. The anticipation score is a player's collection chance at his actual position
-        minus its average over 16 reference moves, in points of probability. Where the reference moves barely change his
-        chance, he had nothing to show and gets no weight.
-      </p>
-    </section>
-
-    <!-- 9 ------------------------------------------------------------------------------------------------- -->
-    <section id="rb-box">
-      <h2>9. Box-outs</h2>
-      <p class="rb-update">
-        <b>Not validated.</b> The step-by-step rebuild (<button type="button" class="link" onclick={() => go("rb-manual")}>section 12</button>,
-        Step 11) found that this kind of spatial rule cannot be checked against real box-outs with these data (no video,
-        no contact, no body orientation), and that its stricter version fails two geometry checks fixed in advance. Read
-        the labels below as "standing in an opponent's way", not as box-outs.
-      </p>
-      <p>
-        Without video or body orientation, a box-out can only be seen spatially: one player standing in an opponent's
-        route to where the ball can be reached, and staying there. Pairs of opponents within 6 ft at release, both within
-        22 ft of the hoop, are followed every 0.2 s until the rebound.
-      </p>
-      <div class="rb-grid two">
-        <div>
-          <h4>Automated labels of {int((doc.skills.boxout_labels ?? []).reduce((s, r) => s + n(r.pairs), 0))} candidate pairs</h4>
-          {@render table([{ key: "label", label: "Label" }, { key: "blocker_def", label: "Blocker on defense", fmt: yes }, { key: "pairs", label: "Pairs", num: true, fmt: int }, { key: "share", label: "Share", num: true, fmt: pc(1) }], doc.skills.boxout_labels)}
-        </div>
-        <div class="rb-explain">
-          <h4>How the labels are made</h4>
-          <p>
-            Established: the blocker covers at least 0.35 of the opponent's routes. Maintained: still 0.25 for 80% of the
-            time through the rim. Escaped: lost, with the opponent ending nearer the ball. Ambiguous: the two closer than their
-            tracking error. Defenders hold box-outs more often than offensive players, as expected. These are rules, not
-            reviewed video: <code>outputs/rebounding/audit/review_sample.csv</code> lists 60 episodes to check by eye.
-          </p>
-        </div>
-      </div>
-      <h4>Can we predict whether an established box-out holds? (held-out games)</h4>
-      {@render table([
-        { key: "model", label: "Model", fmt: model }, { key: "n", label: "n", num: true, fmt: int }, { key: "log_loss", label: "Log loss", num: true, fmt: f(3) },
-        { key: "gain", label: "Gain vs base", num: true, fmt: (v, r) => pm(v, r) }, { key: "games_better", label: "Games better", num: true }, { key: "auc", label: "AUC", num: true, fmt: f(2) },
-      ], doc.skills.boxout_validation)}
-      <p>Barely: geometry at the moment it is established helps a little, and knowing who the blocker is does not help at all.</p>
-    </section>
-
-    <!-- 10 ------------------------------------------------------------------------------------------------ -->
-    <section id="rb-players">
-      <h2>10. Player effects</h2>
-      <aside class="concept">
-        <h4>Concept: shrinkage, and why three skills need three kinds of evidence</h4>
-        <p>
-          A player effect says "this player does better than the model expects". With little data, raw differences are
-          mostly luck, so each effect is <b>shrunk</b> toward zero in proportion to how little is known about the player. And if
-          only "who got the rebound" were used, anticipation, box-outs and collection would blur into one number. So each is
-          estimated from its own evidence (movement, blocked routes, securing a reachable ball) and must pass a test before
-          the site uses it.
-        </p>
-      </aside>
-      <div class="rb-grid two">
-        <div>
-          <h4>Each player's rebound rate against how often he was on court for a miss</h4>
-          <Scatter points={funnel} groups={["Mostly on offense", "Mostly on defense"]} xlabel="Misses on court" ylabel="Rebounds per miss on court"
-                   lines={[{ points: band(1), color: "var(--muted)", dashed: true, label: "90% band if everyone were average" }, { points: band(-1), color: "var(--muted)", dashed: true }]}
-                   xdomain={[0, 92]} ydomain={[0, 0.5]} yfmt={(v) => `${Math.round(100 * v)}%`} xfmt={(v) => String(Math.round(v))} radius={3} opacity={0.7} />
-        </div>
-        <div class="rb-explain">
-          <h4>How much evidence there is</h4>
-          <p>
-            The typical player was on court for {int(median(players, "scenes"))} misses, and
-            {int(players.filter((r) => n(r.games) === 2).length)} of {int(players.length)} were seen in two games. The dashed band is where
-            rates would fall from luck alone if every player were exactly average. Points outside it are not evidence of
-            skill by themselves: a player who stands near the rim gets more chances, and the physics model already knows
-            where everyone stands. The question is whether anything is left over once it has.
-          </p>
-        </div>
-      </div>
-      {@render table([
-        { key: "component", label: "Skill" }, { key: "evidence", label: "Evidence" }, { key: "player_sd", label: "Spread", num: true, fmt: f(3), title: "Estimated spread of the player effects" },
-        { key: "likelihood_ratio", label: "LR", num: true, fmt: f(1), title: "Likelihood ratio for any player differences within games (over 3.84 = detectable)" },
-        { key: "cross_game_r", label: "Repeats (r)", num: true, fmt: f(2), title: "Correlation of the same players' effects across their two games (over 0.3 required)" },
-        { key: "heldout_gain_repeat", label: "Held-out gain", num: true, fmt: f(4) }, { key: "recovery_r", label: "Recovery (r)", num: true, fmt: f(2), title: "How well known effects were recovered from simulated outcomes (over 0.5 required)" },
-        { key: "passes", label: "Passes", fmt: yes },
-      ], doc.skills.identification, true)}
+    <section id="rb-limits">
+      <h2>5. What this shows and does not</h2>
       <ul class="facts">
-        <li><b>Anticipation</b>: players do differ within a game (likelihood ratio {f(0)(ident("Anticipation")?.likelihood_ratio)}), but by only about {f(1)(100 * n(ident("Anticipation")?.player_sd))} points of probability, and the difference does not repeat across games (r {f(2)(ident("Anticipation")?.cross_game_r)}).</li>
-        <li><b>Box-outs</b>: no repetition across games (r {f(2)(ident("Boxing")?.cross_game_r)}) and no held-out gain.</li>
-        <li><b>Collection</b>: no held-out gain on rebounds by players seen in training. When known effects were planted in simulated outcomes, the fit recovered them at only r {f(2)(ident("Collection")?.recovery_r)}: with ~700 rebounds even real differences of a plausible size cannot be ranked.</li>
+        <li><b>Ten games, {int(doc.episodes)} misses.</b> Rates come with 90% intervals; where two intervals overlap, the data cannot tell the groups apart.</li>
+        <li><b>Associations, not causes.</b> Players choose where to go: a group that rebounds more may differ in many ways besides the one charted.</li>
+        <li><b>The ball is reconstructed</b>, partly interpolated and biased with height (section 3). Ball heights in the trace panel carry the same caveats.</li>
+        <li><b>The rebound moment is loose</b> by a few tenths of a second (section 4), so "where the rebound was secured" is where the rebounder stood at that recorded frame.</li>
       </ul>
-      {@render decision("Use the population model everywhere: the same physics and positioning rules for every player. The per-player estimates are kept below for description only. These thresholds are judgement calls; with more tracked games the same tests can be rerun.")}
-      <details class="rb-more">
-        <summary>Simulation recovery and prior sensitivity</summary>
-        {@render table([
-          { key: "sd_true", label: "True spread", num: true, fmt: f(1) }, { key: "rep", label: "Run", num: true }, { key: "cor_all", label: "r, all players", num: true, fmt: f(2) },
-          { key: "cor_20plus", label: "r, 20+ misses", num: true, fmt: f(2) }, { key: "shrink_sd", label: "Estimated spread", num: true, fmt: f(3) },
-        ], doc.collection.recovery)}
-        {@render table([
-          { key: "checkpoint", label: "Forecast made", fmt: chk }, { key: "rebounder_seen", label: "Rebounder seen in training", fmt: yes },
-          { key: "model", label: "Model", fmt: model }, { key: "n", label: "n", num: true, fmt: int }, { key: "log_loss", label: "Log loss", num: true, fmt: f(4) },
-        ], doc.collection.sensitivity, true)}
-        {@render table([
-          { key: "name", label: "Collection effect (not used)" }, { key: "team_name", label: "Team" }, { key: "effect", label: "Log-odds ± sd", num: true, fmt: (v, r) => `${f(2)(v)} ± ${f(2)(r.effect_se)}` },
-          { key: "scenes", label: "Misses on court", num: true, fmt: int }, { key: "rebounds", label: "Rebounds", num: true, fmt: int },
-        ], [...doc.collection.players.slice(0, 6), ...doc.collection.players.slice(-4)], true)}
-      </details>
+      <p class="meta">
+        The tables were made by the rebounding pipeline, now archived with its models in <code>zz_Archive/src/rebounding/</code>
+        (<code>run_audit.R</code>, <code>run_eda.R</code>, <code>run_export.R</code>) and frozen here as <code>rebounding_eda.json</code>.
+        Data: SkillCorner open data, Liga ACB, MIT licence. Built {doc.built}.
+      </p>
     </section>
-
-    <!-- 11 ------------------------------------------------------------------------------------------------ -->
-    <section id="rb-checks">
-      <h2>11. Checks and limits</h2>
-      {#if doc.checks}
-        <h4>Scenario checks every forecast has to pass</h4>
-        {@render table([{ key: "check", label: "Check" }, { key: "pass", label: "Passes", fmt: yes }, { key: "detail", label: "Detail" }], doc.checks, true)}
-      {/if}
-      <h4>What this does not support</h4>
-      <ul class="facts">
-        <li><b>Ten games.</b> Held-out games mostly test new players; only 25 players appear twice.</li>
-        <li><b>Associations, not interventions.</b> Movement and box-outs reflect choices and game plans; a model-assessed gain does not prove a different move would have changed the outcome.</li>
-        <li><b>The ball is reconstructed</b>, interpolated and biased with height; the hoop calibration uses each game's own made shots.</li>
-        <li><b>Late forecasts stop learning at 1.4 s after the rim.</b> Later forecasts use the 1.4 s weights. Long scrambles are few ({int(n(one(LT("scenes_by_tau"), (r) => n(r.tau) === 1.4)?.misses))} misses still loose at 1.4 s), every scene counts equally (so long scrambles weigh a little more), and even the late model's typical top player is near a third: many rebounds stay genuinely contested.</li>
-        <li><b>Contact physics is loosely identified.</b> Several chosen settings sit at the edge of the range searched; they improve forecasts but are not physical measurements.</li>
-        <li><b>Shared motion rules</b> for every player: no jumping, body orientation or contact.</li>
-        <li><b>Replay only.</b> Dragging players, hypothetical misses of made shots and transition value are not built.</li>
-        <li><b>Not shot quality.</b> A rebound forecast is one piece of a shot's value; its link to the competition question is not established.</li>
-      </ul>
-      <h4>Reproduce</h4>
-      <p class="meta">From the repository root, with R 4.4 and Rtools (the simulator is C++ through Rcpp). Each step caches and resumes; <code>--game=&lt;id&gt;</code> runs one fold.</p>
-      <pre class="rb-code">Rscript src/rebounding/extract_windows.R
-Rscript src/rebounding/run_audit.R
-Rscript src/rebounding/run_flight.R
-Rscript src/rebounding/run_opportunity.R
-Rscript src/rebounding/run_skills.R
-Rscript src/rebounding/run_checks.R
-Rscript src/rebounding/run_eda.R
-Rscript src/rebounding/run_export.R</pre>
-      <p class="meta">Framework: "Physics-informed rebounding: research and model framework" (October 27, 2026). Ideas adapted from Achterhold et al. (2023), Okubo and Hubbard (2014), Maheswaran et al. (2012, 2014), Kiriazis, Genest and Leblanc, Spearman-style pitch control and ReboundingPrediction; no code reused. Data: SkillCorner open data, Liga ACB, MIT licence. Built {doc.built}.</p>
-    </section>
-
-    <!-- 12 ------------------------------------------------------------------------------------------------ -->
-    <ReboundingManual />
   </div>
 {/if}
 
@@ -975,8 +372,6 @@ Rscript src/rebounding/run_export.R</pre>
   .rb-doc { max-width: 1120px; }
   .rb-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .rb-toc .link { font-size: 13px; }
-  .rb-update { max-width: 860px; margin: 10px 0; padding: 10px 14px; border-left: 3px solid var(--def); border-radius: 0 8px 8px 0; background: rgba(255, 133, 82, .08); font-size: 13.5px; }
-  .rb-update .link { font-size: inherit; }
   .rb-grid { display: grid; gap: 20px; margin: 14px 0; align-items: start; }
   .rb-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rb-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -998,7 +393,6 @@ Rscript src/rebounding/run_export.R</pre>
   .rb-more .table-wrap { margin-top: 10px; }
   .rb-table.narrow { min-width: 0; width: auto; }
   .rb-table td { font-size: 13px; }
-  .rb-code { margin: 8px 0; padding: 10px 12px; overflow-x: auto; border-radius: 8px; background: #0F1522; font-size: 12.5px; line-height: 1.6; }
   code { font-size: 12.5px; }
   @media (max-width: 860px) {
     .rb-grid.two { grid-template-columns: minmax(0, 1fr); }

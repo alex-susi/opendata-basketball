@@ -1,20 +1,20 @@
 <script lang="ts">
-  // Three tabs. The play viewer: filters and play list on the left, court and transport in the middle,
-  // display options, the rebounding forecast and rosters on the right. The Archetypes tab explains the tags beside
-  // each player's name; the Rebounding tab documents the rebounding models, their validation and their limits.
-  // Static counterpart of src/play_viewer/app.R.
+  // Three tabs. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
+  // court, the trace panel and the transport bar in the middle, display options and rosters on the right. The
+  // Archetypes tab explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten
+  // games' missed shots. Static counterpart of src/play_viewer/app.R.
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
   import Rebounding from "./components/Rebounding.svelte";
   import Filters from "./components/Filters.svelte";
   import PlayList from "./components/PlayList.svelte";
-  import ShotPanel from "./components/ShotPanel.svelte";
   import SidePanel from "./components/SidePanel.svelte";
   import Stage from "./components/Stage.svelte";
+  import TracePanel from "./components/TracePanel.svelte";
   import Transport from "./components/Transport.svelte";
   import { loadMeta, loadPlay, loadPlays } from "./lib/data";
   import { emptyFilters, filterPlays } from "./lib/filters";
-  import { quarter } from "./lib/geometry";
+  import { clamp, quarter } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
   import { live, viewer } from "./lib/viewer.svelte";
@@ -36,6 +36,29 @@
   // Each document tab is fetched the first time it is shown.
   let opened = $state({ archetypes: first === "archetypes", rebounding: first === "rebounding" });
   viewer.hidden = first !== "viewer";
+
+  // Width of the left column (filters and play list), in px. Remembered in this browser only.
+  const LEFT_MIN = 210, LEFT_MAX = 560, LEFT_DEFAULT = 250, LEFT_WIDE = 400, WIDTH_KEY = "acb-viewer-left-width";
+  let leftW = $state(LEFT_DEFAULT);
+  try {
+    const saved = Number(localStorage.getItem(WIDTH_KEY));
+    if (saved >= LEFT_MIN && saved <= LEFT_MAX) leftW = saved;
+  } catch { /* storage unavailable: keep the default */ }
+  function setLeft(w: number): void {
+    leftW = Math.round(clamp(w, LEFT_MIN, LEFT_MAX));
+    try { localStorage.setItem(WIDTH_KEY, String(leftW)); } catch { /* not remembered */ }
+  }
+  let leftEl: HTMLElement;
+  function dragLeft(ev: PointerEvent): void {
+    const handle = ev.currentTarget as HTMLElement;
+    if (handle.hasPointerCapture(ev.pointerId)) setLeft(ev.clientX - leftEl.getBoundingClientRect().left);
+  }
+  function keyLeft(ev: KeyboardEvent): void {
+    if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+      ev.preventDefault();
+      setLeft(leftW + (ev.key === "ArrowRight" ? 20 : -20));
+    }
+  }
 
   const rows = $derived(filterPlays(plays, filters));
   const seq = $derived(play ? buildSeq(play, viewer.skipDead) : []);
@@ -126,12 +149,19 @@
   <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
 </nav>
 
-<div class="app" hidden={tab !== "viewer"}>
-  <aside class="left">
+<div class="app" hidden={tab !== "viewer"} style:--left-w="{leftW}px">
+  <aside class="left" bind:this={leftEl}>
     {#if meta}
       <Filters {meta} bind:filters />
     {/if}
-    <PlayList {rows} {selectedId} onselect={select} />
+    <PlayList {rows} {selectedId} onselect={select} wide={leftW >= LEFT_WIDE}
+              ontogglewidth={() => setLeft(leftW >= LEFT_WIDE ? LEFT_DEFAULT : LEFT_WIDE)} />
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+    <div class="left-resize" role="separator" aria-orientation="vertical" aria-label="Width of the filter and possession column"
+         aria-valuenow={leftW} aria-valuemin={LEFT_MIN} aria-valuemax={LEFT_MAX} tabindex="0"
+         title="Drag to widen or narrow (arrow keys work too); double-click to reset"
+         onpointerdown={(ev) => { (ev.currentTarget as HTMLElement).setPointerCapture(ev.pointerId); ev.preventDefault(); }}
+         onpointermove={dragLeft} ondblclick={() => setLeft(LEFT_DEFAULT)} onkeydown={keyLeft}></div>
   </aside>
 
   <section class="viewer">
@@ -159,13 +189,12 @@
         </div>
       {/if}
     </header>
-    <!-- The half court leaves room beside it: the steps behind the shot's xFG go there. -->
-    <div class="stage-row" class:split={viewer.view === "half"}>
+    <div class="stage-row">
       <Stage {play} {seq} {note} />
-      {#if viewer.view === "half"}
-        <ShotPanel {play} {seq} />
-      {/if}
     </div>
+    {#if viewer.showTrace}
+      <TracePanel {play} {seq} />
+    {/if}
     <Transport {play} {seq} />
   </section>
 

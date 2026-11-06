@@ -3,8 +3,6 @@
 // export to the next, so without it a browser can run a new build against an older export it has cached.
 
 import { decodePlay } from "./decode";
-import type { ControlParams } from "./control";
-import type { ReboundGame, Step09Game } from "./rebounding";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
 declare const __DATA_STAMP__: string;
@@ -61,7 +59,7 @@ function loadPeriod(file: string): Promise<Period> {
   return period;
 }
 
-/** One possession's tracking and EPV prices, decoded from its game period's file. */
+/** One possession's tracking, decoded from its game period's file. */
 export async function loadPlay(row: PlayRow): Promise<Play> {
   const { index, buffer } = await loadPeriod(row.file);
   const header = index.plays[row.id];
@@ -69,63 +67,14 @@ export async function loadPlay(row: PlayRow): Promise<Play> {
   return decodePlay(buffer, header);
 }
 
-// The rebounding files are re-exported on their own (src/rebounding/run_export.R) without a new play export, so
-// they cannot rely on the play stamp: rebounding.json is revalidated on every load and its own `built` stamp is
-// sent with each game's file.
-let reboundDoc: Promise<{ built: string }> | null = null;
-/** Every table the Rebounding tab shows (rebounding.json). */
-export function loadReboundDoc<T>(): Promise<T> {
-  reboundDoc ??= fetch(`${base}rebounding.json`, { cache: "no-cache" }).then((r) => {
-    if (!r.ok) throw new Error(`Could not load rebounding.json (${r.status})`);
+let reboundEda: Promise<unknown> | null = null;
+/** The Rebounding tab's tables (rebounding_eda.json): descriptive tables of the ten games' misses, frozen from the
+ * archived rebounding pipeline (zz_Archive/src/rebounding/). The file is not re-exported, so it has its own stamp. */
+export function loadReboundEda<T>(): Promise<T> {
+  reboundEda ??= fetch(`${base}rebounding_eda.json`, { cache: "no-cache" }).then((r) => {
+    if (!r.ok) throw new Error(`Could not load rebounding_eda.json (${r.status})`);
     return r.json();
   });
-  reboundDoc.catch(() => { reboundDoc = null; });
-  return reboundDoc as Promise<T>;
-}
-
-let manualDoc: Promise<unknown> | null = null;
-/** The step-by-step manual's gate records and result tables (rebounding_manual.json, src/rebounding/run_export_manual.R). */
-export function loadManualDoc<T>(): Promise<T> {
-  manualDoc ??= fetch(`${base}rebounding_manual.json`, { cache: "no-cache" }).then((r) => {
-    if (!r.ok) throw new Error(`Could not load rebounding_manual.json (${r.status})`);
-    return r.json();
-  });
-  manualDoc.catch(() => { manualDoc = null; });
-  return manualDoc as Promise<T>;
-}
-
-const rebounds = new Map<number, Promise<ReboundGame | null>>();
-/** One game's rebound forecasts (rebounding/<game>.json), or null when the export has none. */
-export function loadRebounds(game: number): Promise<ReboundGame | null> {
-  let p = rebounds.get(game);
-  if (!p) {
-    p = loadReboundDoc<{ built: string }>()
-      .then((doc) => fetch(`${base}rebounding/${game}.json?v=${encodeURIComponent(doc.built)}`))
-      .then((r) => (r.ok ? (r.json() as Promise<ReboundGame>) : null))
-      .catch(() => null);
-    // A failed load is not remembered, so the next play of the game asks again.
-    p.then((g) => { if (!g) rebounds.delete(game); });
-    rebounds.set(game, p);
-  }
-  return p;
-}
-
-const step09 = new Map<number, Promise<Step09Game | null>>();
-/** One game's Step 09 held-out forecasts (rebounding_manual/<game>.json), or null when the export has none. */
-export function loadStep09(game: number): Promise<Step09Game | null> {
-  let p = step09.get(game);
-  if (!p) {
-    p = fetch(`${base}rebounding_manual/${game}.json`, { cache: "no-cache" })
-      .then((r) => (r.ok ? (r.json() as Promise<Step09Game>) : null))
-      .catch(() => null);
-    p.then((g) => { if (!g) step09.delete(game); });
-    step09.set(game, p);
-  }
-  return p;
-}
-
-let control: Promise<ControlParams | null> | null = null;
-/** Court control parameters (control.json). Null when the export has none, so the viewer runs without the overlay. */
-export function loadControl(): Promise<ControlParams | null> {
-  return (control ??= fetchOk("control.json").then((r) => r.json() as Promise<ControlParams>).catch(() => null));
+  reboundEda.catch(() => { reboundEda = null; });
+  return reboundEda as Promise<T>;
 }

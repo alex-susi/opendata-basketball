@@ -1,11 +1,9 @@
 <script lang="ts">
-  // The court canvas: runs the animation clock, draws each frame and records video on request.
+  // The court canvas: runs the animation clock, draws each frame and records video on request. Clicking a player
+  // makes the trace panel follow his distance to the nearest opponent; clicking him again lets him go.
   import { onMount } from "svelte";
-  import type { ControlParams } from "../lib/control";
-  import { loadControl, loadRebounds, loadStep09 } from "../lib/data";
   import { drawScene } from "../lib/draw";
-  import { episodesInPlay, gameOf, reboundAt, withStep09, type HeatGrid, type ReboundEpisode, type Step09Step } from "../lib/rebounding";
-  import { FPS, cursorAt } from "../lib/sequence";
+  import { FPS } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -17,33 +15,8 @@
   let recorder: MediaRecorder | null = null;
   let hold = 0, lastTs = 0, drawn = 0;
   let framed = false;   // the canvas carries its own header: from the start of a recording until its last frame is flushed
-  const NO_READOUT: [string, string][] = [["EPV", "–"], ["TOV% (ROP)", "–"], ["Cum. TOV", "–"]];
-  let control: ControlParams | null = null;   // court control parameters, once control.json has loaded
-  loadControl().then((p) => { control = p; });
-  // Rebound forecasts of the play's game, loaded when the play changes.
-  let episodes: ReboundEpisode[] = [];
-  let talent = false;
-  let grid: HeatGrid | null = null;
-  let s09 = new Map<string, Step09Step[]>();   // Step 09's held-out forecasts of the game's misses, by episode id
-  $effect(() => {
-    const current = play;
-    episodes = [];
-    s09 = new Map();
-    live.reboundEpisodes = [];
-    live.reboundStep09 = s09;
-    live.rebound = null;
-    if (!current) return;
-    Promise.all([loadRebounds(gameOf(current)), loadStep09(gameOf(current))]).then(([g, m]) => {
-      if (play !== current) return;
-      episodes = episodesInPlay(current, g);
-      talent = g?.talent ?? false;
-      grid = g?.heat ?? null;
-      s09 = new Map((m?.episodes ?? []).map((e) => [e.id, e.steps]));
-      live.reboundEpisodes = episodes;
-      live.reboundTalent = talent;
-      live.reboundStep09 = s09;
-    });
-  });
+  let pointer = $state(false);   // the pointer is over a player
+  let hits: { id: number; x: number; y: number; r: number }[] = [];   // player dots last drawn, for clicks
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -62,28 +35,41 @@
   }
 
   function render(ctx: CanvasRenderingContext2D): void {
-    const frame = play && seq.length ? play.frames[cursorAt(play, seq, viewer.pos).i0] : -1;
-    const first = episodes.length ? reboundAt(episodes, frame) : null;
-    const reading = viewer.reboundModel === "step09" ? withStep09(first, s09, frame) : first;
-    if (reading?.step !== live.rebound?.step || reading?.resolved !== live.rebound?.resolved) live.rebound = reading;
-    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed, control,
-                           reading ? { reading, talent, grid, landing: viewer.reboundLanding } : null);
+    const focusPid = viewer.showTrace && viewer.trace === "nearest" ? viewer.focusPid : null;
+    const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos,
+                           { ...viewer, focusPid }, framed);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;
     if (info.handler !== live.handler) live.handler = info.handler;
-    if (info.shot !== live.shot) live.shot = info.shot;
+    hits = info.hits;
     if (info.onCourt.length !== live.onCourt.length || info.onCourt.some((id, i) => id !== live.onCourt[i])) live.onCourt = info.onCourt;
-    // Areas and prices change every frame; refresh the text a few times a second, or at once when paused.
+    // Areas change every frame; refresh the text a few times a second, or at once when paused.
     if (drawn++ % 6 === 0 || !viewer.playing) {
-      const readout = info.readout ?? NO_READOUT;
-      if (readout.some((cell, i) => cell[1] !== live.readout[i]?.[1])) live.readout = readout;
-      const cc = info.control, was = live.control;
-      if (!cc !== !was || (cc && was && (cc.kind !== was.kind || cc.cells.some((cell, i) => cell[1] !== was.cells[i]?.[1])))) live.control = cc;
       const round = (v: number | null) => (v == null ? null : Math.round(v));
       if (round(info.areaOff) !== live.areaOff) live.areaOff = round(info.areaOff);
       if (round(info.areaDef) !== live.areaDef) live.areaDef = round(info.areaDef);
     }
+  }
+
+  // The player under a click, if any (the nearest dot whose disc holds the point).
+  function playerAt(ev: MouseEvent): number | null {
+    const box = canvas.getBoundingClientRect(), x = ev.clientX - box.left, y = ev.clientY - box.top;
+    let best: number | null = null, bestD = Infinity;
+    for (const h of hits) {
+      const d = Math.hypot(h.x - x, h.y - y);
+      if (d <= h.r + 4 && d < bestD) { best = h.id; bestD = d; }
+    }
+    return best;
+  }
+
+  function onClick(ev: MouseEvent): void {
+    const pid = playerAt(ev);
+    if (pid == null) return;
+    const same = viewer.trace === "nearest" && viewer.focusPid === pid && viewer.showTrace;
+    viewer.focusPid = same ? null : pid;
+    viewer.trace = "nearest";
+    viewer.showTrace = true;
   }
 
   // Record the canvas while the play runs once from the start, then hand the file to the browser.
@@ -154,7 +140,9 @@
 </script>
 
 <div class="stage" class:half={viewer.view === "half"} bind:this={stage}>
-  <canvas bind:this={canvas} aria-label="Animated court view of the selected possession"></canvas>
+  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
+  <canvas bind:this={canvas} aria-label="Animated court view of the selected possession. Click a player to follow his nearest opponent."
+          class:pointer={pointer} onclick={onClick} onmousemove={(ev) => (pointer = playerAt(ev) != null)} onmouseleave={() => (pointer = false)}></canvas>
   {#if note}
     <div class="stage-note">{note}</div>
   {/if}

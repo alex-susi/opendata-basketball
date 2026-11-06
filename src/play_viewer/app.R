@@ -58,7 +58,10 @@ filters_panel <- tags$details(class = "panel filters", open = NA,
                               div(class = "pair even",
                                   pick_many("period", "Quarter", "All"),
                                   pick_many("result", "Result", "Any result")),
-                              pick_many("shot_type", "Shot type", "Any shot type"))
+                              pick_many("shot_type", "Shot type", "Any shot type"),
+                              pick_mode("oreb", "Offensive rebound",
+                                        c("Any possession" = "any", "With an offensive rebound" = "with",
+                                          "Without one" = "without")))
 
 list_panel <- div(class = "panel plays",
                   div(class = "plays-head", span("Possessions"), span(id = "play-count", class = "count")),
@@ -86,7 +89,7 @@ reset_filters <- function(session) {
     updateSelectizeInput(session, id, selected = character(0))
   }
   updateSelectizeInput(session, "player", selected = "")
-  for (id in c("team_side", "player_role", "types_mode")) updateSelectInput(session, id, selected = "any")
+  for (id in c("team_side", "player_role", "types_mode", "oreb")) updateSelectInput(session, id, selected = "any")
 }
 
 server <- function(input, output, session) {
