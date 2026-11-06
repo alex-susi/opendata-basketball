@@ -14,7 +14,7 @@
 
   let list: HTMLDivElement;
   const outcome = (row: PlayRow) => (row.result.startsWith("Made") ? "made" : row.result.startsWith("Missed") ? "missed" : "");
-  const oreb = (row: PlayRow) => (row.oreb > 1 ? `Off. rebound ×${row.oreb}` : "Off. rebound");
+  const oreb = (row: PlayRow) => (row.oreb > 1 ? `Off. Reb ×${row.oreb}` : "Off. Reb");
 
   // Keep the selected play in view when the selection or the list changes.
   $effect(() => {

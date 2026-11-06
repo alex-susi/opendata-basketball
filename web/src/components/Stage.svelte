@@ -7,7 +7,7 @@
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
-  /** onend: called once when a play has run to its end and Autoplay Next is on (the page moves to the next play). */
+  /** onend: called once when a play has run to its end and the Display panel says to go on to the next play. */
   let { play, seq, note, onend }: { play: Play | null; seq: number[]; note: string; onend?: () => void } = $props();
 
   const END_HOLD = 1.2;   // seconds to rest on the last frame before looping
@@ -32,15 +32,15 @@
     }
     hold += dt;
     if (recorder) finishRecording(true);
-    else if (viewer.autoNext && onend) {
+    else if (hold < END_HOLD) return;
+    else if (viewer.atEnd === "next" && onend) {
       // Once per play: the next one loads asynchronously and this frame may come round again meanwhile.
-      if (hold >= END_HOLD && ended !== play) {
+      if (ended !== play) {
         ended = play;
         onend();
       }
     }
-    else if (!viewer.loop) viewer.playing = false;
-    else if (hold >= END_HOLD) viewer.pos = 0;
+    else viewer.pos = 0;
   }
 
   function render(ctx: CanvasRenderingContext2D): void {

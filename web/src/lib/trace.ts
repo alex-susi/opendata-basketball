@@ -1,7 +1,7 @@
-// The trace panel between the court and the transport bar: one number followed over the play.
+// The trace panel under the court (the play's timeline): one number followed over the play.
 //   ball:    the ball's height (ft) from the tracking.
 //   nearest: the 2D distance (ft) from one player to the closest player of the other team.
-// Samples are taken every few steps of the playback sequence, so the x axis is the transport bar's clock
+// Samples are taken every few steps of the playback sequence, so the x axis is playback time
 // (dead-ball time is skipped when the viewer skips it). Pure, so the tests can run it in Node.
 
 import { blend, FPS, type Cursor } from "./sequence";
@@ -47,7 +47,7 @@ export function nearestOpponent(play: Play, pid: number, i: number): Nearest | n
 export interface TraceSample {
   /** Position in the playback sequence. */
   k: number;
-  /** Seconds on the transport's clock. */
+  /** Seconds of playback. */
   t: number;
   /** The value, or null where it is missing. */
   v: number | null;

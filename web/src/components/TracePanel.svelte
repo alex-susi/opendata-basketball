@@ -1,29 +1,29 @@
 <script lang="ts">
-  // The trace panel between the court and the timeline: one number followed over the whole play, with the
-  // current moment marked as the play runs. Two traces:
+  // The trace panel under the court, and the play's timeline: one number followed over the whole play, with the
+  // play's actions marked on it and the current moment as the play runs. Two traces:
   //   Ball height       the ball's z from the tracking (ft).
   //   Nearest opponent  one player's floor distance to the closest player of the other team (ft). Click a player
   //                     on the court or in a roster, or pick one here; the court rings the pair in their teams'
   //                     secondary colours and joins them with a line.
-  // Samples are every 0.2 s of playback (lib/trace.ts), on the timeline's clock; the time axis lines up with the
-  // timeline under it. Every action on the timeline is marked here too. Click or drag on the chart to move
-  // playback there. Shown or hidden from the Display panel.
+  // Samples are every 0.2 s of playback (lib/trace.ts). Each action is a dashed line, captioned with the action
+  // above the plot and the player under the time axis (both hidden when the Display panel's Action Names is off);
+  // hovering near one shows its full description. A white line marks the current moment. Click or drag on the
+  // chart to move playback there. Shown or hidden from the Display panel.
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
-  import { blend, cursorAt, FPS, layoutTimeline, type Timeline } from "../lib/sequence";
+  import { blend, cursorAt, FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
   import { nearestAt, traceSamples, type TraceKind, type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
   import { viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
-  // Left and right margins match the timeline's track (.transport and .track in app.css), so a time sits at the
-  // same x in both, and the plot is exactly as wide as the track.
-  const M = { left: 38, right: 12, bottom: 22 };
+  const M = { left: 38, right: 12 };
   const PLOT_H = 92;
-  // Action captions above the plot are laid out exactly as on the timeline (same width, same font, same tilt), in a
-  // band as tall as the part of the timeline's track above its ticks (TICK_TOP in Transport.svelte).
-  const CAPTION_BAND = 43, LEADER = 5;
+  const AXIS = 20;          // the time axis's numbers, under the plot
+  // Captions: the action in a band above the plot, the player in a band under the axis. Captions that crowd tilt
+  // away from their line (lib/sequence.ts, layoutTimeline), each joined to it by a short leader.
+  const BAND = 43, LEADER = 5;
   const TICK_FONT = '600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
   const measurer = document.createElement("canvas").getContext("2d")!;
   const measure = (text: string) => {
@@ -34,6 +34,7 @@
   let width = $state(0);
   let svg = $state<SVGSVGElement>();
   let hoverK = $state<number | null>(null);
+  let hoverTick = $state<Tick | null>(null);
 
   // Players who appear on the tracked court at some point in this play, offense first.
   const tracked = $derived((play?.players ?? []).filter((p) => p.x.some((v) => !Number.isNaN(v)))
@@ -53,26 +54,28 @@
   const plotW = $derived(Math.max(10, width - M.left - M.right));
   const X = (t: number) => M.left + (t / tEnd) * plotW;
 
-  // Every action on the timeline, as a dashed line across the plot, captioned above it (unless the Display panel's
-  // Action Names is off) exactly as the timeline captions it.
   const empty: Timeline = { ticks: [], cuts: [], marks: [] };
   const timeline = $derived(play && seq.length && plotW > 10 ? layoutTimeline(play, seq, plotW, measure) : empty);
-  const top = $derived(viewer.showTickLabels ? CAPTION_BAND + 2 : 12);
-  const H = $derived(top + PLOT_H + M.bottom);
-  const Y = (v: number) => top + PLOT_H - (clamp(v, 0, yMax) / yMax) * PLOT_H;
+  const top = $derived(viewer.showTickLabels ? BAND + 2 : 12);
+  const bottom = $derived(top + PLOT_H);
+  const H = $derived(bottom + AXIS + (viewer.showTickLabels ? BAND : 4));
+  const Y = (v: number) => bottom - (clamp(v, 0, yMax) / yMax) * PLOT_H;
   const yTicks = $derived(Array.from({ length: Math.floor(yMax / 5) + 1 }, (_, i) => i * 5).filter((v) => yMax <= 20 || v % 10 === 0));
   const xTicks = $derived.by(() => {
     const step = [0.5, 1, 2, 5, 10, 20].find((s) => (s / tEnd) * plotW >= 46) ?? 30;
     return Array.from({ length: Math.floor(tEnd / step + 1e-9) + 1 }, (_, i) => i * step);
   });
+  const tilted = $derived(timeline.ticks.filter((tick) => tick.lean !== "flat"));
+  const boxWidth = (tick: Tick) => (tick.lean === "flat" ? `${tick.width}px` : null);
 
   // The current moment, blended between frames like the court.
+  const tNow = $derived(viewer.pos / FPS);
   const now = $derived.by(() => {
     if (!play || !seq.length || !kind) return null;
-    const c = cursorAt(play, seq, viewer.pos), t = viewer.pos / FPS;
-    if (kind.kind === "ball") return { t, v: blend(play.ball.z, c), opp: null as PlayerTrack | null };
+    const c = cursorAt(play, seq, viewer.pos);
+    if (kind.kind === "ball") return { v: blend(play.ball.z, c), opp: null as PlayerTrack | null };
     const near = nearestAt(play, kind.pid, c);
-    return { t, v: near?.dist ?? null, opp: near ? play.players.find((p) => p.id === near.pid) ?? null : null };
+    return { v: near?.dist ?? null, opp: near ? play.players.find((p) => p.id === near.pid) ?? null : null };
   });
 
   // The line runs through the samples already played (and the current moment), broken where a value is missing.
@@ -80,12 +83,12 @@
     if (!now) return "";
     let d = "", pen = false;
     for (const s of samples) {
-      if (s.t > now.t) break;
+      if (s.t > tNow) break;
       if (s.v == null) { pen = false; continue; }
       d += `${pen ? "L" : "M"}${X(s.t).toFixed(1)},${Y(s.v).toFixed(1)}`;
       pen = true;
     }
-    if (pen && now.v != null) d += `L${X(now.t).toFixed(1)},${Y(now.v).toFixed(1)}`;
+    if (pen && now.v != null) d += `L${X(tNow).toFixed(1)},${Y(now.v).toFixed(1)}`;
     return d;
   });
 
@@ -103,11 +106,21 @@
     if (!play || !seq.length) return;
     viewer.pos = clamp(tAt(ev) * FPS, 0, seq.length - 1);
   }
+  // The sample under the pointer, and the action whose line is within a few pixels of it (for its card).
   function hover(ev: PointerEvent): void {
-    if (!samples.length) return;
-    const t = tAt(ev);
-    hoverK = samples.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a)).k;
+    const box = svg!.getBoundingClientRect(), x = ev.clientX - box.left, t = tAt(ev);
+    hoverK = samples.length ? samples.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a)).k : null;
+    let best: Tick | null = null, gap = 7;
+    for (const tick of timeline.ticks) {
+      const d = Math.abs(M.left + tick.frac * plotW - x);
+      if (d < gap) { best = tick; gap = d; }
+    }
+    hoverTick = best;
     if (svg!.hasPointerCapture(ev.pointerId)) seek(ev);
+  }
+  function leave(): void {
+    hoverK = null;
+    hoverTick = null;
   }
   function pick(ev: Event): void {
     const v = (ev.currentTarget as HTMLSelectElement).value;
@@ -158,27 +171,35 @@
   <div class="trace-chart" bind:clientWidth={width}>
     {#if !play}
       <p class="trace-empty">No play selected.</p>
-    {:else if !kind}
-      <p class="trace-empty">Click a player on the court (or in a roster, or the list above) to follow his distance to the nearest opponent.</p>
     {:else if width > 0}
-      <svg bind:this={svg} {width} height={H} role="slider" aria-label="Trace over the play; click to move playback" aria-valuenow={Math.round(viewer.pos)}
-           aria-valuemin={0} aria-valuemax={seq.length - 1} tabindex="-1"
+      <svg bind:this={svg} {width} height={H} role="slider" aria-label="The play's timeline and trace; click to move playback"
+           aria-valuenow={Math.round(viewer.pos)} aria-valuemin={0} aria-valuemax={seq.length - 1} tabindex="-1"
            onpointerdown={(ev) => { svg!.setPointerCapture(ev.pointerId); seek(ev); }} onpointermove={hover}
-           onpointerleave={() => (hoverK = null)}>
+           onpointerleave={leave}>
+        <rect class="plot-hit" x={M.left} y={top} width={plotW} height={PLOT_H} />
         {#each yTicks as v (v)}
           <line class="grid" x1={M.left} x2={M.left + plotW} y1={Y(v)} y2={Y(v)} />
           <text class="axis" x={M.left - 6} y={Y(v)} text-anchor="end" dominant-baseline="middle">{v}</text>
         {/each}
         {#each xTicks as t (t)}
-          <text class="axis" x={X(t)} y={H - 6} text-anchor="middle">{t % 1 ? t.toFixed(1) : t}</text>
+          <text class="axis" x={X(t)} y={bottom + 14} text-anchor="middle">{t % 1 ? t.toFixed(1) : t}</text>
         {/each}
         <text class="axis unit" x={M.left - 6} y={top - 6} text-anchor="end">ft</text>
-        <text class="axis unit" x={M.left + plotW} y={H - 6} text-anchor="end" dx="12">s</text>
+        <text class="axis unit" x={M.left + plotW} y={bottom + 14} text-anchor="end" dx="12">s</text>
+        {#each timeline.cuts as cut}
+          <line class="cut" x1={M.left + cut * plotW} x2={M.left + cut * plotW} y1={bottom - 5} y2={bottom + 3}><title>Footage skips here</title></line>
+        {/each}
         {#each timeline.ticks as tick, i (i)}
           {@const x = M.left + tick.frac * plotW}
-          <line class="mark {tick.event.kind}" x1={x} x2={x} y1={top - 2} y2={top + PLOT_H}><title>{tick.event.label}</title></line>
+          <line class="mark {tick.event.kind}" class:on={hoverTick === tick} x1={x} x2={x} y1={top - 2} y2={bottom + 2} />
         {/each}
-        {#if hovered}<line class="hover" x1={X(hovered.t)} x2={X(hovered.t)} y1={top} y2={top + PLOT_H} />{/if}
+        {#if !kind}
+          <text class="trace-prompt" x={M.left + plotW / 2} y={top + PLOT_H / 2} text-anchor="middle" dominant-baseline="middle">
+            Click a player on the court or in a roster to follow his distance to the nearest opponent.
+          </text>
+        {/if}
+        {#if hovered}<line class="hover" x1={X(hovered.t)} x2={X(hovered.t)} y1={top} y2={bottom} />{/if}
+        <line class="playhead" x1={X(tNow)} x2={X(tNow)} y1={top - 2} y2={bottom + 2} />
         <path d={pastPath} fill="none" stroke={color} stroke-width="2.2" stroke-linejoin="round" />
         {#each samples as s (s.k)}
           {#if s.v != null}
@@ -186,22 +207,42 @@
           {/if}
         {/each}
         {#if now?.v != null}
-          <circle cx={X(now.t)} cy={Y(now.v)} r="5.5" fill={color} stroke="#0F1522" stroke-width="1.5" />
+          <circle cx={X(tNow)} cy={Y(now.v)} r="5.5" fill={color} stroke="#0F1522" stroke-width="1.5" />
         {/if}
       </svg>
       {#if viewer.showTickLabels}
-        <!-- The timeline's upper captions, in a band of the same height over the plot (classes shared with it). -->
-        <div class="trace-captions" style:left="{M.left}px" style:top="{top - 2 - CAPTION_BAND}px" style:width="{plotW}px"
-             style:height="{CAPTION_BAND}px" aria-hidden="true">
+        <!-- The action over its line, above the plot. -->
+        <div class="trace-captions" style:left="{M.left}px" style:top="{top - 2 - BAND}px" style:width="{plotW}px"
+             style:height="{BAND}px" aria-hidden="true">
           <svg class="leaders">
-            {#each timeline.ticks.filter((tick) => tick.lean !== "flat") as tick}
-              <line x1={tick.frac * plotW} y1={CAPTION_BAND} x2={tick.at} y2={CAPTION_BAND - LEADER} />
+            {#each tilted as tick}
+              <line x1={tick.frac * plotW} y1={BAND} x2={tick.at} y2={BAND - LEADER} />
             {/each}
           </svg>
           {#each timeline.ticks as tick}
-            <span class="tick-label above lean-{tick.lean} {tick.event.kind}" style:left="{tick.at}px"
-                  style:width={tick.lean === "flat" ? `${tick.width}px` : null}>{tick.event.short ?? ""}</span>
+            <span class="tick-label above lean-{tick.lean} {tick.event.kind}" class:on={hoverTick === tick}
+                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.short ?? ""}</span>
           {/each}
+        </div>
+        <!-- The player under the time axis. -->
+        <div class="trace-names" style:left="{M.left}px" style:top="{bottom + AXIS}px" style:width="{plotW}px"
+             style:height="{BAND}px" aria-hidden="true">
+          <svg class="leaders">
+            {#each tilted as tick}
+              <line x1={tick.frac * plotW} y1={0} x2={tick.at} y2={LEADER} />
+            {/each}
+          </svg>
+          {#each timeline.ticks as tick}
+            <span class="tick-label below lean-{tick.lean}" class:on={hoverTick === tick}
+                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.who ?? ""}</span>
+          {/each}
+        </div>
+      {/if}
+      {#if hoverTick}
+        {@const x = M.left + hoverTick.frac * plotW}
+        <div class="trace-card" style:left="{clamp(x - 130, 0, Math.max(0, width - 260))}px" style:top="{top + 6}px">
+          <span class="trace-card-time">{(hoverTick.k / FPS).toFixed(1)} s</span>
+          <b class={hoverTick.event.kind}>{hoverTick.event.label}</b>
         </div>
       {/if}
     {/if}

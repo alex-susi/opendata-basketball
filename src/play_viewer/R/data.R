@@ -4,8 +4,9 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 1L          # tracking cache
-INDEX_VERSION <- 5L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
-                             # play types in the order they happen and picks credited to the screener since 5)
+INDEX_VERSION <- 6L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+                             # play types in the order they happen and picks credited to the screener since 5;
+                             # rebounds captioned "Def. Reb" / "Off. Reb" since 6)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -324,7 +325,7 @@ other_events <- function(ev, nm) {
                    kind = "rebound",
                    label = sprintf("%s rebound: %s", ifelse(lgl_field(rb, "defensive"), "Defensive", "Offensive"),
                                    reb_who),
-                   short = ifelse(lgl_field(rb, "defensive"), "Def. rebound", "Off. rebound"), who = reb_who),
+                   short = ifelse(lgl_field(rb, "defensive"), "Def. Reb", "Off. Reb"), who = reb_who),
         data.table(poss_id = chr_field(ft, "possessionId"), type = "free_throw", frame = int_field(ft, "frame"),
                    kind = ifelse(lgl_field(ft, "outcome"), "made", "missed"),
                    label = sprintf("Free throw %s: %s", ifelse(lgl_field(ft, "outcome"), "made", "missed"),

@@ -1,4 +1,4 @@
-// Playback and display state shared by the stage, the transport bar, the trace panel and the side panel.
+// Playback and display state shared by the stage, the playback controls, the trace panel and the side panel.
 
 import type { CourtView } from "./court";
 
@@ -11,7 +11,8 @@ export const viewer = $state({
   showDef: true,
   showOff: true,
   skipDead: true,
-  loop: true,
+  /** At the end of a play: play it again from the top, or go on to the next play in the list and play that. */
+  atEnd: "loop" as "loop" | "next",
   /** Ring each player on the court in his archetype's colour. */
   showArch: true,
   /** The trace panel under the court. */
@@ -20,12 +21,8 @@ export const viewer = $state({
   trace: "ball" as "ball" | "nearest",
   /** The player the nearest-opponent trace follows (clicked on the court or in a roster), or null. */
   focusPid: null as number | null,
-  /** Caption the actions on the timeline (action and player) and over the trace panel. Off, the timeline is a thin bar. */
+  /** Caption the actions in the trace panel: the action above the plot, the player under the time axis. */
   showTickLabels: true,
-  /** The timeline under the court. Hidden, the court takes its height. */
-  showTimeline: true,
-  /** At the end of a play, go on to the next play in the list and play it. */
-  autoNext: false,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */

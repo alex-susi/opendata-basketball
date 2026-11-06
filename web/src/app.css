@@ -75,7 +75,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   display: grid;
   grid-template-columns: var(--left-w, 250px) minmax(0, 1fr) 330px;
   grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas: "left head ." "left viewer side";
+  grid-template-areas: "left head ctrl" "left viewer side";
   gap: 10px 12px;
   height: calc(100vh - var(--bar));
   padding: 12px;
@@ -84,6 +84,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .play-head-box { grid-area: head; }
 .viewer { grid-area: viewer; }
 .side { grid-area: side; }
+.controls-box { grid-area: ctrl; align-self: center; min-width: 0; padding: 0 13px; }
 
 .panel {
   background: var(--panel);
@@ -295,25 +296,37 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .trace-read { min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
 .trace-read b { color: var(--ink); }
 .trace-chart { position: relative; min-height: 126px; }
-.trace-captions { position: absolute; pointer-events: none; }
+.trace-captions, .trace-names { position: absolute; pointer-events: none; }
 .trace-chart svg { display: block; cursor: crosshair; touch-action: none; user-select: none; }
+.trace-chart .plot-hit { fill: transparent; }
 .trace-chart .grid { stroke: #26314A; stroke-width: 1; }
 .trace-chart .axis { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
 .trace-chart .unit { font-style: italic; }
 .trace-chart .sample { fill: none; stroke: #74819C; stroke-width: 1.2; }
 .trace-chart .sample.faint { stroke-dasharray: 2 2; opacity: .55; }
-/* Action marks in the timeline's tick colours (.tick below): actions light, shots by result, turnovers red,
-   fouls and rebounds grey. Their captions are the timeline's (.tick-label). */
+/* Action lines: actions light, shots by result, turnovers red, fouls and rebounds grey; brighter while hovered. */
 .trace-chart .mark { stroke: #A9B6CE; stroke-dasharray: 3 3; opacity: .55; }
 .trace-chart .mark.made { stroke: var(--made); opacity: .8; }
 .trace-chart .mark.missed, .trace-chart .mark.turnover { stroke: var(--missed); opacity: .8; }
 .trace-chart .mark.foul, .trace-chart .mark.rebound { stroke: #6C7A96; opacity: .8; }
+.trace-chart .mark.on { stroke-dasharray: none; stroke-width: 2; opacity: 1; }
+.trace-chart .cut { stroke: var(--panel); stroke-width: 3; }
 .trace-chart .hover { stroke: var(--muted); stroke-width: 1; }
-.trace-empty { display: grid; place-items: center; height: 132px; margin: 0; padding: 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
+/* The current moment. */
+.trace-chart .playhead { stroke: var(--ink); stroke-width: 1.5; opacity: .85; }
+.trace-chart .trace-prompt { fill: var(--muted); font-size: 13px; }
+.trace-empty { display: grid; place-items: center; height: 126px; margin: 0; padding: 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
+/* The full description of the action under the pointer. */
+.trace-card {
+  position: absolute; z-index: 2; display: grid; gap: 1px; width: 260px; padding: 6px 10px; pointer-events: none;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
+  font-size: 12.5px; line-height: 1.35;
+}
+.trace-card-time { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.trace-card b.made { color: var(--made); }
+.trace-card b.missed, .trace-card b.turnover { color: var(--missed); }
 
-/* The timeline. Its track has the trace chart's margins (38px left, 12px right inside 12px of padding), so a moment
-   sits at the same x in both. */
-.transport { flex: none; padding: 4px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+/* Round icon buttons: the playback controls. */
 .icon-btn {
   display: grid; place-items: center; width: 34px; height: 34px; flex: none; padding: 0;
   border: 1px solid var(--line); border-radius: 50%; background: var(--raised); cursor: pointer;
@@ -324,29 +337,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .icon-btn.primary svg { fill: #0B1220; }
 .icon-btn.primary:hover { background: #6AABFF; }
 .icon-btn:disabled { opacity: .5; cursor: default; }
-/* 100px tall with captions: ticks span 43px to 57px, captions above and below. Without them, a 30px bar. */
-.track { position: relative; height: 100px; margin: 0 12px 0 38px; cursor: pointer; touch-action: none; }
-.track-rail { position: absolute; left: 0; right: 0; top: 47px; height: 6px; border-radius: 3px; background: #2F3B55; }
-.track-fill { height: 100%; border-radius: 3px; background: var(--off); }
-.track-thumb {
-  position: absolute; top: 42px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
-  background: var(--ink); border: 2px solid var(--off); pointer-events: none;
-}
-.track.bare { height: 30px; }
-.track.bare .track-rail { top: 12px; }
-.track.bare .track-thumb { top: 7px; }
-.tick {
-  position: absolute; top: -4px; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px;
-  background: #A9B6CE; opacity: .9;
-}
-.tick.made { background: var(--made); }
-.tick.missed, .tick.turnover { background: var(--missed); }
-.tick.foul, .tick.rebound { background: #6C7A96; }
-.tick.cut { top: -3px; width: 2px; height: 12px; margin-left: -1px; background: var(--panel); opacity: 1; }
-/* Captions for each tick: the action above the rail, the player below. A tick with room has a flat caption centred
-   on it. Where ticks crowd, captions tilt up from the rail instead (20 degrees, TILT in the layout code), each from
-   an anchor joined to its tick by a short leader line. Font must match TICK_FONT in Transport.svelte; the offsets
-   follow the rail (ticks span 43px to 57px of the track; tilted captions start 5px beyond). */
+/* Captions for each action line: the action in the band above the plot (its line ends at the band's bottom, 43px),
+   the player in the band under the time axis (the line's leader starts at its top). An action with room has a
+   flat caption centred on its line. Where actions crowd, captions tilt away instead (20 degrees, TILT in
+   lib/sequence.ts), each from an anchor joined to its line by a 5px leader. Font must match TICK_FONT in
+   TracePanel.svelte. */
 .tick-label {
   position: absolute; overflow: hidden; text-align: center; white-space: nowrap; pointer-events: none;
   font: 600 11px/14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -355,13 +350,14 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tick-label.above.made { color: var(--made); }
 .tick-label.above.missed, .tick-label.above.turnover { color: var(--missed); }
 .tick-label.below { color: var(--muted); font-weight: 500; }
+.tick-label.on { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 .tick-label.above { top: 28px; }
-.tick-label.below { top: 58px; }
+.tick-label.below { top: 1px; }
 .tick-label.lean-right, .tick-label.lean-left { max-width: 72px; text-overflow: ellipsis; }
 .tick-label.above.lean-right { top: 24px; transform-origin: 0 100%; transform: rotate(-20deg); }
 .tick-label.above.lean-left { top: 24px; transform-origin: 100% 100%; transform: translateX(-100%) rotate(20deg); }
-.tick-label.below.lean-right { top: 62px; transform-origin: 0 0; transform: rotate(20deg); }
-.tick-label.below.lean-left { top: 62px; transform-origin: 100% 0; transform: translateX(-100%) rotate(-20deg); }
+.tick-label.below.lean-right { top: 5px; transform-origin: 0 0; transform: rotate(20deg); }
+.tick-label.below.lean-left { top: 5px; transform-origin: 100% 0; transform: translateX(-100%) rotate(-20deg); }
 .leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .leaders line { stroke: #6C7A96; stroke-width: 1; }
 
@@ -369,12 +365,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 .side .panel { padding: 10px 12px; }
 .side h2 { margin-bottom: 8px; font-size: 13.5px; font-weight: 700; }
-/* Playback controls, above the display toggles: buttons at the left, time at the right, the speed centred in the
-   space between. */
-.controls {
-  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px;
-  margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
-}
+/* Playback controls, beside the play's header and above the Display panel: buttons at the left, time at the right,
+   the speed centred in the space between. */
+.controls { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
 .control-buttons { display: flex; align-items: center; gap: 8px; }
 .controls .speed { justify-self: center; }
 .time-label { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -382,12 +375,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; }
 .toggle input { margin: 0; accent-color: var(--off); }
 /* Toggles in columns. By default two columns filled row by row; .by-column fills each column top to bottom
-   (three rows, or four with .four, five with .five). */
+   (three rows, or four with .four). */
 .toggle-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 8px; }
 .toggle-grid .toggle, .toggle-grid .switch { margin: 0; }
 .toggle-grid.by-column { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
 .toggle-grid.by-column.four { grid-template-rows: repeat(4, auto); }
-.toggle-grid.by-column.five { grid-template-rows: repeat(5, auto); }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .panel-head h2 { margin-bottom: 0; }
 /* A small on/off switch: the checkbox stays in the page for the keyboard, the track is what shows. */
@@ -404,6 +396,13 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .switch input:checked + .switch-track { background: var(--off); border-color: var(--off); }
 .switch input:checked + .switch-track::after { transform: translateX(12px); background: #0B1220; }
 .switch input:focus-visible + .switch-track { outline: 2px solid var(--off); outline-offset: 2px; }
+/* A switch between two settings, each named on its side; the one in force is bright. */
+.switch.two-way > span:not(.switch-track) { color: var(--muted); }
+.switch.two-way > span.on { color: var(--ink); font-weight: 600; }
+/* Both settings are in force one at a time, so the track keeps one colour either way. */
+.switch.two-way input:checked + .switch-track { background: var(--raised); border-color: var(--line); }
+.switch.two-way input:checked + .switch-track::after { background: var(--off); }
+.switch.two-way .switch-track::after { background: var(--off); }
 .text-btn {
   flex: none; padding: 3px 10px; border: 1px solid var(--line); border-radius: 7px;
   background: var(--raised); font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
@@ -448,10 +447,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* ---- narrower windows: side panels move under the court ---- */
 @media (max-width: 1180px) {
   .app {
-    grid-template-columns: var(--left-w, 250px) minmax(0, 1fr); grid-template-rows: auto auto auto;
-    grid-template-areas: "left head" "left viewer" "left side"; height: auto; min-height: calc(100vh - var(--bar));
+    grid-template-columns: var(--left-w, 250px) minmax(0, 1fr); grid-template-rows: auto auto auto auto;
+    grid-template-areas: "left head" "left ctrl" "left viewer" "left side"; height: auto; min-height: calc(100vh - var(--bar));
   }
   .left { max-height: calc(100vh - 24px); position: sticky; top: 12px; }
+  .controls-box { max-width: 380px; padding: 0 4px; }
   .viewer { min-height: calc(100vh - 100px - var(--bar)); }
   .side { flex-direction: row; flex-wrap: wrap; overflow: visible; }
   .side .panel { flex: 1 1 200px; min-width: 0; }
@@ -461,7 +461,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- phones: one column, court first ---- */
 @media (max-width: 760px) {
-  .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "viewer" "side" "left"; padding: 8px; gap: 8px; }
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "ctrl" "viewer" "side" "left"; padding: 8px; gap: 8px; }
   .viewer { min-height: 0; }
   .side { flex-direction: column; }
   .left { position: static; max-height: none; }

@@ -1,14 +1,13 @@
 <script lang="ts">
-  // Right column, level with the court: the Display panel (playback controls over the display toggles) and the two
-  // rosters. Each team keeps its club colours whichever end it plays. A roster row ends with the player's archetype
-  // on that side of the ball: its name in an outlined pill of the archetype's colour, full name and probability on
-  // hover. Clicking a row makes the trace panel under the court follow that player's distance to his nearest
-  // opponent (clicking it again lets him go).
+  // Right column, level with the court (the playback controls sit above it, Controls.svelte): the Display panel and
+  // the two rosters. Each team keeps its club colours whichever end it plays. A roster row ends with the player's
+  // archetype on that side of the ball: its name in an outlined pill of the archetype's colour, full name and
+  // probability on hover. Clicking a row makes the trace panel under the court follow that player's distance to his
+  // nearest opponent (clicking it again lets him go).
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
-  import Controls from "./Controls.svelte";
 
-  let { play, seq, onskip }: { play: Play | null; seq: number[]; onskip: (skip: boolean) => void } = $props();
+  let { play, onskip }: { play: Play | null; onskip: (skip: boolean) => void } = $props();
 
   const sides: { role: Role; title: string }[] = [{ role: "off", title: "Offense" }, { role: "def", title: "Defense" }];
   const area = (role: Role) => (role === "off" ? live.areaOff : live.areaDef);
@@ -30,28 +29,27 @@
         {viewer.recording ? "Cancel recording" : "Save Video"}
       </button>
     </div>
-    <Controls {play} {seq} />
     <!-- Left column: what is drawn on the court and under it. Right column: captions and how the plays run. -->
-    <div class="toggle-grid by-column five">
+    <div class="toggle-grid by-column four">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
       <label class="toggle" title="Tag each player on the court with his archetype (abbreviated, in its colour), as beside his name below">
         <input type="checkbox" bind:checked={viewer.showArch} />Player archetypes
       </label>
-      <label class="toggle" title="The panel under the court: ball height, or a player's distance to his nearest opponent">
+      <label class="toggle" title="The panel under the court: the play's actions and either the ball's height or a player's distance to his nearest opponent">
         <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
       </label>
-      <label class="toggle" title="The timeline under the court; hidden, the court takes its room">
-        <input type="checkbox" bind:checked={viewer.showTimeline} />Timeline
-      </label>
-      <label class="toggle" title="Caption the actions on the timeline (action and player) and over the trace panel">
+      <label class="toggle" title="Caption the actions in the trace panel: the action above, the player below">
         <input type="checkbox" bind:checked={viewer.showTickLabels} />Action names
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
-      <label class="toggle" title="Replay this play when it ends (ignored while autoplay next is on)"><input type="checkbox" bind:checked={viewer.loop} />Loop</label>
-      <label class="switch" title="When a play ends, play the next one in the possession list">
-        <input type="checkbox" role="switch" bind:checked={viewer.autoNext} />
-        <span class="switch-track"></span>Autoplay next
+      <!-- What happens at the end of a play: replay it, or go on to the next one in the possession list. -->
+      <label class="switch two-way" title="At the end of a play: replay it (left) or play the next one in the possession list (right)">
+        <span class:on={viewer.atEnd === "loop"}>Loop</span>
+        <input type="checkbox" role="switch" aria-label="Play the next play at the end" checked={viewer.atEnd === "next"}
+               onchange={(ev) => (viewer.atEnd = ev.currentTarget.checked ? "next" : "loop")} />
+        <span class="switch-track"></span>
+        <span class:on={viewer.atEnd === "next"}>Next play</span>
       </label>
     </div>
   </div>

@@ -1,18 +1,18 @@
 <script lang="ts">
   // Three tabs. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
-  // play's header over the court, the trace panel and the timeline in the middle, playback and display options and
-  // the rosters on the right, level with the court. The
-  // Archetypes tab explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten
-  // games' missed shots. Static counterpart of src/play_viewer/app.R.
+  // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
+  // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
+  // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
+  // shots. Static counterpart of src/play_viewer/app.R.
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
+  import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
   import Filters from "./components/Filters.svelte";
   import PlayList from "./components/PlayList.svelte";
   import SidePanel from "./components/SidePanel.svelte";
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
-  import Transport from "./components/Transport.svelte";
   import { loadMeta, loadPlay, loadPlays } from "./lib/data";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp, quarter } from "./lib/geometry";
@@ -210,12 +210,14 @@
     {#if viewer.showTrace}
       <TracePanel {play} {seq} />
     {/if}
-    {#if viewer.showTimeline}
-      <Transport {play} {seq} />
-    {/if}
   </section>
 
-  <SidePanel {play} {seq} onskip={setSkip} />
+  <!-- Playback, beside the play's header and above the Display panel. -->
+  <div class="controls-box">
+    <Controls {play} {seq} />
+  </div>
+
+  <SidePanel {play} onskip={setSkip} />
 </div>
 
 <main class="doc" hidden={tab !== "archetypes"}>
