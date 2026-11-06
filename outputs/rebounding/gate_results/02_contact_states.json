@@ -1,22 +1,22 @@
 {
   "step": "02",
-  "status": "BLOCKED",
-  "scope": "none: no contact-state label type met its reliability target; final credited rebounder only for Steps 03-09",
+  "status": "PASS",
+  "scope": "contact-state labels for: contact (reliability between two reviewers, so usable where reviewed; automated labels for every episode: contact BLOCKED, first touch BLOCKED, touch type BLOCKED, control BLOCKED, tip chain BLOCKED)",
   "labels_by_type": {
     "contact": {
-      "status": "BLOCKED",
-      "usable": false,
-      "unmet": "contact vs none, Cohen's kappa"
+      "status": "PASS",
+      "usable": true,
+      "unmet": null
     },
     "control": {
       "status": "BLOCKED",
       "usable": false,
-      "unmet": "both name the controller (share of subset); same controller; frame within 3"
+      "unmet": "both name the controller (share of subset); frame within 3"
     },
     "first touch": {
       "status": "BLOCKED",
       "usable": false,
-      "unmet": "both name the player (share of subset); frame within 3"
+      "unmet": "both name the player (share of subset); same player; frame within 3"
     },
     "tip chain": {
       "status": "BLOCKED",
@@ -24,9 +24,31 @@
       "unmet": "same tip count (0 / 1 / 2+)"
     },
     "touch type": {
-      "status": "PASS",
+      "status": "BLOCKED",
       "usable": false,
-      "unmet": null
+      "unmet": "tip vs catch, Cohen's kappa"
+    }
+  },
+  "automated_labels_by_type": {
+    "contact": {
+      "status": "BLOCKED",
+      "against": "reviewer1 BLOCKED, reviewer2 BLOCKED"
+    },
+    "control": {
+      "status": "BLOCKED",
+      "against": "reviewer1 BLOCKED, reviewer2 BLOCKED"
+    },
+    "first touch": {
+      "status": "BLOCKED",
+      "against": "reviewer1 BLOCKED, reviewer2 BLOCKED"
+    },
+    "tip chain": {
+      "status": "BLOCKED",
+      "against": "reviewer1 BLOCKED, reviewer2 BLOCKED"
+    },
+    "touch type": {
+      "status": "BLOCKED",
+      "against": "reviewer1 PASS, reviewer2 BLOCKED"
     }
   },
   "source_commits": {
@@ -42,146 +64,146 @@
     "break_ft": 0.65,
     "frozen_at": "2026-10-29T14:09:35"
   },
-  "repository_head": "1a114b499bd51111edbce74aec3062c146494b5b",
+  "repository_head": "cdf715f79c9beb2f391a2bd4ff412f6f8bcd530a",
   "test_command": "Rscript src/rebounding/run_tests.R unit contact_states; Rscript src/rebounding/run_tests.R gates step_02",
   "unit_tests_passed": true,
   "data_audit_passed": true,
   "heldout_metrics_file": "outputs/rebounding/step02/agreement.csv",
-  "acceptance_criteria_version": "manual 2026-10-29, config v1 (step02, fixed 2026-10-29 before the held-aside subset was opened)",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step02, fixed 2026-10-29 before the held-aside subset was opened)",
   "agreement": {
     "1": {
       "type": "contact",
       "measure": "both resolved (share of subset)",
-      "agree": 24,
+      "agree": 26,
       "n": 30,
-      "value": 0.8,
+      "value": 0.867,
       "target": 0.7
     },
     "2": {
       "type": "contact",
       "measure": "contact vs none, Cohen's kappa",
-      "agree": 23,
-      "n": 24,
-      "value": 0,
+      "agree": 26,
+      "n": 26,
+      "value": 1,
       "target": 0.6
     },
     "3": {
       "type": "contact",
       "measure": "contact vs none, raw agreement",
-      "agree": 23,
-      "n": 24,
-      "value": 0.958,
+      "agree": 26,
+      "n": 26,
+      "value": 1,
       "target": null
     },
     "4": {
       "type": "contact",
       "measure": "frame within 2",
-      "agree": 20,
+      "agree": 22,
       "n": 23,
-      "value": 0.87,
+      "value": 0.957,
       "target": 0.8
     },
     "5": {
       "type": "rim vs board",
       "measure": "agreement where both name rim or board (not gated)",
-      "agree": 11,
-      "n": 11,
+      "agree": 12,
+      "n": 12,
       "value": 1,
       "target": null
     },
     "6": {
       "type": "first touch",
       "measure": "both name the player (share of subset)",
-      "agree": 15,
+      "agree": 12,
       "n": 30,
-      "value": 0.5,
+      "value": 0.4,
       "target": 0.6
     },
     "7": {
       "type": "first touch",
       "measure": "same player",
-      "agree": 13,
-      "n": 15,
-      "value": 0.867,
+      "agree": 11,
+      "n": 12,
+      "value": 0.917,
       "target": 0.8
     },
     "8": {
       "type": "first touch",
       "measure": "frame within 3",
-      "agree": 13,
-      "n": 27,
-      "value": 0.481,
+      "agree": 12,
+      "n": 23,
+      "value": 0.522,
       "target": 0.75
     },
     "9": {
       "type": "touch type",
       "measure": "tip vs catch, Cohen's kappa",
-      "agree": 17,
-      "n": 19,
-      "value": 0.789,
+      "agree": 8,
+      "n": 16,
+      "value": 0,
       "target": 0.5
     },
     "10": {
       "type": "touch type",
       "measure": "tip vs catch, raw agreement",
-      "agree": 17,
-      "n": 19,
-      "value": 0.895,
+      "agree": 8,
+      "n": 16,
+      "value": 0.5,
       "target": null
     },
     "11": {
       "type": "control",
       "measure": "both name the controller (share of subset)",
-      "agree": 14,
+      "agree": 19,
       "n": 30,
-      "value": 0.467,
+      "value": 0.633,
       "target": 0.7
     },
     "12": {
       "type": "control",
       "measure": "same controller",
-      "agree": 14,
-      "n": 14,
-      "value": 1,
+      "agree": 18,
+      "n": 19,
+      "value": 0.947,
       "target": 0.85
     },
     "13": {
       "type": "control",
       "measure": "frame within 3",
-      "agree": 10,
-      "n": 20,
-      "value": 0.5,
+      "agree": 12,
+      "n": 21,
+      "value": 0.571,
       "target": 0.75
     },
     "14": {
       "type": "tip chain",
       "measure": "episodes with a tip by either labeler",
-      "agree": 17,
+      "agree": 13,
       "n": 30,
-      "value": 17,
+      "value": 13,
       "target": 5
     },
     "15": {
       "type": "tip chain",
       "measure": "same tip count (0 / 1 / 2+)",
-      "agree": 16,
+      "agree": 20,
       "n": 30,
-      "value": 0.533,
+      "value": 0.667,
       "target": 0.75
     },
     "16": {
       "type": "terminal",
       "measure": "same terminal state (not gated)",
-      "agree": 21,
+      "agree": 22,
       "n": 30,
-      "value": 0.7,
+      "value": 0.733,
       "target": null
     }
   },
   "labelers": {
     "a": "automated labeler auto_v1, frozen before the held-aside pages were drawn",
     "b": "reviewer 1 (Claude), tracking plots only, blind to the labeler and to the credited rebounder",
-    "second_human_reviewer": "not done: outputs/rebounding/step02/review/reviewer2_heldout.csv is blank"
+    "second_human_reviewer": "done (reviewer 2, the owner): the gate is judged on reviewer 1 vs reviewer 2"
   },
   "deviations": [
     {
@@ -191,8 +213,8 @@
     },
     {
       "check": "second reviewer on the held-aside subset (manual: where practical)",
-      "result": "no second person available in this session",
-      "decision": "Reliability measured between two independent labelers: the frozen automated labeler and a blind reviewer. Both read the same tracking and the reviewer wrote the labeler, so agreement is consistency of tracking-based judgements, not accuracy. A second human review can be added in reviewer2_heldout.csv and rescored."
+      "result": "added 2026-11-05: the owner labelled the held-aside subset (reviewer2_heldout.csv)",
+      "decision": "Gate judged on reviewer 1 vs reviewer 2, as written before scoring. Both read the same tracking plots (no video), so agreement is consistency of tracking-based judgements, not accuracy. Automated-label status is reported separately (automated_labels_by_type)."
     },
     {
       "check": "contact kind kappa over rim / board / none (prespecified)",
@@ -229,13 +251,13 @@
     }
   },
   "evidence": ["docs/project/ANNOTATION_RUBRIC.md", "outputs/rebounding/annotations/contact_events.csv", "outputs/rebounding/reports/02_annotation_reliability.md", "src/rebounding/R/contact_states.R", "outputs/rebounding/step02/agreement.csv", "outputs/rebounding/step02/agreement_decisions.csv", "outputs/rebounding/step02/heldout_comparison.csv", "outputs/rebounding/step02/ball_height_by_touch_type.csv", "outputs/rebounding/step02/ball_height_heldout_reviewer1.csv", "outputs/rebounding/step02/review/", "outputs/rebounding/step02/figures/", "outputs/rebounding/step02/detector_freeze.json", "outputs/rebounding/step02/detector_threshold.csv"],
-  "reviewer": "Claude (labeler author and blind reviewer 1); owner review pending",
-  "date": "2026-10-29",
+  "reviewer": "Claude (labeler author and blind reviewer 1); the owner (reviewer 2)",
+  "date": "2026-11-05",
   "open_risks": [
     "No video: every label, the reviewer's included, comes from the same tracking",
     "The reviewer wrote the labeler; the two labelers are not independent in method",
     "30 held-aside episodes: wide intervals on every agreement measure",
     "Ball heights near the rim read 1-2 ft high, and the control rule caps ball height at 9 ft, so control heights are truncated"
   ],
-  "decision_note": "BLOCKED: continue with the final credited rebounder only for Steps 03-09; tip physics, controlled-catch and securing models stay blocked. Labels remain in the contract file for description, flagged by gate_status."
+  "decision_note": "Usable label types: contact. Reviewed labels only: the automated labels of these types do not meet the targets against the reviewers, so models that need them on every episode stay blocked."
 }

@@ -12,11 +12,11 @@ UNPENALISED <- c("team_off", "team_def")
 
 #' Standardisation learned from training rows only: player features over the training player rows, shot distance
 #' over the training episodes. Constant columns keep a scale of 1.
-fit_scaler <- function(sf, shot, ids) {
+fit_scaler <- function(sf, shot, ids, features = PLAYER_FEATURES) {
   tr <- sf[episode_id %in% ids]
   sh <- shot[episode_id %in% ids]
-  sds <- vapply(PLAYER_FEATURES, function(f) sd(tr[[f]]), 0)
-  list(mean = vapply(PLAYER_FEATURES, function(f) mean(tr[[f]]), 0), sd = ifelse(sds > 1e-8, sds, 1),
+  sds <- vapply(features, function(f) sd(tr[[f]]), 0)
+  list(mean = vapply(features, function(f) mean(tr[[f]]), 0), sd = ifelse(sds > 1e-8, sds, 1),
        shot_mean = mean(sh$shot_dist), shot_sd = max(sd(sh$shot_dist), 1e-8), n_player_rows = nrow(tr), n_episodes = nrow(sh))
 }
 
@@ -27,13 +27,14 @@ choice_design <- function(sf, shot, ids, scaler) {
   ids <- sort(unique(ids))
   p <- sf[episode_id %in% ids][order(match(episode_id, ids))]
   if (nrow(p) != 10L * length(ids)) stop("every episode needs exactly ten player rows")
-  Xp <- sweep(sweep(as.matrix(p[, ..PLAYER_FEATURES]), 2, scaler$mean), 2, scaler$sd, `/`)
+  pf <- names(scaler$mean)                       # the scaler's features (Step 04's PLAYER_FEATURES by default)
+  Xp <- sweep(sweep(as.matrix(p[, ..pf]), 2, scaler$mean), 2, scaler$sd, `/`)
   z <- (shot$shot_dist[match(ids, shot$episode_id)] - scaler$shot_mean) / scaler$shot_sd
   n <- length(ids)
-  M <- matrix(0, 12L * n, length(PLAYER_FEATURES) + length(TEAM_COLS),
-              dimnames = list(NULL, c(PLAYER_FEATURES, TEAM_COLS)))
+  M <- matrix(0, 12L * n, length(pf) + length(TEAM_COLS),
+              dimnames = list(NULL, c(pf, TEAM_COLS)))
   player_row <- rep((0:(n - 1L)) * 12L, each = 10L) + rep(1:10, n)
-  M[player_row, PLAYER_FEATURES] <- Xp
+  M[player_row, pf] <- Xp
   off_row <- (0:(n - 1L)) * 12L + 11L; def_row <- off_row + 1L
   M[off_row, "team_off"] <- 1; M[def_row, "team_def"] <- 1
   M[off_row, "team_off_x_shot_dist"] <- z; M[def_row, "team_def_x_shot_dist"] <- z
@@ -82,8 +83,8 @@ design_labels <- function(design, labels) {
 }
 
 #' Fit on training ids (scaler included) and predict test ids.
-clogit_fit_predict <- function(sf, shot, labels, train, test, lambda, maxit) {
-  sc <- fit_scaler(sf, shot, train)
+clogit_fit_predict <- function(sf, shot, labels, train, test, lambda, maxit, features = PLAYER_FEATURES) {
+  sc <- fit_scaler(sf, shot, train, features)
   dtr <- choice_design(sf, shot, train, sc)
   fit <- fit_clogit(dtr$M, design_labels(dtr, labels), lambda, maxit)
   list(fit = fit, scaler = sc, pred = predict_clogit(fit, choice_design(sf, shot, test, sc)))
@@ -91,18 +92,18 @@ clogit_fit_predict <- function(sf, shot, labels, train, test, lambda, maxit) {
 
 #' Outer-fold predictions with lambda chosen inside each fold's nine training games.
 #' @return list(pred (long, with outer_fold), lambda (inner log loss per lambda and fold), coef (per fold), fits).
-clogit_fold_predictions <- function(sf, shot, labels, fa, choice, grid, maxit, floor) {
+clogit_fold_predictions <- function(sf, shot, labels, fa, choice, grid, maxit, floor, features = PLAYER_FEATURES) {
   fa <- fa[episode_id %in% unique(sf$episode_id)]
   out <- list(); lam <- list(); coefs <- list()
   for (k in sort(unique(fa$outer_fold))) {
     s <- fold_split(fa, k)
     inner <- rbindlist(lapply(grid, function(l) {
-      p <- rbindlist(lapply(s$inner, function(f) clogit_fit_predict(sf, shot, labels, f$train, f$test, l, maxit)$pred))
+      p <- rbindlist(lapply(s$inner, function(f) clogit_fit_predict(sf, shot, labels, f$train, f$test, l, maxit, features)$pred))
       p[, `:=`(model = "clogit", time_point = "inner")]
       data.table(lambda = l, inner_log_loss = mean(score_episodes(p, choice, labels, floor)$ll))
     }))
     best <- inner[inner_log_loss == min(inner_log_loss)][, max(lambda)]
-    r <- clogit_fit_predict(sf, shot, labels, s$train, s$test, best, maxit)
+    r <- clogit_fit_predict(sf, shot, labels, s$train, s$test, best, maxit, features)
     lam[[length(lam) + 1L]] <- cbind(outer_fold = k, test_game = s$test_game, inner, selected = inner$lambda == best)
     coefs[[length(coefs) + 1L]] <- data.table(outer_fold = k, test_game = s$test_game, term = names(r$fit$beta),
                                               estimate = unname(r$fit$beta), lambda = best, converged = r$fit$converged,

@@ -59,3 +59,41 @@ Ball height at the first touch and at control are read from the track at those f
 Disagreements on the held-aside subset are not edited away. Each is listed in
 `outputs/rebounding/reports/02_annotation_reliability.md` with the pages, and a consensus label is recorded
 separately (`review_status = consensus`) without changing either labeler's original entry.
+
+# Box-out review rubric (rebounding manual, Step 11), v1
+
+Written 2026-11-05 before any Step 11 page was drawn or labelled. Settings: `config/experiment.yaml` (`step11.labels`).
+Do not change it after the first label is entered; a change makes a new version and needs a new held-aside sample.
+
+## What is labelled and from what
+
+Each row of `outputs/rebounding/step11/review/reviewer_heldout.csv` is one pair of opposing players, A and B, at
+rim + 0.2 s of a missed shot, shown on `heldout_NN.png` (two items per page). The page shows A's and B's floor tracks from
+release to 15 frames after t, everyone's position at t, the ball, and the A–B distance over time. It does **not** show
+the obstruction score, the sampling stratum, which player the proxy calls the blocker, or the credited rebounder. A and B
+are in random order.
+
+The evidence is floor positions only (no video, no body orientation, no arms; positions err by about 1.5 ft on average),
+which is also the proxy's input. These labels therefore measure agreement with a person's reading of the tracks, not
+contact. The reviewer must not be the code's author.
+
+## Labels (`label`, one per row)
+
+| Label | Rule |
+| --- | --- |
+| `boxout_by_A` / `boxout_by_B` | That player moves into, or holds, a spot between the other and the hoop (or the ball's path) within about 3 ft, and the other's route is visibly held up: he stops, slows, or has to go around. Either side can do it. |
+| `screen` | A planned obstruction away from a rebound route (e.g. a late off-ball screen), not about who gets inside. |
+| `post_defense` | A defender playing a post-up position on an attacker near the block, already set before the shot. |
+| `proximity` | Close together without either holding the other up (passing by, standing near). |
+| `converging` | Both moving to the same spot, neither ahead of the other on the route. |
+| `help` | One is rotating or helping toward another player or the ball, not engaged with the other. |
+| `unclear` | Tracks too noisy, a player extrapolated far, or the reviewer cannot tell. Left out of precision and recall. |
+
+`contact_visible` is always `no` or `unclear` for tracking pages; it is kept so a later video-based review uses the
+same sheet. `confidence`: `high`, `medium`, `low`. `note`: free text.
+
+## Scoring
+
+Detector = the larger of the pair's two obstruction values at least `step11.pairing.pair_min`; truth = either box-out
+label. Precision and recall targets are in `step11.labels.target`; scored only when every row is labelled. Even when
+met, box-out detection stays BLOCKED in this release (no contact evidence).

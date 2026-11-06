@@ -1680,3 +1680,83 @@ Every other table is byte-identical to the blocked run.
   (a higher bar also takes players out of "already moving"), so they are not tested for monotonicity.
 - **What it does not show:** onsets for small roles rest on few responders (rim protector 9 players at 6 ft/s, none at
   8; safety 6); read those cells as descriptive.
+
+## 2026-11-05 — Sequential rebounding manual, Step 11: geometric obstruction: BLOCKED by two prespecified geometry checks; box-out detection BLOCKED
+
+At the owner's request ("start step 11"). Code `src/rebounding/R/pairwise_obstruction.R`, `R/boxout.R`,
+`run_step11.R`, `tests/unit/test_obstruction.R`, `tests/gates/test_step_11.R`; `R/conditional_choice.R` now takes an
+optional feature list (default = Step 04's; the Step 04 refit reproduces its held-out predictions to 6e-16). Settings
+`config/experiment.yaml` (`step11`, written before any real-data run); rubric `docs/project/ANNOTATION_RUBRIC.md`
+(box-out rubric v1); evidence `outputs/rebounding/step11/`; report `outputs/rebounding/reports/11_boxout_validity.md`;
+record `gate_results/11_obstruction.json` (status BLOCKED).
+
+- **Measure.** O_ij = how much player i stands on player j's route to 15 fixed, label-free points around the hoop
+  (the hoop, rings at 4 and 8 ft), averaged over the points. The Step 05 map was not used as the target: its
+  out-of-game fits include other folds' test games, and it is not validated. Player features: blocked_by_opp,
+  blocking_opp. Pairings are never forced (`none` below 0.25, `ambiguous` within 0.1).
+- **Passed:** mirroring (4e-16) and 30° rotation about the hoop (4e-15); no non-finite score; frames ≤ t and t before the
+  rebound; planted future feature caught; label invariance; contribution identity (2e-16); unit tests (116 expectations).
+- **Failed (why blocked).** (1) One-foot moves change the features by 0.054 on average at rim + 0.2 s (limit 0.05;
+  0.048 at release). (2) The hoop-only target ranks blocked_by_opp differently: Spearman 0.753 at rim + 0.2 s (limit
+  0.8; 0.809 at release; blocking_opp 0.95). Also reported, not gated: among players with a pair, 31% change pairing
+  under a one-foot move (all players: 10.5%, limit 0.2). The proxy is sensitive to where routes are assumed to lead
+  and to ordinary tracking error.
+- **Model value (held-out, against Step 04): does not degrade, does not improve.** 12-class log loss difference
+  +0.0004 at release (−0.005 to 0.005), −0.0022 at rim + 0.2 s (−0.008 to 0.003, better in 7 of 10 games); team log loss
+  −0.001 at both; ECE no worse. Coefficients keep their sign in every fold: being blocked lowers a player's chance
+  (−0.17 to −0.22 per sd at rim + 0.2 s), and so does blocking others (−0.05 to −0.11).
+- **Contribution split (rim + 0.2 s, model-implied).** Removing a rim protector's blocking moves his own chance by
+  −0.013 and his teammates' by +0.027 (side +0.014); other roles smaller. Read as association, not what a box-out causes.
+- **Box-out labels.** 40 held-aside pairs drawn (8 per stratum: strong, ambiguous, close but not blocking, post,
+  converging), pages and a blank sheet in `step11/review/`; Claude did not label them. Tracking-plot labels can only
+  measure agreement with a reading of the same positions, so detection and box-out ability stay BLOCKED; no player
+  box-out effects fitted.
+- **Fix during the run:** two gate tests read the gate record before the runner writes it; they now read the
+  comparison table and the report. No threshold or measure changed; the rerun reproduces every number.
+
+### Open choices
+
+- Keep Step 11 BLOCKED (obstruction reported as an exploratory description only), or accept a recorded deviation,
+  for example judging target sensitivity on blocking_opp only or loosening the one-foot limit; either would be decided
+  after seeing these results and must be logged as such.
+- Whether someone other than Claude fills `step11/review/reviewer_heldout.csv`.
+
+### Kept BLOCKED, context added (owner decision, same day)
+
+The owner chose to keep Step 11 BLOCKED with every limit as prespecified. Added as a non-gating note
+(`step11/perturbation_context.csv`, report section "Context, not gated"; `11_obstruction.json` `decision.owner_decision`):
+the same one-foot moves applied to Step 04's features. Obstruction features move 0.24-0.26 SD (Step 04's relative
+features 0.16-0.18 SD; distance to the hoop 0.07) but keep the ten players' order as well (rank correlation 0.95-0.97
+against 0.91-0.96). The 0.05 limit had no scale reference, so that miss is small; the target miss is substantive
+(blocked on the way to the hoop vs the area around it rank players differently at rim + 0.2 s, Spearman 0.75).
+Alternatives considered and not taken: judging the one-foot check by rank correlation and splitting the target into two
+named measures (both decided after seeing results), or redefining and rerunning (no fresh games to check it on).
+Obstruction stays an exploratory description; later steps do not use it.
+
+## 2026-11-05 — Step 02 rescored with reviewer 2: contact labels PASS where reviewed; automated labels still BLOCKED
+
+The owner filled `outputs/rebounding/step02/review/reviewer2_heldout.csv` (30 of 30). Rescored with
+`run_step02.R --phase=score` and `--phase=gate`; thresholds and the decision rule unchanged (the rule, written on
+2026-10-29, judges the gate on reviewer 1 vs reviewer 2 once a second reviewer finishes). Details:
+`outputs/rebounding/reports/02_annotation_reliability.md` ("Reviewer 2"); record `gate_results/02_contact_states.json`
+(status PASS).
+
+- **Reviewers agree on rim or board contact** (26/26 resolved, kappa 1.0, frame within ±2 in 22/23): PASS.
+- **Everything softer is BLOCKED.** First touch: both name the player in 12/30 (target 60%); same player 11/12;
+  frame within ±3 in 12/23. Control: both name the controller 19/30 (target 70%); same controller 18/19; frame 12/21.
+  Tip vs catch kappa 0.0; same tip count 20/30. Identity agrees when named; timing and naming do not.
+- **Automated labels stay BLOCKED for every type**, now against both reviewers (contact vs reviewer 2: kappa 0.46,
+  frame within ±2 in 19/24). The PASS covers reviewed episodes only, so nothing downstream changes: Steps 03–11 use
+  the credited rebounder; Step 07 physics, Step 08 first-contact checks and Step 12 stay blocked by labels.
+- **Record text updated, decision unchanged:** `run_step02.R`'s gate phase still said "no second reviewer"; it now
+  names reviewer 2 and adds `automated_labels_by_type` and a scope line that separates reviewed from automated labels.
+  `contact_events.csv` and every other Step 02 output except the agreement tables are byte-identical.
+- **For the v2 labeler:** these 30 episodes are v2 development data (owner decision 2026-10-29), now with two
+  reviewers. The disagreements show the target: timing of soft events, not who.
+
+### Open choices
+
+- Whether reviewer 2 was blind to reviewer 1's sheet, the dev pages' automated marks and the credited rebounder
+  while labelling (the record assumes yes).
+- Whether to continue the v2 labeler (contact timing on every episode would unblock Step 07's physics checks), or to
+  go on to Step 12 in reduced form with the credited rebounder only.

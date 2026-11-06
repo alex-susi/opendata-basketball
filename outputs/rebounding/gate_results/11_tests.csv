@@ -1,0 +1,21 @@
+dir,file,test,expectations,failed,skipped,error,warnings
+unit,test_obstruction.R,"targets are the hoop and the two rings in front of it, none past the baseline",3,0,FALSE,FALSE,0
+unit,test_obstruction.R,"a defender on the attacker's route to the hoop obstructs him; beside, behind or far away he does not",8,0,FALSE,FALSE,0
+unit,test_obstruction.R,distance zero and a runner on the target give finite scores of zero,3,0,FALSE,FALSE,0
+unit,test_obstruction.R,"rotating every player and target about the hoop, or mirroring the court, changes nothing",4,0,FALSE,FALSE,0
+unit,test_obstruction.R,ties: two mirror-image attackers get equal values and the defender's pairing is ambiguous,4,0,FALSE,FALSE,0
+unit,test_obstruction.R,the score is continuous and a clear box-out survives one-foot moves in any direction,82,0,FALSE,FALSE,0
+unit,test_obstruction.R,player features: one strong block counts nearly fully; removing a blocker takes his part away,6,0,FALSE,FALSE,0
+unit,test_obstruction.R,the contribution split adds up: team = own + teammates,4,0,FALSE,FALSE,0
+unit,test_obstruction.R,"persistence counts the frames a pair holds the block, skipping frames without ten players",2,0,FALSE,FALSE,0
+unit,test_static_model.R,player features match hand calculations,13,0,FALSE,FALSE,0
+unit,test_static_model.R,"features are unchanged by rotating or mirroring the court about the hoop, and scale with units",17,0,FALSE,FALSE,0
+unit,test_static_model.R,"the conditional logit gradient is exact, its probabilities sum to one, and it recovers a known model",7,0,FALSE,FALSE,0
+unit,test_static_model.R,reordering players changes no player's probability; scalers and fits use training games only,4,0,FALSE,FALSE,0
+unit,test_static_model.R,nested lambda selection uses only the training games and every fold predicts its own game,4,0,FALSE,FALSE,0
+unit,test_static_model.R,box-out matchups minimise total distance and the OREB model is fitted correctly,11,0,FALSE,FALSE,0
+gates,test_step_11.R,"pairwise geometry passes mirroring, rotation, zero-distance, perturbation and target checks on real data",8,2,FALSE,FALSE,0
+gates,test_step_11.R,obstruction is measured before the rebound and no future outcome defines a predictor,3,0,FALSE,FALSE,0
+gates,test_step_11.R,"the candidate is compared with Step 04 on the same episodes, and the keep rule is applied as written",7,0,FALSE,FALSE,0
+gates,test_step_11.R,"collection, team chance and obstruction contribution are separate quantities that add up",4,0,FALSE,FALSE,0
+gates,test_step_11.R,box-out detection is not claimed without independent labels; the review sample is blind and stratified,5,0,FALSE,FALSE,0

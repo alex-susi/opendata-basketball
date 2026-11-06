@@ -15,3 +15,35 @@ auto_vs_reviewer1,control,frame within 3,10,20,0.5,0.29929491442982,0.7007050855
 auto_vs_reviewer1,tip chain,episodes with a tip by either labeler,17,30,17,,,5
 auto_vs_reviewer1,tip chain,same tip count (0 / 1 / 2+),16,30,0.533333333333333,0.36142013281525,0.697678727758718,0.75
 auto_vs_reviewer1,terminal,same terminal state (not gated),21,30,0.7,0.521238789883398,0.833354373560411,
+reviewer1_vs_reviewer2,contact,both resolved (share of subset),26,30,0.866666666666667,0.703183160555831,0.946904305757819,0.7
+reviewer1_vs_reviewer2,contact,"contact vs none, Cohen's kappa",26,26,1,,,0.6
+reviewer1_vs_reviewer2,contact,"contact vs none, raw agreement",26,26,1,0.871266956195378,1,
+reviewer1_vs_reviewer2,contact,frame within 2,22,23,0.956521739130435,0.790084135059409,0.992283533037873,0.8
+reviewer1_vs_reviewer2,rim vs board,agreement where both name rim or board (not gated),12,12,1,0.757499242500757,1,
+reviewer1_vs_reviewer2,first touch,both name the player (share of subset),12,30,0.4,0.245903943260834,0.576799475017262,0.6
+reviewer1_vs_reviewer2,first touch,same player,11,12,0.916666666666667,0.646114078201405,0.985135290549226,0.8
+reviewer1_vs_reviewer2,first touch,frame within 3,12,23,0.521739130434783,0.329624298642185,0.707631304600543,0.75
+reviewer1_vs_reviewer2,touch type,"tip vs catch, Cohen's kappa",8,16,0,,,0.5
+reviewer1_vs_reviewer2,touch type,"tip vs catch, raw agreement",8,16,0.5,0.279992376113508,0.720007623886492,
+reviewer1_vs_reviewer2,control,both name the controller (share of subset),19,30,0.633333333333333,0.455132464336049,0.781262977959823,0.7
+reviewer1_vs_reviewer2,control,same controller,18,19,0.947368421052632,0.753607846634548,0.99064824750947,0.85
+reviewer1_vs_reviewer2,control,frame within 3,12,21,0.571428571428571,0.365462162970325,0.75530300513479,0.75
+reviewer1_vs_reviewer2,tip chain,episodes with a tip by either labeler,13,30,13,,,5
+reviewer1_vs_reviewer2,tip chain,same tip count (0 / 1 / 2+),20,30,0.666666666666667,0.487797258138303,0.807697044731538,0.75
+reviewer1_vs_reviewer2,terminal,same terminal state (not gated),22,30,0.733333333333333,0.555516979556883,0.858175044460894,
+auto_vs_reviewer2,contact,both resolved (share of subset),27,30,0.9,0.743785586847334,0.965400740040284,0.7
+auto_vs_reviewer2,contact,"contact vs none, Cohen's kappa",25,27,0.46,,,0.6
+auto_vs_reviewer2,contact,"contact vs none, raw agreement",25,27,0.925925925925926,0.766300227092694,0.979445778302616,
+auto_vs_reviewer2,contact,frame within 2,19,24,0.791666666666667,0.595291555147645,0.907553108952119,0.8
+auto_vs_reviewer2,rim vs board,agreement where both name rim or board (not gated),7,9,0.777777777777778,0.452583343672805,0.936776237687773,
+auto_vs_reviewer2,first touch,both name the player (share of subset),13,30,0.433333333333333,0.273772374306151,0.608029904545913,0.6
+auto_vs_reviewer2,first touch,same player,10,13,0.769230769230769,0.497431260048731,0.918206209075343,0.8
+auto_vs_reviewer2,first touch,frame within 3,12,23,0.521739130434783,0.329624298642185,0.707631304600543,0.75
+auto_vs_reviewer2,touch type,"tip vs catch, Cohen's kappa",9,16,0.151515151515152,,,0.5
+auto_vs_reviewer2,touch type,"tip vs catch, raw agreement",9,16,0.5625,0.331781956067765,0.769016366648145,
+auto_vs_reviewer2,control,both name the controller (share of subset),15,30,0.5,0.331538512271738,0.668461487728262,0.7
+auto_vs_reviewer2,control,same controller,14,15,0.933333333333333,0.70182922447576,0.988133411393805,0.85
+auto_vs_reviewer2,control,frame within 3,6,18,0.333333333333333,0.162785543636629,0.562509306557496,0.75
+auto_vs_reviewer2,tip chain,episodes with a tip by either labeler,19,30,19,,,5
+auto_vs_reviewer2,tip chain,same tip count (0 / 1 / 2+),14,30,0.466666666666667,0.302321272241282,0.63857986718475,0.75
+auto_vs_reviewer2,terminal,same terminal state (not gated),20,30,0.666666666666667,0.487797258138303,0.807697044731538,

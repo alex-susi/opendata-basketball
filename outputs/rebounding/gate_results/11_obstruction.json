@@ -1,0 +1,279 @@
+{
+  "step": "11",
+  "status": "BLOCKED",
+  "scope": "obstruction proxy at release and rim+0.2 for 703 / 650 episodes; held-out comparison with Step 04",
+  "components": {
+    "obstruction_proxy_geometry": "BLOCKED",
+    "model_value": "PASS (does not degrade)",
+    "boxout_detection": "BLOCKED (no independent contact or box-out labels in permitted data)",
+    "boxout_ability": "NOT_RUN (requires box-out detection)"
+  },
+  "source_commits": {
+    "skillcorner": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "ReboundingPrediction": "derived.py ideas only (no licence)",
+    "shotquality_offensive_rebounding": "matchup ideas only (no licence)",
+    "ReboundingImpact": "concept only (no licence)"
+  },
+  "data_revision": {
+    "upstream": "4bbed2e35e8fdd2cf083e8c8b280b3e5381a2c66",
+    "step03_freeze": "2026-10-30T14:58:41"
+  },
+  "model_revision": {
+    "model_version": "obstruction_v1",
+    "step11_config_sha256": "75592232368852b189ccba0edd60c774ab7858141c1391c3916e299617468533",
+    "code_sha256": {
+      "pairwise_obstruction.R": "b766f5b948118e706931157fdfcafbb67153ff509b98926bb186b69c93bfb205",
+      "boxout.R": "c0fc90b906713cdc45a0013ce05948f938fa8209ebaf204277a4176981c00163",
+      "conditional_choice.R": "74a9017635bd8964c55f6f85d52ca333e8dde39de931440faee11ee4834731e1"
+    },
+    "predictions_sha256": "add271eb91dfeb504dd3b7cdde71cd828de944f4c72de73dfe9107113c5fd004"
+  },
+  "repository_head": "cdf715f79c9beb2f391a2bd4ff412f6f8bcd530a",
+  "test_command": "Rscript src/rebounding/run_tests.R unit obstruction; Rscript src/rebounding/run_tests.R gates step_11",
+  "unit_tests_passed": true,
+  "data_audit_passed": false,
+  "heldout_metrics_file": "outputs/rebounding/step11/comparison.csv",
+  "acceptance_criteria_version": "manual 2026-10-29, config v3 (step11 fixed before any real-data run)",
+  "decision": {
+    "comparison": [
+      {
+        "time_point": "release",
+        "metric": "ll",
+        "mean_diff": 0.00038,
+        "lo": -0.00465,
+        "hi": 0.00535,
+        "non_inferior": true,
+        "superior": false,
+        "ece_ok": true
+      },
+      {
+        "time_point": "release",
+        "metric": "team_ll",
+        "mean_diff": -0.00134,
+        "lo": -0.00344,
+        "hi": 0.00079,
+        "non_inferior": true,
+        "superior": false,
+        "ece_ok": true
+      },
+      {
+        "time_point": "rim+0.2",
+        "metric": "ll",
+        "mean_diff": -0.00216,
+        "lo": -0.00795,
+        "hi": 0.00307,
+        "non_inferior": true,
+        "superior": false,
+        "ece_ok": true
+      },
+      {
+        "time_point": "rim+0.2",
+        "metric": "team_ll",
+        "mean_diff": -0.00122,
+        "lo": -0.00425,
+        "hi": 0.00124,
+        "non_inferior": true,
+        "superior": false,
+        "ece_ok": true
+      }
+    ],
+    "perturbation": [
+      {
+        "time_point": "release",
+        "player_episodes": 7030,
+        "mean_abs_change_blocked": 0.0478772000584426,
+        "mean_abs_change_blocking": 0.0461957393015625,
+        "pairing_changed": 0.0869132290184922,
+        "pairing_changed_among_paired": 0.307936507936508
+      },
+      {
+        "time_point": "rim+0.2",
+        "player_episodes": 6500,
+        "mean_abs_change_blocked": 0.0544108703881183,
+        "mean_abs_change_blocking": 0.0513101475456373,
+        "pairing_changed": 0.104769230769231,
+        "pairing_changed_among_paired": 0.307207837648705
+      }
+    ],
+    "perturbation_context_not_gated": [
+      {
+        "time_point": "release",
+        "feature": "blocked_by_opp",
+        "source": "Step 11",
+        "sd": 0.190277152117397,
+        "mean_abs_change": 0.0478772000584426,
+        "change_in_sd": 0.251618229123501,
+        "rank_corr": 0.95349089010557
+      },
+      {
+        "time_point": "release",
+        "feature": "blocking_opp",
+        "source": "Step 11",
+        "sd": 0.196903783226349,
+        "mean_abs_change": 0.0461957393015625,
+        "change_in_sd": 0.234610724815066,
+        "rank_corr": 0.967842318648766
+      },
+      {
+        "time_point": "release",
+        "feature": "nearest_opp_dist",
+        "source": "Step 04",
+        "sd": 4.18076930727736,
+        "mean_abs_change": 0.770839512790562,
+        "change_in_sd": 0.184377432987939,
+        "rank_corr": 0.963684771498543
+      },
+      {
+        "time_point": "release",
+        "feature": "inside_gap",
+        "source": "Step 04",
+        "sd": 6.72798139198757,
+        "mean_abs_change": 1.21965939613438,
+        "change_in_sd": 0.181281624468654,
+        "rank_corr": 0.924235547051544
+      },
+      {
+        "time_point": "release",
+        "feature": "n_within_6",
+        "source": "Step 04",
+        "sd": 0.962824855219186,
+        "mean_abs_change": 0.159601706970128,
+        "change_in_sd": 0.165764007965701,
+        "rank_corr": 0.89032013826237
+      },
+      {
+        "time_point": "release",
+        "feature": "closeness_share",
+        "source": "Step 04",
+        "sd": 0.105012458399923,
+        "mean_abs_change": 0.00881692996153635,
+        "change_in_sd": 0.0839607994697016,
+        "rank_corr": 0.995840101669934
+      },
+      {
+        "time_point": "release",
+        "feature": "dist_hoop",
+        "source": "Step 04",
+        "sd": 8.87052421086247,
+        "mean_abs_change": 0.634842283511736,
+        "change_in_sd": 0.0715676174734222,
+        "rank_corr": 0.995937393812461
+      },
+      {
+        "time_point": "release",
+        "feature": "opp_inside",
+        "source": "Step 04",
+        "sd": 1.83311021806128,
+        "mean_abs_change": 0.119487908961593,
+        "change_in_sd": 0.0651831558104373,
+        "rank_corr": 0.974984379999931
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "blocked_by_opp",
+        "source": "Step 11",
+        "sd": 0.206274903763306,
+        "mean_abs_change": 0.0544108703881183,
+        "change_in_sd": 0.263778430606144,
+        "rank_corr": 0.951955854977859
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "blocking_opp",
+        "source": "Step 11",
+        "sd": 0.217110453717603,
+        "mean_abs_change": 0.0513101475456373,
+        "change_in_sd": 0.23633199906798,
+        "rank_corr": 0.965836189803593
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "inside_gap",
+        "source": "Step 04",
+        "sd": 6.44838579930011,
+        "mean_abs_change": 1.18328587870465,
+        "change_in_sd": 0.183501098652174,
+        "rank_corr": 0.915389585383823
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "n_within_6",
+        "source": "Step 04",
+        "sd": 1.1192892848068,
+        "mean_abs_change": 0.196,
+        "change_in_sd": 0.175111119761887,
+        "rank_corr": 0.908022006903439
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "nearest_opp_dist",
+        "source": "Step 04",
+        "sd": 4.79414306599027,
+        "mean_abs_change": 0.7671982071204,
+        "change_in_sd": 0.160028225390877,
+        "rank_corr": 0.955207755364882
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "closeness_share",
+        "source": "Step 04",
+        "sd": 0.0951018461479472,
+        "mean_abs_change": 0.00912680716047377,
+        "change_in_sd": 0.0959687695891357,
+        "rank_corr": 0.995244174044924
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "opp_inside",
+        "source": "Step 04",
+        "sd": 1.76033645317411,
+        "mean_abs_change": 0.130153846153846,
+        "change_in_sd": 0.0739369146842142,
+        "rank_corr": 0.972818950160689
+      },
+      {
+        "time_point": "rim+0.2",
+        "feature": "dist_hoop",
+        "source": "Step 04",
+        "sd": 9.35126010520747,
+        "mean_abs_change": 0.637608479222062,
+        "change_in_sd": 0.0681842310072195,
+        "rank_corr": 0.995656276317764
+      }
+    ],
+    "geometry": [
+      {
+        "time_point": "release",
+        "mirror_max_diff": 4.44089209850063e-16,
+        "rotation_max_diff": 3.21964677141295e-15,
+        "all_finite": true,
+        "rho_blocked_hoop_only": 0.80861254058924,
+        "rho_blocking_hoop_only": 0.957663611531411,
+        "zero_distance_pairs": 0
+      },
+      {
+        "time_point": "rim+0.2",
+        "mirror_max_diff": 4.44089209850063e-16,
+        "rotation_max_diff": 3.5527136788005e-15,
+        "all_finite": true,
+        "rho_blocked_hoop_only": 0.752701335177687,
+        "rho_blocking_hoop_only": 0.946347755821033,
+        "zero_distance_pairs": 0
+      }
+    ],
+    "review": null,
+    "owner_decision": "2026-11-05: keep Step 11 BLOCKED; no threshold changed; perturbation context added as a non-gating note"
+  },
+  "deviations": [
+    "conditional_choice.R takes an optional feature list (default = Step 04's); Step 04 refit reproduces its predictions"
+  ],
+  "evidence": ["outputs/rebounding/step11/", "outputs/rebounding/reports/11_boxout_validity.md"],
+  "reviewer": "Claude (automated run); owner review pending",
+  "date": "2026-11-05",
+  "open_risks": [
+    "Proxy describes floor geometry only; no contact evidence exists in permitted data",
+    "Review sheet unlabelled; any labels would come from tracking plots",
+    "Fixed hoop-centred targets, not the ball's landing distribution"
+  ],
+  "decision_note": "Geometry not valid; model value does not degrade; box-out detection BLOCKED."
+}

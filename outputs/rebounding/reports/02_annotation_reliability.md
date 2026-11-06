@@ -133,3 +133,30 @@ for Step 08 must be a broad distribution with these biases stated, not these qua
 No video ships with the data and outside video is not allowed, so no label here is checked against what happened. 30
 held-aside episodes give wide intervals. The page plots show distances to the five players who come nearest, so a
 player who stays further away cannot be named from a page (held-aside item 18).
+
+## Reviewer 2 (added 2026-11-05)
+
+The owner labelled the 30 held-aside episodes (`step02/review/reviewer2_heldout.csv`) from the same tracking pages.
+As written before scoring, the gate is now judged on reviewer 1 vs reviewer 2 (`run_step02.R --phase=score`, then
+`--phase=gate`); thresholds unchanged (`config/experiment.yaml`, `step02.agreement`).
+
+| Type | Reviewer 1 vs reviewer 2 | Automated vs reviewer 2 | Gate (reviewers) |
+| --- | --- | --- | --- |
+| Contact (rim or board vs none) | both resolve 26/30; agree 26/26, kappa 1.0; frame within ±2 in 22/23 | kappa 0.46 (25/27 raw); frame within ±2 in 19/24 | **PASS** |
+| First touch | both name the player 12/30 (target 60%); same player 11/12 (below the 15 needed to judge); frame within ±3 in 12/23 | same player 10/13; frame 12/23 | BLOCKED |
+| Tip vs catch | 8/16, kappa 0.0 | 9/16, kappa 0.15 | BLOCKED |
+| Control | both name the controller 19/30 (target 70%); same controller 18/19; frame within ±3 in 12/21 | same controller 14/15; frame 6/18 | BLOCKED |
+| Tip chain | same tip count 20/30 (target 75%) | 14/30 | BLOCKED |
+
+**Reading.** When both reviewers name a player, they almost always name the same one (11 of 12 first touches, 18
+of 19 controllers). What fails is *when* soft events happen and *whether* they can be named at all; the rim or board
+contact, a hard event, is read the same way by both. Tip vs catch is no better than chance.
+
+**Scope of the PASS.** It covers rim or board contact labels on reviewed episodes. The automated labeler, the only
+source for all 703 episodes, misses the contact targets against reviewer 2 (kappa 0.46 vs 0.6, frame 79% vs 80%) as
+it did against reviewer 1, so `contact_events.csv` keeps its automated rows BLOCKED and models that need contact
+timing on every episode (Step 07 physics, Step 08 first-contact checks, Step 12) stay blocked. The gate record lists
+both (`automated_labels_by_type`).
+
+**Independence.** Both reviewers read tracking plots only (no video), so agreement is consistency between two
+readings of the same data, not accuracy. Reviewer 1 also wrote the labeler.

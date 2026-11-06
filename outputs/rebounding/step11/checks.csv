@@ -1,0 +1,16 @@
+check,value,expected,pass
+Step 03 design freeze in force,TRUE,TRUE,TRUE
+"mirroring the court left to right changes no feature (largest change, both times)",4.44e-16,< 1e-9,TRUE
+rotating players and targets 30 degrees about the hoop changes no feature (largest change),3.55e-15,< 1e-9,TRUE
+every pair score finite; pairs reported at one spot (distance < 0.05 ft) score 0,"TRUE; 0 pairs, max 0",TRUE; 0,TRUE
+one-foot moves: mean |change| of the two features (worst time and feature),0.0544,<= 0.05,FALSE
+one-foot moves: share of players whose pairing changes (worst time),0.105,<= 0.2,TRUE
+target sensitivity: Spearman correlation with the hoop-only target (lowest),0.753,>= 0.8,FALSE
+features from frames <= t and t before the credited rebound (every episode and time),TRUE,TRUE,TRUE
+a planted future feature is caught,TRUE,TRUE,TRUE
+"candidate predictions unchanged when the test game's labels are altered (rim+0.2, fold 1)",TRUE,TRUE,TRUE
+Step 04 refitted with its lambdas reproduces its held-out predictions (largest change),5.55e-16 / 5.55e-16,< 1e-9,TRUE
+"candidate prediction tables valid (12 outcomes, sum to 1)",2,2,TRUE
+candidate and reference scored on the same episodes at each time,2,2,TRUE
+every candidate fit converged,TRUE,TRUE,TRUE
+contribution split adds up (largest |team - own - teammates|),2.13e-16,< 1e-9,TRUE

@@ -1,31 +1,31 @@
 item,episode_id,game_id,first_rim_or_board_rel,contact_kind,first_player_contact_rel,first_contact_player_id,first_contact_type,tips_rel,first_control_rel,controller_id,terminal,label_confidence,note
 1,shot-114086-1-4,114086,20,rim,38,D9138,catch,,50,D9138,control,high,D9138 passes to D4268 shortly after gaining control
-2,shot-191313-2-59,191313,,,,,,,,,,,
-3,shot-114243-2-54,114243,,,,,,,,,,,
-4,shot-179612-4-126,179612,,,,,,,,,,,
-5,shot-114169-2-65,114169,,,,,,,,,,,
-6,shot-188630-4-121,188630,,,,,,,,,,,
-7,shot-114243-2-50,114243,,,,,,,,,,,
-8,shot-114086-2-43,114086,,,,,,,,,,,
-9,shot-114234-4-131,114234,,,,,,,,,,,
-10,shot-114086-1-9,114086,,,,,,,,,,,
-11,shot-191313-1-29,191313,,,,,,,,,,,
-12,shot-114243-1-22,114243,,,,,,,,,,,
-13,shot-184439-2-70,184439,,,,,,,,,,,
-14,shot-178442-1-23,178442,,,,,,,,,,,
-15,shot-114243-2-60,114243,,,,,,,,,,,
-16,shot-191313-2-64,191313,,,,,,,,,,,
-17,shot-178442-1-15,178442,,,,,,,,,,,
-18,shot-188630-3-96,188630,,,,,,,,,,,
-19,shot-114234-1-5,114234,,,,,,,,,,,
-20,shot-179612-3-81,179612,,,,,,,,,,,
-21,shot-178442-4-109,178442,,,,,,,,,,,
-22,shot-114243-4-151,114243,,,,,,,,,,,
-23,shot-114086-4-130,114086,,,,,,,,,,,
-24,shot-114169-1-15,114169,,,,,,,,,,,
-25,shot-188630-2-51,188630,,,,,,,,,,,
-26,shot-114234-1-23,114234,,,,,,,,,,,
-27,shot-114099-3-75,114099,,,,,,,,,,,
-28,shot-191313-4-115,191313,,,,,,,,,,,
-29,shot-114099-4-119,114099,,,,,,,,,,,
-30,shot-114099-4-146,114099,,,,,,,,,,,
+2,shot-191313-2-59,191313,35,rim_or_board,53,UNKNOWN,UNKNOWN,,65,D9107,control,high,D9107 passes to D9104 shortly after gaining control
+3,shot-114243-2-54,114243,6,board,23,O5326,catch,,33,D9179,control,high,D9179 stole the ball from O5326
+4,shot-179612-4-126,179612,10,rim,33,D9142,catch,,42,D9142,control,high,
+5,shot-114169-2-65,114169,28,rim,48,D9092,tip,48:D9092,none,,out_of_bounds,high,
+6,shot-188630-4-121,188630,21,rim,30,D4471,catch,,40,D9295,control,high,
+7,shot-114243-2-50,114243,37,rim,57,D9180,tip,57:D9180,70,D9180,control,low,D9180 tip near57; possible catch touch65 before height settles70; onset uncertain
+8,shot-114086-2-43,114086,31,board,UNKNOWN,D4268,UNKNOWN,,71,D4268,control,low,Early bend31 and rim plateau38; possible touch55-59 not precisely separable; floor bounce66; settled71
+9,shot-114234-4-131,114234,28,rim,UNKNOWN,UNKNOWN,UNKNOWN,63:?,none,,unresolved,low,Rim plateau28-34; crowded earlier touch timing unclear; clear upward redirection63; no secure control
+10,shot-114086-1-9,114086,38,rim_or_board,UNKNOWN,D5182,UNKNOWN,,72,D5182,control,low,D5182 controls by72; gradual slowing54-66 obscures first touch frame
+11,shot-191313-1-29,191313,none,none,44,O8857,tip,44:O8857,none,,unresolved,low,Airball; O8857 deflection near44; later negative height is unreliable; no visible boundary crossing
+12,shot-114243-1-22,114243,33,rim,74,UNKNOWN,catch,,76,D9184,control,medium,Floor bounce70; D9184 and O9219 close at touch; D9184 stays closest as height levels
+13,shot-184439-2-70,184439,none,none,35,D4982,catch,,35,D4982,control,medium,Ball stays below rim; floor bounce21; height levels35 with D4982 about2.5ft away
+14,shot-178442-1-23,178442,none,none,none,UNKNOWN,none,,none,,out_of_bounds,high,No distinct rim or player deflection; ball visibly crosses baseline
+15,shot-114243-2-60,114243,none,none,31,UNKNOWN,catch,,35,O5326,control,medium,No visible rim deflection; O5326 and D9179 close at first slowing; O5326 remains close after35
+16,shot-191313-2-64,191313,22,rim,38,UNKNOWN,tip,38:?,69,D9386,control,medium,Crowded deflection38 near D9107 and D9386; floor bounce63; D9386 settles ball69
+17,shot-178442-1-15,178442,33,rim_or_board,63,D9152,UNKNOWN,,UNKNOWN,UNKNOWN,out_of_bounds,low,D9152 touch63; brief gather versus tips before70 unclear; ball later crosses baseline
+18,shot-188630-3-96,188630,32,rim_or_board,UNKNOWN,UNKNOWN,UNKNOWN,,110,D2336,control,low,Possible crowded touch52-61; floor bounces71 and94; D2336 gathers110; late court path cropped
+19,shot-114234-1-5,114234,30,rim_or_board,60,D8771,UNKNOWN,,UNKNOWN,UNKNOWN,unresolved,low,Floor bounce55; D8771 deflection60; distance stays near3ft so secure control is not established
+20,shot-179612-3-81,179612,18,rim,48,D9213,catch,,48,D9213,control,high,Low tracked rim bounce18; height levels48 and D9213 stays close
+21,shot-178442-4-109,178442,37,board,UNKNOWN,O8155,catch,,UNKNOWN,O8155,control,low,Floor bounce versus pickup70-80 unclear; O8155 close at height plateau80; control onset cannot be placed
+22,shot-114243-4-151,114243,13,rim,33,O5271,tip,33:O5271,48,O5271,control,medium,Rim plateau13-25; O5271 deflection33; height settles48 with O5271 still close
+23,shot-114086-4-130,114086,32,board,77,UNKNOWN,catch,,79,D9153,control,medium,D9153 and O9137 close at slowing77; D9153 stays close as height briefly levels79
+24,shot-114169-1-15,114169,15,rim,60,D9100,catch,,67,D9100,control,medium,Rim plateau after15; D9100 slowing60; height levels67 with sustained close distance through70
+25,shot-188630-2-51,188630,20,rim_or_board,55,UNKNOWN,catch,,56,D9160,control,medium,O5402 and D9160 overlap at first slowing; D9160 remains close as O5402 separates
+26,shot-114234-1-23,114234,UNKNOWN,UNKNOWN,16,UNKNOWN,UNKNOWN,,UNKNOWN,UNKNOWN,unresolved,low,Rim contact indistinct; crowded plateau16 with O4280 and D3482; control versus contested touches unclear
+27,shot-114099-3-75,114099,33,rim_or_board,63,UNKNOWN,catch,,70,D9133,control,medium,O9188 and defenders close at initial slowing; D9133 stays closest as height levels70
+28,shot-191313-4-115,191313,35,rim_or_board,65,UNKNOWN,catch,,70,D9207,control,medium,D9206 and D9207 close at initial slowing; D9207 stays close after height settles70
+29,shot-114099-4-119,114099,33,rim,48,UNKNOWN,tip,48:?,none,,unresolved,medium,O9188 and D9134 close at deflection48; ball flies on; cropped path does not prove boundary crossing
+30,shot-114099-4-146,114099,20,rim,48,UNKNOWN,UNKNOWN,,57,UNKNOWN,held_ball,low,Possible tie-up after height settles57; D8390 and D9188 both very close; shared control is uncertain

@@ -1,0 +1,3 @@
+time_point,mirror_max_diff,rotation_max_diff,all_finite,rho_blocked_hoop_only,rho_blocking_hoop_only,zero_distance_pairs
+release,4.44089209850063e-16,3.21964677141295e-15,TRUE,0.80861254058924,0.957663611531411,0
+rim+0.2,4.44089209850063e-16,3.5527136788005e-15,TRUE,0.752701335177687,0.946347755821033,0

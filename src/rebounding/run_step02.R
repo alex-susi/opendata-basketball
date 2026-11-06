@@ -528,12 +528,22 @@ if (phase == "gate") {
   passed <- dec[usable == TRUE]$type
   status <- if (tests_pass && length(passed)) "PASS" else "BLOCKED"
   tab <- sc$tabs[pair == dec$pair[1]]
+  # Added 2026-11-05 when reviewer 2 finished (record text only; the decision rule above is unchanged): reviewer
+  # agreement shows a label type can be read reliably; the automated labels that cover every episode are a separate
+  # question, judged against each reviewer that finished (every one must pass).
+  auto_pairs <- intersect(c("auto_vs_reviewer1", "auto_vs_reviewer2"), unique(sc$dec$pair))
+  auto_dec <- sc$dec[pair %in% auto_pairs, .(status = if (all(status == "PASS")) "PASS" else "BLOCKED",
+                                             against = paste(sprintf("%s %s", sub("auto_vs_", "", pair), status), collapse = ", ")), by = type]
   rec <- list(
     step = "02", status = status,
-    scope = if (length(passed)) paste("contact-state labels for:", paste(passed, collapse = ", ")) else
+    scope = if (length(passed)) sprintf("contact-state labels for: %s (%s; automated labels for every episode: %s)",
+                                        paste(passed, collapse = ", "),
+                                        if (sc$r2_done) "reliability between two reviewers, so usable where reviewed" else "automated labeler vs reviewer 1",
+                                        paste(sprintf("%s %s", auto_dec$type, auto_dec$status), collapse = ", ")) else
       "none: no contact-state label type met its reliability target; final credited rebounder only for Steps 03-09",
     labels_by_type = lapply(split(dec, dec$type), function(d) list(status = d$status, usable = d$usable,
                                                                    unmet = if (nzchar(d$unmet)) d$unmet else NULL)),
+    automated_labels_by_type = lapply(split(auto_dec, auto_dec$type), function(d) list(status = d$status, against = d$against)),
     source_commits = list(skillcorner = cfg$dataset$upstream_commit),
     data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums),
     model_revision = list(labeler = "auto_v1", contact_states_sha256 = sc$freeze$contact_states_sha256,
@@ -549,14 +559,14 @@ if (phase == "gate") {
       list(type = r$type, measure = r$measure, agree = r$agree, n = r$n, value = round(r$value, 3), target = r$target)),
     labelers = list(a = "automated labeler auto_v1, frozen before the held-aside pages were drawn",
                     b = "reviewer 1 (Claude), tracking plots only, blind to the labeler and to the credited rebounder",
-                    second_human_reviewer = if (sc$r2_done) "done" else "not done: outputs/rebounding/step02/review/reviewer2_heldout.csv is blank"),
+                    second_human_reviewer = if (sc$r2_done) "done (reviewer 2, the owner): the gate is judged on reviewer 1 vs reviewer 2" else "not done: outputs/rebounding/step02/review/reviewer2_heldout.csv is blank"),
     deviations = list(
       list(check = "break threshold: 99.5th percentile of one-step residuals on misses before the contact proxy (prespecified)",
            result = "2.20 ft (median residual 0.15 ft): 11% of those segments are not free flight",
            decision = "Replaced before any label was reviewed: made shots, release + 3 to endFrame - 3, flights with a residual above 1 ft excluded (35 of 346), 99th percentile: 0.65 ft. Owner to confirm."),
       list(check = "second reviewer on the held-aside subset (manual: where practical)",
-           result = "no second person available in this session",
-           decision = "Reliability measured between two independent labelers: the frozen automated labeler and a blind reviewer. Both read the same tracking and the reviewer wrote the labeler, so agreement is consistency of tracking-based judgements, not accuracy. A second human review can be added in reviewer2_heldout.csv and rescored."),
+           result = if (sc$r2_done) "added 2026-11-05: the owner labelled the held-aside subset (reviewer2_heldout.csv)" else "no second person available in this session",
+           decision = if (sc$r2_done) "Gate judged on reviewer 1 vs reviewer 2, as written before scoring. Both read the same tracking plots (no video), so agreement is consistency of tracking-based judgements, not accuracy. Automated-label status is reported separately (automated_labels_by_type)." else "Reliability measured between two independent labelers: the frozen automated labeler and a blind reviewer. Both read the same tracking and the reviewer wrote the labeler, so agreement is consistency of tracking-based judgements, not accuracy. A second human review can be added in reviewer2_heldout.csv and rescored."),
       list(check = "contact kind kappa over rim / board / none (prespecified)",
            result = "the widened rim zone overlaps the board zone",
            decision = "Changed before freezing to contact vs none; rim vs board reported, not gated.")),
@@ -568,12 +578,14 @@ if (phase == "gate") {
                  "outputs/rebounding/step02/ball_height_heldout_reviewer1.csv", "outputs/rebounding/step02/review/",
                  "outputs/rebounding/step02/figures/", "outputs/rebounding/step02/detector_freeze.json",
                  "outputs/rebounding/step02/detector_threshold.csv"),
-    reviewer = "Claude (labeler author and blind reviewer 1); owner review pending", date = format(Sys.Date()),
+    reviewer = if (sc$r2_done) "Claude (labeler author and blind reviewer 1); the owner (reviewer 2)" else "Claude (labeler author and blind reviewer 1); owner review pending",
+    date = format(Sys.Date()),
     open_risks = list("No video: every label, the reviewer's included, comes from the same tracking",
                       "The reviewer wrote the labeler; the two labelers are not independent in method",
                       "30 held-aside episodes: wide intervals on every agreement measure",
                       "Ball heights near the rim read 1-2 ft high, and the control rule caps ball height at 9 ft, so control heights are truncated"),
-    decision_note = if (status == "PASS") paste("Usable label types:", paste(passed, collapse = ", ")) else
+    decision_note = if (status == "PASS") paste0("Usable label types: ", paste(passed, collapse = ", "),
+                                                 if (any(auto_dec[type %in% passed]$status != "PASS")) ". Reviewed labels only: the automated labels of these types do not meet the targets against the reviewers, so models that need them on every episode stay blocked." else "") else
       "BLOCKED: continue with the final credited rebounder only for Steps 03-09; tip physics, controlled-catch and securing models stay blocked. Labels remain in the contract file for description, flagged by gate_status.")
   write_gate(file.path(gr, "02_contact_states.json"), rec)
   print(tests[, .(dir, file, test = substr(test, 1, 60), expectations, failed, error)])

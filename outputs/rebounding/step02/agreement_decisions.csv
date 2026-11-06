@@ -4,3 +4,13 @@ auto_vs_reviewer1,first touch,3,1,BLOCKED,both name the player (share of subset)
 auto_vs_reviewer1,touch type,1,1,PASS,""
 auto_vs_reviewer1,control,3,0,BLOCKED,both name the controller (share of subset); same controller; frame within 3
 auto_vs_reviewer1,tip chain,2,1,BLOCKED,same tip count (0 / 1 / 2+)
+reviewer1_vs_reviewer2,contact,3,3,PASS,""
+reviewer1_vs_reviewer2,first touch,3,0,BLOCKED,both name the player (share of subset); same player; frame within 3
+reviewer1_vs_reviewer2,touch type,1,0,BLOCKED,"tip vs catch, Cohen's kappa"
+reviewer1_vs_reviewer2,control,3,1,BLOCKED,both name the controller (share of subset); frame within 3
+reviewer1_vs_reviewer2,tip chain,2,1,BLOCKED,same tip count (0 / 1 / 2+)
+auto_vs_reviewer2,contact,3,1,BLOCKED,"contact vs none, Cohen's kappa; frame within 2"
+auto_vs_reviewer2,first touch,3,0,BLOCKED,both name the player (share of subset); same player; frame within 3
+auto_vs_reviewer2,touch type,1,0,BLOCKED,"tip vs catch, Cohen's kappa"
+auto_vs_reviewer2,control,3,1,BLOCKED,both name the controller (share of subset); frame within 3
+auto_vs_reviewer2,tip chain,2,1,BLOCKED,same tip count (0 / 1 / 2+)
