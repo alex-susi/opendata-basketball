@@ -2,7 +2,7 @@
 
 import type { ControlMode } from "./controlLayer";
 import type { CourtView } from "./court";
-import type { LandingView, ReboundEpisode, ReboundReading } from "./rebounding";
+import type { LandingView, ReboundEpisode, ReboundModel, ReboundReading, Step09Step } from "./rebounding";
 
 export const viewer = $state({
   /** Playback position: an index into the current play's frame sequence, fractional between frames. */
@@ -28,8 +28,10 @@ export const viewer = $state({
   controlMode: "control" as ControlMode,
   /** The rebounding forecast while a missed shot is live: landing sample, box-out links, collection chances. */
   showRebound: true,
-  /** How the untouched-landing forecast is drawn: a density, the simulated landings as dots, or not at all. */
-  reboundLanding: "heat" as LandingView,
+  /** How the untouched-landing forecast is drawn: 50% and 90% regions, a density, the simulated landings as dots, or not at all. */
+  reboundLanding: "regions" as LandingView,
+  /** Whose collection chances are shown: Step 09's validated model (held out), or the first build's. */
+  reboundModel: "step09" as ReboundModel,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */
@@ -55,4 +57,6 @@ export const live = $state({
   /** The play's missed shots with rebound forecasts, and whether talent-aware chances exist for its game. */
   reboundEpisodes: [] as ReboundEpisode[],
   reboundTalent: false,
+  /** Step 09's held-out forecasts of the play's misses, by episode id (empty when the export has none). */
+  reboundStep09: new Map<string, Step09Step[]>(),
 });

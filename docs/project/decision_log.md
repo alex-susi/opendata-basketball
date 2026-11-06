@@ -1760,3 +1760,59 @@ The owner filled `outputs/rebounding/step02/review/reviewer2_heldout.csv` (30 of
   while labelling (the record assumes yes).
 - Whether to continue the v2 labeler (contact timing on every episode would unblock Step 07's physics checks), or to
   go on to Step 12 in reduced form with the credited rebounder only.
+
+## 2026-11-05 — Site: the manual's results added to the Rebounding tab; box-out claims marked unvalidated
+
+At the owner's request ("implement it into the site"). The live site (GitHub Pages, `web/`) still showed only the
+first build (October 27–28); none of the manual's Steps 00–11 appeared on it.
+
+- **New export** `src/rebounding/run_export_manual.R` → `web/public/data/rebounding_manual.json` (37 KB): every gate
+  record (status, scope, parts) and the result tables of Steps 02 and 04–11, copied from `outputs/rebounding/` and
+  rounded; nothing refitted.
+- **New section 12** of the Rebounding tab (`web/src/components/ReboundingManual.svelte`): gate table for all
+  twelve steps, who-gets-the-ball scores (dynamic, static, best baseline, uniform) and the C3 tests, ball coverage
+  (Steps 05–07), movement (Step 08), reviewer agreement (Step 02), positioning and onset curve (Step 10), obstruction
+  (Step 11). Every number is read from the export.
+- **Corrections to the first build's pages:** a note under the tab's introduction says sections 1–11 are the first
+  build and section 12 holds where they disagree; section 9 (box-outs) opens with "Not validated"; the play panel's
+  "Box-outs now" is renamed "In the way now" with "not validated box-outs" in its hint. The panel's numbers and the
+  first build's models are unchanged.
+- **Checks:** `svelte-check` 0 errors, `vitest` 46 passed, build passes; checked in the local preview (no console
+  errors, links scroll to section 12). Not deployed: the site updates when these `web/` changes are pushed to `main`.
+
+## 2026-11-05 — Play viewer: the landing forecast drawn as nested regions
+
+At the owner's request (a reference image of shrinking uncertainty regions: early flight, late flight, after the rim).
+The play viewer's landing forecast now defaults to **Regions**: from each forecast's 40 simulated first landings, the
+ellipse holding 90% of them if they were spread normally (dashed edge, light sand fill) and the one holding 50% (stronger
+core), from the sample's mean and covariance scaled by the chi-square quantile with two degrees of freedom; axes at
+least 0.75 ft; drawn inside the court's lines only (the panel already states the share landing out of bounds). Heatmap,
+Dots and Off remain. Code: `web/src/lib/rebounding.ts` (`landingEllipse()`, `drawRegions()`), panel option and default
+(`ReboundPanel.svelte`, `viewer.svelte.ts`); three new tests (`web/tests/rebounding.test.ts`). Checks: svelte-check 0
+errors, 49 tests pass, build passes; checked in the preview on game 114243's first miss (release, 1 s, after the rim).
+
+- **Same model as before.** The regions summarise the first build's simulated landings (`run_export.R`), which section 1
+  of the Rebounding tab calls an illustration; the manual's ball forecasts (Steps 05–07) did not pass. The collection
+  chances and team split in the play viewer are also still the first build's models, not the manual's Step 09 model.
+- **Why the manual's model is not in the viewer yet:** Step 09's held-out predictions exist at two moments per miss
+  (release and rim + 0.2 s, `step09/dynamic_oof.csv.gz`), while the viewer shows a forecast every 0.2 s. Showing it
+  through a whole replay needs the Step 09 model run at every 0.2 s and a new export.
+
+## 2026-11-05 — Play viewer: Step 09's held-out chances replace the first build's by default
+
+At the owner's request ("Yes, add Step 09"). The play viewer's collection chances and team split now come from the
+manual's Step 09 dynamic model (gate PASS) by default; a panel switch ("Step 09 chances" / "First build") brings the
+first build back.
+
+- **Held out.** `run_export_manual.R` writes `web/public/data/rebounding_manual/{game}.json` from
+  `step09/dynamic_oof.csv.gz`: each miss's forecasts from the fold model fitted without its game, with the frame each was
+  made at. No refit.
+- **Only the validated moments.** Step 09 forecasts at release and at rim + 0.2 s, so the viewer shows the release
+  forecast until the rim + 0.2 s one is made, then keeps it; it does not interpolate or extrapolate to other times
+  (running the model every 0.2 s would need new validation). Coverage: all 703 misses with the same ten players; 650 with
+  both moments (the other 53 keep the release forecast).
+- **What stays the first build's:** the landing regions and the blocking links (not validated; the panel says so) and
+  the "first 0.48 s of movement" ratings. The panel names the source and moment of every Step 09 forecast.
+- **Code:** `web/src/lib/rebounding.ts` (`step09At()`, `withStep09()`), `data.ts` (`loadStep09()`), `Stage.svelte`,
+  `ReboundPanel.svelte`, `viewer.svelte.ts`; three new tests. Checks: svelte-check 0 errors, 52 tests pass, build passes;
+  checked in the preview on game 114243 (values equal the export; the switch works both ways).

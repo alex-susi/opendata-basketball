@@ -10,6 +10,7 @@
   import RateDots from "./charts/RateDots.svelte";
   import Scatter from "./charts/Scatter.svelte";
   import ReboundFinder from "./ReboundFinder.svelte";
+  import ReboundingManual from "./ReboundingManual.svelte";
   import { SERIES } from "./charts/scale";
 
   type Cell = number | string | boolean | null | undefined;
@@ -204,7 +205,7 @@
     ["rb-question", "1. The question"], ["rb-data", "2. The data"], ["rb-ball", "3. Can we trust the ball?"],
     ["rb-where", "4. Where misses go"], ["rb-flight", "5. Ball-flight model"], ["rb-who", "6. Who gets the ball"],
     ["rb-collect", "7. Collection model"], ["rb-move", "8. Movement and anticipation"], ["rb-box", "9. Box-outs"],
-    ["rb-players", "10. Player effects"], ["rb-checks", "11. Checks and limits"],
+    ["rb-players", "10. Player effects"], ["rb-checks", "11. Checks and limits"], ["rb-manual", "12. Step-by-step rebuild"],
   ];
   // Plain scrolling: the page's address names the tab (#/rebounding), so section links must not change it.
   const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -250,6 +251,12 @@
       through how that forecast was built from the ten tracked ACB games, in the order the decisions were made. Each step
       shows <b>what the data say</b>, the <b>decision</b> that follows, and <b>how it was checked</b> on games the model
       never saw. It doubles as a tutorial: the modelling ideas are explained where they first appear.
+    </p>
+    <p class="rb-update">
+      <b>Update (November 2026).</b> Sections 1–11 describe the first build. Every piece was then rebuilt one step at a
+      time, with each pass rule fixed before its results were seen; <button type="button" class="link" onclick={() => go("rb-manual")}>section 12</button>
+      shows what passed and what was blocked. Where they disagree, section 12 holds, and the box-outs of section 9 in
+      particular are not validated.
     </p>
     <nav class="rb-toc" aria-label="On this page">
       {#each SECTIONS as [id, label] (id)}<button type="button" class="link" onclick={() => go(id)}>{label}</button>{/each}
@@ -833,6 +840,12 @@
     <!-- 9 ------------------------------------------------------------------------------------------------- -->
     <section id="rb-box">
       <h2>9. Box-outs</h2>
+      <p class="rb-update">
+        <b>Not validated.</b> The step-by-step rebuild (<button type="button" class="link" onclick={() => go("rb-manual")}>section 12</button>,
+        Step 11) found that this kind of spatial rule cannot be checked against real box-outs with these data (no video,
+        no contact, no body orientation), and that its stricter version fails two geometry checks fixed in advance. Read
+        the labels below as "standing in an opponent's way", not as box-outs.
+      </p>
       <p>
         Without video or body orientation, a box-out can only be seen spatially: one player standing in an opponent's
         route to where the ball can be reached, and staying there. Pairs of opponents within 6 ft at release, both within
@@ -952,6 +965,9 @@ Rscript src/rebounding/run_eda.R
 Rscript src/rebounding/run_export.R</pre>
       <p class="meta">Framework: "Physics-informed rebounding: research and model framework" (October 27, 2026). Ideas adapted from Achterhold et al. (2023), Okubo and Hubbard (2014), Maheswaran et al. (2012, 2014), Kiriazis, Genest and Leblanc, Spearman-style pitch control and ReboundingPrediction; no code reused. Data: SkillCorner open data, Liga ACB, MIT licence. Built {doc.built}.</p>
     </section>
+
+    <!-- 12 ------------------------------------------------------------------------------------------------ -->
+    <ReboundingManual />
   </div>
 {/if}
 
@@ -959,6 +975,8 @@ Rscript src/rebounding/run_export.R</pre>
   .rb-doc { max-width: 1120px; }
   .rb-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .rb-toc .link { font-size: 13px; }
+  .rb-update { max-width: 860px; margin: 10px 0; padding: 10px 14px; border-left: 3px solid var(--def); border-radius: 0 8px 8px 0; background: rgba(255, 133, 82, .08); font-size: 13.5px; }
+  .rb-update .link { font-size: inherit; }
   .rb-grid { display: grid; gap: 20px; margin: 14px 0; align-items: start; }
   .rb-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rb-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }

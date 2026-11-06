@@ -4,7 +4,7 @@
 
 import { decodePlay } from "./decode";
 import type { ControlParams } from "./control";
-import type { ReboundGame } from "./rebounding";
+import type { ReboundGame, Step09Game } from "./rebounding";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
 declare const __DATA_STAMP__: string;
@@ -83,6 +83,17 @@ export function loadReboundDoc<T>(): Promise<T> {
   return reboundDoc as Promise<T>;
 }
 
+let manualDoc: Promise<unknown> | null = null;
+/** The step-by-step manual's gate records and result tables (rebounding_manual.json, src/rebounding/run_export_manual.R). */
+export function loadManualDoc<T>(): Promise<T> {
+  manualDoc ??= fetch(`${base}rebounding_manual.json`, { cache: "no-cache" }).then((r) => {
+    if (!r.ok) throw new Error(`Could not load rebounding_manual.json (${r.status})`);
+    return r.json();
+  });
+  manualDoc.catch(() => { manualDoc = null; });
+  return manualDoc as Promise<T>;
+}
+
 const rebounds = new Map<number, Promise<ReboundGame | null>>();
 /** One game's rebound forecasts (rebounding/<game>.json), or null when the export has none. */
 export function loadRebounds(game: number): Promise<ReboundGame | null> {
@@ -95,6 +106,20 @@ export function loadRebounds(game: number): Promise<ReboundGame | null> {
     // A failed load is not remembered, so the next play of the game asks again.
     p.then((g) => { if (!g) rebounds.delete(game); });
     rebounds.set(game, p);
+  }
+  return p;
+}
+
+const step09 = new Map<number, Promise<Step09Game | null>>();
+/** One game's Step 09 held-out forecasts (rebounding_manual/<game>.json), or null when the export has none. */
+export function loadStep09(game: number): Promise<Step09Game | null> {
+  let p = step09.get(game);
+  if (!p) {
+    p = fetch(`${base}rebounding_manual/${game}.json`, { cache: "no-cache" })
+      .then((r) => (r.ok ? (r.json() as Promise<Step09Game>) : null))
+      .catch(() => null);
+    p.then((g) => { if (!g) step09.delete(game); });
+    step09.set(game, p);
   }
   return p;
 }

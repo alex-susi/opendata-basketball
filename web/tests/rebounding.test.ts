@@ -1,6 +1,6 @@
 // The rebounding panel's lookups: which miss is live at a frame, which forecast is shown, and the side totals.
 import { describe, expect, it } from "vitest";
-import { collectionLabels, episodesInPlay, gameOf, reboundAt, sides, type ReboundEpisode, type ReboundGame, type ReboundStep } from "../src/lib/rebounding";
+import { collectionLabels, episodesInPlay, landingEllipse, step09At, withStep09, type Step09Step, gameOf, reboundAt, sides, type ReboundEpisode, type ReboundGame, type ReboundStep } from "../src/lib/rebounding";
 import type { Play } from "../src/lib/types";
 
 const step = (f: number, p0: number): ReboundStep => ({
@@ -50,5 +50,67 @@ describe("rebounding lookups", () => {
   it("labels only players with a real chance", () => {
     const r = reboundAt(eps, 100)!;
     expect([...collectionLabels(r, false).keys()]).toEqual([1, 6, 7]);
+  });
+});
+
+describe("landing regions", () => {
+  // a symmetric cross of landings: spread 2 along x and 1 along y around (30, 5)
+  const cross: [number, number][] = [[28, 5], [32, 5], [30, 4], [30, 6], [30, 5], [28, 5], [32, 5], [30, 4], [30, 6]];
+
+  it("centres on the mean and scales the axes by the chi-square quantile", () => {
+    const e = landingEllipse(cross, 0.5)!;
+    expect(e.cx).toBeCloseTo(30); expect(e.cy).toBeCloseTo(5);
+    const k = Math.sqrt(-2 * Math.log(0.5));
+    const sx = Math.sqrt(16 / 8), sy = Math.sqrt(4 / 8);           // sample spreads of the cross
+    expect(e.a).toBeCloseTo(k * sx); expect(e.b).toBeCloseTo(Math.max(0.75, k * sy));
+    expect(Math.abs(Math.sin(e.theta))).toBeLessThan(1e-9);         // major axis along x
+  });
+
+  it("follows a rotated cloud and keeps the 50% core inside the 90% region", () => {
+    const rot = cross.map(([x, y]): [number, number] => [30 + (x - 30 - (y - 5)) / Math.SQRT2, 5 + (x - 30 + (y - 5)) / Math.SQRT2]);
+    const e = landingEllipse(rot, 0.9)!, c = landingEllipse(rot, 0.5)!;
+    expect(Math.abs(Math.cos(2 * (e.theta - Math.PI / 4)))).toBeCloseTo(1); // major axis at 45°
+    expect(c.a).toBeLessThan(e.a); expect(c.b).toBeLessThanOrEqual(e.b);
+  });
+
+  it("returns nothing for too few landings and a floor-sized region for identical ones", () => {
+    expect(landingEllipse([[1, 1], [2, 2]], 0.9)).toBeNull();
+    const same = landingEllipse([[3, 3], [3, 3], [3, 3]], 0.9)!;
+    expect(same.a).toBe(0.75); expect(same.b).toBe(0.75);
+  });
+});
+
+describe("Step 09 forecasts in the viewer", () => {
+  const ep = episode(100, 140);
+  // Step 09 lists the players offense first in its own order (1-5 offense, 6-10 defense)
+  const s9 = (f: number, tp: string, p6: number): Step09Step => ({
+    f, tp, fold: 1, pid: [5, 4, 3, 2, 1, 10, 9, 8, 7, 6], p: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, p6],
+    team_off: 0.1, team_def: 0.45 - p6,                              // the twelve sum to 1
+  });
+  const forecasts = new Map([[ep.id, [s9(100, "release", 0.2), s9(130, "rim+0.2", 0.3)]]]);
+
+  it("uses the latest Step 09 forecast made at or before the frame", () => {
+    expect(step09At(forecasts.get(ep.id), 99)).toBeNull();
+    expect(step09At(forecasts.get(ep.id), 129)?.tp).toBe("release");
+    expect(step09At(forecasts.get(ep.id), 131)?.tp).toBe("rim+0.2");
+  });
+
+  it("puts each player's Step 09 chance on his own id and sums the sides", () => {
+    const r = withStep09(reboundAt([ep], 135), forecasts, 135)!;
+    expect(r.step.source?.tp).toBe("rim+0.2");
+    expect(r.step.p[r.step.pid.indexOf(6)]).toBeCloseTo(0.3);       // player 6 in the first build's order
+    expect(r.step.team[0]).toBeCloseTo(0.25); expect(r.step.team[1]).toBeCloseTo(0.5);
+    expect(r.step.team[2]).toBeCloseTo(0.1); expect(r.step.team[3]).toBeCloseTo(0.15); expect(r.step.team[4]).toBe(0);
+    expect(r.step.p.reduce((a, b) => a + b, 0) + r.step.team[2] + r.step.team[3]).toBeCloseTo(1);
+    expect(r.step.land).toBe(ep.steps[2].land);                       // the landing forecast stays the first build's
+  });
+
+  it("keeps the same object between frames and falls back when Step 09 has nothing", () => {
+    const a = withStep09(reboundAt([ep], 105), forecasts, 105)!, b = withStep09(reboundAt([ep], 106), forecasts, 106)!;
+    expect(a.step).toBe(b.step);
+    const none = reboundAt([ep], 105)!;
+    expect(withStep09(none, new Map(), 105)!.step).toBe(none.step);
+    const other = new Map([[ep.id, [{ ...s9(100, "release", 0.2), pid: [11, 4, 3, 2, 1, 10, 9, 8, 7, 6] }]]]);
+    expect(withStep09(none, other, 105)!.step.source).toBeUndefined();  // different ten players: first build kept
   });
 });

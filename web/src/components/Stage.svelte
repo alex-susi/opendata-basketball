@@ -2,9 +2,9 @@
   // The court canvas: runs the animation clock, draws each frame and records video on request.
   import { onMount } from "svelte";
   import type { ControlParams } from "../lib/control";
-  import { loadControl, loadRebounds } from "../lib/data";
+  import { loadControl, loadRebounds, loadStep09 } from "../lib/data";
   import { drawScene } from "../lib/draw";
-  import { episodesInPlay, gameOf, reboundAt, type HeatGrid, type ReboundEpisode } from "../lib/rebounding";
+  import { episodesInPlay, gameOf, reboundAt, withStep09, type HeatGrid, type ReboundEpisode, type Step09Step } from "../lib/rebounding";
   import { FPS, cursorAt } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
@@ -24,19 +24,24 @@
   let episodes: ReboundEpisode[] = [];
   let talent = false;
   let grid: HeatGrid | null = null;
+  let s09 = new Map<string, Step09Step[]>();   // Step 09's held-out forecasts of the game's misses, by episode id
   $effect(() => {
     const current = play;
     episodes = [];
+    s09 = new Map();
     live.reboundEpisodes = [];
+    live.reboundStep09 = s09;
     live.rebound = null;
     if (!current) return;
-    loadRebounds(gameOf(current)).then((g) => {
+    Promise.all([loadRebounds(gameOf(current)), loadStep09(gameOf(current))]).then(([g, m]) => {
       if (play !== current) return;
       episodes = episodesInPlay(current, g);
       talent = g?.talent ?? false;
       grid = g?.heat ?? null;
+      s09 = new Map((m?.episodes ?? []).map((e) => [e.id, e.steps]));
       live.reboundEpisodes = episodes;
       live.reboundTalent = talent;
+      live.reboundStep09 = s09;
     });
   });
 
@@ -58,7 +63,8 @@
 
   function render(ctx: CanvasRenderingContext2D): void {
     const frame = play && seq.length ? play.frames[cursorAt(play, seq, viewer.pos).i0] : -1;
-    const reading = episodes.length ? reboundAt(episodes, frame) : null;
+    const first = episodes.length ? reboundAt(episodes, frame) : null;
+    const reading = viewer.reboundModel === "step09" ? withStep09(first, s09, frame) : first;
     if (reading?.step !== live.rebound?.step || reading?.resolved !== live.rebound?.resolved) live.rebound = reading;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos, viewer, framed, control,
                            reading ? { reading, talent, grid, landing: viewer.reboundLanding } : null);

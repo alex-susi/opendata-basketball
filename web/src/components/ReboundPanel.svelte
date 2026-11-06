@@ -4,7 +4,7 @@
   // who is most likely to collect it, the box-outs standing now, and how each player's first half second of movement
   // rated. Otherwise it lists the possession's misses. Every number comes from src/rebounding/ through
   // rebounding/<game>.json; the Rebounding tab explains each one.
-  import type { LandingView } from "../lib/rebounding";
+  import type { LandingView, ReboundEpisode, ReboundModel } from "../lib/rebounding";
   import { sides } from "../lib/rebounding";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
@@ -30,10 +30,21 @@
     "off team award": "Offense awarded the ball", "def team award": "Defense awarded the ball",
   };
   const views: { value: LandingView; label: string; title: string }[] = [
+    { value: "regions", label: "Regions", title: "Where the ball would first hit the floor if nobody touched it: the solid core holds half of the simulated landings, the dashed edge 90%" },
     { value: "heat", label: "Heatmap", title: "Density of where the ball would first hit the floor if nobody touched it" },
     { value: "dots", label: "Dots", title: "Forty of the simulated miss paths' first floor landings" },
     { value: "off", label: "Off", title: "Hide the landing forecast" },
   ];
+  const models: { value: ReboundModel; label: string; title: string }[] = [
+    { value: "step09", label: "Step 09 chances", title: "The validated model of the step-by-step rebuild, held out: each game's forecasts come from a model fitted on the other nine. It forecasts at release and 0.2 s after the ball reaches the rim." },
+    { value: "first", label: "First build", title: "The first build's models, which forecast every 0.2 s from release to the rebound" },
+  ];
+  const TP: Record<string, string> = { release: "at release", "rim+0.2": "0.2 s after the ball reached the rim" };
+  /** Offense's share at release for the list of misses: Step 09's when shown and available, else the first build's. */
+  const releaseOff = (e: ReboundEpisode) => {
+    const s = viewer.reboundModel === "step09" ? live.reboundStep09.get(e.id)?.find((x) => x.tp === "release") : undefined;
+    return s ? s.p.slice(0, 5).reduce((a, b) => a + b, 0) + s.team_off : sides(e.steps[0]).off;
+  };
 
   const split = $derived(r ? sides(r.step) : null);
   const probs = $derived(r ? (live.reboundTalent && r.step.pt ? r.step.pt : r.step.p) : []);
@@ -51,6 +62,12 @@
       <span class="switch-track"></span>On court
     </label>
   </div>
+  <div class="mode-picks" role="radiogroup" aria-label="Whose chances">
+    {#each models as m (m.value)}
+      <button type="button" class="text-btn" class:on={viewer.reboundModel === m.value} title={m.title} role="radio"
+              aria-checked={viewer.reboundModel === m.value} onclick={() => (viewer.reboundModel = m.value)}>{m.label}</button>
+    {/each}
+  </div>
   <div class="mode-picks" class:dim={!viewer.showRebound} role="radiogroup" aria-label="Landing forecast">
     {#each views as v (v.value)}
       <button type="button" class="text-btn" class:on={viewer.reboundLanding === v.value} title={v.title} role="radio"
@@ -58,10 +75,17 @@
     {/each}
   </div>
   {#if r && split && play}
-    <p class="rb-when" title="Each forecast uses only the tracking up to its moment; a new one is made every 0.2 s until the rebound. Once the ball has been seen reaching the rim, the late model (fitted on moments after the rim) makes it.">
-      Forecast made {r.since.toFixed(1)} s after release{r.step.tau != null ? ` (${r.step.tau.toFixed(1)} s after the rim, late model)` : ""}
-      · {r.episode.range} · {r.episode.kind}
-    </p>
+    {#if r.step.source}
+      <p class="rb-when" title="Step 09 of the step-by-step rebuild (Rebounding tab, section 12): passed its held-out test. This game's forecasts come from the model fitted on the other nine games. It uses only the tracking up to its moment.">
+        <b>Step 09 chances</b>, forecast {TP[r.step.source.tp] ?? r.step.source.tp} ({r.step.source.since.toFixed(1)} s after release)
+        · fitted without this game · {r.episode.range}
+      </p>
+    {:else}
+      <p class="rb-when" title="Each forecast uses only the tracking up to its moment; a new one is made every 0.2 s until the rebound. Once the ball has been seen reaching the rim, the late model (fitted on moments after the rim) makes it.">
+        {viewer.reboundModel === "step09" ? "No Step 09 forecast for this miss: first build. " : ""}Forecast made {r.since.toFixed(1)} s after release{r.step.tau != null ? ` (${r.step.tau.toFixed(1)} s after the rim, late model)` : ""}
+        · {r.episode.range} · {r.episode.kind}
+      </p>
+    {/if}
     <div class="rb-sides">
       <div><span><i class="sw" style:background={kitOf("off").fill} style:border-color={kitOf("off").edge}></i>{play.off}</span><b>{pct(split.off)}</b></div>
       <div><span><i class="sw" style:background={kitOf("def").fill} style:border-color={kitOf("def").edge}></i>{play.def}</span><b>{pct(split.def)}</b></div>
@@ -76,7 +100,7 @@
     <p class="rb-key">
       Solid: a player <b>collects</b> it ({pct(r.step.team[0])} / {pct(r.step.team[1])}). Striped: nobody secures it and the
       team is <b>awarded</b> the ball, usually out of bounds ({pct(r.step.team[2])} / {pct(r.step.team[3])}).
-      {pct(r.step.out ?? 0)} of simulated misses would first land out of bounds.
+      {pct(r.step.out ?? 0)} of the first build's simulated misses would first land out of bounds.
     </p>
     <h3 class="rb-sub">Most likely to collect</h3>
     <ul class="rb-list">
@@ -90,7 +114,7 @@
       {/each}
     </ul>
     {#if boxes.length}
-      <h3 class="rb-sub" title="A player standing between an opponent and where the ball can be reached. Spatial only: no video or body orientation.">Box-outs now <span class="rb-hint">blocker on opponent, strength</span></h3>
+      <h3 class="rb-sub" title="A player standing between an opponent and where the ball can be reached. Floor positions only: no video, contact or body orientation, so these are not validated box-outs (Rebounding tab, section 12).">In the way now <span class="rb-hint">blocker on opponent, strength (not validated box-outs)</span></h3>
       <ul class="rb-list">
         {#each boxes as b (`${b.b}-${b.o}`)}
           <li>
@@ -119,17 +143,17 @@
       <p class="rb-outcome">{OUTCOME[r.episode.outcome] ?? r.episode.outcome}{r.episode.rebounder != null ? `: ${name(r.episode.rebounder)}` : ""}</p>
     {/if}
     <p class="note">
-      Assumes the miss. Violet: where the ball would first land if nobody touched it (a model illustration, not validated).
-      Lines: a player blocking an opponent's route to the ball. {live.reboundTalent ? "Chances include collection effects." : "Same rules for every player: no player effects passed their test."}
+      Assumes the miss. Sand regions: where the ball would first land if nobody touched it, half of the simulated landings in
+      the core and 90% inside the dashed edge (first build; an illustration, not validated). Lines: a player in an opponent's
+      way to the ball. {r.step.source ? "Chances: Step 09's model, which passed its held-out test; same rules for every player." : live.reboundTalent ? "Chances include collection effects." : "Same rules for every player: no player effects passed their test."}
       <a href="#/rebounding">How it works</a>
     </p>
   {:else if live.reboundEpisodes.length && play}
     <ul class="rb-list misses">
       {#each live.reboundEpisodes as e (e.id)}
-        {@const s0 = sides(e.steps[0])}
         <li>
           <span class="nm">Miss by {name(e.shooter)}</span>
-          <span class="tag">{play.off} {pct(s0.off)} at release</span>
+          <span class="tag">{play.off} {pct(releaseOff(e))} at release</span>
           <b class:up={e.outcome.startsWith("off")} class:down={e.outcome.startsWith("def")}>{e.outcome.startsWith("off") ? "OREB" : "DREB"}</b>
         </li>
       {/each}
