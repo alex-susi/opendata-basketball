@@ -1,12 +1,10 @@
-// Team colours for shading the floor. A play's kits are already de-clashed for player dots (the away team wears
-// its secondary colour when the primaries are alike); this picks, from each kit, a colour that shows on the light
-// floor and stays apart from the other team's (court control shading).
+// Team colours as the viewer draws them. A play's kits come with its export (team_kit and side_colors in
+// src/play_viewer/R/data.R): the away team wears its secondary colour when the two primaries are alike. A player's
+// dot is his team's primary alone, numbered in white (dark on a light primary). The secondary colour marks a
+// player: the glow round the ball handler, and the ring round a selected player and his nearest opponent.
 
-import { COLORS } from "./court";
-import type { Play, TeamColors } from "./types";
-
-const FALLBACK = { off: "#1F6FE5", def: "#F26A36" };
-const MIN_APART = 110;   // RGB distance below which two colours read as the same team
+const WHITE = "#FFFFFF";
+const DARK = "#0B0E14";
 
 function rgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
@@ -19,27 +17,18 @@ function luminance(hex: string): number {
   return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
 }
 
-function contrast(a: string, b: string): number {
+/** WCAG contrast ratio between two colours, from 1 to 21. */
+export function contrast(a: string, b: string): number {
   const [lo, hi] = [luminance(a), luminance(b)].sort((x, y) => x - y);
   return (hi + 0.05) / (lo + 0.05);
 }
 
-function apart(a: string, b: string): number {
-  const x = rgb(a), y = rgb(b);
-  return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+/** The number on a dot of this colour: white, unless the colour is too light for white to read (yellow, sky blue). */
+export function dotInk(fill: string): string {
+  return contrast(WHITE, fill) >= 2.9 ? WHITE : DARK;
 }
 
-/** The first pair of candidates (offense, defense) that both read on `surface` and differ from each other. */
-function choose(off: string[], def: string[], surface: string, minContrast: number): { off: string; def: string } {
-  for (const a of off) for (const b of def) {
-    if (contrast(a, surface) >= minContrast && contrast(b, surface) >= minContrast && apart(a, b) >= MIN_APART) return { off: a, def: b };
-  }
-  return FALLBACK;
-}
-
-const candidates = (k: TeamColors) => [k.fill, k.mark, k.edge, k.text];
-
-/** Colours for shading the floor (court control): each team's primary where the two differ and show on the floor. */
-export function floorColors(play: Play): { off: string; def: string } {
-  return choose(candidates(play.colors.off), candidates(play.colors.def), COLORS.floor, 1.6);
+/** A hex colour with an opacity, as rgba(). */
+export function withAlpha(hex: string, alpha: number): string {
+  return `rgba(${rgb(hex).join(",")},${alpha})`;
 }

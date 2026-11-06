@@ -1,6 +1,7 @@
 <script lang="ts">
-  // The list of possessions that match the filters, grouped by game. Every field wraps instead of being cut off,
-  // so the whole entry stays readable however narrow the column is.
+  // The list of possessions that match the filters, grouped by game. Each entry: quarter, clock and length with the
+  // result right-aligned on the same line, then the team on offense and the tags. Every field wraps instead of
+  // being cut off, so the whole entry stays readable however narrow the column is.
   import { tick } from "svelte";
   import { quarter } from "../lib/geometry";
   import type { PlayRow } from "../lib/types";

@@ -70,9 +70,9 @@ export interface PlayerInfo {
 export interface TeamColors {
   /** Primary colour: player dots and hull. */
   fill: string;
-  /** Secondary colour: the ring around a dot. */
+  /** Secondary colour: the glow round the ball handler, the ring round a selected player. */
   edge: string;
-  /** Number on a dot. */
+  /** Number on a dot (set on decoding: white, or dark on a light primary). */
   ink: string;
   /** Team name on the dark panels. */
   text: string;

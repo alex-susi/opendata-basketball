@@ -20,11 +20,20 @@ export const viewer = $state({
   trace: "ball" as "ball" | "nearest",
   /** The player the nearest-opponent trace follows (clicked on the court or in a roster), or null. */
   focusPid: null as number | null,
+  /** Caption each tick on the timeline with its action and player. Off, the timeline is a thin bar. */
+  showTickLabels: true,
   hoverPid: null as number | null,
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */
   hidden: false,
 });
+
+/** Play or pause; a play that has reached its end starts again from the top. */
+export function togglePlay(seqLength: number): void {
+  if (!seqLength) return;
+  if (!viewer.playing && viewer.pos >= seqLength - 1) viewer.pos = 0;
+  viewer.playing = !viewer.playing;
+}
 
 /** The frame last drawn, as the page shows it around the canvas: rosters, header clocks and the trace panel. */
 export const live = $state({

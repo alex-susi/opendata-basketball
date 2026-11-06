@@ -58,9 +58,9 @@ export function blend(series: Series, c: Cursor): number | null {
 }
 
 /** Degrees a caption is tilted where ticks crowd. Matches the rotations of .tick-label in app.css. */
-export const TILT = 24;
-const TILT_GAP = 36;    // px between the anchors of neighbouring tilted captions, so their lines stay apart
-const TILT_CAP = 94;    // widest tilted caption (max-width of .tick-label.lean-right / .lean-left); longer text is cut
+export const TILT = 20;
+const TILT_GAP = 42;    // px between the anchors of neighbouring tilted captions, so their lines stay apart (14px / sin TILT)
+const TILT_CAP = 72;    // widest tilted caption (max-width of .tick-label.lean-right / .lean-left); longer text is cut
 const CLEAR = 22;       // px along the rail before a tilted caption has risen above a flat one
 const RUN = Math.cos((TILT * Math.PI) / 180);
 
@@ -140,15 +140,12 @@ function collide(g: Tick[], h: Tick[]): boolean {
 // would overlap are tilted instead (see place); groups are merged until no two collide.
 export function layoutTimeline(play: Play, seq: number[], width: number, measure: (text: string) => number): Timeline {
   const end = Math.max(1, seq.length - 1);
-  const cuts: number[] = [], marks = new Set<number>();
+  const cuts: number[] = [];
   let groups: Tick[][] = [];
   for (let k = 1; k < seq.length; k++) {
     if (play.frames[seq[k]] - play.frames[seq[k - 1]] > 1) cuts.push(k / end);
   }
-  for (const event of play.events) {
-    const k = seqIndexOfFrame(play, seq, event.f);
-    if (Math.abs(play.frames[seq[k]] - event.f) > LEAD_IN) continue;
-    marks.add(k);
+  for (const { k, event } of eventsInSeq(play, seq)) {
     const w = Math.max(measure(event.short ?? ""), measure(event.who ?? "")) + 8;
     groups.push([{ k, frac: k / end, event, lean: "flat", at: 0, width: w }]);
   }
@@ -159,7 +156,21 @@ export function layoutTimeline(play: Play, seq: number[], width: number, measure
     if (i < 0) break;
     groups.splice(i, 2, groups[i].concat(groups[i + 1]));
   }
-  return { ticks: groups.flat(), cuts, marks: [...marks].sort((p, q) => p - q) };
+  return { ticks: groups.flat(), cuts, marks: eventMarks(play, seq) };
+}
+
+/** Each event that falls inside the sequence, with its sequence position (the timeline's ticks). */
+export function eventsInSeq(play: Play, seq: number[]): { k: number; event: PlayEvent }[] {
+  if (!seq.length) return [];
+  return play.events.flatMap((event) => {
+    const k = seqIndexOfFrame(play, seq, event.f);
+    return Math.abs(play.frames[seq[k]] - event.f) > LEAD_IN ? [] : [{ k, event }];
+  });
+}
+
+/** Sequence positions of the events, in order, without repeats: what the previous/next action buttons step to. */
+export function eventMarks(play: Play, seq: number[]): number[] {
+  return [...new Set(eventsInSeq(play, seq).map((e) => e.k))].sort((p, q) => p - q);
 }
 
 /** Position of the next action, or of the previous one (the current one counts as passed after half a second). */

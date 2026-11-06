@@ -1,22 +1,35 @@
 <script lang="ts">
-  // The trace panel between the court and the transport bar: one number followed over the whole play, with the
+  // The trace panel between the court and the timeline: one number followed over the whole play, with the
   // current moment marked as the play runs. Two traces:
   //   Ball height       the ball's z from the tracking (ft).
   //   Nearest opponent  one player's floor distance to the closest player of the other team (ft). Click a player
-  //                     on the court or in a roster, or pick one here; the court joins the pair with a pink line.
-  // Samples are every 0.2 s of playback (lib/trace.ts), on the transport bar's clock. Click or drag on the chart
-  // to move playback there.
+  //                     on the court or in a roster, or pick one here; the court rings the pair in their teams'
+  //                     secondary colours and joins them with a line.
+  // Samples are every 0.2 s of playback (lib/trace.ts), on the timeline's clock; the time axis lines up with the
+  // timeline under it. Every action on the timeline is marked here too. Click or drag on the chart to move
+  // playback there. Shown or hidden from the Display panel.
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
-  import { blend, cursorAt, FPS, LEAD_IN, seqIndexOfFrame } from "../lib/sequence";
+  import { blend, cursorAt, eventsInSeq, FPS } from "../lib/sequence";
   import { nearestAt, traceSamples, type TraceKind, type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
   import { viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
-  const H = 132;
-  const M = { left: 38, right: 12, top: 14, bottom: 24 };
+  // Left and right margins match the timeline's track (.transport and .track in app.css), so a time sits at the
+  // same x in both.
+  const M = { left: 38, right: 12, bottom: 22 };
+  const PLOT_H = 92;
+  const ROW = 12;          // height of one row of action labels above the plot
+  const MAX_ROWS = 3;
+  const LABEL_FONT = '600 9.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .mark-label
+  const measurer = document.createElement("canvas").getContext("2d")!;
+  const measure = (text: string) => {
+    measurer.font = LABEL_FONT;
+    return measurer.measureText(text).width;
+  };
+
   let width = $state(0);
   let svg = $state<SVGSVGElement>();
   let hoverK = $state<number | null>(null);
@@ -27,7 +40,8 @@
   const focus = $derived(tracked.find((p) => p.id === viewer.focusPid) ?? null);
   const kind = $derived<TraceKind | null>(viewer.trace === "ball" ? { kind: "ball" } : focus ? { kind: "nearest", pid: focus.id } : null);
   const samples = $derived(play && seq.length && kind ? traceSamples(play, seq, kind) : []);
-  const color = $derived(viewer.trace === "ball" ? COLORS.ball : COLORS.pair);
+  // The ball in its own orange; a followed player in his team's colour as written on the dark panels.
+  const color = $derived(viewer.trace === "ball" || !focus || !play ? COLORS.ball : play.colors[focus.role].text);
   const tEnd = $derived(Math.max(1, (seq.length - 1) / FPS));
   // Ball heights past 20 ft are tracking noise; distances use whatever the play needs, in steps of 5 ft.
   const yMax = $derived.by(() => {
@@ -36,9 +50,30 @@
   });
 
   const plotW = $derived(Math.max(10, width - M.left - M.right));
-  const plotH = H - M.top - M.bottom;
   const X = (t: number) => M.left + (t / tEnd) * plotW;
-  const Y = (v: number) => M.top + plotH - (clamp(v, 0, yMax) / yMax) * plotH;
+
+  // Every action on the timeline, as a dashed line across the plot with its caption above. Captions take the first
+  // of up to three rows where they clear the one before; a caption with no room keeps its line (and its tooltip).
+  const marks = $derived.by(() => {
+    if (!play || !seq.length || !plotW) return { rows: 1, list: [] };
+    const ends = Array<number>(MAX_ROWS).fill(-Infinity);
+    let rows = 1;
+    const list = eventsInSeq(play, seq).map(({ k, event }) => {
+      const x = X(k / FPS), text = event.short ?? event.kind, w = measure(text);
+      const flip = x + 3 + w > M.left + plotW + M.right;   // no room to the right: the caption ends at the line
+      const [from, to] = flip ? [x - 3 - w, x - 3] : [x + 3, x + 3 + w];
+      const row = ends.findIndex((end) => from >= end + 4);
+      if (row >= 0) {
+        ends[row] = to;
+        rows = Math.max(rows, row + 1);
+      }
+      return { k, x, kind: event.kind, text, row, flip, title: event.label };
+    });
+    return { rows, list };
+  });
+  const top = $derived(6 + marks.rows * ROW);
+  const H = $derived(top + PLOT_H + M.bottom);
+  const Y = (v: number) => top + PLOT_H - (clamp(v, 0, yMax) / yMax) * PLOT_H;
   const yTicks = $derived(Array.from({ length: Math.floor(yMax / 5) + 1 }, (_, i) => i * 5).filter((v) => yMax <= 20 || v % 10 === 0));
   const xTicks = $derived.by(() => {
     const step = [0.5, 1, 2, 5, 10, 20].find((s) => (s / tEnd) * plotW >= 46) ?? 30;
@@ -49,10 +84,7 @@
   const now = $derived.by(() => {
     if (!play || !seq.length || !kind) return null;
     const c = cursorAt(play, seq, viewer.pos), t = viewer.pos / FPS;
-    if (kind.kind === "ball") {
-      const z = blend(play.ball.z, c);
-      return { t, v: z, opp: null as PlayerTrack | null };
-    }
+    if (kind.kind === "ball") return { t, v: blend(play.ball.z, c), opp: null as PlayerTrack | null };
     const near = nearestAt(play, kind.pid, c);
     return { t, v: near?.dist ?? null, opp: near ? play.players.find((p) => p.id === near.pid) ?? null : null };
   });
@@ -69,16 +101,6 @@
     }
     if (pen && now.v != null) d += `L${X(now.t).toFixed(1)},${Y(now.v).toFixed(1)}`;
     return d;
-  });
-
-  // Shots and rebounds marked on the time axis, where they fall inside the sequence.
-  const marks = $derived.by(() => {
-    if (!play || !seq.length) return [];
-    return play.events.filter((e) => e.kind === "made" || e.kind === "missed" || e.kind === "rebound").flatMap((e) => {
-      const k = seqIndexOfFrame(play, seq, e.f);
-      if (Math.abs(play.frames[seq[k]] - e.f) > LEAD_IN) return [];
-      return [{ t: k / FPS, kind: e.kind, label: e.kind === "rebound" ? "reb" : "shot", title: e.label }];
-    });
   });
 
   const hovered = $derived<TraceSample | null>(hoverK == null ? null : samples.find((s) => s.k === hoverK) ?? null);
@@ -145,8 +167,6 @@
         {#if hovered}at {hovered.t.toFixed(1)} s: <b>{fmt(hovered.v)}</b>{:else}ball height <b>{fmt(now?.v)}</b>{/if}
       </span>
     {/if}
-    <button type="button" class="text-btn trace-hide" title="Hide this panel (Display, on the right, brings it back)"
-            onclick={() => (viewer.showTrace = false)}>Hide</button>
   </div>
 
   <div class="trace-chart" bind:clientWidth={width}>
@@ -166,13 +186,16 @@
         {#each xTicks as t (t)}
           <text class="axis" x={X(t)} y={H - 6} text-anchor="middle">{t % 1 ? t.toFixed(1) : t}</text>
         {/each}
-        <text class="axis unit" x={M.left - 6} y={M.top - 6} text-anchor="end">ft</text>
+        <text class="axis unit" x={M.left - 6} y={top - 6} text-anchor="end">ft</text>
         <text class="axis unit" x={M.left + plotW} y={H - 6} text-anchor="end" dx="12">s</text>
-        {#each marks as m, i (i)}
-          <line class="mark {m.kind}" x1={X(m.t)} x2={X(m.t)} y1={M.top} y2={M.top + plotH}><title>{m.title}</title></line>
-          <text class="mark-label {m.kind}" x={X(m.t) + 3} y={M.top + 2} dominant-baseline="hanging">{m.label}</text>
+        {#each marks.list as m, i (i)}
+          <line class="mark {m.kind}" x1={m.x} x2={m.x} y1={top - 2} y2={top + PLOT_H}><title>{m.title}</title></line>
+          {#if m.row >= 0}
+            <text class="mark-label {m.kind}" x={m.flip ? m.x - 3 : m.x + 3} y={4 + m.row * ROW} text-anchor={m.flip ? "end" : "start"}
+                  dominant-baseline="hanging"><title>{m.title}</title>{m.text}</text>
+          {/if}
         {/each}
-        {#if hovered}<line class="hover" x1={X(hovered.t)} x2={X(hovered.t)} y1={M.top} y2={M.top + plotH} />{/if}
+        {#if hovered}<line class="hover" x1={X(hovered.t)} x2={X(hovered.t)} y1={top} y2={top + PLOT_H} />{/if}
         <path d={pastPath} fill="none" stroke={color} stroke-width="2.2" stroke-linejoin="round" />
         {#each samples as s (s.k)}
           {#if s.v != null}
@@ -185,15 +208,4 @@
       </svg>
     {/if}
   </div>
-  <p class="trace-note">
-    {#if viewer.trace === "ball"}
-      Height of the ball's centre from the tracking, every 0.2 s of playback. The ball is reconstructed, not seen: it is
-      reported about 12.5 times a second with straight lines between, and its height is less accurate than player
-      positions (Rebounding tab, section 3).
-    {:else}
-      Straight-line floor distance between the two players' centres, every 0.2 s of playback. Dashed circles: at least one
-      of the two positions was extrapolated, not detected on screen. The nearest opponent can change from one sample to
-      the next; he is not necessarily the assigned defender.
-    {/if}
-  </p>
 </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
   // Three tabs. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
-  // court, the trace panel and the transport bar in the middle, display options and rosters on the right. The
+  // play's header over the court, the trace panel and the timeline in the middle, playback and display options and
+  // the rosters on the right, level with the court. The
   // Archetypes tab explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten
   // games' missed shots. Static counterpart of src/play_viewer/app.R.
   import { untrack } from "svelte";
@@ -164,9 +165,10 @@
          onpointermove={dragLeft} ondblclick={() => setLeft(LEFT_DEFAULT)} onkeydown={keyLeft}></div>
   </aside>
 
-  <section class="viewer">
-    <!-- Title over its subtitle on the left; the score and the running clocks centred in the space beside them. -->
-    <header class="play-head">
+  <!-- Above the court only, so the right column starts level with the court. Title over its subtitle on the left;
+       the score and the running clocks centred in the space beside them. -->
+  <header class="play-head-box">
+    <div class="play-head">
       <div class="play-head-text">
         {#if play}
           <h1>{play.off} possession</h1>
@@ -177,18 +179,22 @@
       </div>
       {#if play && home && away}
         <div class="play-head-score">
-        <div class="scorebug" title={`${play.game} · score at the start of the possession`}>
-          <span class="team home" style:color={home.text}><span class="kit" style:background={home.fill} style:border-color={home.edge}></span>{play.home}</span>
-          <b>{play.homeScore} – {play.awayScore}</b>
-          <span class="team away" style:color={away.text}>{play.away}<span class="kit" style:background={away.fill} style:border-color={away.edge}></span></span>
-        </div>
-        <div class="game-clock">
-          <span class="game-time" title="Game clock">{live.gameClock}</span>
-          <span class="period-line"><span>{quarter(play.period)}</span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span>
-        </div>
+          <div class="scorebug" title={`${play.game} · score at the start of the possession`}>
+            <span class="team home" style:color={home.text}><span class="kit" style:background={home.fill}></span>{play.home}</span>
+            <b>{play.homeScore} – {play.awayScore}</b>
+            <span class="team away" style:color={away.text}>{play.away}<span class="kit" style:background={away.fill}></span></span>
+          </div>
+          <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
+          <div class="game-clock">
+            <span class="game-time" title="Game clock">{live.gameClock}</span>
+            <span class="period-line"><span class="period">{quarter(play.period)}</span><span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span></span>
+          </div>
         </div>
       {/if}
-    </header>
+    </div>
+  </header>
+
+  <section class="viewer">
     <div class="stage-row">
       <Stage {play} {seq} {note} />
     </div>
@@ -198,7 +204,7 @@
     <Transport {play} {seq} />
   </section>
 
-  <SidePanel {play} onskip={setSkip} />
+  <SidePanel {play} {seq} onskip={setSkip} />
 </div>
 
 <main class="doc" hidden={tab !== "archetypes"}>

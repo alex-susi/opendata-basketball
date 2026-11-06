@@ -5,6 +5,7 @@
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
+import { withAlpha } from "./teamColors";
 import { nearestAt } from "./trace";
 import type { Play, PlayerTrack, TeamColors } from "./types";
 
@@ -93,25 +94,52 @@ function drawHull(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], kit: Te
   return polygonArea(poly);
 }
 
-// A player dot in his team's colours: secondary ring, primary centre; around it, the ring that marks the ball
-// handler (or the hovered player).
+// The glow round the ball handler: his team's secondary colour, strongest at the dot's edge and fading out.
+function drawHalo(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string): void {
+  const reach = r + Math.max(9, 0.6 * r);
+  const glow = ctx.createRadialGradient(x, y, r - 1, x, y, reach);
+  glow.addColorStop(0, withAlpha(color, 0.95));
+  glow.addColorStop(0.35, withAlpha(color, 0.55));
+  glow.addColorStop(1, withAlpha(color, 0));
+  ctx.beginPath();
+  ctx.arc(x, y, reach, 0, 2 * Math.PI);
+  ctx.fillStyle = glow;
+  ctx.fill();
+}
+
+// A ring hugging a dot, in a team's secondary colour, over a faint dark line so a white or yellow ring still
+// shows on the floor.
+function drawRing(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string, width: number): void {
+  const at = r + 1 + width / 2;
+  ctx.beginPath();
+  ctx.arc(x, y, at, 0, 2 * Math.PI);
+  ctx.lineWidth = width + 2;
+  ctx.strokeStyle = "rgba(11, 14, 20, .45)";
+  ctx.stroke();
+  ctx.lineWidth = width;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+}
+
+// A player dot: a disc of his team's primary colour with the number on it. The ball handler glows in his team's
+// secondary colour; the hovered player (in a roster) has a thin dark ring.
 function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, kit: TeamColors, hasBall: boolean, o: DrawOptions): void {
-  const x = px(L, d.x), y = py(L, d.y), hovered = o.hoverPid === d.p.id;
-  if (hovered || hasBall) {
+  const x = px(L, d.x), y = py(L, d.y);
+  if (hasBall) drawHalo(ctx, x, y, r, kit.edge);
+  if (o.hoverPid === d.p.id) {
     ctx.beginPath();
-    ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
-    ctx.lineWidth = 2.5;
-    ctx.strokeStyle = hovered ? COLORS.dark : kit.mark;
+    ctx.arc(x, y, r + 2.5, 0, 2 * Math.PI);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.dark;
     ctx.stroke();
   }
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
-  ctx.fillStyle = kit.edge;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(x, y, r - 2.2, 0, 2 * Math.PI);
   ctx.fillStyle = kit.fill;
   ctx.fill();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(11, 14, 20, .35)";
+  ctx.stroke();
   ctx.fillStyle = kit.ink;
   ctx.font = `700 ${Math.round(r * (d.p.jersey.length > 1 ? 0.95 : 1.1))}px ${FONT}`;
   ctx.textAlign = "center";
@@ -156,24 +184,18 @@ function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.fillText(text, left + w / 2, cy + 0.5);
 }
 
-// The trace panel's pair, under the players: a line from the followed player to his nearest opponent with the
-// distance at its middle, and a ring around each (thicker around the followed player).
-function drawPair(ctx: CanvasRenderingContext2D, L: Layout, a: Dot, b: Dot, r: number, dist: number): void {
+// The trace panel's pair, under the players: a dark line from the followed player to his nearest opponent with the
+// distance at its middle.
+function drawPairLine(ctx: CanvasRenderingContext2D, L: Layout, a: Dot, b: Dot, dist: number): void {
   const ax = px(L, a.x), ay = py(L, a.y), bx = px(L, b.x), by = py(L, b.y);
   ctx.beginPath();
   ctx.moveTo(ax, ay);
   ctx.lineTo(bx, by);
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2.5;
   ctx.lineCap = "round";
-  ctx.strokeStyle = COLORS.pair;
+  ctx.strokeStyle = "rgba(11, 14, 20, .75)";
   ctx.stroke();
-  for (const [x, y, w] of [[ax, ay, 3.5], [bx, by, 2]]) {
-    ctx.beginPath();
-    ctx.arc(x, y, r + 5.5, 0, 2 * Math.PI);
-    ctx.lineWidth = w;
-    ctx.stroke();
-  }
-  drawTag(ctx, (ax + bx) / 2, (ay + by) / 2, `${dist.toFixed(1)} ft`, COLORS.pair, 11);
+  drawTag(ctx, (ax + bx) / 2, (ay + by) / 2, `${dist.toFixed(1)} ft`, COLORS.ink, 11);
 }
 
 // The header of a recorded video, on one line above the court: quarter, shot clock, game clock and the score at
@@ -250,12 +272,19 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   const areaDef = drawHull(ctx, L, dots.def, play.colors.def, o.showDef);
   const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
   const all = dots.def.concat(dots.off);
+  // The followed player and his nearest opponent: joined by a line under the dots, each ringed in his team's
+  // secondary colour over the dots (the followed player's ring thicker).
+  let pair: [Dot, number][] = [];
   if (o.focusPid != null) {
     const near = nearestAt(play, o.focusPid, c);
     const a = all.find((d) => d.p.id === o.focusPid), b = near && all.find((d) => d.p.id === near.pid);
-    if (a && b && near) drawPair(ctx, L, a, b, r, near.dist);
+    if (a && b && near) {
+      drawPairLine(ctx, L, a, b, near.dist);
+      pair = [[a, 3], [b, 2]];
+    }
   }
   for (const d of all) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o);
+  for (const [d, width] of pair) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
   if (o.showArch) {
     for (const d of dots.def.concat(dots.off)) {
       if (!d.p.arch) continue;

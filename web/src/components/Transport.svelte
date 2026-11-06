@@ -1,17 +1,19 @@
 <script lang="ts">
-  // Transport bar: action stepping, play/pause, the timeline with captioned event ticks, then speed over elapsed time.
-  import { clamp, clock } from "../lib/geometry";
-  import { FPS, layoutTimeline, stepAction, type Tick, type Timeline } from "../lib/sequence";
+  // The timeline under the court: the play's progress with a tick for each event, captioned with the action above
+  // and the player below (captions can be turned off in the Display panel, leaving a thin bar). Click or drag to
+  // move playback. Its rail lines up with the trace panel's time axis above it. The play/pause, action-stepping and
+  // speed controls are in the Display panel (Controls.svelte); the keyboard shortcuts live here.
+  import { clamp } from "../lib/geometry";
+  import { FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
   import type { Play } from "../lib/types";
-  import { viewer } from "../lib/viewer.svelte";
+  import { togglePlay, viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
-  const SPEEDS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
   const TICK_FONT = '600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
   // Where a tick's ends sit in the track, and how far beyond them a tilted caption starts (the leader line between).
   // These follow .track-rail and .tick in app.css.
-  const TICK_TOP = 54, TICK_BOTTOM = 74, LEADER = 6;
+  const TICK_TOP = 43, TICK_BOTTOM = 57, LEADER = 5;
   const measurer = document.createElement("canvas").getContext("2d")!;
   const measure = (text: string) => {
     measurer.font = TICK_FONT;
@@ -28,16 +30,6 @@
   const end = $derived(Math.max(1, seq.length - 1));
   const frac = $derived(clamp(viewer.pos / end, 0, 1));
 
-  function togglePlay(): void {
-    if (!play) return;
-    if (!viewer.playing && viewer.pos >= seq.length - 1) viewer.pos = 0;
-    viewer.playing = !viewer.playing;
-  }
-
-  function step(direction: 1 | -1): void {
-    if (play) viewer.pos = stepAction(timeline.marks, viewer.pos, direction, seq.length - 1);
-  }
-
   function seek(ev: PointerEvent): void {
     if (!play) return;
     const rail = track.getBoundingClientRect();
@@ -46,7 +38,7 @@
 
   function onKey(ev: KeyboardEvent): void {
     if (!play || viewer.hidden || (ev.target as HTMLElement).closest("input, select, textarea, .multi-list")) return;
-    if (ev.code === "Space") { ev.preventDefault(); togglePlay(); }
+    if (ev.code === "Space") { ev.preventDefault(); togglePlay(seq.length); }
     if (ev.code === "ArrowLeft") { ev.preventDefault(); viewer.pos = clamp(viewer.pos - FPS, 0, seq.length - 1); }
     if (ev.code === "ArrowRight") { ev.preventDefault(); viewer.pos = clamp(viewer.pos + FPS, 0, seq.length - 1); }
   }
@@ -55,20 +47,8 @@
 <svelte:window onkeydown={onKey} />
 
 <div class="transport">
-  <div class="transport-buttons">
-    <button type="button" class="icon-btn" title="Previous action" aria-label="Previous action" onclick={() => step(-1)}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z" /></svg>
-    </button>
-    <button type="button" class="icon-btn primary" title="Play or pause (space)" aria-label={viewer.playing ? "Pause" : "Play"} onclick={togglePlay}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d={viewer.playing ? "M6 4h4v16H6zM14 4h4v16h-4z" : "M7 4v16l13-8z"} /></svg>
-    </button>
-    <button type="button" class="icon-btn" title="Next action" aria-label="Next action" onclick={() => step(1)}>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z" /></svg>
-    </button>
-  </div>
-
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="track" bind:this={track} bind:clientWidth={width}
+  <div class="track" class:bare={!viewer.showTickLabels} bind:this={track} bind:clientWidth={width}
        onpointerdown={(ev) => { track.setPointerCapture(ev.pointerId); seek(ev); }}
        onpointermove={(ev) => { if (track.hasPointerCapture(ev.pointerId)) seek(ev); }}>
     <div class="track-rail">
@@ -80,25 +60,18 @@
         <i class="tick {tick.event.kind}" style:left="{tick.frac * 100}%" title={tick.event.label}></i>
       {/each}
     </div>
-    <svg class="leaders" aria-hidden="true">
-      {#each tilted as tick}
-        <line x1={tick.frac * width} y1={TICK_TOP} x2={tick.at} y2={TICK_TOP - LEADER} />
-        <line x1={tick.frac * width} y1={TICK_BOTTOM} x2={tick.at} y2={TICK_BOTTOM + LEADER} />
+    {#if viewer.showTickLabels}
+      <svg class="leaders" aria-hidden="true">
+        {#each tilted as tick}
+          <line x1={tick.frac * width} y1={TICK_TOP} x2={tick.at} y2={TICK_TOP - LEADER} />
+          <line x1={tick.frac * width} y1={TICK_BOTTOM} x2={tick.at} y2={TICK_BOTTOM + LEADER} />
+        {/each}
+      </svg>
+      {#each timeline.ticks as tick}
+        <span class="tick-label above lean-{tick.lean} {tick.event.kind}" style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.short ?? ""}</span>
+        <span class="tick-label below lean-{tick.lean}" style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.who ?? ""}</span>
       {/each}
-    </svg>
-    {#each timeline.ticks as tick}
-      <span class="tick-label above lean-{tick.lean} {tick.event.kind}" style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.short ?? ""}</span>
-      <span class="tick-label below lean-{tick.lean}" style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.who ?? ""}</span>
-    {/each}
+    {/if}
     <div class="track-thumb" style:left="{frac * 100}%"></div>
-  </div>
-
-  <div class="transport-end">
-    <select class="speed" title="Playback speed" aria-label="Playback speed" bind:value={viewer.speed}>
-      {#each SPEEDS as speed}
-        <option value={speed}>{speed}×</option>
-      {/each}
-    </select>
-    <span class="time-label">{clock(viewer.pos / FPS)} / {clock(end / FPS)}</span>
   </div>
 </div>

@@ -60,8 +60,7 @@ filters_panel <- tags$details(class = "panel filters", open = NA,
                                   pick_many("result", "Result", "Any result")),
                               pick_many("shot_type", "Shot type", "Any shot type"),
                               pick_mode("oreb", "Offensive rebound",
-                                        c("Any possession" = "any", "With an offensive rebound" = "with",
-                                          "Without one" = "without")))
+                                        c("Any" = "any", "Yes" = "with", "No" = "without")))
 
 list_panel <- div(class = "panel plays",
                   div(class = "plays-head", span("Possessions"), span(id = "play-count", class = "count")),

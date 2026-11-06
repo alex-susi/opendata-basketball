@@ -14,7 +14,7 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
 | `public/data/` | `meta.json`, `plays.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
 | `src/lib/` | Decoding, filters, playback sequence, the trace panel's samples, court and scene drawing — no framework code |
-| `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, trace panel, transport bar, side panel), Archetypes and Rebounding |
+| `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, trace panel, timeline, side panel with the playback controls), Archetypes and Rebounding |
 | `tests/parity.test.ts` | Checks the site's filters and decoded plays against the Shiny app |
 
 ## Commands

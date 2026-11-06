@@ -10,23 +10,27 @@
   --muted: #93A0B8;
   --off: #4C9AFF;
   --def: #FF8552;
-  --pair: #E0479E;       /* the trace panel's followed player and his nearest opponent (COLORS.pair in court.ts) */
   --made: #4FD08F;
   --missed: #FF8A80;
   --radius: 10px;
   --bar: 41px;          /* height of the tab bar */
-  /* Archetype colours: the roster tags, the tags on the court and the Archetypes tab. One hue per offensive
-     archetype; a defensive role borrows the hue of the offensive archetype most of its players have. */
-  --arch-primary: #9085E9;
-  --arch-secondary: #D55181;
-  --arch-slasher: #3987E5;
-  --arch-offscreen: #1FA3C4;
-  --arch-movement: #1F9D45;
-  --arch-stationary: #8FA31E;
-  --arch-finisher: #199E70;
-  --arch-versatile: #D95926;
-  --arch-post: #E66767;
-  --arch-big: #C98500;
+  /* Archetype colours: the roster tags, the tags on the court and the Archetypes tab. One hue per archetype,
+     offensive and defensive alike, so no two different tags share a colour (slots set in
+     src/play_viewer/R/data.R, ARCHETYPE_TAGS). Ordered round the colour wheel. */
+  --arch-post: #E04848;
+  --arch-versatile: #F07C2A;
+  --arch-big: #D19A1E;
+  --arch-chaser: #EEDD44;
+  --arch-stationary: #9BC53D;
+  --arch-movement: #2FAE5A;
+  --arch-finisher: #1BA59A;
+  --arch-offscreen: #29C2E0;
+  --arch-slasher: #3B7DF0;
+  --arch-primary: #8E7CF5;
+  --arch-poa: #C95BE0;
+  --arch-secondary: #EC5C9E;
+  --arch-helper: #A9764F;
+  --arch-anchor: #AEB8CA;
   --arch-none: var(--muted);
   color-scheme: dark;
 }
@@ -42,6 +46,11 @@ body {
 button, select, input { font: inherit; color: inherit; }
 h1, h2, p, ul { margin: 0; padding: 0; }
 [hidden] { display: none !important; }
+/* Titles, headings and control labels are set in capitals throughout; running text (the write-ups, captions,
+   notes) is not. */
+.tabs, .tabs button, h1, h2, h3, .filters summary, .plays-head, .game-head, .toggle, .switch, .seg button, .text-btn, .scores th {
+  text-transform: uppercase; letter-spacing: .04em;
+}
 
 /* ---- tab bar ---- */
 .tabs {
@@ -51,18 +60,25 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .tabs button {
   padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted);
-  font-weight: 600; white-space: nowrap; cursor: pointer;
+  font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer;
 }
 .tabs button:hover { color: var(--ink); }
 .tabs button.on { color: var(--ink); border-bottom-color: var(--off); }
 
+/* The play's header sits over the centre column only, so the right column starts level with the court. */
 .app {
   display: grid;
   grid-template-columns: var(--left-w, 250px) minmax(0, 1fr) 330px;
-  gap: 12px;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "left head ." "left viewer side";
+  gap: 10px 12px;
   height: calc(100vh - var(--bar));
   padding: 12px;
 }
+.left { grid-area: left; }
+.play-head-box { grid-area: head; }
+.viewer { grid-area: viewer; }
+.side { grid-area: side; }
 
 .panel {
   background: var(--panel);
@@ -161,18 +177,19 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   position: sticky; top: 0; z-index: 1; padding: 5px 12px; background: var(--raised);
   border-bottom: 1px solid var(--line); font-size: 11px; font-weight: 600; color: var(--muted);
 }
-/* Each entry: time and length, the team on offense, the result, then tags. Nothing is cut off: long names wrap.
-   In a wide column the result moves to the right of the first two lines. */
+/* Each entry: time and length with the result at the right of the same line, the team on offense, then tags.
+   Nothing is cut off: long names wrap. */
 .plays { container: plays / inline-size; }
 .play-item {
-  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "team" "result" "tags"; gap: 1px 8px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "top result" "team team" "tags tags";
+  align-items: baseline; gap: 1px 10px;
   width: 100%; padding: 7px 10px; border: 0; border-bottom: 1px solid #242E44; border-left: 3px solid transparent;
   background: none; text-align: left; cursor: pointer;
 }
 @container plays (min-width: 340px) {
-  .play-item { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "top result" "team result" "tags tags"; padding: 7px 12px; }
-  .pi-result { justify-self: end; text-align: right; }
+  .play-item { padding: 7px 12px; }
 }
+.pi-result { justify-self: end; text-align: right; }
 .play-item:hover { background: var(--raised); }
 .play-item.active { background: #24365A; border-left-color: var(--off); }
 .pi-top { grid-area: top; display: flex; gap: 8px; align-items: baseline; min-width: 0; }
@@ -186,52 +203,55 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .pi-tags i { font-style: normal; font-size: 11px; padding: 0 6px; border-radius: 9px; background: #2A3550; color: #C3CDE0; }
 .pi-tags i.oreb { background: #3B2A12; color: #FFC46B; font-weight: 600; }
 
-/* ---- centre: header, stage, transport ---- */
+/* ---- centre: header, stage, trace panel, timeline ---- */
 .viewer { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
 /* One row. Title over its subtitle on the left; the score, as tall as both lines, with the game clock over the
    quarter and shot clock beside it, centred in the space that is left. When the row is short the title and
    subtitle give way: they are cut with an ellipsis. */
-.viewer { container: viewer / inline-size; }
-.play-head { display: flex; align-items: stretch; gap: 14px; padding: 2px 4px 0; }
+.play-head-box { min-width: 0; container: playhead / inline-size; }
+.play-head { display: flex; align-items: stretch; gap: 28px; padding: 2px 4px 0; }
 .play-head-text { flex: 0 1 auto; min-width: 0; }
-.play-head-score { display: flex; flex: 1 0 auto; justify-content: center; align-items: stretch; gap: 14px; }
-.play-head h1 { font-size: 20px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.play-head p { font-size: 14px; margin-top: 2px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.play-head-score { display: flex; flex: 1 0 auto; justify-content: center; align-items: stretch; gap: 28px; }
+.play-head h1 { font-size: 19px; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.play-head p { font-size: 14px; margin-top: 3px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Team names take equal widths either side, so the score is the exact centre of the pill. */
 .scorebug {
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 0 16px;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: 0 20px;
   background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-size: 14.5px; font-weight: 600;
 }
-.scorebug .team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.scorebug .team { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .scorebug .team.home { justify-content: flex-end; text-align: right; }
 .scorebug b { font-size: 24px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.scorebug .kit { width: 13px; height: 13px; flex: none; border: 2px solid; border-radius: 50%; }
-/* Two lines that match the title's: game clock, centred over the quarter and shot clock. */
-.game-clock { display: grid; justify-items: center; align-content: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.game-time { font-size: 20px; font-weight: 700; line-height: 1.25; }
-.period-line { display: flex; align-items: center; gap: 7px; margin-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.4; }
-.shot-clock { min-width: 24px; padding: 0 5px; border-radius: 5px; background: #0F1522; color: #F5B02E; text-align: center; }
+.scorebug .kit { width: 12px; height: 12px; flex: none; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255, 255, 255, .3); }
+/* Two lines that match the title's: the game clock, centred on the gap between the quarter (right-aligned in the
+   left half) and the shot clock (left-aligned in the right half). */
+.game-clock { display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.game-time { justify-self: center; font-size: 20px; font-weight: 700; line-height: 1.25; }
+.period-line {
+  display: grid; grid-template-columns: 1fr 1fr; align-items: center; column-gap: 8px; margin-top: 3px;
+  font-size: 14px; font-weight: 700; line-height: 1.4;
+}
+.period-line .period { justify-self: end; }
+.shot-clock { display: inline-block; min-width: 24px; padding: 0 5px; border-radius: 5px; background: #0F1522; color: #F5B02E; text-align: center; }
 
 /* A narrower centre column keeps the one row with slightly smaller type. */
-@container viewer (max-width: 780px) {
-  .play-head, .play-head-score { gap: 10px; }
-  .play-head h1, .game-time { font-size: 18px; }
+@container playhead (max-width: 780px) {
+  .play-head, .play-head-score { gap: 16px; }
+  .play-head h1, .game-time { font-size: 17px; }
   .play-head p, .period-line { font-size: 13px; }
-  .scorebug { gap: 8px; padding: 0 12px; font-size: 13px; }
+  .scorebug { gap: 10px; padding: 0 14px; font-size: 13px; }
   .scorebug b { font-size: 20px; }
 }
 /* A narrow one (a phone) has no room for one row: the score and clocks go under the title. */
-@container viewer (max-width: 640px) {
-  .play-head { flex-direction: column; gap: 6px; }
+@container playhead (max-width: 640px) {
+  .play-head { flex-direction: column; gap: 8px; }
   .play-head h1, .play-head p { white-space: normal; }
-  .play-head-score { flex-wrap: wrap; row-gap: 4px; }
+  .play-head-score { flex-wrap: wrap; row-gap: 6px; }
   .scorebug { max-width: 100%; padding: 4px 12px; border-radius: 12px; }
-  .game-clock { display: flex; align-items: center; gap: 10px; }
-  .period-line { margin-top: 0; }
 }
 
 .stage {
-  position: relative; flex: 1; min-height: 320px; overflow: hidden;
+  position: relative; flex: 1; min-height: 0; overflow: hidden;
   background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
 }
 .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -241,12 +261,13 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   background: rgba(18, 24, 38, .8); color: var(--muted); font-size: 15px;
 }
 
-.stage-row { display: flex; gap: 10px; flex: 1; min-width: 0; min-height: 300px; }
+/* The court takes whatever height the trace panel and timeline leave; it never pushes into them. */
+.stage-row { display: flex; gap: 10px; flex: 1; min-width: 0; min-height: 260px; }
 .stage-row .stage { min-width: 0; }
 
-/* ---- the trace panel, between the court and the transport bar ---- */
-.trace { flex: none; padding: 7px 12px 6px; }
-.trace-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 2px; font-size: 12.5px; }
+/* ---- the trace panel, between the court and the timeline ---- */
+.trace { flex: none; padding: 8px 12px 4px; }
+.trace-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 4px; font-size: 12.5px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
 .seg button { padding: 3px 10px; border: 0; background: none; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
@@ -258,7 +279,6 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 .trace-read { min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
 .trace-read b { color: var(--ink); }
-.trace-hide { margin-left: auto; }
 .trace-chart { min-height: 132px; }
 .trace-chart svg { display: block; cursor: crosshair; touch-action: none; user-select: none; }
 .trace-chart .grid { stroke: #26314A; stroke-width: 1; }
@@ -266,21 +286,22 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .trace-chart .unit { font-style: italic; }
 .trace-chart .sample { fill: none; stroke: #74819C; stroke-width: 1.2; }
 .trace-chart .sample.faint { stroke-dasharray: 2 2; opacity: .55; }
-.trace-chart .mark { stroke: #6C7A96; stroke-dasharray: 3 3; opacity: .7; }
-.trace-chart .mark.made { stroke: var(--made); }
-.trace-chart .mark.missed { stroke: var(--missed); }
-.trace-chart .mark-label { fill: #8A97B0; font-size: 9.5px; font-weight: 600; }
+/* Action marks in the timeline's tick colours (.tick below): actions light, shots by result, turnovers red,
+   fouls and rebounds grey. Font must match LABEL_FONT in TracePanel.svelte. */
+.trace-chart .mark { stroke: #A9B6CE; stroke-dasharray: 3 3; opacity: .55; }
+.trace-chart .mark.made { stroke: var(--made); opacity: .8; }
+.trace-chart .mark.missed, .trace-chart .mark.turnover { stroke: var(--missed); opacity: .8; }
+.trace-chart .mark.foul, .trace-chart .mark.rebound { stroke: #6C7A96; opacity: .8; }
+.trace-chart .mark-label { fill: #C3CDE0; font: 600 9.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .trace-chart .mark-label.made { fill: var(--made); }
-.trace-chart .mark-label.missed { fill: var(--missed); }
+.trace-chart .mark-label.missed, .trace-chart .mark-label.turnover { fill: var(--missed); }
+.trace-chart .mark-label.foul, .trace-chart .mark-label.rebound { fill: #8A97B0; }
 .trace-chart .hover { stroke: var(--muted); stroke-width: 1; }
 .trace-empty { display: grid; place-items: center; height: 132px; margin: 0; padding: 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
-.trace-note { margin-top: 2px; color: var(--muted); font-size: 11px; line-height: 1.35; }
 
-.transport {
-  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-}
-.transport-buttons { display: flex; align-items: center; gap: 8px; flex: none; }
+/* The timeline. Its track has the trace chart's margins (38px left, 12px right inside 12px of padding), so a moment
+   sits at the same x in both. */
+.transport { flex: none; padding: 4px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
 .icon-btn {
   display: grid; place-items: center; width: 34px; height: 34px; flex: none; padding: 0;
   border: 1px solid var(--line); border-radius: 50%; background: var(--raised); cursor: pointer;
@@ -290,15 +311,20 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .icon-btn.primary { width: 40px; height: 40px; background: var(--off); border-color: var(--off); }
 .icon-btn.primary svg { fill: #0B1220; }
 .icon-btn.primary:hover { background: #6AABFF; }
-.track { position: relative; flex: 1; min-width: 0; height: 128px; margin: 0 10px; cursor: pointer; touch-action: none; }
-.track-rail { position: absolute; left: 0; right: 0; top: 61px; height: 6px; border-radius: 3px; background: #2F3B55; }
+.icon-btn:disabled { opacity: .5; cursor: default; }
+/* 100px tall with captions: ticks span 43px to 57px, captions above and below. Without them, a 30px bar. */
+.track { position: relative; height: 100px; margin: 0 12px 0 38px; cursor: pointer; touch-action: none; }
+.track-rail { position: absolute; left: 0; right: 0; top: 47px; height: 6px; border-radius: 3px; background: #2F3B55; }
 .track-fill { height: 100%; border-radius: 3px; background: var(--off); }
 .track-thumb {
-  position: absolute; top: 56px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
+  position: absolute; top: 42px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%;
   background: var(--ink); border: 2px solid var(--off); pointer-events: none;
 }
+.track.bare { height: 30px; }
+.track.bare .track-rail { top: 12px; }
+.track.bare .track-thumb { top: 7px; }
 .tick {
-  position: absolute; top: -7px; width: 4px; height: 20px; margin-left: -2px; border-radius: 2px;
+  position: absolute; top: -4px; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px;
   background: #A9B6CE; opacity: .9;
 }
 .tick.made { background: var(--made); }
@@ -306,9 +332,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tick.foul, .tick.rebound { background: #6C7A96; }
 .tick.cut { top: -3px; width: 2px; height: 12px; margin-left: -1px; background: var(--panel); opacity: 1; }
 /* Captions for each tick: the action above the rail, the player below. A tick with room has a flat caption centred
-   on it. Where ticks crowd, captions tilt up from the rail instead (24 degrees, TILT in the layout code), each from
+   on it. Where ticks crowd, captions tilt up from the rail instead (20 degrees, TILT in the layout code), each from
    an anchor joined to its tick by a short leader line. Font must match TICK_FONT in Transport.svelte; the offsets
-   follow the rail (ticks span 54px to 74px of the track; tilted captions start 6px beyond). */
+   follow the rail (ticks span 43px to 57px of the track; tilted captions start 5px beyond). */
 .tick-label {
   position: absolute; overflow: hidden; text-align: center; white-space: nowrap; pointer-events: none;
   font: 600 11px/14px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -317,24 +343,28 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tick-label.above.made { color: var(--made); }
 .tick-label.above.missed, .tick-label.above.turnover { color: var(--missed); }
 .tick-label.below { color: var(--muted); font-weight: 500; }
-.tick-label.above { top: 39px; }
-.tick-label.below { top: 75px; }
-.tick-label.lean-right, .tick-label.lean-left { max-width: 94px; text-overflow: ellipsis; }
-.tick-label.above.lean-right { top: 34px; transform-origin: 0 100%; transform: rotate(-24deg); }
-.tick-label.above.lean-left { top: 34px; transform-origin: 100% 100%; transform: translateX(-100%) rotate(24deg); }
-.tick-label.below.lean-right { top: 80px; transform-origin: 0 0; transform: rotate(24deg); }
-.tick-label.below.lean-left { top: 80px; transform-origin: 100% 0; transform: translateX(-100%) rotate(-24deg); }
+.tick-label.above { top: 28px; }
+.tick-label.below { top: 58px; }
+.tick-label.lean-right, .tick-label.lean-left { max-width: 72px; text-overflow: ellipsis; }
+.tick-label.above.lean-right { top: 24px; transform-origin: 0 100%; transform: rotate(-20deg); }
+.tick-label.above.lean-left { top: 24px; transform-origin: 100% 100%; transform: translateX(-100%) rotate(20deg); }
+.tick-label.below.lean-right { top: 62px; transform-origin: 0 0; transform: rotate(20deg); }
+.tick-label.below.lean-left { top: 62px; transform-origin: 100% 0; transform: translateX(-100%) rotate(-20deg); }
 .leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .leaders line { stroke: #6C7A96; stroke-width: 1; }
-.transport-end { display: flex; flex-direction: column; align-items: stretch; gap: 5px; flex: none; }
-.time-label { text-align: center; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.speed { height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
 
-/* ---- right column: display options and rosters ---- */
+/* ---- right column: playback and display options, rosters ---- */
 .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 .side .panel { padding: 10px 12px; }
-.side h2 { margin-bottom: 8px; font-size: 14px; font-weight: 700; }
-.toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; }
+.side h2 { margin-bottom: 8px; font-size: 13.5px; font-weight: 700; }
+/* Playback controls, above the display toggles. */
+.controls {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);
+}
+.controls .speed { margin-left: 4px; }
+.time-label { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.speed { height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
+.toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; }
 .toggle input { margin: 0; accent-color: var(--off); }
 /* Toggles in columns. By default two columns filled row by row; .by-column fills each column top to bottom
    (three rows, or four with .four). */
@@ -345,7 +375,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .panel-head h2 { margin-bottom: 0; }
 /* A small on/off switch: the checkbox stays in the page for the keyboard, the track is what shows. */
-.switch { position: relative; display: flex; align-items: center; gap: 7px; margin: 0 0 6px; font-weight: 400; cursor: pointer; white-space: nowrap; }
+.switch { position: relative; display: flex; align-items: center; gap: 7px; margin: 0 0 6px; font-size: 12px; font-weight: 400; cursor: pointer; white-space: nowrap; }
 .switch input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; }
 .switch-track {
   position: relative; width: 28px; height: 16px; flex: none; border: 1px solid var(--line); border-radius: 8px;
@@ -368,8 +398,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .note { margin-top: 6px; color: var(--muted); font-size: 12px; }
 .panel-head .switch { margin: 0; }
 
-/* Each roster panel carries its team's colours as --kit-* (set inline from the play). */
-.roster { --kit-fill: var(--muted); --kit-edge: #FFFFFF; --kit-ink: #FFFFFF; --kit-text: var(--ink); }
+/* Each roster panel carries its team's colours as --kit-* (set inline from the play): the number in a disc of the
+   team's primary colour, as on the court. */
+.roster { --kit-fill: var(--muted); --kit-ink: #FFFFFF; --kit-text: var(--ink); }
 /* Heading, on one row: the team's name in its colour; at the right, its side of the ball and the area of its hull. */
 .roster-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 7px; }
 .roster h2 { min-width: 0; margin-bottom: 0; overflow: hidden; color: var(--kit-text); text-overflow: ellipsis; white-space: nowrap; }
@@ -379,8 +410,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .roster li { display: flex; align-items: center; gap: 8px; padding: 2px 4px; border-radius: 6px; cursor: pointer; }
 .roster li:hover { background: var(--raised); }
 .roster .num {
-  display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 2px solid var(--kit-edge); border-radius: 50%;
-  background: var(--kit-fill); color: var(--kit-ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+  display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .25); background: var(--kit-fill); color: var(--kit-ink); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
 /* The ball mark follows the name. */
 .roster .name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -394,15 +425,18 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 .roster li.bench { opacity: .4; }
 /* The player the trace panel follows. */
-.roster li.following { box-shadow: inset 0 0 0 1.5px var(--pair); }
+.roster li.following { box-shadow: inset 0 0 0 1.5px var(--kit-text); }
 .roster li.has-ball .name { font-weight: 700; }
 .roster li.has-ball .ball-mark { width: 9px; height: 9px; border-radius: 50%; background: #FFA62B; border: 1px solid #5C3200; }
 
 /* ---- narrower windows: side panels move under the court ---- */
 @media (max-width: 1180px) {
-  .app { grid-template-columns: var(--left-w, 250px) minmax(0, 1fr); height: auto; min-height: calc(100vh - var(--bar)); }
-  .left { grid-row: 1 / span 2; max-height: calc(100vh - 24px); position: sticky; top: 12px; }
-  .viewer { min-height: calc(100vh - 24px - var(--bar)); }
+  .app {
+    grid-template-columns: var(--left-w, 250px) minmax(0, 1fr); grid-template-rows: auto auto auto;
+    grid-template-areas: "left head" "left viewer" "left side"; height: auto; min-height: calc(100vh - var(--bar));
+  }
+  .left { max-height: calc(100vh - 24px); position: sticky; top: 12px; }
+  .viewer { min-height: calc(100vh - 100px - var(--bar)); }
   .side { flex-direction: row; flex-wrap: wrap; overflow: visible; }
   .side .panel { flex: 1 1 200px; min-width: 0; }
   .side .display { flex-basis: 300px; }      /* two columns of toggles */
@@ -411,19 +445,16 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- phones: one column, court first ---- */
 @media (max-width: 760px) {
-  .app { grid-template-columns: minmax(0, 1fr); padding: 8px; gap: 8px; }
-  .viewer { order: 1; min-height: 0; }
-  .side { order: 2; flex-direction: column; }
-  .left { order: 3; grid-row: auto; position: static; max-height: none; }
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "viewer" "side" "left"; padding: 8px; gap: 8px; }
+  .viewer { min-height: 0; }
+  .side { flex-direction: column; }
+  .left { position: static; max-height: none; }
   .left-resize, .width-btn { display: none; }
   .plays { flex: none; height: 360px; }
   /* As tall as the court at this width: full court, or the taller half court. */
   .stage-row { flex-direction: column; flex: none; min-height: 0; }
   .stage { flex: none; height: calc(55vw + 18px); min-height: 0; }
   .stage.half { height: min(calc(106.7vw + 2px), 600px); }
-  .transport { flex-wrap: wrap; row-gap: 0; }
-  .track { order: 3; flex: 1 1 100%; margin: 0 6px; }
-  .transport-end { flex-direction: row; align-items: center; gap: 10px; margin-left: auto; }
 }
 
 /* ---- Archetypes tab: a reading page on the same dark surface. Its markup comes from the Shiny app

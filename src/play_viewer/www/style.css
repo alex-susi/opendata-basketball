@@ -11,18 +11,22 @@
   --def: #FF8552;
   --made: #4FD08F;
   --missed: #FF8A80;
-  /* Archetype colours: the roster tags, the rings on the court and the Archetypes tab. One hue per offensive
-     archetype; a defensive role borrows the hue of the offensive archetype most of its players have. */
-  --arch-primary: #9085E9;
-  --arch-secondary: #D55181;
-  --arch-slasher: #3987E5;
-  --arch-offscreen: #1FA3C4;
-  --arch-movement: #1F9D45;
-  --arch-stationary: #8FA31E;
-  --arch-finisher: #199E70;
-  --arch-versatile: #D95926;
-  --arch-post: #E66767;
-  --arch-big: #C98500;
+  /* Archetype colours: the roster tags, the rings on the court and the Archetypes tab. One hue per archetype,
+     offensive and defensive alike, so no two different tags share a colour. Same values as web/src/app.css. */
+  --arch-post: #E04848;
+  --arch-versatile: #F07C2A;
+  --arch-big: #D19A1E;
+  --arch-chaser: #EEDD44;
+  --arch-stationary: #9BC53D;
+  --arch-movement: #2FAE5A;
+  --arch-finisher: #1BA59A;
+  --arch-offscreen: #29C2E0;
+  --arch-slasher: #3B7DF0;
+  --arch-primary: #8E7CF5;
+  --arch-poa: #C95BE0;
+  --arch-secondary: #EC5C9E;
+  --arch-helper: #A9764F;
+  --arch-anchor: #AEB8CA;
   --arch-none: var(--muted);
   --radius: 10px;
   --bar: 41px;          /* height of the tab bar */

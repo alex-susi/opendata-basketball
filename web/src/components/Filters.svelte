@@ -59,9 +59,9 @@
       <label class="field" title="Offensive rebounds a player collected in the possession. Team rebounds (the ball went out off the defense) are not counted.">
         <span class="field-label">Offensive rebound</span>
         <select bind:value={filters.oreb}>
-          <option value="any">Any possession</option>
-          <option value="with">With an offensive rebound</option>
-          <option value="without">Without one</option>
+          <option value="any">Any</option>
+          <option value="with">Yes</option>
+          <option value="without">No</option>
         </select>
       </label>
     </div>

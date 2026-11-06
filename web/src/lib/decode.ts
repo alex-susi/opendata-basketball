@@ -1,6 +1,7 @@
 // Decodes one play from a period's binary file. No DOM or fetch here, so tests can run it in Node.
 // Layout is documented at the top of web/scripts/export_data.R.
 
+import { dotInk } from "./teamColors";
 import type { Play, PlayHeader, Role, Series, TeamColors } from "./types";
 
 const NULL16 = -32768;
@@ -9,6 +10,13 @@ const PLAIN_COLORS: Record<Role, TeamColors> = {
   off: { fill: "#1F6FE5", edge: "#FFFFFF", ink: "#FFFFFF", text: "#4C9AFF", mark: "#1F6FE5" },
   def: { fill: "#F26A36", edge: "#FFFFFF", ink: "#FFFFFF", text: "#FF8552", mark: "#F26A36" },
 };
+
+// Dots are drawn in the primary colour alone, so their number is white (or dark on a light primary) rather than
+// the exported ink, which was chosen to read on the secondary colour's ring.
+const plainDots = (colors: Record<Role, TeamColors>): Record<Role, TeamColors> => ({
+  off: { ...colors.off, ink: dotInk(colors.off.fill) },
+  def: { ...colors.def, ink: dotInk(colors.def.fill) },
+});
 
 /** A cursor over consecutive int16 blocks that turns each block into scaled float64 values. */
 function reader16(values: Int16Array) {
@@ -45,7 +53,7 @@ export function decodePlay(buffer: ArrayBuffer, h: PlayHeader): Play {
   return {
     id: h.id, game: h.game, period: h.period, off: h.off, def: h.def, home: h.home, away: h.away,
     homeScore: h.homeScore, awayScore: h.awayScore, result: h.result, who: h.who, types: h.types,
-    colors: h.colors ?? PLAIN_COLORS, leftHoop: h.leftHoop, events: h.events, touches: h.touches,
+    colors: plainDots(h.colors ?? PLAIN_COLORS), leftHoop: h.leftHoop, events: h.events, touches: h.touches,
     frames: i32, gc, sc, stopped: u8.subarray(0, n), ball, players: tracks,
   };
 }

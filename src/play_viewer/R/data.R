@@ -12,15 +12,15 @@ PLAY_TYPES <- c(pick = "Pick", handoff = "Handoff", off_ball_screen = "Off-ball 
                 isolation = "Isolation", post = "Post-up", closeout = "Closeout", transition = "Transition")
 
 # Roster tag for each playstyle archetype: the label shown beside a name and its colour slot (--arch-* in
-# www/style.css). A defensive role takes the colour of the offensive archetype most of its players have, so a
-# player usually keeps his colour at both ends. An archetype missing here is shown by its full name in grey.
+# www/style.css). Every archetype, offensive or defensive, has a colour of its own, so no two different tags
+# share a colour. An archetype missing here is shown by its full name in grey.
 ARCHETYPE_TAGS <- list("Primary Ball Handler" = c("Primary BH", "primary"), "Secondary Ball Handler" = c("Secondary BH", "secondary"),
                        "Slasher" = c("Slasher", "slasher"), "Off Screen Shooter" = c("Off Screen Shooter", "offscreen"),
                        "Movement Shooter" = c("Movement Shooter", "movement"), "Stationary Shooter" = c("Stationary Shooter", "stationary"),
                        "Athletic Finisher" = c("Athletic Finisher", "finisher"), "Versatile Big" = c("Versatile Big", "versatile"),
                        "Post Scorer" = c("Post Scorer", "post"), "Roll & Cut Big" = c("R&C Big", "big"),
-                       "Point of Attack" = c("Point of Attack", "primary"), "Chaser" = c("Chaser", "secondary"),
-                       "Helper" = c("Helper", "movement"), "Anchor Big" = c("Anchor Big", "big"))
+                       "Point of Attack" = c("Point of Attack", "poa"), "Chaser" = c("Chaser", "chaser"),
+                       "Helper" = c("Helper", "helper"), "Anchor Big" = c("Anchor Big", "anchor"))
 
 # Club colours by SkillCorner team id: primary, then secondary. Entered by hand from the clubs' kits and crests.
 # They only style the viewer and are no part of any analysis.

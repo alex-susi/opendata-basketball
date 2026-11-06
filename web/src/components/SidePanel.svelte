@@ -1,12 +1,14 @@
 <script lang="ts">
-  // Right column: display toggles and the two rosters. Each team keeps its club colours whichever end it plays. A
-  // roster row ends with the player's archetype on that side of the ball: its name in an outlined pill of the
-  // archetype's colour, full name and probability on hover. Clicking a row makes the trace panel under the court
-  // follow that player's distance to his nearest opponent (clicking it again lets him go).
+  // Right column, level with the court: the Display panel (playback controls over the display toggles) and the two
+  // rosters. Each team keeps its club colours whichever end it plays. A roster row ends with the player's archetype
+  // on that side of the ball: its name in an outlined pill of the archetype's colour, full name and probability on
+  // hover. Clicking a row makes the trace panel under the court follow that player's distance to his nearest
+  // opponent (clicking it again lets him go).
   import type { Play, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
+  import Controls from "./Controls.svelte";
 
-  let { play, onskip }: { play: Play | null; onskip: (skip: boolean) => void } = $props();
+  let { play, seq, onskip }: { play: Play | null; seq: number[]; onskip: (skip: boolean) => void } = $props();
 
   const sides: { role: Role; title: string }[] = [{ role: "off", title: "Offense" }, { role: "def", title: "Defense" }];
   const area = (role: Role) => (role === "off" ? live.areaOff : live.areaDef);
@@ -28,7 +30,8 @@
         {viewer.recording ? "Cancel recording" : "Save Video"}
       </button>
     </div>
-    <!-- Left column: what is drawn. Right column: how the play runs and how much court shows. -->
+    <Controls {play} {seq} />
+    <!-- Left column: what is drawn on the court and under it. Right column: how the play runs and how much court shows. -->
     <div class="toggle-grid by-column four">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
@@ -37,6 +40,9 @@
       </label>
       <label class="toggle" title="The panel under the court: ball height, or a player's distance to his nearest opponent">
         <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
+      </label>
+      <label class="toggle" title="Caption each tick on the timeline with its action and player">
+        <input type="checkbox" bind:checked={viewer.showTickLabels} />Action names
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
       <label class="toggle"><input type="checkbox" bind:checked={viewer.loop} />Loop</label>
@@ -49,7 +55,7 @@
 
   {#each sides as side}
     {@const kit = play?.colors[side.role]}
-    <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-edge={kit?.edge} style:--kit-ink={kit?.ink} style:--kit-text={kit?.text}>
+    <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-ink={kit?.ink} style:--kit-text={kit?.text}>
       <div class="roster-head">
         <h2>{play ? (side.role === "off" ? play.off : play.def) : ""}</h2>
         <p class="roster-sub">
