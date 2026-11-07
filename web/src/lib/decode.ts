@@ -38,7 +38,10 @@ export function decodePlay(buffer: ArrayBuffer, h: PlayHeader): Play {
   const count16 = 5 * n + 2 * n * players;
   const i32 = new Int32Array(buffer, h.o, n);
   const next = reader16(new Int16Array(buffer, h.o + 4 * n, count16));
-  const u8 = new Uint8Array(buffer, h.o + 4 * n + 2 * count16, n + n * players);
+  const u8 = new Uint8Array(buffer, h.o + 4 * n + 2 * count16, n + 2 * n * players);
+  // predError, tenths of a foot; 255 is unknown.
+  const err = (k: number): Series => Float64Array.from(u8.subarray(n * (1 + players + k), n * (2 + players + k)),
+                                                        (v) => (v === 255 ? NaN : v / 10));
 
   const gc = next(n, 10);
   const sc = next(n, 10);
@@ -48,12 +51,14 @@ export function decodePlay(buffer: ArrayBuffer, h: PlayHeader): Play {
     x: next(n, 100),
     y: next(n, 100),
     d: u8.subarray(n * (k + 1), n * (k + 2)),
+    e: err(k),
   }));
 
   return {
     id: h.id, game: h.game, period: h.period, off: h.off, def: h.def, home: h.home, away: h.away,
     homeScore: h.homeScore, awayScore: h.awayScore, result: h.result, who: h.who, types: h.types,
     colors: plainDots(h.colors ?? PLAIN_COLORS), leftHoop: h.leftHoop, events: h.events, touches: h.touches,
+    startType: h.startType, offTeam: h.offTeam, defTeam: h.defTeam, homeTeam: h.homeTeam, ann: h.ann,
     frames: i32, gc, sc, stopped: u8.subarray(0, n), ball, players: tracks,
   };
 }

@@ -3,10 +3,10 @@
 
 suppressPackageStartupMessages(library(data.table))
 
-CACHE_VERSION <- 1L          # tracking cache
-INDEX_VERSION <- 6L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+CACHE_VERSION <- 2L          # tracking cache (each position's predError since 2)
+INDEX_VERSION <- 7L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
                              # play types in the order they happen and picks credited to the screener since 5;
-                             # rebounds captioned "Def. Reb" / "Off. Reb" since 6)
+                             # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -184,6 +184,7 @@ side_rows <- function(fr, key, home) {
              x = round(vapply(xyz, function(v) as.numeric(v[[1]]), 0), 2),
              y = round(vapply(xyz, function(v) as.numeric(v[[2]]), 0), 2),
              det = int_field(pl, "isDetected"),
+             err = round(num_field(pl, "predError"), 1),
              home = home,
              jersey = chr_field(pl, "jersey"))
 }
@@ -283,13 +284,14 @@ action_short <- function(type, recs) {
   paste(ifelse(lgl_field(recs, "outcome"), "Made", "Missed"), ifelse(lgl_field(recs, "three"), 3, 2))
 }
 
-#' Timeline rows (possession, frame, kind, label, short caption, player) for one action family.
-action_events <- function(type, ev, nm) {
+#' Timeline rows (possession, frame, kind, label, short caption, player) for one action family. `nm` gives a
+#' player's last name (the tick's player); `nmj` the same with his jersey, "#15 Cate" (the full label).
+action_events <- function(type, ev, nm, nmj) {
   recs <- ev[[ACTIONS[[type]]$table]]
   if (!length(recs)) return(NULL)
   kind <- if (type == "shot") ifelse(lgl_field(recs, "outcome"), "made", "missed") else type
   data.table(poss_id = chr_field(recs, "possessionId"), type = type,
-             frame = int_field(recs, ACTIONS[[type]]$frame), kind = kind, label = action_labels(type, recs, nm),
+             frame = int_field(recs, ACTIONS[[type]]$frame), kind = kind, label = action_labels(type, recs, nmj),
              short = action_short(type, recs), who = nm(int_field(recs, TICK_PLAYER[[type]])))
 }
 
@@ -307,29 +309,29 @@ action_actors <- function(type, ev) {
 }
 
 #' Timeline rows for whistles, rebounds and free throws.
-other_events <- function(ev, nm) {
+other_events <- function(ev, nm, nmj) {
   to <- ev$turnovers
   fo <- ev$fouls
   rb <- ev$rebounds
   ft <- ev$free_throws
-  steal <- ifelse(is.na(int_field(to, "stealerId")), "", paste0(", steal ", nm(int_field(to, "stealerId"))))
-  reb_who <- ifelse(lgl_field(rb, "rebounded"), nm(int_field(rb, "rebounderId")), "team")
+  steal <- ifelse(is.na(int_field(to, "stealerId")), "", paste0(", steal ", nmj(int_field(to, "stealerId"))))
+  reb_by <- function(f) ifelse(lgl_field(rb, "rebounded"), f(int_field(rb, "rebounderId")), "team")
   rbind(data.table(poss_id = chr_field(to, "possessionId"), type = "turnover", frame = int_field(to, "frame"),
-                   kind = "turnover", label = sprintf("Turnover: %s%s", nm(int_field(to, "turnedOverId")), steal),
+                   kind = "turnover", label = sprintf("Turnover: %s%s", nmj(int_field(to, "turnedOverId")), steal),
                    short = "Turnover", who = nm(int_field(to, "turnedOverId"))),
         data.table(poss_id = chr_field(fo, "possessionId"), type = "foul", frame = int_field(fo, "frame"),
                    kind = "foul",
-                   label = sprintf("Foul: %s on %s", nm(int_field(fo, "foulerId")), nm(int_field(fo, "fouledId"))),
+                   label = sprintf("Foul: %s on %s", nmj(int_field(fo, "foulerId")), nmj(int_field(fo, "fouledId"))),
                    short = "Foul", who = nm(int_field(fo, "foulerId"))),
         data.table(poss_id = chr_field(rb, "possessionId"), type = "rebound", frame = int_field(rb, "frame"),
                    kind = "rebound",
                    label = sprintf("%s rebound: %s", ifelse(lgl_field(rb, "defensive"), "Defensive", "Offensive"),
-                                   reb_who),
-                   short = ifelse(lgl_field(rb, "defensive"), "Def. Reb", "Off. Reb"), who = reb_who),
+                                   reb_by(nmj)),
+                   short = ifelse(lgl_field(rb, "defensive"), "Def. Reb", "Off. Reb"), who = reb_by(nm)),
         data.table(poss_id = chr_field(ft, "possessionId"), type = "free_throw", frame = int_field(ft, "frame"),
                    kind = ifelse(lgl_field(ft, "outcome"), "made", "missed"),
                    label = sprintf("Free throw %s: %s", ifelse(lgl_field(ft, "outcome"), "made", "missed"),
-                                   nm(int_field(ft, "shooterId"))),
+                                   nmj(int_field(ft, "shooterId"))),
                    short = ifelse(lgl_field(ft, "outcome"), "FT made", "FT missed"), who = nm(int_field(ft, "shooterId"))))
 }
 
@@ -337,7 +339,8 @@ other_events <- function(ev, nm) {
 result_names <- function(plays, events) {
   last_label <- function(kinds) {
     last <- events[kind %in% kinds][order(frame), .SD[.N], by = poss_id]
-    sub("^[^:]*: ", "", sub(" \\(.*$", "", last$label))[match(plays$id, last$poss_id)]
+    # The label's names carry jerseys ("#15 Cate"); the result line names the player alone.
+    gsub("#\\S+ ", "", sub("^[^:]*: ", "", sub(" \\(.*$", "", last$label)))[match(plays$id, last$poss_id)]
   }
   who <- fifelse(plays$outcome %in% c("FGM", "FGM3", "FGX", "FGX3"), last_label(c("made", "missed")),
                  fifelse(plays$outcome == "TO", sub(", steal.*$", "", last_label("turnover")),
@@ -394,6 +397,10 @@ game_index <- function(root, game_id, aliases, match_row) {
   ev <- read_json_file(match_file(root, game_id, "_dynamic_events.json"))
   roster <- game_roster(root, game_id, aliases)
   nm <- function(ids) fifelse(is.na(match(ids, roster$pid)), "unknown", roster$last[match(ids, roster$pid)])
+  nmj <- function(ids) {
+    jersey <- roster$jersey[match(ids, roster$pid)]
+    fifelse(is.na(jersey) | jersey == "", nm(ids), paste0("#", jersey, " ", nm(ids)))
+  }
   po <- ev$possessions
   if (any(vapply(po, function(p) is.null(p$leftHoop), NA))) warning("Missing leftHoop in game ", game_id)
   plays <- data.table(id = chr_field(po, "id"), game_id = game_id, period = int_field(po, "period"),
@@ -408,10 +415,10 @@ game_index <- function(root, game_id, aliases, match_row) {
   plays[, def_ids := lapply(po, function(p) canon_id(as.integer(unlist(p$defPlayerIds)), aliases))]
   plays[, view_end := view_end_frames(plays, ev)]
 
-  actions <- rehome(rbindlist(lapply(names(ACTIONS), action_events, ev = ev, nm = nm)), plays)
+  actions <- rehome(rbindlist(lapply(names(ACTIONS), action_events, ev = ev, nm = nm, nmj = nmj)), plays)
   actors <- rehome(rbindlist(lapply(names(ACTIONS), action_actors, ev = ev)), plays)[, frame := NULL]
   actors[, pid := canon_id(pid, aliases)]
-  events <- rbind(actions, other_events(ev, nm))[!is.na(frame)]
+  events <- rbind(actions, other_events(ev, nm, nmj))[!is.na(frame)]
   orphan <- mean(!events$poss_id %in% plays$id)
 
   # A possession's play types in the order they first happen: each action at its frame, transition at the start of
@@ -591,7 +598,7 @@ player_track <- function(p, pl, frames, flip, info, home_is_off, archetypes) {
   if (is.null(tag)) tag <- c(arch$archetype[1], "none")
   list(id = p, jersey = info$jersey, name = info$name, last = info$last, role = role,
        arch = if (nrow(arch)) list(name = arch$archetype[1], short = tag[1], slot = tag[2], p = arch$probability[1]),
-       x = I(flip * rows$x[at]), y = I(flip * rows$y[at]), d = I(rows$det[at]))
+       x = I(flip * rows$x[at]), y = I(flip * rows$y[at]), d = I(rows$det[at]), e = I(rows$err[at]))
 }
 
 #' Everything the browser needs to animate one possession, as a JSON string.

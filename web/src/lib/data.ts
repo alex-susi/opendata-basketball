@@ -2,6 +2,7 @@
 // Requests carry the export's stamp (set at build time in vite.config.ts): the files keep their names from one
 // export to the next, so without it a browser can run a new build against an older export it has cached.
 
+import type { Season } from "./context";
 import { decodePlay } from "./decode";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
@@ -25,6 +26,14 @@ export function loadMeta(): Promise<Meta> {
 let plays: Promise<PlayRow[]> | null = null;
 export function loadPlays(): Promise<PlayRow[]> {
   return (plays ??= fetchOk("plays.json").then((r) => r.json()));
+}
+
+let season: Promise<Season> | null = null;
+/** Season counts per person and team (season.json), for the Season Context annotations. */
+export function loadSeason(): Promise<Season> {
+  season ??= fetchOk("season.json").then((r) => r.json());
+  season.catch(() => { season = null; });
+  return season;
 }
 
 let archetypes: Promise<string> | null = null;

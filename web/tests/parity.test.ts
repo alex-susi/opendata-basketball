@@ -72,7 +72,7 @@ describe("export", () => {
       for (const h of Object.values(index.plays)) {
         expect(h.o).toBe(at);
         expect(listed.has(`${file}/${h.id}`)).toBe(true);
-        const size = 4 * h.n + 2 * (5 * h.n + 2 * h.n * h.players.length) + h.n * (1 + h.players.length);
+        const size = 4 * h.n + 2 * (5 * h.n + 2 * h.n * h.players.length) + h.n * (1 + 2 * h.players.length);   // stopped, detected, predError
         at += size + ((4 - (size % 4)) % 4);
         seen++;
       }

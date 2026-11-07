@@ -7,14 +7,16 @@
   //                     secondary colours and joins them with a line.
   // Samples are every 0.2 s of playback (lib/trace.ts). Each action is a dashed line, captioned with the action
   // above the plot and the player under the time axis (both hidden when the Display panel's Action Names is off);
-  // hovering near one shows its full description. A white line marks the current moment. Click or drag on the
+  // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
+  // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
   // chart to move playback there. Shown or hidden from the Display panel.
+  import { coverageText, screenSeasonLines, shotCard, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
   import { blend, cursorAt, FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
   import { nearestAt, traceSamples, type TraceKind, type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
-  import { viewer } from "../lib/viewer.svelte";
+  import { season, viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
@@ -35,6 +37,23 @@
   let svg = $state<SVGSVGElement>();
   let hoverK = $state<number | null>(null);
   let hoverTick = $state<Tick | null>(null);
+
+  // More about the hovered action, from the annotations that are switched on.
+  const hoverLines = $derived.by((): Line[] => {
+    const ev = hoverTick?.event, ann = play?.ann;
+    if (!ev || !ann || !play) return [];
+    if ((ev.kind === "made" || ev.kind === "missed") && viewer.ann.shot) {
+      const shot = ann.shots.find((x) => x.f === ev.f);
+      return shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: viewer.ann.season ? season.data : null }).lines : [];
+    }
+    const screen = ann.screens.find((x) => x.f === ev.f && x.kind === ev.kind);
+    if (!screen) return [];
+    const out: Line[] = [];
+    const cov = coverageText(screen);
+    if (viewer.ann.defense && cov) out.push({ k: "Coverage", v: cov });
+    if (viewer.ann.season) out.push(...screenSeasonLines(play, season.data, screen));
+    return out;
+  });
 
   // Players who appear on the tracked court at some point in this play, offense first.
   const tracked = $derived((play?.players ?? []).filter((p) => p.x.some((v) => !Number.isNaN(v)))
@@ -240,9 +259,13 @@
       {/if}
       {#if hoverTick}
         {@const x = M.left + hoverTick.frac * plotW}
-        <div class="trace-card" style:left="{clamp(x - 130, 0, Math.max(0, width - 260))}px" style:top="{top + 6}px">
+        <!-- A card with details opens upward, over the court, so it never runs off the bottom of the page. -->
+        <div class="trace-card" class:up={hoverLines.length > 0} style:left="{clamp(x - 130, 0, Math.max(0, width - 260))}px" style:top="{top + 6}px">
           <span class="trace-card-time">{(hoverTick.k / FPS).toFixed(1)} s</span>
           <b class={hoverTick.event.kind}>{hoverTick.event.label}</b>
+          {#each hoverLines as line}
+            <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
+          {/each}
         </div>
       {/if}
     {/if}

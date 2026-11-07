@@ -13,12 +13,12 @@
   import SidePanel from "./components/SidePanel.svelte";
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
-  import { loadMeta, loadPlay, loadPlays } from "./lib/data";
+  import { loadMeta, loadPlay, loadPlays, loadSeason } from "./lib/data";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp, quarter } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
-  import { live, viewer } from "./lib/viewer.svelte";
+  import { live, season, viewer } from "./lib/viewer.svelte";
 
   const ROUTE = "#/play/";
   const ARCHETYPES = "#/archetypes";
@@ -141,6 +141,11 @@
     if (!rows.some((r) => r.id === linked)) filters = emptyFilters();
     select(linked);
   }
+
+  // Season figures load the first time the Season Context annotations are switched on.
+  $effect(() => {
+    if (viewer.ann.season && !season.data) loadSeason().then((d) => { season.data = d; }).catch((err: Error) => { problem = err.message; });
+  });
 
   Promise.all([loadMeta(), loadPlays()]).then(([m, all]) => {
     plays = all;

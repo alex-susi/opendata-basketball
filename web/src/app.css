@@ -322,6 +322,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   background: var(--raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, .45);
   font-size: 12.5px; line-height: 1.35;
 }
+.trace-card.up { transform: translateY(calc(-100% - 12px)); z-index: 5; }
 .trace-card-time { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .trace-card b.made { color: var(--made); }
 .trace-card b.missed, .trace-card b.turnover { color: var(--missed); }
@@ -544,3 +545,26 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .pc-ends { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .doc-inner { padding: 20px 14px 40px; }
 }
+
+/* ---- Annotations (Display panel's Annotations toggles) ---- */
+.display .sub-head { margin: 10px 0 6px; color: var(--muted); font-size: 11.5px; font-weight: 600; }
+/* Cards over the backcourt (Annotations.svelte): shot details on top, possession and tracking quality at the bottom. */
+.ann-cards { position: absolute; z-index: 1; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.ann-cards.bottom { transform: translateY(-100%); }
+.ann-card, .season-card {
+  display: grid; gap: 1px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px;
+  background: rgba(15, 21, 34, .9); box-shadow: 0 4px 14px rgba(0, 0, 0, .35); font-size: 11.5px; line-height: 1.35;
+}
+.ann-card b, .season-card b { font-size: 12.5px; }
+.card-line { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }
+.card-line > span:first-child { flex: none; color: var(--muted); }
+.card-line > span:last-child { min-width: 0; text-align: right; }
+.trace-card .card-line { font-size: 11.5px; }
+.season-card { position: fixed; z-index: 20; width: 270px; pointer-events: none; background: var(--raised); }
+.season-sub { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
+.roster .meta {
+  display: grid; flex: none; margin-left: auto; color: var(--muted); font-size: 9.5px; line-height: 1.1; text-align: right;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.roster .meta + .arch { margin-left: 0; }
+.roster-sub.readout { margin: -3px 0 6px; font-size: 11.5px; }

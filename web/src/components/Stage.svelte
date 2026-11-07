@@ -3,6 +3,7 @@
   // makes the trace panel follow his distance to the nearest opponent; clicking him again lets him go.
   import { onMount } from "svelte";
   import { drawScene } from "../lib/draw";
+  import Annotations from "./Annotations.svelte";
   import { FPS } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
@@ -52,6 +53,10 @@
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;
     if (info.handler !== live.handler) live.handler = info.handler;
     hits = info.hits;
+    const b = info.box, was = live.box;
+    if (!was || was.left !== b.left || was.top !== b.top || was.w !== b.w || was.h !== b.h || was.backLeft !== b.backLeft) live.box = b;
+    // The cards and rosters follow the frame a few times a second while playing (every frame when paused).
+    if ((drawn % 4 === 0 || !viewer.playing) && info.i0 !== live.i0) live.i0 = info.i0;
     if (info.onCourt.length !== live.onCourt.length || info.onCourt.some((id, i) => id !== live.onCourt[i])) live.onCourt = info.onCourt;
     // Areas change every frame; refresh the text a few times a second, or at once when paused.
     if (drawn++ % 6 === 0 || !viewer.playing) {
@@ -152,6 +157,7 @@
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
   <canvas bind:this={canvas} aria-label="Animated court view of the selected possession. Click a player to follow his nearest opponent."
           class:pointer={pointer} onclick={onClick} onmousemove={(ev) => (pointer = playerAt(ev) != null)} onmouseleave={() => (pointer = false)}></canvas>
+  <Annotations {play} />
   {#if note}
     <div class="stage-note">{note}</div>
   {/if}

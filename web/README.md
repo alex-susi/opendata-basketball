@@ -12,10 +12,12 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/export_data.R` | Writes `public/data/` from the Shiny app's caches, through the app's own functions |
 | `scripts/parity_reference.R` | Runs filter cases through the real Shiny server and writes `tests/parity_reference.json` |
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
-| `public/data/` | `meta.json`, `plays.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
-| `src/lib/` | Decoding, filters, playback sequence, the trace panel's samples, court and scene drawing — no framework code |
+| `scripts/annotations.R` | The annotations the site draws and the Shiny app does not: event locations and context from the event files, season counts from `data/aggregates/` |
+| `public/data/` | `meta.json`, `plays.json`, `season.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
+| `src/lib/` | Decoding, filters, playback sequence, the trace panel's samples, court and scene drawing, annotations (`annotate.ts` on the court, `context.ts` for the cards, `motion.ts` for speed and spacing) — no framework code |
 | `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, trace panel with the play's timeline, playback controls, side panel), Archetypes and Rebounding |
 | `tests/parity.test.ts` | Checks the site's filters and decoded plays against the Shiny app |
+| `tests/annotations.test.ts` | Checks the exported annotations against the tracking, and the readouts built from them |
 
 ## Commands
 

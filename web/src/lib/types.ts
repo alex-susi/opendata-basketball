@@ -66,6 +66,9 @@ export interface PlayerInfo {
   last: string;
   role: Role;
   arch: Archetype | null;
+  /** Canonical person id (data/player_id_aliases.csv) and team id, for the season figures. */
+  canon?: number;
+  team?: number;
 }
 
 /** How one team is drawn, from its club colours (TEAM_COLORS and team_kit() in the Shiny app's R/data.R). */
@@ -119,6 +122,13 @@ export interface PlayHeader {
   players: PlayerInfo[];
   events: PlayEvent[];
   touches: Touch[];
+  /** How the possession began (possessions.startType) and the teams' ids. */
+  startType?: string;
+  offTeam?: number;
+  defTeam?: number;
+  homeTeam?: number;
+  /** Event locations and context drawn over the court. Missing from older exports. */
+  ann?: Annotations;
 }
 
 export interface PeriodIndex {
@@ -134,6 +144,8 @@ export interface PlayerTrack extends PlayerInfo {
   y: Series;
   /** 1 where the position was detected on screen, 0 where it was extrapolated. */
   d: Uint8Array;
+  /** Tracking's expected error of the position, in ft (NaN where unknown). */
+  e: Series;
 }
 
 /** Everything needed to animate one possession: the Shiny app's "play" message, decoded. */
@@ -144,4 +156,116 @@ export interface Play extends Omit<PlayHeader, "players" | "o" | "n"> {
   stopped: Uint8Array;
   ball: { x: Series; y: Series; z: Series };
   players: PlayerTrack[];
+}
+
+// ---- annotations (web/scripts/annotations.R) ----------------------------------------------------
+// Locations are in the play's stored frame (offense attacking +x), in feet. Ids are the game's raw player ids, as
+// in the tracking. Optional fields are missing where the event table has no value.
+
+/** A player's position at a shot's release (chance_players.shotLoc). */
+export interface Ghost { pid: number; x: number; y: number }
+
+export interface AnnShot {
+  /** Release frame and the shot's end frame. */
+  f: number; f1: number;
+  x: number; y: number;
+  pid: number;
+  made: boolean; three: boolean; fouled: boolean; blocked: boolean; assisted: boolean;
+  blocker?: number;
+  /** Shooter to hoop at release, ft. */
+  dist?: number;
+  /** SkillCorner's shot quality, 0-100. */
+  sq?: number;
+  /** Contest level: open, light, average, plus, blocked. */
+  cl?: string;
+  defId?: number; defDist?: number;
+  /** Seconds from the start of the touch to release. */
+  rt?: number;
+  drb?: number;
+  cns?: boolean;
+  /** complexShotType, camelCase. */
+  type?: string;
+  sc?: number;
+  passer?: number;
+  region?: string;
+  /** Free throws awarded on the shot, made or missed, in order. */
+  ft: boolean[];
+  ghosts: Ghost[];
+}
+
+export interface AnnPass {
+  f: number; f1: number; pid: number;
+  to?: number;
+  /** The defender who intercepted it (passes.toReceiverId). */
+  stealer?: number;
+  x0?: number; y0?: number; x1?: number; y1?: number;
+  lost: boolean;
+}
+
+export interface AnnDribble { f: number; pid: number; x: number; y: number }
+
+export interface AnnDrive {
+  f: number; f1: number; pid: number; def?: number;
+  x0: number; y0: number; x1: number; y1: number;
+  blowby: boolean; dir?: string; end?: string;
+}
+
+export interface AnnScreen {
+  f: number;
+  kind: "pick" | "handoff" | "off_ball_screen";
+  /** The screener's (setter's) spot. */
+  x: number; y: number;
+  scr: number;
+  /** The ball handler, receiver or cutter. */
+  use: number;
+  /** Coverage on the user (bhrDefType, receiverDefType, cutterDefType) and on the screener. */
+  covUse?: string; covScr?: string;
+  spot?: string;
+}
+
+export interface AnnCloseout {
+  f: number; f1: number; def: number; pid: number;
+  /** The defender's path. */
+  x0: number; y0: number; x1: number; y1: number;
+  /** Ball handler to defender at the start and end, ft. */
+  d0: number; d1: number;
+}
+
+export interface AnnFoul { f: number; x?: number; y?: number; by: number; on?: number; shooting: boolean; type?: string; ft: boolean[] }
+export interface AnnRebound { f: number; x?: number; y?: number; pid?: number; def: boolean; team: boolean }
+export interface AnnTurnover { f: number; x?: number; y?: number; pid?: number; stealer?: number }
+export interface AnnMatchup { f: number; f1: number; def: number; off: number }
+
+export interface AnnChance {
+  id: string;
+  /** The possession it belongs to (a play's id). A play's window can reach into the next possession's chances. */
+  poss: string;
+  f: number; f1: number;
+  start?: string; transition: boolean;
+  /** Tracking quality, 0 (lowest) to 5. */
+  q?: number;
+  pts?: number;
+  /** Minutes each player had played entering the chance. */
+  mins: { pid: number; min: number }[];
+}
+
+export interface Annotations {
+  shots: AnnShot[]; passes: AnnPass[]; dribbles: AnnDribble[]; drives: AnnDrive[]; screens: AnnScreen[];
+  closeouts: AnnCloseout[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
+  matchups: AnnMatchup[]; chances: AnnChance[];
+}
+
+/** season.json: one person's season counts with one team, from data/aggregates/. Pairs are [count, makes or
+ * points]; fg, cns and od are [attempts, makes, threes made]. */
+export interface SeasonFigures {
+  g?: number;
+  fg?: [number, number, number];
+  cns?: [number, number, number];
+  od?: [number, number, number];
+  zone?: Record<"ra" | "paint" | "mid" | "c3" | "ab3", [number, number]>;
+  drives?: [number, number];
+  handler?: [number, number];
+  screener?: [number, number];
+  handlerVs?: Record<string, [number, number]>;
+  screenerVs?: Record<string, [number, number]>;
 }

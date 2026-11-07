@@ -4,8 +4,8 @@
 const M = 3.28084;
 export const HALF_L = 14 * M;
 export const HALF_W = 7.5 * M;
-const HOOP_X = HALF_L - 1.575 * M;
-const KEY_X = HALF_L - 5.8 * M, KEY_HALF_W = 2.45 * M;
+export const HOOP_X = HALF_L - 1.575 * M;
+export const KEY_X = HALF_L - 5.8 * M, KEY_HALF_W = 2.45 * M;
 const THREE_R = 6.75 * M, THREE_Y = 6.6 * M;
 const CIRCLE_R = 1.8 * M, NO_CHARGE_R = 1.25 * M;
 const BOARD_X = HALF_L - 1.2 * M, BOARD_HALF_W = 0.9 * M, RIM_R = 0.225 * M;
