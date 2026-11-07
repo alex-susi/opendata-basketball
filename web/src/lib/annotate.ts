@@ -46,8 +46,10 @@ interface Ctx {
 }
 
 // How long markers stay up, in frames.
-const HOLD = { dribble: 75, pass: 30, drive: 37, screenBefore: 12, screenAfter: 62, closeout: 37, faded: 75,
-               closest: 50, switch: 37, ghosts: 150, ball: 20 };
+// A pass is shown only while the ball is in the air (an interception's cross for a second after); screens, closeouts
+// and fouls for about a second after they happen.
+const HOLD = { dribble: 75, pass: 0, intercept: 25, drive: 37, screenBefore: 8, screenAfter: 20, closeout: 12,
+               foul: 12, faded: 75, closest: 50, switch: 37, ghosts: 150, ball: 20 };
 
 /** Opacity of something that appears at `start`, stays full until `end`, then fades out over `fade` frames. */
 function life(frame: number, start: number, end: number, fade: number): number {
@@ -156,15 +158,15 @@ function drawEventsUnder(k: Ctx): void {
   ctx.globalAlpha = 1;
 
   for (const p of ann.passes) {
-    const a = life(frame, p.f, p.f1, HOLD.pass);
-    if (!a) continue;
+    const a = life(frame, p.f, p.f1, p.lost ? HOLD.intercept : HOLD.pass);
+    if (!a || (frame > p.f1 && !p.lost)) continue;
     const from = p.x0 != null && p.y0 != null ? [p.x0, p.y0] : posAt(k, p.pid, p.f);
     const to = p.lost ? posAt(k, p.stealer, p.f1) ?? (p.x1 != null ? [p.x1, p.y1!] : null)
                       : p.x1 != null && p.y1 != null ? [p.x1, p.y1] : posAt(k, p.to, p.f1);
     if (!from || !to) continue;
     ctx.globalAlpha = a;
-    arrow(k, from[0], from[1], to[0], to[1], p.lost ? LOST : "rgba(20,24,34,.8)", 2, frame <= p.f1);
-    if (p.lost && frame >= p.f1) cross(k, to[0], to[1], 6, LOST);
+    if (frame <= p.f1) arrow(k, from[0], from[1], to[0], to[1], p.lost ? LOST : "rgba(20,24,34,.8)", 2, true);
+    else cross(k, to[0], to[1], 6, LOST);
   }
   ctx.globalAlpha = 1;
 
@@ -252,8 +254,10 @@ function drawEventsUnder(k: Ctx): void {
     }
   }
   for (const fo of ann.fouls) {
-    if (fo.f > frame || fo.x == null || fo.y == null) continue;
-    ctx.globalAlpha = life(frame, fo.f, fo.f + HOLD.faded, HOLD.faded) * 0.45 + 0.55;
+    if (fo.x == null || fo.y == null) continue;
+    const a = life(frame, fo.f, fo.f + HOLD.foul, HOLD.foul);
+    if (!a) continue;
+    ctx.globalAlpha = a;
     cross(k, fo.x, fo.y, 5.5, "#F5B02E");
   }
   for (const rb of ann.rebounds) {

@@ -140,6 +140,7 @@ body {
 .pi-result { justify-self: end; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .pi-result.made { color: var(--made); font-weight: 600; }
 .pi-result.missed { color: var(--missed); }
+.pi-and1 { margin-left: 6px; padding: 0 5px; border-radius: 4px; font-style: normal; font-size: 10px; font-weight: 700; color: #F5B02E; border: 1px solid currentColor; }
 .pi-tags { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px; }
 .pi-tags i {
   font-style: normal; font-size: 11px; padding: 0 6px; border-radius: 9px;

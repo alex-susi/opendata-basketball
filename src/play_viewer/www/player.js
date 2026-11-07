@@ -811,7 +811,9 @@
       const tags = el('span', 'pi-tags');
       for (const t of row.types ? row.types.split('|') : []) tags.append(el('i', null, t));
       const made = row.result.startsWith('Made') ? 'made' : row.result.startsWith('Missed') ? 'missed' : '';
-      item.append(top, el('span', `pi-result ${made}`, row.who ? `${row.result} · ${row.who}` : row.result), tags);
+      const result = el('span', `pi-result ${made}`, row.who ? `${row.result} · ${row.who}` : row.result);
+      if (row.and1) result.append(el('i', 'pi-and1', 'And-1'));
+      item.append(top, result, tags);
       frag.append(item);
     }
     $('play-list').replaceChildren(frag);
@@ -869,7 +871,7 @@
     $('stage-note').hidden = true;
     $('epv-missing').hidden = Boolean(p.epv);
     $('play-title').textContent = `${p.off} possession`;
-    $('play-sub').textContent = [p.who ? `${p.result} (${p.who})` : p.result].concat(p.types).join(' · ');
+    $('play-sub').textContent = [(p.who ? `${p.result} (${p.who})` : p.result) + (p.and1 ? ', and-1' : '')].concat(p.types).join(' · ');
     $('play-sub').title = $('play-sub').textContent;
     const bug = $('scorebug'), homeIsOff = p.off === p.home;
     const sides = [[p.home, homeIsOff ? p.colors.off : p.colors.def], [p.away, homeIsOff ? p.colors.def : p.colors.off]];

@@ -4,9 +4,10 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 2L          # tracking cache (each position's predError since 2)
-INDEX_VERSION <- 7L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+INDEX_VERSION <- 8L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
                              # play types in the order they happen and picks credited to the screener since 5;
-                             # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7)
+                             # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7;
+                             # and-ones as made shots since 8)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -435,6 +436,16 @@ game_index <- function(root, game_id, aliases, match_row) {
   plays[, shot_types := lapply(id, function(i) unique(stats::na.omit(shot_types[[i]])))]
   plays[, result := fifelse(outcome %in% names(RESULT_LABELS), RESULT_LABELS[outcome], outcome)]
   plays[, result_who := result_names(plays, events)]
+  # And-ones: a possession whose last shot was made while fouled ends on the foul (outcome FOU), but the play is a
+  # made basket plus a free throw. Show it as the make, flagged and1.
+  sh <- data.table(poss_id = chr_field(ev$shots, "possessionId"), f = int_field(ev$shots, "startFrame"),
+                   made = lgl_field(ev$shots, "outcome"), fouled = lgl_field(ev$shots, "fouled"),
+                   three = lgl_field(ev$shots, "three"), shooter = int_field(ev$shots, "shooterId"))
+  last_shot <- sh[order(f)][, .SD[.N], by = poss_id]
+  made_fouled <- last_shot[made & fouled]
+  plays[, and1 := id %in% made_fouled$poss_id & outcome %in% c("FOU", "FGM", "FGM3")]
+  hit <- made_fouled[match(plays$id[plays$and1], made_fouled$poss_id)]
+  plays[(and1), `:=`(result = fifelse(hit$three, "Made 3", "Made 2"), result_who = nm(hit$shooter))]
   # Offensive rebounds a player collected in the possession, from the rebounds table. Team rebounds (the ball went
   # out of bounds off the defense, nobody secured it) are not counted.
   rb <- ev$rebounds
@@ -583,7 +594,7 @@ plays_json <- function(app, plays) {
   rows <- plays[, .(id, game = app$matches$label[match(game_id, app$matches$game_id)], q = period,
                     clock = format_clock(start_gc), off = off_name, def = def_name,
                     types = vapply(types, function(v) paste(PLAY_TYPES[v], collapse = "|"), ""),
-                    result, who = result_who, secs = round(n_run / 25), oreb = n_oreb)]
+                    result, who = result_who, and1, secs = round(n_run / 25), oreb = n_oreb)]
   jsonlite::toJSON(rows, dataframe = "rows", na = "null")
 }
 
@@ -598,12 +609,15 @@ player_track <- function(p, pl, frames, flip, info, home_is_off, archetypes) {
   if (is.null(tag)) tag <- c(arch$archetype[1], "none")
   list(id = p, jersey = info$jersey, name = info$name, last = info$last, role = role,
        arch = if (nrow(arch)) list(name = arch$archetype[1], short = tag[1], slot = tag[2], p = arch$probability[1]),
-       x = I(flip * rows$x[at]), y = I(flip * rows$y[at]), d = I(rows$det[at]), e = I(rows$err[at]))
+       x = I(flip * rows$x[at]), y = I(-flip * rows$y[at]), d = I(rows$det[at]), e = I(rows$err[at]))
 }
 
 #' Everything the browser needs to animate one possession, as a JSON string.
-#' Tracking is in camera view; possessions.leftHoop says which way the offense attacks. A 180 degree
-#' rotation (not a mirror) puts every offense on the right-hand hoop and keeps left/right handedness.
+#' Tracking x runs left to right in the camera's view, but its y runs from the far sideline to the near one (the
+#' data dictionary says the reverse): every shot labelled "left ..." has its shooter on the offense's right in raw
+#' tracking. So y is mirrored here, giving a true top-down court with the camera at the bottom; then
+#' possessions.leftHoop says which way the offense attacks, and a 180 degree rotation puts every offense on the
+#' right-hand hoop. Stored positions are (flip * x, -flip * y).
 #' Frames run over the viewing window (view_start to view_end), which can outlast the delivered possession.
 play_payload <- function(app, play_id) {
   row <- app$plays[id == play_id]
@@ -624,11 +638,11 @@ play_payload <- function(app, play_id) {
   game <- app$matches[game_id == row$game_id]
   payload <- list(id = row$id, game = game$label, period = row$period, off = row$off_name, def = row$def_name,
                   home = game$home_name, away = game$away_name, homeScore = row$home_score,
-                  awayScore = row$away_score, result = row$result, who = row$result_who,
+                  awayScore = row$away_score, result = row$result, who = row$result_who, and1 = row$and1,
                   types = I(unname(PLAY_TYPES[row$types[[1]]])), colors = side_colors(row),
                   frames = I(fr$frame), gc = I(round(fr$gc, 1)), sc = I(round(fr$sc, 1)),
                   stopped = I(as.integer(fr$stopped)),
-                  ball = list(x = I(flip * fr$bx), y = I(flip * fr$by), z = I(fr$bz)),
+                  ball = list(x = I(flip * fr$bx), y = I(-flip * fr$by), z = I(fr$bz)),
                   players = players, events = events, touches = touches)
   jsonlite::toJSON(payload, auto_unbox = TRUE, digits = NA, na = "null", null = "null", dataframe = "rows")
 }

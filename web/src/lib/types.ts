@@ -34,6 +34,8 @@ export interface PlayRow {
   secs: number;
   result: string;
   who: string;
+  /** The possession's last shot was made while fouled: shown as the make (result) with an And-1 tag. */
+  and1?: boolean;
   typeLabels: string;
   types: string[];
   shotTypes: string[];
@@ -114,10 +116,12 @@ export interface PlayHeader {
   awayScore: number;
   result: string;
   who: string;
+  and1?: boolean;
   types: string[];
   colors: Record<Role, TeamColors>;
-  /** The offense attacks the camera's left hoop. Positions are stored rotated so the offense attacks +x; the
-   * viewer rotates them back to the camera's view. Missing from older exports (drawn as stored). */
+  /** The offense attacks the camera's left hoop. Positions are stored top-down (the camera at the bottom) and
+   * rotated so the offense attacks +x; the viewer rotates them back to the camera's view, matching the broadcast.
+   * Missing from older exports (drawn as stored). */
   leftHoop?: boolean;
   players: PlayerInfo[];
   events: PlayEvent[];

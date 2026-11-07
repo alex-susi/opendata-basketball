@@ -1,10 +1,16 @@
 # Annotations for the static site's play viewer: event locations, defensive context, shot details, possession
 # context and season figures. Sourced by export_data.R after the app is loaded (`a`).
 #
-# Every location is in the viewer's frame. The event tables put the offense's hoop at negative x; the viewer
-# stores positions rotated so the offense attacks +x (see play_payload() in src/play_viewer/R/data.R), so an event
-# location (x, y) is drawn at (-x, -y). On game 191313 this puts every shot's location on the shooter's tracked
-# position at release (median gap 0.004 ft over 141 shots).
+# Every location is in the viewer's frame. The event tables put the offense's hoop at negative x and its left at
+# positive y; the viewer stores a top-down court with the offense attacking +x (see play_payload() in
+# src/play_viewer/R/data.R), so an event location (x, y) is drawn at (-x, y). Over the ten games this puts shots,
+# passes, dribbles, drives, closeouts, fouls, rebounds, turnovers and touches on the actor's tracked position
+# (median gap under 0.01 ft).
+#
+# Picks, handoffs and off-ball screens are the exception: when the offense attacks the camera's left hoop, their y
+# usually has the wrong sign (about 1,350 of 1,560 such events; the rest are right). Each one is placed on whichever
+# of (-x, y) and (-x, -y) is nearer the screener's tracked position at that frame, or by the majority rule when he is
+# not tracked; its region label is not used.
 #
 # Ids are the raw player ids of that game, as in the tracking. Nothing here is a model output: it is the delivered
 # event fields, reshaped, plus the season aggregates summed per person and team.
@@ -18,7 +24,7 @@ ann_lgl <- function(recs, f) a$lgl_field(recs, f)
 ann_loc <- function(recs, f) {
   m <- vapply(recs, function(r) {
     v <- unlist(r[[f]])
-    if (length(v) < 2) c(NA_real_, NA_real_) else -as.numeric(v[1:2])
+    if (length(v) < 2) c(NA_real_, NA_real_) else c(-1, 1) * as.numeric(v[1:2])
   }, c(0, 0))
   list(round(m[1, ], 1), round(m[2, ], 1))
 }
@@ -29,6 +35,8 @@ ann_table <- function(recs, build) if (length(recs)) build(recs) else NULL
 #' Everything the annotations need from one game's event file, one table per kind, keyed by frame.
 game_annotations <- function(game_id) {
   ev <- a$read_json_file(a$match_file(a$root, game_id, "_dynamic_events.json"))
+  left_hoop <- setNames(ann_lgl(ev$possessions, "leftHoop"), ann_chr(ev$possessions, "id"))
+  trk <- a$get_tracking(a$app_data, game_id)$players[, .(frame, pid, tx = x, ty = y)]
 
   ft <- ev$free_throws
   ft_rows <- data.table(shot = ann_chr(ft, "shotId"), foul = ann_chr(ft, "foulId"), made = ann_lgl(ft, "outcome"),
@@ -84,9 +92,19 @@ game_annotations <- function(game_id) {
   screen_rows <- function(recs, kind, scr, use, cov_use, cov_scr) {
     ann_table(recs, function(r) {
       l <- ann_loc(r, "location")
-      data.table(f = ann_int(r, "frame"), kind = kind, x = l[[1]], y = l[[2]], scr = ann_int(r, scr),
+      out <- data.table(f = ann_int(r, "frame"), kind = kind, x = l[[1]], y = l[[2]], scr = ann_int(r, scr),
                  use = ann_int(r, use), covUse = ann_chr(r, cov_use), covScr = ann_chr(r, cov_scr),
                  spot = if (kind == "off_ball_screen") NA_character_ else ann_chr(r, "locationType"))
+      # The screener's tracked position in the viewer's frame, and which sign of y lands nearer it.
+      lh <- left_hoop[ann_chr(r, "possessionId")]
+      at <- trk[out[, .(frame = f, pid = scr)], on = .(frame, pid), mult = "first"]
+      rot <- ifelse(lh %in% TRUE, -1, 1)
+      vx <- rot * at$tx
+      vy <- -rot * at$ty
+      flip_y <- ifelse(is.na(vx), lh %in% TRUE,
+                       (out$x - vx)^2 + (-out$y - vy)^2 < (out$x - vx)^2 + (out$y - vy)^2)
+      out[flip_y, y := -y]
+      out
     })
   }
   screens <- rbind(screen_rows(ev$picks, "pick", "screenerId", "ballhandlerId", "bhrDefType", "scrDefType"),

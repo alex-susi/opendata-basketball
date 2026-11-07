@@ -42,7 +42,7 @@
       <button type="button" class="play-item" class:active={row.id === selectedId} onclick={() => onselect(row.id)}>
         <span class="pi-top"><b>{quarter(row.q)} {row.clock}</b><span class="pi-secs">{row.secs}s</span></span>
         <span class="pi-team"><TeamPill name={row.off} colors={teamColors[String(row.offTeam)]} /></span>
-        <span class="pi-result {outcome(row)}">{row.who ? `${row.result} · ${row.who}` : row.result}</span>
+        <span class="pi-result {outcome(row)}">{row.who ? `${row.result} · ${row.who}` : row.result}{#if row.and1}<i class="pi-and1" title="Made while fouled: a basket plus a free throw">And-1</i>{/if}</span>
         {#if row.typeLabels || row.oreb > 0}
           <span class="pi-tags">
             {#if row.oreb > 0}<i class="oreb" title="Offensive rebounds collected by a player in this possession">{oreb(row)}</i>{/if}

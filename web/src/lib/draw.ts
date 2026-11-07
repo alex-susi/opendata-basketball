@@ -3,6 +3,7 @@
 // from draw(), drawPlayer(), drawHeader() and drawCaption() in the Shiny app's www/player.js.
 
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
+import { logoImage } from "./logos.svelte";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
@@ -344,7 +345,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = COLORS.paper;
   ctx.fillRect(0, 0, W, H);
-  drawCourt(ctx, L, dpr);
+  drawCourt(ctx, L, dpr, play ? logoImage(play.homeTeam) : null);
   if (!play || !seq.length) return null;
 
   const c = cursorAt(play, seq, pos), frame = play.frames[c.i0];

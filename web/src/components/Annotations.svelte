@@ -26,30 +26,26 @@
     const errs = seen.map((p) => p.e[live.i0]).filter((v) => !Number.isNaN(v));
     const lines = [];
     if (chance?.q != null) {
-      lines.push({ k: "Chance quality", v: `${chance.q} / 5${chance.q < 3 ? " · low" : ""}`, tone: chance.q < 3 ? "#F5B02E" : undefined });
+      lines.push({ k: "Chance Quality", v: `${chance.q} / 5${chance.q < 3 ? " · Low" : ""}`, tone: chance.q < 3 ? "#F5B02E" : undefined });
     }
-    lines.push({ k: "Extrapolated", v: `${guessed} of ${seen.length} players` });
-    if (errs.length) lines.push({ k: "Mean error", v: `${(errs.reduce((a, b) => a + b, 0) / errs.length).toFixed(1)} ft (90% within)` });
+    lines.push({ k: "Extrapolated", v: `${guessed} of ${seen.length} Players` });
+    if (errs.length) lines.push({ k: "Mean Error", v: `${(errs.reduce((a, b) => a + b, 0) / errs.length).toFixed(1)} ft (90% within)` });
     return { title: "Tracking", lines };
   });
 
   const box = $derived(live.box);
-  const width = $derived(box ? Math.max(180, Math.min(270, box.w / 2 - 80)) : 0);
-  const side = $derived(box ? (box.backLeft ? { left: `${box.left + 10}px` } : { left: `${box.left + box.w - 10 - width}px` }) : null);
 </script>
 
-{#if play && box && side && box.w >= 480}
-  {#if shotInfo}
-    <div class="ann-cards" style:left={side.left} style:top="{box.top + 10}px" style:width="{width}px">
-      {@render card(shotInfo)}
-    </div>
-  {/if}
-  {#if poss || quality}
-    <div class="ann-cards bottom" style:left={side.left} style:top="{box.top + box.h - 10}px" style:width="{width}px">
+{#if play && box && box.w >= 480 && (shotInfo || poss || quality)}
+  <!-- Cards sit against the backcourt's sideline end; each is as wide as its longest line. -->
+  <div class="ann-cards {box.backLeft ? 'left' : 'right'}" style:left="{box.left}px" style:top="{box.top}px"
+       style:width="{box.w}px" style:height="{box.h}px">
+    <div class="ann-stack">{#if shotInfo}{@render card(shotInfo)}{/if}</div>
+    <div class="ann-stack">
       {#if poss}{@render card(poss)}{/if}
       {#if quality}{@render card(quality)}{/if}
     </div>
-  {/if}
+  </div>
 {/if}
 
 {#snippet card(c: Card)}

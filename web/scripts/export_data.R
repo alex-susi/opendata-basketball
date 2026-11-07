@@ -88,7 +88,7 @@ play_header <- function(p, offset, ann) {
   canon_of <- function(pid) fcoalesce(roster$canon[match(pid, roster$pid)], as.integer(pid))
   list(id = p$id, o = offset, n = length(p$frames), game = p$game, period = p$period,
        off = p$off, def = p$def, home = p$home, away = p$away, homeScore = p$homeScore, awayScore = p$awayScore,
-       result = p$result, who = p$who, types = I(as.character(p$types)), colors = p$colors,
+       result = p$result, who = p$who, and1 = isTRUE(p$and1), types = I(as.character(p$types)), colors = p$colors,
        leftHoop = row$left_hoop, startType = row$start_type, offTeam = row$off_team, defTeam = row$def_team,
        homeTeam = row$home_team,
        players = lapply(p$players, function(pl) c(pl[c("id", "jersey", "name", "last", "role")], list(arch = pl$arch),
@@ -130,7 +130,7 @@ actors <- split(a$app_data$actors[, .(type, pid)], a$app_data$actors$poss_id)
 light <- lapply(seq_len(nrow(plays)), function(i) {
   acted <- actors[[plays$id[i]]]
   list(id = plays$id[i], file = plays$file[i], gameId = plays$game_id[i], game = shown$game[i], q = shown$q[i],
-       clock = shown$clock[i], off = shown$off[i], def = shown$def[i], secs = shown$secs[i], result = shown$result[i],
+       clock = shown$clock[i], off = shown$off[i], def = shown$def[i], secs = shown$secs[i], result = shown$result[i], and1 = isTRUE(plays$and1[i]),
        who = shown$who[i], typeLabels = shown$types[i], types = I(as.character(plays$types[[i]])),
        shotTypes = I(as.character(plays$shot_types[[i]])), offTeam = plays$off_team[i], defTeam = plays$def_team[i],
        oreb = plays$n_oreb[i], offIds = I(as.integer(plays$off_ids[[i]])), defIds = I(as.integer(plays$def_ids[[i]])),

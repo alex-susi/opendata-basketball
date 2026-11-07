@@ -19,7 +19,7 @@ export const HEADER_TOP = 40;   // top padding while a video is recorded: room f
 // The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
 // Team colours come with each play (Play.colors).
 export const COLORS = {
-  paper: "#1B2334", floor: "#F6CFA3", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
+  paper: "#1B2334", floor: "#F6CFA3", paint: "#E8B886", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
   ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", risk: "#F5B02E",
 };
 
@@ -95,8 +95,14 @@ function halfCourtLines(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
 }
 
-/** Floor and lines, drawn in feet with +y up. Leaves the context's transform as it found it. */
-export function drawCourt(ctx: CanvasRenderingContext2D, L: Layout, dpr: number): void {
+const LOGO_FT = 17;        // the midcourt logo's larger side, ft (the centre circle is 11.8 ft across)
+const LOGO_ALPHA = 0.28;
+
+/**
+ * Floor, the two paints a shade darker, the home team's logo faint at midcourt (when given and loaded), then the
+ * lines, drawn in feet with +y up. Leaves the context's transform as it found it.
+ */
+export function drawCourt(ctx: CanvasRenderingContext2D, L: Layout, dpr: number, logo?: HTMLImageElement | null): void {
   ctx.save();
   ctx.beginPath();
   ctx.rect(L.left, L.top, L.cw, L.ch);
@@ -104,6 +110,19 @@ export function drawCourt(ctx: CanvasRenderingContext2D, L: Layout, dpr: number)
   ctx.setTransform(dpr * L.s, 0, 0, -dpr * L.s, dpr * L.ox, dpr * L.oy);
   ctx.fillStyle = COLORS.floor;
   ctx.fillRect(-HALF_L, -HALF_W, 2 * HALF_L, 2 * HALF_W);
+  ctx.fillStyle = COLORS.paint;
+  ctx.fillRect(KEY_X, -KEY_HALF_W, HALF_L - KEY_X, 2 * KEY_HALF_W);
+  ctx.fillRect(-HALF_L, -KEY_HALF_W, HALF_L - KEY_X, 2 * KEY_HALF_W);
+  if (logo && logo.complete && logo.naturalWidth > 0) {
+    // In pixels, upright whichever way the play is drawn.
+    const k = (LOGO_FT * L.s) / Math.max(logo.naturalWidth, logo.naturalHeight);
+    const w = logo.naturalWidth * k, h = logo.naturalHeight * k;
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalAlpha = LOGO_ALPHA;
+    ctx.drawImage(logo, L.ox - w / 2, L.oy - h / 2, w, h);
+    ctx.restore();
+  }
   ctx.strokeStyle = COLORS.line;
   ctx.fillStyle = COLORS.line;
   ctx.lineWidth = Math.max(1.25, 0.14 * L.s) / L.s;

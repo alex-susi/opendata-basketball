@@ -22,8 +22,8 @@ export const viewer = $state({
   ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false, season: false },
   /** The trace panel under the court. */
   showTrace: true,
-  /** What it follows: the ball's height, or one player's distance to the closest opponent. */
-  trace: "ball" as "ball" | "nearest",
+  /** What it shows: the ball's height, one player's distance to the closest opponent, or the players on court. */
+  trace: "ball" as "ball" | "nearest" | "players",
   /** The player the nearest-opponent trace follows (clicked on the court or in a roster), or null. */
   focusPid: null as number | null,
   /** Caption the actions in the trace panel: the action above the plot, the player under the time axis. */

@@ -9,8 +9,10 @@
   // above the plot and the player under the time axis (both hidden when the Display panel's Action Names is off);
   // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
-  // chart to move playback there. Shown or hidden from the Display panel.
-  import { coverageText, screenSeasonLines, shotCard, type Line } from "../lib/context";
+  // chart to move playback there. A third tab, Players, swaps the chart for a table of the ten players on court
+  // (TrackingTable.svelte). Shown or hidden from the Display panel.
+  import TrackingTable from "./TrackingTable.svelte";
+  import { closeoutLines, coverageText, driveLines, screenSeasonLines, shotCard, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
   import { blend, cursorAt, FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
@@ -46,6 +48,14 @@
       const shot = ann.shots.find((x) => x.f === ev.f);
       return shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: viewer.ann.season ? season.data : null }).lines : [];
     }
+    if (ev.kind === "drive") {
+      const drive = ann.drives.find((x) => x.f === ev.f);
+      return drive ? driveLines(play, drive) : [];
+    }
+    if (ev.kind === "closeout") {
+      const closeout = ann.closeouts.find((x) => x.f === ev.f);
+      return closeout ? closeoutLines(play, closeout) : [];
+    }
     const screen = ann.screens.find((x) => x.f === ev.f && x.kind === ev.kind);
     if (!screen) return [];
     const out: Line[] = [];
@@ -59,7 +69,7 @@
   const tracked = $derived((play?.players ?? []).filter((p) => p.x.some((v) => !Number.isNaN(v)))
     .sort((a, b) => (a.role === b.role ? 0 : a.role === "off" ? -1 : 1)));
   const focus = $derived(tracked.find((p) => p.id === viewer.focusPid) ?? null);
-  const kind = $derived<TraceKind | null>(viewer.trace === "ball" ? { kind: "ball" } : focus ? { kind: "nearest", pid: focus.id } : null);
+  const kind = $derived<TraceKind | null>(viewer.trace === "ball" ? { kind: "ball" } : viewer.trace === "nearest" && focus ? { kind: "nearest", pid: focus.id } : null);
   const samples = $derived(play && seq.length && kind ? traceSamples(play, seq, kind) : []);
   // The ball in its own orange; a followed player in his team's colour as written on the dark panels.
   const color = $derived(viewer.trace === "ball" || !focus || !play ? COLORS.ball : play.colors[focus.role].text);
@@ -141,6 +151,11 @@
     hoverK = null;
     hoverTick = null;
   }
+  // The hovered action's title: a field goal's label without its shot type (the card's Type line has it).
+  const cardTitle = (tick: Tick) =>
+    tick.event.kind === "made" || tick.event.kind === "missed" ? tick.event.label.replace(/ \([^)]*\)$/, "") : tick.event.label;
+  let cardW = $state(260);
+
   function pick(ev: Event): void {
     const v = (ev.currentTarget as HTMLSelectElement).value;
     viewer.focusPid = v === "" ? null : Number(v);
@@ -151,9 +166,11 @@
   <div class="trace-head">
     <div class="seg" role="radiogroup" aria-label="What the panel follows">
       <button type="button" role="radio" aria-checked={viewer.trace === "ball"} class:on={viewer.trace === "ball"}
-              onclick={() => (viewer.trace = "ball")}>Ball height</button>
+              onclick={() => (viewer.trace = "ball")}>Ball Height</button>
       <button type="button" role="radio" aria-checked={viewer.trace === "nearest"} class:on={viewer.trace === "nearest"}
-              onclick={() => (viewer.trace = "nearest")}>Nearest opponent</button>
+              onclick={() => (viewer.trace = "nearest")}>Nearest Opponent</button>
+      <button type="button" role="radio" aria-checked={viewer.trace === "players"} class:on={viewer.trace === "players"}
+              onclick={() => (viewer.trace = "players")}>Players</button>
     </div>
     {#if viewer.trace === "nearest"}
       <label class="trace-pick">
@@ -180,7 +197,7 @@
           {/if}
         </span>
       {/if}
-    {:else}
+    {:else if viewer.trace === "ball"}
       <span class="trace-read">
         {#if hovered}at {hovered.t.toFixed(1)} s: <b>{fmt(hovered.v)}</b>{:else}ball height <b>{fmt(now?.v)}</b>{/if}
       </span>
@@ -190,6 +207,8 @@
   <div class="trace-chart" bind:clientWidth={width}>
     {#if !play}
       <p class="trace-empty">No play selected.</p>
+    {:else if viewer.trace === "players"}
+      <TrackingTable {play} />
     {:else if width > 0}
       <svg bind:this={svg} {width} height={H} role="slider" aria-label="The play's timeline and trace; click to move playback"
            aria-valuenow={Math.round(viewer.pos)} aria-valuemin={0} aria-valuemax={seq.length - 1} tabindex="-1"
@@ -260,9 +279,9 @@
       {#if hoverTick}
         {@const x = M.left + hoverTick.frac * plotW}
         <!-- A card with details opens upward, over the court, so it never runs off the bottom of the page. -->
-        <div class="trace-card" class:up={hoverLines.length > 0} style:left="{clamp(x - 130, 0, Math.max(0, width - 260))}px" style:top="{top + 6}px">
-          <span class="trace-card-time">{(hoverTick.k / FPS).toFixed(1)} s</span>
-          <b class={hoverTick.event.kind}>{hoverTick.event.label}</b>
+        <div class="trace-card" class:up={hoverLines.length > 0} bind:clientWidth={cardW}
+             style:left="{clamp(x - cardW / 2, 0, Math.max(0, width - cardW))}px" style:top="{top + 6}px">
+          <span class="trace-card-head"><b class={hoverTick.event.kind}>{cardTitle(hoverTick)}</b><span class="trace-card-time">{(hoverTick.k / FPS).toFixed(1)} s</span></span>
           {#each hoverLines as line}
             <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
           {/each}

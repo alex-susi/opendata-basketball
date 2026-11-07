@@ -2,7 +2,8 @@
 // context, tracking quality and season figures. Pure, so the tests can run it in Node.
 
 import { clock } from "./geometry";
-import type { AnnChance, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
+import { gapAt, stretch } from "./motion";
+import type { AnnChance, AnnCloseout, AnnDrive, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
 
 export interface Line {
   k: string;
@@ -30,6 +31,14 @@ const COVERAGE: Record<string, string> = {
 
 /** camelCase as lower-case words: "dribblePullUp" → "dribble pull up". */
 export const words = (s: string): string => s.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+
+const MINOR = new Set(["a", "and", "by", "for", "from", "in", "of", "on", "the", "to", "vs"]);
+/** Title Case, leaving short joining words lower case after the first word: "catch and shoot" → "Catch and Shoot". */
+export const titleCase = (s: string): string =>
+  s.split(" ").map((w, i) => (i && MINOR.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(" ");
+
+/** A court region in Title Case: "left wing three" → "Left Wing Three", "ra" → "Restricted Area". */
+export const regionName = (r: string): string => (r === "ra" ? "Restricted Area" : titleCase(r));
 
 export function playerOf(play: Play, pid: number | undefined): PlayerTrack | undefined {
   return pid == null ? undefined : play.players.find((p) => p.id === pid);
@@ -99,19 +108,19 @@ const ZONE_OF_REGION: Record<string, keyof NonNullable<SeasonFigures["zone"]>> =
   "right wing two": "mid", "middle two": "mid", "left corner three": "c3", "right corner three": "c3",
   "left wing three": "ab3", "right wing three": "ab3", "middle three": "ab3",
 };
-const ZONE_NAMES = { ra: "the restricted area", paint: "the paint", mid: "mid-range", c3: "the corner 3", ab3: "above the break" };
+const ZONE_NAMES = { ra: "the Restricted Area", paint: "the Paint", mid: "Mid-Range", c3: "the Corner 3", ab3: "Above the Break" };
 
 /** A player's season in a few lines (offense only: the aggregates have no defensive figures). */
 export function seasonLines(fig: SeasonFigures | null): Line[] {
-  if (!fig) return [{ k: "Season", v: "no season row" }];
+  if (!fig) return [{ k: "Season", v: "No season row" }];
   const lines: Line[] = [];
   if (fig.g != null) lines.push({ k: "Games", v: String(fig.g) });
   if (fig.fg) lines.push({ k: "FG", v: `${fig.fg[1]}/${fig.fg[0]} (${share(fig.fg[1], fig.fg[0])}) · ${efg(fig.fg).replace(/ \(\d+\)$/, "")}` });
-  if (fig.cns) lines.push({ k: "Catch & shoot", v: efg(fig.cns) });
-  if (fig.od) lines.push({ k: "Off the dribble", v: efg(fig.od) });
+  if (fig.cns) lines.push({ k: "Catch and Shoot", v: efg(fig.cns) });
+  if (fig.od) lines.push({ k: "Off the Dribble", v: efg(fig.od) });
   if (fig.drives?.[0]) lines.push({ k: "Drives", v: `${share(fig.drives[1], fig.drives[0])} successful (${fig.drives[0]})` });
-  if (fig.handler?.[0]) lines.push({ k: "Pick handler", v: ppp(fig.handler) });
-  if (fig.screener?.[0]) lines.push({ k: "Pick screener", v: ppp(fig.screener) });
+  if (fig.handler?.[0]) lines.push({ k: "Pick Handler", v: ppp(fig.handler) });
+  if (fig.screener?.[0]) lines.push({ k: "Pick Screener", v: ppp(fig.screener) });
   return lines;
 }
 
@@ -130,7 +139,7 @@ export function screenSeasonLines(play: Play, season: Season | null, s: AnnScree
   const add = (pid: number, role: "handler" | "screener", cov: string | undefined) => {
     const fig = seasonOf(season, playerOf(play, pid));
     const pair = cov && cov !== "none" ? fig?.[role === "handler" ? "handlerVs" : "screenerVs"]?.[cov] : fig?.[role];
-    if (pair?.[0]) out.push({ k: `${nameOf(play, pid)}, ${role}`, v: `${ppp(pair)}${cov && cov !== "none" ? ` vs ${COVERAGE[cov] ?? cov}` : ""}` });
+    if (pair?.[0]) out.push({ k: `${nameOf(play, pid)}, ${titleCase(role)}`, v: `${ppp(pair)}${cov && cov !== "none" ? ` vs ${COVERAGE[cov] ?? cov}` : ""}` });
   };
   add(s.use, "handler", s.covUse);
   add(s.scr, "screener", s.covScr);
@@ -147,30 +156,74 @@ export interface Card {
 
 export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; season: Season | null }): Card {
   const lines: Line[] = [];
-  if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft${shot.region ? ` · ${shot.region}` : ""}` });
-  if (shot.sq != null) lines.push({ k: "Shot quality", v: `${Math.round(shot.sq)} / 100 (SkillCorner)` });
-  if (shot.cl) {
-    const def = shot.defId != null ? ` · ${nameOf(play, shot.defId)}${shot.defDist != null ? ` ${shot.defDist.toFixed(1)} ft` : ""}` : "";
-    lines.push({ k: "Contest", v: `${shot.cl}${def}`, tone: CONTEST_COLORS[shot.cl] });
+  const tone = shot.cl ? CONTEST_COLORS[shot.cl] : undefined;
+  if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
+  if (shot.region) lines.push({ k: "Region", v: regionName(shot.region) });
+  if (shot.sq != null) lines.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
+  if (shot.cl) lines.push({ k: "Contest", v: titleCase(shot.cl), tone });
+  if (shot.defId != null) {
+    lines.push({ k: "Closest Defender", v: `${nameOf(play, shot.defId)}${shot.defDist != null ? ` · ${shot.defDist.toFixed(1)} ft` : ""}`, tone });
   }
-  const how = [shot.rt != null ? `${shot.rt.toFixed(1)} s release` : null,
-               shot.drb != null ? `${shot.drb} dribble${shot.drb === 1 ? "" : "s"}` : null,
-               shot.cns == null ? null : shot.cns ? "catch & shoot" : "off the dribble"].filter(Boolean);
-  if (how.length) lines.push({ k: "Creation", v: how.join(" · ") });
-  if (shot.type) lines.push({ k: "Type", v: words(shot.type) });
-  if (shot.sc != null) lines.push({ k: "Shot clock", v: `${shot.sc.toFixed(1)} s` });
-  lines.push({ k: "Pass", v: shot.assisted && shot.passer != null ? `assisted by ${nameOf(play, shot.passer)}` : "unassisted" });
-  if (shot.blocked && shot.blocker != null) lines.push({ k: "Blocked by", v: nameOf(play, shot.blocker) });
-  if (shot.fouled) lines.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "yes" });
+  if (shot.rt != null) lines.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
+  if (shot.drb != null) lines.push({ k: "Dribbles", v: String(shot.drb) });
+  if (shot.cns != null) lines.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
+  if (shot.type) lines.push({ k: "Type", v: titleCase(words(shot.type)) });
+  if (shot.sc != null) lines.push({ k: "Shot Clock", v: `${shot.sc.toFixed(1)} s` });
+  lines.push({ k: "Pass", v: shot.assisted && shot.passer != null ? `Assisted by ${nameOf(play, shot.passer)}` : "Unassisted" });
+  if (shot.blocked && shot.blocker != null) lines.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
+  if (shot.fouled) lines.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
   if (opts.peak) {
     const peak = shotPeak(play, shot);
-    if (peak != null) lines.push({ k: "Ball peak", v: `${peak.toFixed(1)} ft (tracking)` });
+    if (peak != null) lines.push({ k: "Ball Peak", v: `${peak.toFixed(1)} ft` });
   }
   if (opts.season) {
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
     if (line) lines.push(line);
   }
   return { title: `${madeOf(shot)} · ${nameOf(play, shot.pid)}`, tone: shot.made ? "#2FAE5A" : "#E04848", lines };
+}
+
+// ---- drives and closeouts --------------------------------------------------------------------------
+
+const fmtNum = (v: number | null | undefined, digits: number, unit: string): string =>
+  v == null || Number.isNaN(v) ? "–" : `${v.toFixed(digits)} ${unit}`;
+
+/** One player's movement over an action, from the tracking (smoothed; see motion.ts). */
+function movementLines(play: Play, pid: number, f0: number, f1: number, whose: string): Line[] {
+  const m = stretch(play, pid, f0, f1);
+  if (!m) return [];
+  return [
+    { k: "Duration", v: `${m.secs.toFixed(1)} s` },
+    { k: `${whose} Max Speed`, v: fmtNum(m.maxSpeed, 1, "ft/s") },
+    { k: `${whose} Distance Covered`, v: fmtNum(m.dist, 1, "ft") },
+    { k: `${whose} Peak Acceleration`, v: fmtNum(m.accel, 1, "ft/s²") },
+    { k: `${whose} Peak Deceleration`, v: fmtNum(m.decel, 1, "ft/s²") },
+  ];
+}
+
+/** A drive: how it went (event fields), then the driver's movement and his separation from his defender. */
+export function driveLines(play: Play, d: AnnDrive): Line[] {
+  const lines: Line[] = [];
+  if (d.dir) lines.push({ k: "Direction", v: titleCase(d.dir) });
+  lines.push({ k: "Blow-By", v: d.blowby ? "Yes" : "No" });
+  if (d.end) lines.push({ k: "Ended With", v: titleCase(words(d.end)) });
+  if (d.def != null) {
+    lines.push({ k: "Defender", v: nameOf(play, d.def) });
+    const a = gapAt(play, d.pid, d.def, d.f), b = gapAt(play, d.pid, d.def, d.f1);
+    lines.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
+  }
+  lines.push({ k: "Drive Length", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1, "ft") });
+  lines.push(...movementLines(play, d.pid, d.f, d.f1, "Driver"));
+  return lines;
+}
+
+/** A closeout: the gap the defender closed (event fields), then how he ran out. */
+export function closeoutLines(play: Play, c: AnnCloseout): Line[] {
+  return [
+    { k: "Ball Handler", v: nameOf(play, c.pid) },
+    { k: "Gap", v: `${c.d0.toFixed(1)} ft → ${c.d1.toFixed(1)} ft` },
+    ...movementLines(play, c.def, c.f, c.f1, "Defender"),
+  ];
 }
 
 // ---- possession card -----------------------------------------------------------------------------
@@ -196,24 +249,31 @@ export function possessionCard(play: Play, f: number, gc: number): Card {
   const now = own.filter((c) => c.f <= f);
   if (own.length) {
     const orb = live(ann?.rebounds).filter((r) => !r.def && !r.team).length;
-    lines.push({ k: "Chance", v: `${Math.max(1, now.length)} of ${own.length}${orb ? ` · ${orb} off. reb.` : ""}${now.some((c) => c.transition) ? " · transition" : ""}` });
+    lines.push({ k: "Chance", v: `${Math.max(1, now.length)} of ${own.length}${orb ? ` · ${orb} Off. Reb.` : ""}${now.some((c) => c.transition) ? " · Transition" : ""}` });
   }
-  const touches = play.touches.filter((t) => t.f0 >= start && t.f0 <= f);
-  lines.push({ k: "So far", v: `${live(ann?.passes).length} passes · ${live(ann?.dribbles).length} dribbles · ${touches.length} touches` });
+  // Touches under way at any point since the chance began (the first can start a moment before it, on the inbound).
+  const touches = play.touches.filter((t) => t.f1 >= start && t.f0 <= f);
+  const dribbles = (ann?.dribbles ?? []).filter((d) => d.f >= Math.min(start, touches[0]?.f0 ?? start) && d.f <= f);
+  lines.push({ k: "Touches", v: String(touches.length) });
+  lines.push({ k: "Passes", v: String(live(ann?.passes).length) });
+  // Dribbles by touch, in order: "4 | 0 | 2" is four dribbles on the first touch, none on the second and two so far
+  // on the third.
+  lines.push({ k: "Dribbles", v: touches.length
+    ? touches.map((t) => dribbles.filter((d) => d.pid === t.pid && d.f >= t.f0 && d.f <= t.f1).length).join(" | ")
+    : String(dribbles.length) });
   if (touches.length) {
-    const strip = touches.slice(-4).map((t) => `${nameOf(play, t.pid).split(" ")[0]} ${((Math.min(f, t.f1) - t.f0) / 25).toFixed(1)}s`);
-    lines.push({ k: "Ball", v: (touches.length > 4 ? "… → " : "") + strip.join(" → ") });
+    lines.push({ k: "Ball", v: touches.map((t) => `${nameOf(play, t.pid).split(" ")[0]} ${((Math.min(f, t.f1) - t.f0) / 25).toFixed(1)}s`).join(" → ") });
   }
   const offScore = play.offTeam === play.homeTeam ? play.homeScore : play.awayScore;
   const defScore = play.offTeam === play.homeTeam ? play.awayScore : play.homeScore;
   const margin = offScore - defScore;
-  const state = margin ? `${play.off} ${margin > 0 ? "up" : "down"} ${Math.abs(margin)}` : "Tied";
+  const state = margin ? `${play.off} ${margin > 0 ? "Up" : "Down"} ${Math.abs(margin)}` : "Tied";
   const clutch = play.period >= 4 && gc <= 300 && Math.abs(margin) <= 5;
-  lines.push({ k: "Game", v: `${state} · ${play.period <= 4 ? `Q${play.period}` : `OT${play.period - 4}`} ${clock(gc)}${clutch ? " · CLUTCH" : ""}`,
+  lines.push({ k: "Game", v: `${state} · ${play.period <= 4 ? `Q${play.period}` : `OT${play.period - 4}`} ${clock(gc)}${clutch ? " · Clutch" : ""}`,
                tone: clutch ? "#F5B02E" : undefined });
   // Every free throw carries its foul, so the fouls' lists hold them all once (a shot's list repeats its foul's).
   const ft = live(ann?.fouls).flatMap((x) => x.ft);
-  if (ft.length) lines.push({ k: "Free throws", v: `${ft.filter(Boolean).length}/${ft.length}` });
+  if (ft.length) lines.push({ k: "Free Throws", v: `${ft.filter(Boolean).length}/${ft.length}` });
   return { title: "Possession", lines };
 }
 

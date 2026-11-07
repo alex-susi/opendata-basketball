@@ -1842,3 +1842,22 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   player's floor distance to the nearest opponent, sampled every 0.2 s of playback, with extrapolated positions marked.
 - **Checks:** export and parity reference rerun (`INDEX_VERSION` 4), svelte-check 0 errors, 39 tests pass, checked in
   the preview. The Shiny viewer's front end still holds its EPV and shot-panel code; with no prices it hides them.
+
+## 2026-11-07 — Court orientation corrected; screen locations fixed; and-ones shown as makes
+
+- **Finding (discrepancy with `docs/data_dictionary/tracking_data.md`):** tracking `y` runs from the far sideline to
+  the near one in the camera's view, not "bottom to top" as documented. Evidence: across the ten games every shot whose
+  region starts "left" (269) has its shooter on the offense's right in raw tracking, and every "right" shot (241) the
+  reverse, while the event convention (offense's left at +y) matches the regions. The owner also found a broadcast
+  replay where the viewer showed the shooter on the far side and the video on the near side.
+- **Fix:** `play_payload()` stores `(flip * x, -flip * y)`, a true top-down court that matches the broadcast in the
+  camera view; event locations map as `(-x, y)` (`web/scripts/annotations.R`). Shots, passes, dribbles, drives,
+  closeouts, fouls, rebounds, turnovers and touches then sit on the actor's tracked position (median gap < 0.01 ft).
+- **Second finding:** in `picks`, `handoffs` and `off_ball_screens`, `location` y has the wrong sign on most
+  possessions where `leftHoop` is true (about 1,350 of 1,560 such events), and their `region` left/right with it. The
+  export places each on whichever sign lies nearer the screener's tracked position (majority rule when he is not
+  tracked); region labels of those tables are not used.
+- **And-ones:** a possession whose last shot was made while fouled (outcome FOU, or FGM) is labelled "Made 2/3" with
+  `and1 = TRUE` (29 possessions) instead of "Foul" (`INDEX_VERSION` 8).
+- **Checks:** export and parity reference rerun; tests check every marker family against the tracked actor and the
+  left/right side of labelled shots; 50 tests pass.

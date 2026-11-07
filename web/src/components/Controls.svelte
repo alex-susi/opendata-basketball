@@ -1,7 +1,7 @@
 <script lang="ts">
   // Playback controls, at the top of the Display panel: previous action, play/pause, next action, then the speed
   // (centred between the buttons and the time) and the elapsed time. Also the keyboard: space plays or pauses, the
-  // arrow keys step a second back or forward.
+  // arrow keys step one frame back or forward.
   import { clamp, clock } from "../lib/geometry";
   import { eventMarks, FPS, stepAction } from "../lib/sequence";
   import type { Play } from "../lib/types";
@@ -20,8 +20,8 @@
   function onKey(ev: KeyboardEvent): void {
     if (!play || viewer.hidden || (ev.target instanceof Element && ev.target.closest("input, select, textarea, .multi-list"))) return;
     if (ev.code === "Space") { ev.preventDefault(); togglePlay(seq.length); }
-    if (ev.code === "ArrowLeft") { ev.preventDefault(); viewer.pos = clamp(viewer.pos - FPS, 0, seq.length - 1); }
-    if (ev.code === "ArrowRight") { ev.preventDefault(); viewer.pos = clamp(viewer.pos + FPS, 0, seq.length - 1); }
+    if (ev.code === "ArrowLeft") { ev.preventDefault(); viewer.playing = false; viewer.pos = clamp(Math.round(viewer.pos) - 1, 0, seq.length - 1); }
+    if (ev.code === "ArrowRight") { ev.preventDefault(); viewer.playing = false; viewer.pos = clamp(Math.round(viewer.pos) + 1, 0, seq.length - 1); }
   }
 </script>
 

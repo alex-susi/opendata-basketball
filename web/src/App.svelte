@@ -14,6 +14,7 @@
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
   import { loadMeta, loadPlay, loadPlays, loadSeason } from "./lib/data";
+  import { loadLogos, logoUrl } from "./lib/logos.svelte";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp, quarter } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
@@ -66,7 +67,10 @@
   const homeIsOff = $derived(play ? play.off === play.home : true);
   const home = $derived(play ? (homeIsOff ? play.colors.off : play.colors.def) : null);
   const away = $derived(play ? (homeIsOff ? play.colors.def : play.colors.off) : null);
-  const subtitle = $derived(play ? [play.who ? `${play.result} (${play.who})` : play.result, ...play.types].join(" · ") : "");
+  const homeLogo = $derived(play ? logoUrl(play.homeTeam) : null);
+  const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
+  loadLogos();
+  const subtitle = $derived(play ? [(play.who ? `${play.result} (${play.who})` : play.result) + (play.and1 ? ", and-1" : ""), ...play.types].join(" · ") : "");
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
 
   // The address names the selected play, or the document tab while one is open.
@@ -194,9 +198,13 @@
       {#if play && home && away}
         <div class="play-head-score">
           <div class="scorebug" title={`${play.game} · score at the start of the possession`}>
-            <span class="team home" style:color={home.text}><span class="kit" style:background={home.fill}></span>{play.home}</span>
+            <span class="team home" style:color={home.text}>
+              {#if homeLogo}<img class="logo" src={homeLogo} alt="" />{:else}<span class="kit" style:background={home.fill}></span>{/if}{play.home}
+            </span>
             <b>{play.homeScore} – {play.awayScore}</b>
-            <span class="team away" style:color={away.text}>{play.away}<span class="kit" style:background={away.fill}></span></span>
+            <span class="team away" style:color={away.text}>
+              {play.away}{#if awayLogo}<img class="logo" src={awayLogo} alt="" />{:else}<span class="kit" style:background={away.fill}></span>{/if}
+            </span>
           </div>
           <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
           <div class="game-clock">
