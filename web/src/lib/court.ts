@@ -6,8 +6,9 @@ export const HALF_L = 14 * M;
 export const HALF_W = 7.5 * M;
 export const HOOP_X = HALF_L - 1.575 * M;
 export const KEY_X = HALF_L - 5.8 * M, KEY_HALF_W = 2.45 * M;
-const THREE_R = 6.75 * M, THREE_Y = 6.6 * M;
-const CIRCLE_R = 1.8 * M, NO_CHARGE_R = 1.25 * M;
+export const THREE_R = 6.75 * M, THREE_Y = 6.6 * M;
+const CIRCLE_R = 1.8 * M;
+export const NO_CHARGE_R = 1.25 * M;
 const BOARD_X = HALF_L - 1.2 * M, BOARD_HALF_W = 0.9 * M, RIM_R = 0.225 * M;
 const LANE_MARKS = [1.75 * M, 3.85 * M, 4.7 * M], LANE_BLOCK = [2.6 * M, 3.0 * M];
 
@@ -19,7 +20,7 @@ export const HEADER_TOP = 40;   // top padding while a video is recorded: room f
 // The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
 // Team colours come with each play (Play.colors).
 export const COLORS = {
-  paper: "#1B2334", floor: "#F6CFA3", paint: "#E8B886", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
+  paper: "#1B2334", floor: "#F6CFA3", paint: "#DCA673", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
   ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", risk: "#F5B02E",
 };
 
@@ -95,7 +96,7 @@ function halfCourtLines(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
 }
 
-const LOGO_FT = 17;        // the midcourt logo's larger side, ft (the centre circle is 11.8 ft across)
+const LOGO_FT = 21;        // the midcourt logo's larger side, ft (the centre circle is 11.8 ft across)
 const LOGO_ALPHA = 0.28;
 
 /**

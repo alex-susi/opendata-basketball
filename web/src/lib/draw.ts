@@ -3,6 +3,7 @@
 // from draw(), drawPlayer(), drawHeader() and drawCaption() in the Shiny app's www/player.js.
 
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
+import { controlAt, drawControl } from "./control";
 import { logoImage } from "./logos.svelte";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
@@ -21,6 +22,8 @@ export interface DrawOptions {
   showArch: boolean;
   /** A fading trail behind each player: where he has been over the last 0.6 s, so its length shows his speed. */
   showTrails: boolean;
+  /** Court control: which team would reach the ball first at each spot (control.ts). */
+  showControl: boolean;
   /** Annotation sections drawn on the court (annotate.ts). */
   ann: AnnSections;
   /** The player whose nearest opponent is shown: both ringed and joined by a line. Null shows no pair. */
@@ -43,6 +46,8 @@ export interface FrameInfo {
   box: { left: number; top: number; w: number; h: number; backLeft: boolean };
   /** Index of the tracking frame drawn (the earlier of the two being blended). */
   i0: number;
+  /** With court control on: the offense's share of its attacking half, or null when it cannot be computed. */
+  control: number | null;
 }
 
 interface Dot {
@@ -363,6 +368,9 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   ctx.clip();
   const areaDef = drawHull(ctx, L, dots.def, play.colors.def, o.showDef);
   const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
+  // Court control goes over the hulls (their fill would hide it) and under everything else, at the tracking frame.
+  const cc = o.showControl ? controlAt(play, c.i0) : null;
+  if (cc) drawControl(ctx, L, cc, { off: play.colors.off.fill, def: play.colors.def.fill });
   const all = dots.def.concat(dots.off);
   if (o.showTrails) for (const d of all) drawTrail(ctx, L, play, d, c, r, play.colors[d.p.role]);
   const k = annContext(ctx, L, play, c, r, all);
@@ -414,5 +422,6 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
            gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]),
            hits: all.map((d) => ({ id: d.p.id, x: px(L, d.x), y: py(L, d.y), r })),
-           box: { left: L.left, top: L.top, w: L.cw, h: L.ch, backLeft: L.f === 1 }, i0: c.i0 };
+           box: { left: L.left, top: L.top, w: L.cw, h: L.ch, backLeft: L.f === 1 }, i0: c.i0,
+           control: cc ? cc.offHalf : null };
 }

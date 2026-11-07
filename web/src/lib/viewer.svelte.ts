@@ -18,12 +18,16 @@ export const viewer = $state({
   showArch: true,
   /** A trail behind each player on the court, longer the faster he moves. */
   showTrails: true,
+  /** Court control under the players (time-to-ball version, control.ts). */
+  showControl: false,
   /** Annotation sections (the Display panel's Annotations toggles; annotate.ts, Annotations.svelte). */
   ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false, season: false },
   /** The trace panel under the court. */
   showTrace: true,
   /** What it shows: the ball's height, one player's distance to the closest opponent, or the players on court. */
   trace: "ball" as "ball" | "nearest" | "players",
+  /** Which column group the Player Tracking tab shows. */
+  trackCols: "movement" as "movement" | "position" | "ball" | "all",
   /** The player the nearest-opponent trace follows (clicked on the court or in a roster), or null. */
   focusPid: null as number | null,
   /** Caption the actions in the trace panel: the action above the plot, the player under the time axis. */
@@ -51,6 +55,8 @@ export const live = $state({
   shotClock: "",
   /** Index into the play's frames of the frame last drawn, refreshed a few times a second while playing. */
   i0: 0,
+  /** With court control on: the offense's share of its attacking half at the frame drawn, or null. */
+  control: null as number | null,
   /** The court's box on the canvas (CSS px) and which half is the backcourt, for the cards over it. */
   box: null as { left: number; top: number; w: number; h: number; backLeft: boolean } | null,
 });

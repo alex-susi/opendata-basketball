@@ -328,6 +328,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 .trace-card.up { transform: translateY(calc(-100% - 12px)); z-index: 5; }
 .trace-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.trace-card-head.next { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--line); }
 .trace-card-time { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .trace-card b.made { color: var(--made); }
 .trace-card b.missed, .trace-card b.turnover { color: var(--missed); }
@@ -386,6 +387,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .toggle-grid .toggle, .toggle-grid .switch { margin: 0; }
 .toggle-grid.by-column { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
 .toggle-grid.by-column.four { grid-template-rows: repeat(4, auto); }
+.toggle-grid.by-column.five { grid-template-rows: repeat(5, auto); }
+.control-read { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 8px 0 0; color: var(--muted); font-size: 11.5px; }
+.control-read .legend { display: inline-flex; align-items: center; gap: 5px; }
+.control-read .legend i { width: 10px; height: 10px; border-radius: 2px; }
+.control-read b { color: var(--ink); }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .panel-head h2 { margin-bottom: 0; }
 /* A small on/off switch: the checkbox stays in the page for the keyboard, the track is what shows. */
@@ -576,26 +582,28 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .season-card { position: fixed; z-index: 20; width: 270px; pointer-events: none; background: var(--raised); }
 .season-sub { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
 
-/* The trace panel's Players tab (TrackingTable.svelte): one table per team, side by side. */
-.track-tables { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 10px 18px; padding: 4px 2px 8px; }
-.track-team { min-width: 0; overflow-x: auto; }
-.track-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; column-gap: 12px; margin-bottom: 4px; font-size: 12px; }
-.track-head b { white-space: nowrap; }
-.track-head span { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.track-team table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
-.track-team th { padding: 3px 5px; color: var(--muted); font-size: 11px; font-weight: 600; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
-.track-team td { padding: 2px 5px; text-align: right; white-space: nowrap; }
-.track-team .name { text-align: left; }
-.track-team tr.units th { padding-top: 0; font-size: 10px; font-weight: 400; }
-.track-team thead tr:first-child th { border-bottom: none; }
-.track-team td.name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-.track-team tbody tr { cursor: pointer; }
-.track-team tbody tr:hover { background: var(--raised); }
-.track-team tr.has-ball td.name { font-weight: 700; }
-.track-team .num {
-  display: inline-grid; place-items: center; min-width: 20px; height: 18px; margin-right: 7px; padding: 0 3px; border-radius: 9px;
+/* The trace panel's Player Tracking tab (TrackingTable.svelte): one table, a heading row per team. */
+.track-groups { display: inline-flex; margin: 0 0 4px; }
+.track-groups button { padding: 2px 10px; font-size: 11.5px; }
+.track-scroll { overflow-x: auto; }
+.track-table th.left, .track-table td.left { text-align: left; }
+.track-table { min-width: 100%; margin: 2px 0 6px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+/* Headers wrap between words; each unit is joined to the word before it (a no-break space), so it stays on its line. */
+.track-table th { padding: 3px 8px; color: var(--muted); font-size: 11px; font-weight: 600; line-height: 1.2; text-align: right; vertical-align: bottom; border-bottom: 1px solid var(--line); }
+.track-table th.name { max-width: none; white-space: nowrap; }
+.track-table td { padding: 0 8px; line-height: 18px; text-align: right; white-space: nowrap; }
+.track-table .name { position: sticky; left: 0; z-index: 1; background: var(--panel); text-align: left; }
+.track-table tr.player:hover td.name { background: var(--raised); }
+.track-table tr.group td { padding: 4px 8px 1px; text-align: left; font-size: 12px; }
+.track-table tr.group span { margin-left: 10px; color: var(--muted); }
+.track-table tr.player { cursor: pointer; }
+.track-table tr.player:hover { background: var(--raised); }
+.track-table tr.has-ball td.name { font-weight: 700; }
+.track-table .num {
+  display: inline-grid; place-items: center; min-width: 19px; height: 16px; margin-right: 7px; padding: 0 3px; border-radius: 8px;
   font-size: 10.5px; font-weight: 700; box-sizing: border-box;
 }
-.track-team .opp { font-weight: 700; }
-.track-team .empty { color: var(--muted); text-align: left; }
+.track-table .opp { font-weight: 700; }
+.track-table .ball-dot { display: inline-block; width: 9px; height: 9px; margin-left: 6px; border-radius: 50%; background: #FFA62B; border: 1px solid #5C3200; box-sizing: border-box; }
+.track-table .empty { color: var(--muted); text-align: left; }
 .paint-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255, 255, 255, .45); }

@@ -6,7 +6,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { closeoutLines, driveLines, frameIndex, ownChances, possessionCard, shotCard } from "../src/lib/context";
 import { decodePlay } from "../src/lib/decode";
-import { motion, spacing } from "../src/lib/motion";
+import { accelAt, motion, spacing } from "../src/lib/motion";
+import { contestOf, courtRegion } from "../src/lib/regions";
 import type { PeriodIndex, Play, PlayRow } from "../src/lib/types";
 
 const DATA = join(__dirname, "..", "public", "data");
@@ -83,6 +84,25 @@ describe("annotations", () => {
     expect(seen).toBeGreaterThan(1000);
   });
 
+  it("gives each frame to one play only, in order", () => {
+    for (let k = 1; k < sample.length; k++) {
+      const a = sample[k - 1], b = sample[k];
+      expect(a.frames[a.frames.length - 1], `${a.id} / ${b.id}`).toBeLessThan(b.frames[0]);
+    }
+  });
+
+  it("ends a play about a second after its last made basket reaches the rim", () => {
+    let seen = 0;
+    for (const play of sample) {
+      const last = play.ann!.shots.filter((s) => s.pid != null).at(-1);
+      if (!last?.made || !play.result.startsWith("Made") || play.and1) continue;   // an and-one ends on its free throw
+      const tail = play.frames[play.frames.length - 1] - last.f1;
+      expect(tail, play.id).toBeLessThanOrEqual(25);
+      seen++;
+    }
+    expect(seen).toBeGreaterThan(5);
+  });
+
   it("keeps a play's own chances only", () => {
     for (const play of sample) for (const c of ownChances(play)) expect(c.poss).toBe(play.id);
   });
@@ -94,6 +114,29 @@ describe("readouts", () => {
       const m = motion(play);
       m.speed.forEach((v) => v.forEach((s) => { if (!Number.isNaN(s)) expect(s).toBeLessThanOrEqual(35); }));
       m.covered.forEach((c) => { for (let i = 1; i < c.length; i++) expect(c[i]).toBeGreaterThanOrEqual(c[i - 1]); });
+    }
+  });
+
+  it("name court regions as SkillCorner does for its shots", () => {
+    const shots = plays.filter((r) => r.gameId === plays[0].gameId).map(loadPlay).flatMap((p) => p.ann!.shots).filter((s) => s.region);
+    const same = shots.filter((s) => courtRegion(s.x, s.y) === s.region).length;
+    expect(shots.length).toBeGreaterThan(100);
+    expect(same / shots.length).toBeGreaterThan(0.9);
+  });
+
+  it("grade a contest from the nearest defender's distance", () => {
+    expect([1, 4, 6, 9].map(contestOf)).toEqual(["plus", "average", "light", "open"]);
+  });
+
+  it("give accelerations within a plausible range, and velocity matching speed", () => {
+    const play = sample[0], m = motion(play);
+    for (let at = 0; at < play.players.length; at++) {
+      for (let i = 0; i < play.frames.length; i += 5) {
+        const a = accelAt(play, m.speed[at], i);
+        if (!Number.isNaN(a)) expect(Math.abs(a)).toBeLessThanOrEqual(40);
+        if (!Number.isNaN(m.speed[at][i])) expect(Math.hypot(m.vx[at][i], m.vy[at][i])).toBeCloseTo(m.speed[at][i], 6);
+        expect(m.fast[at][i]).toBeLessThanOrEqual(m.covered[at][i] + 1e-9);
+      }
     }
   });
 

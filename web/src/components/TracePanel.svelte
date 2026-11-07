@@ -38,12 +38,15 @@
   let width = $state(0);
   let svg = $state<SVGSVGElement>();
   let hoverK = $state<number | null>(null);
-  let hoverTick = $state<Tick | null>(null);
+  // Every action whose line is within a few pixels of the pointer, in time order: actions that happen at almost the
+  // same moment (a pick and the drive off it) share one card, a section each.
+  let hoverTicks = $state<Tick[]>([]);
+  const hoverTick = $derived(hoverTicks[0] ?? null);
 
-  // More about the hovered action, from the annotations that are switched on.
-  const hoverLines = $derived.by((): Line[] => {
-    const ev = hoverTick?.event, ann = play?.ann;
-    if (!ev || !ann || !play) return [];
+  // More about a hovered action, from the annotations that are switched on.
+  function linesFor(tick: Tick): Line[] {
+    const ev = tick.event, ann = play?.ann;
+    if (!ann || !play) return [];
     if ((ev.kind === "made" || ev.kind === "missed") && viewer.ann.shot) {
       const shot = ann.shots.find((x) => x.f === ev.f);
       return shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: viewer.ann.season ? season.data : null }).lines : [];
@@ -63,7 +66,8 @@
     if (viewer.ann.defense && cov) out.push({ k: "Coverage", v: cov });
     if (viewer.ann.season) out.push(...screenSeasonLines(play, season.data, screen));
     return out;
-  });
+  }
+  const hoverCards = $derived(hoverTicks.map((tick) => ({ tick, lines: linesFor(tick) })));
 
   // Players who appear on the tracked court at some point in this play, offense first.
   const tracked = $derived((play?.players ?? []).filter((p) => p.x.some((v) => !Number.isNaN(v)))
@@ -139,17 +143,13 @@
   function hover(ev: PointerEvent): void {
     const box = svg!.getBoundingClientRect(), x = ev.clientX - box.left, t = tAt(ev);
     hoverK = samples.length ? samples.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a)).k : null;
-    let best: Tick | null = null, gap = 7;
-    for (const tick of timeline.ticks) {
-      const d = Math.abs(M.left + tick.frac * plotW - x);
-      if (d < gap) { best = tick; gap = d; }
-    }
-    hoverTick = best;
+    const near = timeline.ticks.filter((tick) => Math.abs(M.left + tick.frac * plotW - x) < 7).sort((a, b) => a.k - b.k);
+    if (near.length !== hoverTicks.length || near.some((tick, n) => tick !== hoverTicks[n])) hoverTicks = near;
     if (svg!.hasPointerCapture(ev.pointerId)) seek(ev);
   }
   function leave(): void {
     hoverK = null;
-    hoverTick = null;
+    hoverTicks = [];
   }
   // The hovered action's title: a field goal's label without its shot type (the card's Type line has it).
   const cardTitle = (tick: Tick) =>
@@ -170,7 +170,7 @@
       <button type="button" role="radio" aria-checked={viewer.trace === "nearest"} class:on={viewer.trace === "nearest"}
               onclick={() => (viewer.trace = "nearest")}>Nearest Opponent</button>
       <button type="button" role="radio" aria-checked={viewer.trace === "players"} class:on={viewer.trace === "players"}
-              onclick={() => (viewer.trace = "players")}>Players</button>
+              onclick={() => (viewer.trace = "players")}>Player Tracking</button>
     </div>
     {#if viewer.trace === "nearest"}
       <label class="trace-pick">
@@ -229,7 +229,7 @@
         {/each}
         {#each timeline.ticks as tick, i (i)}
           {@const x = M.left + tick.frac * plotW}
-          <line class="mark {tick.event.kind}" class:on={hoverTick === tick} x1={x} x2={x} y1={top - 2} y2={bottom + 2} />
+          <line class="mark {tick.event.kind}" class:on={hoverTicks.includes(tick)} x1={x} x2={x} y1={top - 2} y2={bottom + 2} />
         {/each}
         {#if !kind}
           <text class="trace-prompt" x={M.left + plotW / 2} y={top + PLOT_H / 2} text-anchor="middle" dominant-baseline="middle">
@@ -258,7 +258,7 @@
             {/each}
           </svg>
           {#each timeline.ticks as tick}
-            <span class="tick-label above lean-{tick.lean} {tick.event.kind}" class:on={hoverTick === tick}
+            <span class="tick-label above lean-{tick.lean} {tick.event.kind}" class:on={hoverTicks.includes(tick)}
                   style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.short ?? ""}</span>
           {/each}
         </div>
@@ -271,7 +271,7 @@
             {/each}
           </svg>
           {#each timeline.ticks as tick}
-            <span class="tick-label below lean-{tick.lean}" class:on={hoverTick === tick}
+            <span class="tick-label below lean-{tick.lean}" class:on={hoverTicks.includes(tick)}
                   style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.who ?? ""}</span>
           {/each}
         </div>
@@ -279,11 +279,13 @@
       {#if hoverTick}
         {@const x = M.left + hoverTick.frac * plotW}
         <!-- A card with details opens upward, over the court, so it never runs off the bottom of the page. -->
-        <div class="trace-card" class:up={hoverLines.length > 0} bind:clientWidth={cardW}
+        <div class="trace-card" class:up={hoverCards.some((c) => c.lines.length > 0) || hoverCards.length > 1} bind:clientWidth={cardW}
              style:left="{clamp(x - cardW / 2, 0, Math.max(0, width - cardW))}px" style:top="{top + 6}px">
-          <span class="trace-card-head"><b class={hoverTick.event.kind}>{cardTitle(hoverTick)}</b><span class="trace-card-time">{(hoverTick.k / FPS).toFixed(1)} s</span></span>
-          {#each hoverLines as line}
-            <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
+          {#each hoverCards as card, n (n)}
+            <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{cardTitle(card.tick)}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
+            {#each card.lines as line}
+              <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
+            {/each}
           {/each}
         </div>
       {/if}

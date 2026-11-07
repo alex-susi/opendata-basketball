@@ -70,12 +70,14 @@ function posAt(k: Ctx, pid: number | undefined, f: number): [number, number] | n
   return Number.isNaN(p.x[i]) ? null : [p.x[i], p.y[i]];
 }
 
-function arrow(k: Ctx, x0: number, y0: number, x1: number, y1: number, color: string, width: number, dashed: boolean): void {
+/** @param trim Pixels to stop short of the end point (the edge of a player dot drawn there). */
+function arrow(k: Ctx, x0: number, y0: number, x1: number, y1: number, color: string, width: number, dashed: boolean, trim = 0): void {
   const { ctx } = k;
-  const ax = X(k, x0), ay = Y(k, y0), bx = X(k, x1), by = Y(k, y1);
-  const len = Math.hypot(bx - ax, by - ay);
-  if (len < 2) return;
-  const ux = (bx - ax) / len, uy = (by - ay) / len, head = Math.min(10, 0.45 * len);
+  const ax = X(k, x0), ay = Y(k, y0);
+  const full = Math.hypot(X(k, x1) - ax, Y(k, y1) - ay);
+  if (full - trim < 2) return;
+  const ux = (X(k, x1) - ax) / full, uy = (Y(k, y1) - ay) / full;
+  const len = full - trim, bx = ax + ux * len, by = ay + uy * len, head = Math.min(10, 0.45 * len);
   ctx.save();
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
@@ -94,6 +96,75 @@ function arrow(k: Ctx, x0: number, y0: number, x1: number, y1: number, color: st
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+}
+
+const PATH_SMOOTH = 3;   // frames either side averaged when tracing a player's path (tracking jitters by about a foot)
+
+/**
+ * A player's tracked path from frame f0 to frame f1 (tracking frame numbers), lightly smoothed, in feet. Breaks in
+ * the tracking are bridged by a straight segment.
+ */
+function pathOf(k: Ctx, pid: number, f0: number, f1: number): [number, number][] {
+  const p = playerOf(k.play, pid);
+  if (!p) return [];
+  const { frames } = k.play, out: [number, number][] = [];
+  for (let i = frameIndex(k.play, f0); i < frames.length && frames[i] <= f1; i++) {
+    if (frames[i] < f0) continue;
+    let sx = 0, sy = 0, n = 0;
+    for (let j = Math.max(0, i - PATH_SMOOTH); j <= Math.min(frames.length - 1, i + PATH_SMOOTH); j++) {
+      if (Math.abs(frames[j] - frames[i]) !== Math.abs(j - i) || frames[j] > f1 || frames[j] < f0 || Number.isNaN(p.x[j])) continue;
+      sx += p.x[j]; sy += p.y[j]; n++;
+    }
+    if (n) out.push([sx / n, sy / n]);
+  }
+  return out;
+}
+
+/** An arrow along a path (feet), its head at the end; `trim` px are cut off the end (the edge of a dot there). */
+function pathArrow(k: Ctx, path: [number, number][], color: string, width: number, trim = 0): void {
+  const pts = path.map(([x, y]) => [X(k, x), Y(k, y)] as [number, number]);
+  // Cut `trim` px off the end.
+  let cut = trim;
+  while (pts.length > 1 && cut > 0) {
+    const [ax, ay] = pts[pts.length - 2], [bx, by] = pts[pts.length - 1], seg = Math.hypot(bx - ax, by - ay);
+    if (seg > cut) { pts[pts.length - 1] = [bx - ((bx - ax) * cut) / seg, by - ((by - ay) * cut) / seg]; cut = 0; }
+    else { pts.pop(); cut -= seg; }
+  }
+  if (pts.length < 2) return;
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) total += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+  if (total < 4) return;
+  // The head points along the last few pixels of the path.
+  const [bx, by] = pts[pts.length - 1];
+  let j = pts.length - 2;
+  while (j > 0 && Math.hypot(bx - pts[j][0], by - pts[j][1]) < 8) j--;
+  const d = Math.hypot(bx - pts[j][0], by - pts[j][1]) || 1, ux = (bx - pts[j][0]) / d, uy = (by - pts[j][1]) / d;
+  const head = Math.min(10, 0.45 * total);
+  const { ctx } = k;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length - 1; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.lineTo(bx - ux * head * 0.6, by - uy * head * 0.6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bx, by);
+  ctx.lineTo(bx - ux * head - uy * head * 0.55, by - uy * head + ux * head * 0.55);
+  ctx.lineTo(bx - ux * head + uy * head * 0.55, by - uy * head - ux * head * 0.55);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Where a drive's arrow ends now: the driver so far while it is under way, its tracked end once it is over. */
+function driveEnd(k: Ctx, d: { f: number; f1: number; pid: number; x1: number; y1: number }): [number, number] {
+  const path = pathOf(k, d.pid, d.f, Math.min(k.frame, d.f1));
+  return path.length ? path[path.length - 1] : [d.x1, d.y1];
 }
 
 /** A small dark label centred on (x, y), in px. */
@@ -161,11 +232,16 @@ function drawEventsUnder(k: Ctx): void {
     const a = life(frame, p.f, p.f1, p.lost ? HOLD.intercept : HOLD.pass);
     if (!a || (frame > p.f1 && !p.lost)) continue;
     const from = p.x0 != null && p.y0 != null ? [p.x0, p.y0] : posAt(k, p.pid, p.f);
-    const to = p.lost ? posAt(k, p.stealer, p.f1) ?? (p.x1 != null ? [p.x1, p.y1!] : null)
-                      : p.x1 != null && p.y1 != null ? [p.x1, p.y1] : posAt(k, p.to, p.f1);
+    // While the ball is in the air the head follows the receiver (or, on an interception, the defender who takes it)
+    // where he is drawn now; the cross after an interception marks where he took it.
+    const catcher = p.lost ? p.stealer : p.to;
+    const now = frame <= p.f1 && catcher != null ? k.spots.get(catcher) : undefined;
+    const to = now ? [now.x, now.y]
+      : p.lost ? posAt(k, p.stealer, p.f1) ?? (p.x1 != null ? [p.x1, p.y1!] : null)
+      : p.x1 != null && p.y1 != null ? [p.x1, p.y1] : posAt(k, p.to, p.f1);
     if (!from || !to) continue;
     ctx.globalAlpha = a;
-    if (frame <= p.f1) arrow(k, from[0], from[1], to[0], to[1], p.lost ? LOST : "rgba(20,24,34,.8)", 2, true);
+    if (frame <= p.f1) arrow(k, from[0], from[1], to[0], to[1], p.lost ? LOST : "rgba(20,24,34,.8)", 2, true, now ? k.r + 2 : 0);
     else cross(k, to[0], to[1], 6, LOST);
   }
   ctx.globalAlpha = 1;
@@ -174,7 +250,10 @@ function drawEventsUnder(k: Ctx): void {
     const a = life(frame, d.f, d.f1, HOLD.drive);
     if (!a) continue;
     ctx.globalAlpha = 0.85 * a;
-    arrow(k, d.x0, d.y0, d.x1, d.y1, off.mark, 3.5, false);
+    // The driver's tracked path, growing with him while the drive is under way (the head then stops at his dot).
+    const path = pathOf(k, d.pid, d.f, Math.min(frame, d.f1));
+    if (path.length >= 2) pathArrow(k, path, off.mark, 3.5, frame < d.f1 ? k.r + 2 : 0);
+    else arrow(k, d.x0, d.y0, d.x1, d.y1, off.mark, 3.5, false);
   }
   for (const c of ann.closeouts) {
     const a = life(frame, c.f, c.f1, HOLD.closeout);
@@ -391,7 +470,8 @@ function drawEventsOver(k: Ctx): void {
     if (!a) continue;
     ctx.globalAlpha = a;
     const text = ["Drive", d.dir, d.blowby ? "blow-by" : null].filter(Boolean).join(" · ");
-    tag(ctx, X(k, d.x1), Y(k, d.y1) - r - 10, text, COLORS.ink, 10);
+    const [ex, ey] = driveEnd(k, d);
+    tag(ctx, X(k, ex), Y(k, ey) - r - 10, text, COLORS.ink, 10);
   }
   for (const c of ann.closeouts) {
     const a = life(frame, c.f, c.f1, HOLD.closeout);

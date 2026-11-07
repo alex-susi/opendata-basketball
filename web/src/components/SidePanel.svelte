@@ -58,7 +58,7 @@
       </button>
     </div>
     <!-- Left column: what is drawn on the court. Right column: the trace panel under it, its captions and how the plays run. -->
-    <div class="toggle-grid by-column four">
+    <div class="toggle-grid by-column five">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
       <label class="toggle" title="Tag each player on the court with his archetype (abbreviated, in its colour), as beside his name below">
@@ -66,6 +66,9 @@
       </label>
       <label class="toggle" title="A fading trail behind each player: where he has been over the last 0.6 seconds, so a longer trail means a faster player">
         <input type="checkbox" bind:checked={viewer.showTrails} />Player trails
+      </label>
+      <label class="toggle" title="Court control: at every spot, which team would get to the ball first if it were passed there now, allowing for the ball's travel time and each player's speed and direction. Pale is a toss-up.">
+        <input type="checkbox" bind:checked={viewer.showControl} />Court control
       </label>
       <label class="toggle" title="The panel under the court: the play's actions and either the ball's height or a player's distance to his nearest opponent">
         <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
@@ -83,6 +86,17 @@
         <span class:on={viewer.atEnd === "next"}>Next play</span>
       </label>
     </div>
+    {#if viewer.showControl && play}
+      <p class="control-read">
+        {#if live.control != null}
+          <span class="legend"><i style:background={play.colors.off.fill}></i>{play.off}</span>
+          <span class="legend"><i style:background={play.colors.def.fill}></i>{play.def}</span>
+          <span>Offense controls <b>{Math.round(live.control * 100)}%</b> of its half</span>
+        {:else}
+          Court control needs five players a side and the ball in view.
+        {/if}
+      </p>
+    {/if}
     <h3 class="sub-head">Annotations</h3>
     <div class="toggle-grid by-column four">
       {#each SECTIONS as sec}

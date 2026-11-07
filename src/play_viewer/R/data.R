@@ -4,10 +4,10 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 2L          # tracking cache (each position's predError since 2)
-INDEX_VERSION <- 8L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+INDEX_VERSION <- 9L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
                              # play types in the order they happen and picks credited to the screener since 5;
                              # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7;
-                             # and-ones as made shots since 8)
+                             # and-ones as made shots since 8; windows cut at each possession's deciding event since 9)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -362,16 +362,68 @@ view_end_frames <- function(plays, ev) {
   pmax(plays$end_frame, ends$f[match(plays$id, ends$id)], na.rm = TRUE)
 }
 
+# Seconds (in frames) a window runs on after the event that decides its possession: a made shot's ball dropping
+# through the net (the shot's endFrame is about when it reaches the rim), a free throw's flight, a whistle; a
+# rebound or turnover only briefly, as the other team has the ball.
+SETTLE_GRACE <- c(made = 25L, missed = 12L, rebound = 12L, turnover = 12L, foul = 25L, free_throw = 37L)
+DECIDED_OUTCOMES <- c("FGM", "FGM3", "FGX", "FGX3", "TO", "FOU")
+
+#' Each possession's viewing window. SkillCorner's possessions tile the video: one ends on the frame the next one
+#' starts. After a made basket the next possession starts at the shot's endFrame, before the ball has dropped
+#' through; after a stoppage (timeout, made free throw, out of bounds) it starts only when the clock restarts, so
+#' the break and the other team's inbound sat at the end of the earlier possession.
+#' A possession decided by a shot, turnover or foul now ends SETTLE_GRACE after its last such event (shot,
+#' rebound, turnover, foul, free throw), and never past the frame before the next possession's first touch; the
+#' next possession's window starts on the following frame, so it carries any break and its own inbound (Skip Dead
+#' Ball keeps the two seconds before the clock restarts). Other possessions (end of period, jump ball, out of
+#' bounds) keep view_end_frames(). No frame is in two windows.
+#' @return list(view_start, view_end), in the order of `plays`.
+view_windows <- function(plays, ev) {
+  old_end <- view_end_frames(plays, ev)
+  shot_f <- pmax(int_field(ev$shots, "endFrame"), int_field(ev$shots, "startFrame"), na.rm = TRUE)
+  made <- lgl_field(ev$shots, "outcome")
+  events <- rbind(
+    data.table(id = chr_field(ev$shots, "possessionId"), f = shot_f,
+               grace = SETTLE_GRACE[ifelse(made, "made", "missed")]),
+    data.table(id = chr_field(ev$rebounds, "possessionId"), f = int_field(ev$rebounds, "frame"), grace = SETTLE_GRACE[["rebound"]]),
+    data.table(id = chr_field(ev$turnovers, "possessionId"), f = int_field(ev$turnovers, "frame"), grace = SETTLE_GRACE[["turnover"]]),
+    data.table(id = chr_field(ev$fouls, "possessionId"), f = int_field(ev$fouls, "frame"), grace = SETTLE_GRACE[["foul"]]),
+    data.table(id = chr_field(ev$free_throws, "possessionId"), f = int_field(ev$free_throws, "frame"),
+               grace = SETTLE_GRACE[["free_throw"]]))[!is.na(f)]
+  settle <- events[, .(f = max(f), until = max(f + grace)), by = id]
+  first_touch <- data.table(id = chr_field(ev$touches, "possessionId"), f = int_field(ev$touches, "startFrame"))[
+    !is.na(f), .(f = min(f)), by = id]
+  at <- match(plays$id, settle$id)
+  decided <- plays$outcome %in% DECIDED_OUTCOMES & !is.na(at)
+  view_end <- old_end
+  view_end[decided] <- settle$until[at[decided]]
+  view_start <- plays$start_frame
+  o <- order(plays$period, plays$start_frame)
+  for (k in seq_along(o)[-1]) {
+    a <- o[k - 1L]
+    b <- o[k]
+    if (plays$period[a] != plays$period[b]) next
+    next_touch <- first_touch$f[match(plays$id[b], first_touch$id)]
+    if (!is.na(next_touch)) {
+      floor_a <- if (decided[a]) settle$f[at[a]] else plays$start_frame[a]
+      view_end[a] <- min(view_end[a], max(next_touch - 1L, floor_a))
+    }
+    view_start[b] <- view_end[a] + 1L
+  }
+  view_end <- pmax(view_end, view_start)
+  list(view_start, view_end)
+}
+
 #' Move action markings to the possession they happened in. A few carry the id of their period's last
 #' possession although their frame lies in an earlier one; left alone they would tag the wrong play.
 #' @param dt Rows with `poss_id` and `frame`.
 #' @return `dt` with `poss_id` corrected where another possession's window holds the frame.
 rehome <- function(dt, plays) {
   own <- match(dt$poss_id, plays$id)
-  inside <- dt$frame >= plays$start_frame[own] & dt$frame <= plays$view_end[own]
+  inside <- dt$frame >= plays$view_start[own] & dt$frame <= plays$view_end[own]
   for (i in which(!is.na(dt$frame) & !(inside %in% TRUE))) {
-    holds <- which(plays$start_frame <= dt$frame[i] & plays$view_end >= dt$frame[i])
-    if (length(holds)) set(dt, i, "poss_id", plays$id[holds[which.max(plays$start_frame[holds])]])
+    holds <- which(plays$view_start <= dt$frame[i] & plays$view_end >= dt$frame[i])
+    if (length(holds)) set(dt, i, "poss_id", plays$id[holds[which.max(plays$view_start[holds])]])
   }
   dt
 }
@@ -382,7 +434,7 @@ rehome <- function(dt, plays) {
 clip_to_period <- function(plays, frames) {
   span <- frames[, .(lo = min(frame), hi = max(frame)), by = period]
   at <- match(plays$period, span$period)
-  list(pmax(plays$start_frame, span$lo[at], na.rm = TRUE), pmin(plays$view_end, span$hi[at], na.rm = TRUE))
+  list(pmax(plays$view_start, span$lo[at], na.rm = TRUE), pmin(plays$view_end, span$hi[at], na.rm = TRUE))
 }
 
 #' Count live frames and running-clock frames inside each possession's viewing window.
@@ -414,7 +466,7 @@ game_index <- function(root, game_id, aliases, match_row) {
                       home_team = match_row$home_id, away_team = match_row$away_id)
   plays[, off_ids := lapply(po, function(p) canon_id(as.integer(unlist(p$offPlayerIds)), aliases))]
   plays[, def_ids := lapply(po, function(p) canon_id(as.integer(unlist(p$defPlayerIds)), aliases))]
-  plays[, view_end := view_end_frames(plays, ev)]
+  plays[, c("view_start", "view_end") := view_windows(plays, ev)]
 
   actions <- rehome(rbindlist(lapply(names(ACTIONS), action_events, ev = ev, nm = nm, nmj = nmj)), plays)
   actors <- rehome(rbindlist(lapply(names(ACTIONS), action_actors, ev = ev)), plays)[, frame := NULL]

@@ -11,12 +11,19 @@ import type { Play, Role, Series } from "./types";
 
 const SMOOTH = 2;
 const MAX_SPEED = 35;   // ft/s; sprinting players reach about 25
+export const HIGH_SPEED = 15;   // ft/s: running, not jogging (about 10 mph)
 
 export interface Motion {
   /** Per player (same order as play.players): smoothed speed in ft/s, NaN where unknown. */
   speed: Series[];
   /** Per player: feet covered from the first frame of the play up to each frame. */
   covered: Series[];
+  /** Per player: smoothed velocity, ft/s (NaN where speed is unknown). */
+  vx: Series[];
+  vy: Series[];
+  /** Per player: fastest speed so far in the play, and feet covered so far above HIGH_SPEED. */
+  top: Series[];
+  fast: Series[];
 }
 
 const cache = new WeakMap<Play, Motion>();
@@ -43,25 +50,39 @@ export function motion(play: Play): Motion {
   let m = cache.get(play);
   if (m) return m;
   const n = play.frames.length;
-  m = { speed: [], covered: [] };
+  m = { speed: [], covered: [], vx: [], vy: [], top: [], fast: [] };
   for (const p of play.players) {
     const sx = smooth(play, p.x), sy = smooth(play, p.y);
     const speed = new Float64Array(n).fill(NaN), covered = new Float64Array(n);
+    const vx = new Float64Array(n).fill(NaN), vy = new Float64Array(n).fill(NaN), top = new Float64Array(n), fast = new Float64Array(n);
     for (let i = 0; i < n; i++) {
       const a = i > 0 && joined(play, i - 1, i) && !Number.isNaN(sx[i - 1]) ? i - 1 : i;
       const b = i < n - 1 && joined(play, i, i + 1) && !Number.isNaN(sx[i + 1]) ? i + 1 : i;
       if (b > a && !Number.isNaN(sx[i])) {
         const v = (Math.hypot(sx[b] - sx[a], sy[b] - sy[a]) * FPS) / (b - a);
-        if (v <= MAX_SPEED) speed[i] = v;
+        if (v <= MAX_SPEED) {
+          speed[i] = v;
+          vx[i] = ((sx[b] - sx[a]) * FPS) / (b - a);
+          vy[i] = ((sy[b] - sy[a]) * FPS) / (b - a);
+        }
       }
       covered[i] = i ? covered[i - 1] : 0;
+      fast[i] = i ? fast[i - 1] : 0;
+      top[i] = Math.max(i ? top[i - 1] : 0, Number.isNaN(speed[i]) ? 0 : speed[i]);
       if (i && a === i - 1) {
         const step = Math.hypot(sx[i] - sx[i - 1], sy[i] - sy[i - 1]);
-        if (step * FPS <= MAX_SPEED) covered[i] += step;
+        if (step * FPS <= MAX_SPEED) {
+          covered[i] += step;
+          if (speed[i] > HIGH_SPEED) fast[i] += step;
+        }
       }
     }
     m.speed.push(speed);
     m.covered.push(covered);
+    m.vx.push(vx);
+    m.vy.push(vy);
+    m.top.push(top);
+    m.fast.push(fast);
   }
   cache.set(play, m);
   return m;
@@ -106,10 +127,16 @@ export function spacing(play: Play, i: number): Spacing {
 const ACCEL_HALF = 5;      // frames each side of the speed difference behind an acceleration (0.2 s)
 const MAX_ACCEL = 40;      // ft/s²; larger values are tracking jumps (sprinters reach about 15-20)
 
-/** A player's acceleration at frame index i, ft/s² (negative when slowing), from his smoothed speed, or NaN. */
+/**
+ * A player's acceleration at frame index i, ft/s² (negative when slowing), from his smoothed speed ACCEL_HALF frames
+ * either side, or NaN. Near the ends of a play or of a run of frames the difference is one-sided (at least 0.12 s).
+ */
 export function accelAt(play: Play, speed: Series, i: number): number {
-  const a = i - ACCEL_HALF, b = i + ACCEL_HALF;
-  if (a < 0 || b >= speed.length || !joined(play, a, b) || Number.isNaN(speed[a]) || Number.isNaN(speed[b])) return NaN;
+  const ok = (j: number) => j >= 0 && j < speed.length && !Number.isNaN(speed[j]) && joined(play, i, j);
+  let a = i - ACCEL_HALF, b = i + ACCEL_HALF;
+  while (a < i && !ok(a)) a++;
+  while (b > i && !ok(b)) b--;
+  if (b - a < 3 || Number.isNaN(speed[a]) || Number.isNaN(speed[b])) return NaN;
   const v = ((speed[b] - speed[a]) * FPS) / (b - a);
   return Math.abs(v) <= MAX_ACCEL ? v : NaN;
 }

@@ -52,6 +52,8 @@
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;
     if (info.handler !== live.handler) live.handler = info.handler;
+    const ctl = info.control == null ? null : Math.round(info.control * 100) / 100;
+    if (ctl !== live.control && (drawn % 6 === 0 || !viewer.playing)) live.control = ctl;
     hits = info.hits;
     const b = info.box, was = live.box;
     if (!was || was.left !== b.left || was.top !== b.top || was.w !== b.w || was.h !== b.h || was.backLeft !== b.backLeft) live.box = b;

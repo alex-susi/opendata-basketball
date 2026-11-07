@@ -1861,3 +1861,32 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   `and1 = TRUE` (29 possessions) instead of "Foul" (`INDEX_VERSION` 8).
 - **Checks:** export and parity reference rerun; tests check every marker family against the tracked actor and the
   left/right side of labelled shots; 50 tests pass.
+
+## 2026-11-07 — Viewing windows cut at each possession's deciding event; time-to-ball court control restored
+
+- **Problem:** SkillCorner's possessions tile the video (one ends on the frame the next starts). After a made basket
+  the next possession starts at the shot's endFrame, before the ball drops through; after a stoppage it starts only
+  when the clock restarts, so the break and the other team's inbound sat at the end of the earlier possession (with
+  Skip Dead Ball, the two seconds of lead-in before the restart). Before the fix 233 of 1,557 plays showed more than
+  1 s past their deciding event (34 with the clock running) and 31 shared frames with the next play.
+- **Fix (`view_windows()`, `src/play_viewer/R/data.R`, `INDEX_VERSION` 9):** a possession decided by a shot,
+  turnover or foul ends 0.5-1.5 s after its last shot, rebound, turnover, foul or free throw (`SETTLE_GRACE`), never
+  past the frame before the next possession's first touch; the next window starts on the following frame and so
+  carries any break and its own inbound. End-of-period, jump-ball and out-of-bounds endings keep the old rule. The
+  delivered possession frames are unchanged; only what the viewers show changes. After: 2 plays (both end of
+  period) show more than 1 s past their deciding event, none share frames, 1,561 plays pass the minimum length.
+- **Court control:** the archived model's "Control" layer only (who would reach the ball first at each spot, with
+  the ball's travel time), in `web/src/lib/control.ts` with its constants written out; checked against the archived
+  R reference cases (`web/tests/control.test.ts`). The rebound, relevance and scoring layers stay archived.
+
+## 2026-11-07 — Player Tracking columns: court regions and a distance-based contest level
+
+- **Regions (`web/src/lib/regions.ts`):** SkillCorner's region vocabulary from position alone, with boundaries read off
+  25,531 labelled event locations in the ten games (shots, dribbles, passes, rebounds, turnovers; the screen tables are
+  left out because of their y-sign error): backcourt x < 0, far beyond 31.5 ft, ra within 4.1 ft, the key, corner at
+  76° or more from straight out, middle under 23°, three beyond the FIBA line. Agrees with SkillCorner's label on
+  98.8% of those locations (at least 95.6% in every region).
+- **Contest:** SkillCorner's `contestLevel` is not a function of distance alone (median closest-defender distance:
+  plus 2.8 ft, light 4.1, average 4.5, open 6.0). The tab's stand-in grades the nearest defender's distance with
+  cut-offs 3.5 / 5.5 / 6.5 ft (plus / average / light / open): SkillCorner's level on 50% of the ten games' shots,
+  within one level on 81%. Labelled as a stand-in in the column's tooltip.
