@@ -52,7 +52,7 @@ describe("timeline details", () => {
     expect(cos.length).toBeGreaterThan(5);
     for (const { ev } of cos) {
       expect(ev.short).toMatch(/^Closeout · (Shot|Drive|Pass|Other)$/);
-      expect(ev.label).toMatch(/, then /);
+      expect(ev.label).not.toMatch(/then/);
     }
   });
 

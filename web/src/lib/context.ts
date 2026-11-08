@@ -231,7 +231,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   const roles = (play.ann?.glass ?? []).filter((g) => g.f === shot.f);
   if (roles.length) {
     const n = (r: string) => roles.filter((g) => g.role === r).length;
-    const parts = [[n("crash") + n("follow"), "Crash"], [n("back"), "Back"], [n("safety"), "Safety"], [n("hold"), "Hold"]]
+    const parts = [[n("crash") + n("follow"), "Crash"], [n("back"), "Retreat"], [n("safety"), "Safety"], [n("hold"), "Hold"]]
       .filter(([c]) => (c as number) > 0).map(([c, w]) => `${c} ${w}`);
     if (parts.length) lines.push({ k: "Rebounding Roles", v: parts.join(" · ") });
   }

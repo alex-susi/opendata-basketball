@@ -15,7 +15,7 @@ import { CUT_TAG } from "./cuts";
 import { inPaint, motion } from "./motion";
 import type { Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
-import type { Play, PlayerTrack, Role, TeamColors } from "./types";
+import type { AnnShot, Play, PlayerTrack, Role, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 const INK = "#141822";
@@ -52,6 +52,15 @@ interface Ctx {
 // and fouls for about a second after they happen.
 const HOLD = { dribble: 75, pass: 0, intercept: 25, drive: 37, cut: 25, screenBefore: 8, screenAfter: 20, closeout: 12,
                foul: 12, faded: 75, closest: 50, switch: 37, ghosts: 150, ball: 20 };
+
+/** When the release ghosts of `shot` go: the first event or touch after the release (not before the flight ends), or
+ * HOLD.ghosts after the flight. */
+export function ghostEnd(play: Play, shot: AnnShot): number {
+  let end = shot.f1 + HOLD.ghosts;
+  for (const e of play.events) if (e.f > shot.f + 2 && e.f < end) end = e.f;
+  for (const t of play.touches) if (t.f0 > shot.f + 2 && t.f0 < end) end = t.f0;
+  return Math.max(end, shot.f1);
+}
 
 /** Opacity of something that appears at `start`, stays full until `end`, then fades out over `fade` frames. */
 function life(frame: number, start: number, end: number, fade: number): number {
@@ -319,16 +328,18 @@ function drawEventsUnder(k: Ctx): void {
   }
   ctx.globalAlpha = 1;
 
-  // Every player at the last shot's release, until the next shot or six seconds on.
+  // Every player at the last shot's release, through the flight and until play goes on (a rebound, the next touch or
+  // any other event after the shot), at most six seconds on; then gone within a third of a second.
   const shot = lastShot(play, frame);
-  if (shot && frame <= shot.f1 + HOLD.ghosts) {
+  const ga = shot ? life(frame, shot.f, ghostEnd(play, shot), 8) : 0;
+  if (shot && ga) {
     ctx.save();
     ctx.setLineDash([3, 3]);
     for (const g of shot.ghosts) {
       const p = playerOf(play, g.pid);
       if (!p) continue;
       const kit = kitOf(play, p.role), gx = X(k, g.x), gy = Y(k, g.y);
-      ctx.globalAlpha = 0.7;
+      ctx.globalAlpha = 0.7 * ga;
       ctx.beginPath();
       ctx.arc(gx, gy, 0.8 * k.r, 0, 2 * Math.PI);
       ctx.fillStyle = withAlpha(kit.fill, 0.18);
@@ -519,7 +530,7 @@ function drawEventsOver(k: Ctx): void {
     const a = life(frame, c.f, c.f1, HOLD.closeout);
     if (!a) continue;
     ctx.globalAlpha = a;
-    tag(ctx, X(k, c.x1), Y(k, c.y1) + r + 9, `Closeout ${c.d0.toFixed(0)}→${c.d1.toFixed(0)} ft${c.act ? ` · then ${c.act}` : ""}`, def.text, 10);
+    tag(ctx, X(k, c.x1), Y(k, c.y1) + r + 9, `Closeout ${c.d0.toFixed(0)}→${c.d1.toFixed(0)} ft${c.act ? ` · ${c.act}` : ""}`, def.text, 10);
   }
   ctx.globalAlpha = 1;
 }
@@ -582,12 +593,14 @@ function drawTrackingOver(k: Ctx, focus: number | null): void {
   }
 }
 
-// Rebounding roles: from release until a second after the flight ends, a tag over each attacker. A crash met by its
-// matchup says so; a role read mostly from extrapolated positions (under half the window on camera) ends in "?".
-export const GLASS_NAMES: Record<string, string> = { crash: "Crash", back: "Back", safety: "Safety", hold: "Hold", follow: "Follows", shooter: "" };
+// Rebounding roles: from release until a second after the flight ends, a tag over each attacker, and "Box Out" over
+// each defender who got between an attacker and the hoop; a role read mostly from extrapolated positions (under half
+// the window on camera) ends in "?".
+export const GLASS_NAMES: Record<string, string> = { crash: "Crash", back: "Retreat", safety: "Safety", hold: "Hold", follow: "Follows", shooter: "" };
 const GLASS_COLORS: Record<string, string> = { crash: "#FFB547", follow: "#FFB547", back: "#7FB2FF", safety: "#B8C2D6", hold: "#93A0B8" };
 function drawGlassOver(k: Ctx): void {
   const { ctx, play, frame, r } = k, ann = play.ann!;
+  const def = kitOf(play, "def");
   // Players already tagged above their dot by a drive or a cut get the role one line higher.
   const busy = new Set<number>();
   for (const d of ann.drives) if (life(frame, d.f, d.f1, HOLD.drive)) busy.add(d.pid);
@@ -599,8 +612,20 @@ function drawGlassOver(k: Ctx): void {
     const s = k.spots.get(g.pid);
     if (!s) continue;
     ctx.globalAlpha = a;
-    const text = `${name}${g.role === "crash" && g.boxed ? " · met" : ""}${(g.seen ?? 1) < 0.5 ? "?" : ""}`;
+    const text = `${name}${(g.seen ?? 1) < 0.5 ? "?" : ""}`;
     tag(ctx, X(k, s.x), Y(k, s.y) - r - (busy.has(g.pid) ? 26 : 10), text, GLASS_COLORS[g.role] ?? COLORS.ink, 10);
+  }
+  const boxers = new Map<number, number>();
+  for (const g of ann.glass ?? []) {
+    if (g.boxer == null) continue;
+    const a = life(frame, g.f, g.f1, 25);
+    if (a) boxers.set(g.boxer, Math.max(a, boxers.get(g.boxer) ?? 0));
+  }
+  for (const [pid, a] of boxers) {
+    const s = k.spots.get(pid);
+    if (!s) continue;
+    ctx.globalAlpha = a;
+    tag(ctx, X(k, s.x), Y(k, s.y) - r - 10, "Box Out", def.text, 10);
   }
   ctx.globalAlpha = 1;
 }

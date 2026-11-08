@@ -231,12 +231,13 @@ export interface AnnDrive {
  * an off-ball screen in toward it or out away from it; the coverage on the cutter for a screen. */
 export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "in" | "out"; cov?: string }
 
-/** One attacker's rebounding role while a shot is in the air (web/scripts/glass.R): crash, back, safety, hold, or for
- * the shooter, follow / shooter. d0, d1: ft from the hoop at release and when the flight ends. boxed: a crasher's
- * assigned defender ended between him and the hoop (coarse). seen: share of the window he was detected on camera. */
+/** One attacker's rebounding role while a shot is in the air (web/scripts/glass.R): crash, back (shown "Retreat"),
+ * safety, hold, or for the shooter, follow / shooter. d0, d1: ft from the hoop at release and when the flight ends.
+ * boxed / boxer: a defender (boxer) ended between him and the hoop, for crashers and attackers who started near the
+ * hoop (coarse). seen: share of the window he was detected on camera. */
 export interface AnnGlass {
   f: number; f1: number; pid: number; role: "crash" | "back" | "safety" | "hold" | "follow" | "shooter";
-  d0: number; d1: number; boxed?: boolean; seen?: number;
+  d0: number; d1: number; boxed?: boolean; boxer?: number; seen?: number;
 }
 
 /** A post-up or an isolation: who, when and his defender. */
@@ -357,8 +358,8 @@ export interface SampleFigures {
     acc?: number; amax?: number; dec?: number; dmax?: number;
   };
   acts?: Partial<Record<ActKey, [number, number]>>;
-  /** Rebounding roles on teammates' shots: [shots, crash, back, safety, hold, crashes with a known matchup, of them
-   * met by it, crashes on misses, offensive rebounds from them]. */
+  /** Rebounding roles on teammates' shots: [shots, crash, back, safety, hold, crashes with defenders tracked, of them
+   * boxed out, crashes on misses, offensive rebounds from them]. */
   glass?: number[];
 }
 

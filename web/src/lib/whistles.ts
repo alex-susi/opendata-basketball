@@ -1,7 +1,7 @@
 // Foul types, turnover types, what followed a closeout, and the block and steal flags, on the play's timeline events
 // (run on decode, after the cuts). The fouls' types are SkillCorner's (foulType, isTechnical, isBonus); the
-// turnovers' are pieced together at export (web/scripts/annotations.R, turnovers); a closeout says what the ball
-// handler did after the catch (SkillCorner's bhrAction: shot, drive, pass, other). Each such event gets these in its
+// turnovers' are pieced together at export (web/scripts/annotations.R, turnovers); a closeout's caption says what the
+// ball handler did after the catch (SkillCorner's bhrAction: shot, drive, pass, other). Each such event gets these in its
 // caption and label; a blocked shot gets the flag "BLK", a turnover with a stealer "STL". Pure, so the tests can run it.
 
 import { nameOf } from "./context";
@@ -25,7 +25,6 @@ export const turnoverName = (t: AnnTurnover): string => TURNOVER_NAMES[t.kind ??
 
 /** What the ball handler did after a closeout's catch, in Title Case ("Shot", "Drive", "Pass", "Other"), or null. */
 export const afterCloseout = (act: string | undefined): string | null => (act ? act.charAt(0).toUpperCase() + act.slice(1) : null);
-const AFTER_WORDS: Record<string, string> = { shot: "a shot", drive: "a drive", pass: "a pass", other: "no shot, drive or pass" };
 
 export function addWhistleDetails(play: Play): void {
   const ann = play.ann;
@@ -47,7 +46,7 @@ export function addWhistleDetails(play: Play): void {
       const c = ann.closeouts.find((x) => x.f === ev.f);
       const after = afterCloseout(c?.act);
       if (!c || !after) return ev;
-      return { ...ev, short: `Closeout · ${after}`, label: `${ev.label}, then ${AFTER_WORDS[c.act!] ?? c.act}` };
+      return { ...ev, short: `Closeout · ${after}` };
     }
     if (ev.kind === "made" || ev.kind === "missed") {
       const shot = ann.shots.find((x) => x.f === ev.f);

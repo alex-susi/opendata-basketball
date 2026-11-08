@@ -2002,3 +2002,17 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   Opponent transition after a defensive rebound, by attackers back: none 44%, one 41%, two 36%, three+ 27%. Crashes
   met by their man rebound 10.8% of misses vs 11.8% open: the box-out flag barely separates, as before.
 - **Shown:** court tags (Rebounding Roles toggle), the shot card's role counts, the player card's Tracking view.
+
+## 2026-11-08 — Rebounding roles revised: three-point crash rule, box-out on the defender (site)
+
+- **Crash:** within 8 ft of the hoop when the flight ends, or gained 4+ ft and finished inside the three-point line
+  (FIBA 6.75 m arc, 6.6 m in the corners) — was "within 15 ft". "Back" is shown as **Retreat** (data key unchanged).
+- **Box-outs:** checked for crashers and for any attacker already within 8 ft of the hoop at release; the release
+  matchup is tried first, then the nearest other defender between the attacker and the hoop (same 5 ft / 3 ft
+  geometry). The defender is exported as `boxer` and tagged **Box Out** on the court; the attacker's "met" tag is gone.
+- **Release ghosts** now go when play goes on (first event or touch after the release, not before the flight ends),
+  fading over 8 frames; previously they stayed 150 frames after the flight. Closeout captions drop "then".
+- **Ten games, re-run:** attacker-shots (non-shooters) 5,826: hold 43%, crash 36%, retreat 14%, safety 7%.
+  Offensive rebounds on misses: crash 10.0% (129/1,293), hold 1.3% (18/1,414), retreat 0.4% (2/475), safety 0.4%
+  (1/224). Crashes boxed out rebound 9.4% (67/715) vs 10.7% open (62/578): still barely separates. Opponent
+  transition after a defensive rebound by attackers back: 0 44% (74/169), 1 40% (86/216), 2 39% (29/75), 3+ 29% (6/21).
