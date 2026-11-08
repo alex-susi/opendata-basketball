@@ -38,6 +38,8 @@ export interface PlayRow {
   and1?: boolean;
   typeLabels: string;
   types: string[];
+  /** How many times each action in types happens in the possession (same order; missing in older exports). */
+  typeCounts?: number[];
   shotTypes: string[];
   offTeam: number;
   defTeam: number;
@@ -93,6 +95,8 @@ export interface PlayEvent {
   label: string;
   short: string | null;
   who: string | null;
+  /** A badge beside the caption: "BLK" on a blocked shot, "STL" on a steal (set on decode, whistles.ts). */
+  flag?: "BLK" | "STL";
 }
 
 export interface Touch {
@@ -227,6 +231,14 @@ export interface AnnDrive {
  * an off-ball screen in toward it or out away from it; the coverage on the cutter for a screen. */
 export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "in" | "out"; cov?: string }
 
+/** One attacker's rebounding role while a shot is in the air (web/scripts/glass.R): crash, back, safety, hold, or for
+ * the shooter, follow / shooter. d0, d1: ft from the hoop at release and when the flight ends. boxed: a crasher's
+ * assigned defender ended between him and the hoop (coarse). seen: share of the window he was detected on camera. */
+export interface AnnGlass {
+  f: number; f1: number; pid: number; role: "crash" | "back" | "safety" | "hold" | "follow" | "shooter";
+  d0: number; d1: number; boxed?: boolean; seen?: number;
+}
+
 /** A post-up or an isolation: who, when and his defender. */
 export interface AnnSolo { kind: "post" | "isolation"; f: number; pid: number; def?: number; section?: string }
 
@@ -253,9 +265,17 @@ export interface AnnCloseout {
   act?: string;
 }
 
-export interface AnnFoul { f: number; x?: number; y?: number; by: number; on?: number; shooting: boolean; type?: string; ft: boolean[] }
+export interface AnnFoul {
+  f: number; x?: number; y?: number; by: number; on?: number; shooting: boolean;
+  /** SkillCorner's foulType: shooting, offensive, flagrant or other (personal). */
+  type?: string; bonus?: boolean; tech?: boolean; ft: boolean[];
+}
 export interface AnnRebound { f: number; x?: number; y?: number; pid?: number; def: boolean; team: boolean }
-export interface AnnTurnover { f: number; x?: number; y?: number; pid?: number; stealer?: number }
+export interface AnnTurnover {
+  f: number; x?: number; y?: number; pid?: number; stealer?: number;
+  /** Pieced together at export: steal, pass_stolen, bad_pass, off_foul, team, out, violation. */
+  kind?: string;
+}
 export interface AnnMatchup { f: number; f1: number; def: number; off: number }
 
 export interface AnnChance {
@@ -273,7 +293,7 @@ export interface AnnChance {
 
 export interface Annotations {
   shots: AnnShot[]; passes: AnnPass[]; dribbles: AnnDribble[]; drives: AnnDrive[]; screens: AnnScreen[];
-  closeouts: AnnCloseout[]; solos?: AnnSolo[]; cuts?: AnnCut[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
+  closeouts: AnnCloseout[]; solos?: AnnSolo[]; cuts?: AnnCut[]; glass?: AnnGlass[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
   matchups: AnnMatchup[]; chances: AnnChance[];
 }
 
@@ -337,12 +357,18 @@ export interface SampleFigures {
     acc?: number; amax?: number; dec?: number; dmax?: number;
   };
   acts?: Partial<Record<ActKey, [number, number]>>;
+  /** Rebounding roles on teammates' shots: [shots, crash, back, safety, hold, crashes with a known matchup, of them
+   * met by it, crashes on misses, offensive rebounds from them]. */
+  glass?: number[];
 }
 
 export interface Sample {
   games: number;
   players: Record<string, SampleFigures>;
   league: {
+    /** Rebounding roles' validation: offensive rebounds per role on misses [n, rebounds]; crashers met / open by their
+     * matchup [n, rebounds]; opponent transition after a defensive rebound by attackers back (0-3+) [n, transitions]. */
+    glass?: { oreb: Record<string, [number, number]>; boxed: Record<"met" | "open", [number, number]>; transition: Record<string, [number, number]> };
     /** Every FGA's SkillCorner xPoints in the tracked games, sorted (for the shot card's percentile). */
     xpts?: number[];
     /** The pooled 99th percentile of player speed in live play, ft/s. */

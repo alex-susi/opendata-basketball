@@ -4,12 +4,13 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 2L          # tracking cache (each position's predError since 2)
-INDEX_VERSION <- 11L         # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+INDEX_VERSION <- 12L         # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
                              # play types in the order they happen and picks credited to the screener since 5;
                              # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7;
                              # and-ones as made shots since 8; windows cut at each possession's deciding event since 9;
                              # no "(NA)" in a shot's label when SkillCorner gave no shot type since 10;
-                             # "Off-ball Screen" with a capital S since 11)
+                             # "Off-ball Screen" with a capital S since 11; every screen's tick credited to its
+                             # screener (handoff setter, off-ball screener) since 12)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -280,7 +281,7 @@ action_labels <- function(type, recs, nm) {
 }
 
 # Which player a timeline tick is credited to, per action family.
-TICK_PLAYER <- c(pick = "screenerId", handoff = "receiverId", off_ball_screen = "cutterId", drive = "ballhandlerId",
+TICK_PLAYER <- c(pick = "screenerId", handoff = "setterId", off_ball_screen = "screenerId", drive = "ballhandlerId",
                  isolation = "ballhandlerId", post = "ballhandlerId", closeout = "ballhandlerDefId", shot = "shooterId")
 
 #' Short caption for a timeline tick: the play type, or "Made 3" / "Missed 2" for shots.

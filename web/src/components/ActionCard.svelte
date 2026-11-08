@@ -8,6 +8,7 @@
   import { closeoutLines, coverageText, cutLines, driveLines, shotCard, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { actionTable, type StatSection } from "../lib/player";
+  import { foulLines, turnoverLines } from "../lib/whistles";
   import { FPS, type Tick } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { season, viewer } from "../lib/viewer.svelte";
@@ -30,6 +31,14 @@
     if (ev.kind === "closeout") {
       const c = ann.closeouts.find((r) => r.f === ev.f);
       return c ? { lines: closeoutLines(play, c), table: actionTable(play, season.data, season.sample, { kind: "closeout", c }) } : none;
+    }
+    if (ev.kind === "foul") {
+      const fo = ann.fouls.find((r) => r.f === ev.f);
+      return fo ? { lines: foulLines(play, fo), table: null } : none;
+    }
+    if (ev.kind === "turnover") {
+      const t = ann.turnovers.find((r) => r.f === ev.f);
+      return t ? { lines: turnoverLines(play, t), table: null } : none;
     }
     if (ev.kind === "cut") {
       const c = ann.cuts?.find((r) => r.f === ev.f && play.players.find((p) => p.id === r.pid)?.last === ev.who);
@@ -58,7 +67,7 @@
   <div class="trace-card" class:up={rises} bind:clientWidth={w}
        style:left="{clamp(x - w / 2, 4, Math.max(4, window.innerWidth - w - 4))}px" style:top="{y + 6}px">
     {#each cards as card, n (n)}
-      <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{title(card.tick)}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
+      <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{title(card.tick)}{#if card.tick.event.flag}<i class="event-flag">{card.tick.event.flag === "BLK" ? "Blocked" : "Steal"}</i>{/if}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
       {#each card.lines as line}
         <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
       {/each}

@@ -1972,3 +1972,33 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   captions and the play list's chips, full in the filter and the caption under the court.
 - **xPoints** on the shot card: SkillCorner shot quality / 100 × the shot's value, and its percentile among the ten
   games' 1,322 FGA with a shot quality (dunks average the 90th; mean xPoints 1.015 vs 1.034 actual points per FGA).
+- **2026-11-08 additions — list counts, caption tilt, screen credit:** possession chips show "×n" when an action
+  happens more than once (plays.json `typeCounts`; 754 of 1,561 possessions repeat one). Timeline captions in a
+  crowded group now lean the way their leader runs (left-leaning first, anchors at or left of their ticks; then
+  right-leaning), with the split that keeps leaders shortest on the rail and collisions checked between every pair
+  of groups: 98% of tilted captions follow their leader (48% before). Screen ticks name the screener (handoff setter,
+  off-ball screener; picks already did; `INDEX_VERSION` 12); screen cuts keep the cutter.
+- **2026-11-08 addition — whistle and turnover details:** foul types from SkillCorner (shooting, offensive,
+  flagrant, technical, personal with the bonus noted); turnover types pieced together at export, since SkillCorner
+  gives none (`web/scripts/annotations.R`): team violation (teamTo), offensive foul (an offensive foul by the same
+  player within a second, or his touch ending in one), pass stolen / steal (a stealer, with or without his own
+  intercepted pass), bad pass (an errant pass, no stealer), out of bounds (ball tracked past the lines within half a
+  second), else violation. Ten games: steal 85, pass stolen 59, violation 38, out 30, offensive foul 22, team 10, bad
+  pass 4. Blocked shots and steals get a badge (BLK/STL) on the timeline, hover card and shot card; closeouts say
+  what followed the catch (bhrAction).
+
+## 2026-11-08 — Rebounding roles while a shot is in the air (site)
+
+- **Method (`web/scripts/glass.R`):** for every shot, release to the end of its flight (shots.endFrame, ≤ 3 s);
+  each attacker but the shooter gets one role from where he started and where he went: crash (within 8 ft of the
+  hoop at the end, or gained 4+ ft and finished within 15 ft), back (3+ ft toward his own end, or into the
+  backcourt), safety (the deepest attacker, 28+ ft out, who stayed there), else hold. The shooter: follow (crashed
+  his own shot) or shooter. A crash is "met" when his release matchup ends between him and the hoop (within 5 ft of
+  him, within 3 ft of his line to the hoop) — coarse, given the failed geometric box-out detector of 2026-11-05.
+  Each role carries the share of the window he was on camera.
+- **Ten games:** 7,283 attacker-shots on 1,457 shots: hold 38%, crash 24%, back 12%, safety 5%, shooter 20%, follow
+  0.4%. On camera: crash 96%, hold 95%, back 81%, safety 66% (the camera follows the ball).
+- **Checks:** offensive rebounds on misses: crash 11.4%, follow 11%, shooter 3%, hold 1.5%, safety 0.4%, back 0.4%.
+  Opponent transition after a defensive rebound, by attackers back: none 44%, one 41%, two 36%, three+ 27%. Crashes
+  met by their man rebound 10.8% of misses vs 11.8% open: the box-out flag barely separates, as before.
+- **Shown:** court tags (Rebounding Roles toggle), the shot card's role counts, the player card's Tracking view.

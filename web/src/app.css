@@ -728,3 +728,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .strip-shot.missed { fill: var(--missed); }
 .strip-shot.on { stroke: #fff; }
 .strip-head { stroke: #fff; stroke-width: 2; }
+
+/* A blocked shot's or a steal's badge: on the shot card, the hover card and the trace panel's caption. */
+.event-flag {
+  display: inline-block; margin-left: 5px; padding: 0 4px; border-radius: 4px; background: #E04848; color: #fff;
+  font-size: 9.5px; font-style: normal; font-weight: 800; letter-spacing: .03em; line-height: 1.45; vertical-align: 1px;
+}

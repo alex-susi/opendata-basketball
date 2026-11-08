@@ -242,7 +242,7 @@
           </svg>
           {#each timeline.ticks as tick}
             <span class="tick-label above lean-{tick.lean} {tick.event.kind}" class:on={hoverTicks.includes(tick)}
-                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{shortScreen(tick.event.short ?? "")}</span>
+                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{shortScreen(tick.event.short ?? "")}{#if tick.event.flag}<i class="event-flag">{tick.event.flag}</i>{/if}</span>
           {/each}
         </div>
         <!-- The player under the time axis. -->

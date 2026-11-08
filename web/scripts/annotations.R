@@ -122,6 +122,7 @@ game_annotations <- function(game_id) {
                                "screenerDefType"))
 
   cuts <- game_cuts(game_id, ev, screens)
+  glass <- game_glass(game_id, ev)
 
   closeouts <- ann_table(ev$closeouts, function(c) {
     l0 <- ann_loc(c, "startLoc")
@@ -135,7 +136,8 @@ game_annotations <- function(game_id) {
   fouls <- ann_table(ev$fouls, function(fo) {
     l <- ann_loc(fo, "location")
     out <- data.table(f = ann_int(fo, "frame"), x = l[[1]], y = l[[2]], by = ann_int(fo, "foulerId"),
-                      on = ann_int(fo, "fouledId"), shooting = ann_lgl(fo, "shooting"), type = ann_chr(fo, "foulType"))
+                      on = ann_int(fo, "fouledId"), shooting = ann_lgl(fo, "shooting"), type = ann_chr(fo, "foulType"),
+                      bonus = ann_lgl(fo, "isBonus"), tech = ann_lgl(fo, "isTechnical"))
     out[, ft := ft_of("foul", ann_chr(fo, "id"))]
     out
   })
@@ -146,10 +148,37 @@ game_annotations <- function(game_id) {
                def = ann_lgl(r, "defensive"), team = !ann_lgl(r, "rebounded"))
   })
 
+  # Turnovers, with a kind SkillCorner does not give, pieced together in this order:
+  #   team         a team turnover (teamTo: a shot-clock or other team violation)
+  #   off_foul     an offensive foul by the same player within a second (fouls.foulType "offensive"), or his touch
+  #                ending in one (FOU_O)
+  #   pass_stolen  a steal of his own pass (a turned-over pass of his within 3 s before)
+  #   steal        any other steal (a strip or a deflection)
+  #   bad_pass     a turned-over pass of his with no stealer (thrown away)
+  #   out          the ball tracked out of bounds (within half a foot of the lines or past them) within half a second
+  #   violation    anything else (a travel, a carry, three seconds, ...)
   turnovers <- ann_table(ev$turnovers, function(t) {
     l <- ann_loc(t, "location")
-    data.table(f = ann_int(t, "frame"), x = l[[1]], y = l[[2]], pid = ann_int(t, "turnedOverId"),
-               stealer = ann_int(t, "stealerId"))
+    out <- data.table(f = ann_int(t, "frame"), x = l[[1]], y = l[[2]], pid = ann_int(t, "turnedOverId"),
+                      stealer = ann_int(t, "stealerId"), team = ann_lgl(t, "teamTo"), touch = ann_chr(t, "touchId"))
+    fo <- data.table(f = ann_int(ev$fouls, "frame"), by = ann_int(ev$fouls, "foulerId"), type = ann_chr(ev$fouls, "foulType"))[type == "offensive"]
+    pa <- data.table(f = ann_int(ev$passes, "startFrame"), by = ann_int(ev$passes, "passerId"), to = ann_lgl(ev$passes, "turnover"))[to == TRUE]
+    tc <- data.table(id = ann_chr(ev$touches, "id"), off_foul = vapply(ev$touches, function(r) "FOU_O" %in% unlist(r$outcomes), NA))
+    fr <- a$get_tracking(a$app_data, game_id)$frames[, .(frame, bx, by)]
+    half_l <- 14 * 3.28084 - 0.5; half_w <- 7.5 * 3.28084 - 0.5
+    out[, kind := vapply(seq_len(.N), function(i) {
+      fi <- f[i]; p <- pid[i]
+      if (isTRUE(team[i])) return("team")
+      if (any(fo$by == p & abs(fo$f - fi) <= 25) || isTRUE(tc$off_foul[match(touch[i], tc$id)])) return("off_foul")
+      threw <- any(pa$by == p & pa$f <= fi + 5 & pa$f >= fi - 75)
+      if (!is.na(stealer[i])) return(if (threw) "pass_stolen" else "steal")
+      if (threw) return("bad_pass")
+      b <- fr[frame >= fi & frame <= fi + 12 & !is.na(bx)]
+      if (nrow(b) && any(abs(b$bx) > half_l | abs(b$by) > half_w)) return("out")
+      "violation"
+    }, "")]
+    out[, c("team", "touch") := NULL]
+    out
   })
 
   matchups <- ann_table(ev$matchups, function(m) {
@@ -173,7 +202,7 @@ game_annotations <- function(game_id) {
   })
 
   list(shots = shots, passes = passes, dribbles = dribbles, drives = drives, screens = screens, closeouts = closeouts,
-       solos = solos, cuts = cuts, fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
+       solos = solos, cuts = cuts, glass = glass, fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
 }
 
 #' The annotations inside one play's viewing window, as lists of records ready for JSON.
@@ -193,6 +222,7 @@ play_annotations <- function(g, lo, hi) {
   list(shots = rows(g$shots), passes = rows(g$passes, "f", "f1"), dribbles = rows(g$dribbles),
        drives = rows(g$drives, "f", "f1"), screens = rows(g$screens), closeouts = rows(g$closeouts, "f", "f1"),
        solos = rows(g$solos), cuts = rows(g$cuts, "f", "f1"),
+       glass = rows(if (is.null(g$glass)) NULL else g$glass[, .(f, f1, pid, role, d0, d1, boxed, seen)], "f", "f1"),
        fouls = rows(g$fouls), rebounds = rows(g$rebounds), turnovers = rows(g$turnovers),
        matchups = rows(g$matchups, "f", "f1"), chances = rows(ch, "f", "f1"))
 }

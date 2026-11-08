@@ -24,7 +24,7 @@ export const viewer = $state({
   /** The court control readout: shares of the whole court, or of the half the offense attacks. */
   controlScope: "court" as "court" | "half",
   /** Annotation sections (the Display panel's Annotations toggles; annotate.ts, Annotations.svelte). */
-  ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false },
+  ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false, glass: true },
   /** The trace panel under the court. */
   showTrace: true,
   /** What it shows: the ball's height, one player's distance to the closest opponent, or the players on court. */

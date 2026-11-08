@@ -25,6 +25,7 @@
     { key: "shot", label: "Shot Details", title: "A card for the last shot: distance, SkillCorner shot quality, contest, how it was created, shot clock, passer, free throws" },
     { key: "tracking", label: "Tracking Readouts", title: "Openness of each offensive player (feet to the nearest defender), the followed player's speed, the ball's path and the shot's ball peak" },
     { key: "possession", label: "Possession Context", title: "How the possession began, chances, touches, passes and dribbles so far, who has had the ball, game state, free throws" },
+    { key: "glass", label: "Rebounding Roles", title: "While a shot is in the air: which attackers crash the glass, get back, stay back as the safety or hold their spot (met = his defender got between him and the hoop; ? = mostly off camera)" },
     { key: "quality", label: "Data Quality", title: "Extrapolated players drawn faint, tracking's expected error round each player, the chance's quality index" },
   ];
 
@@ -128,7 +129,7 @@
       </div>
     {/if}
     <h3 class="sub-head">Annotations</h3>
-    <div class="toggle-grid by-column">
+    <div class="toggle-grid by-column four">
       {#each SECTIONS as sec}
         <label class="toggle" title={sec.title}><input type="checkbox" bind:checked={viewer.ann[sec.key]} />{sec.label}</label>
       {/each}

@@ -3,6 +3,7 @@
 
 import { addCutEvents } from "./cuts";
 import { fillShots } from "./shotfill";
+import { addWhistleDetails } from "./whistles";
 import { dotInk } from "./teamColors";
 import type { Play, PlayHeader, Role, Series, TeamColors } from "./types";
 
@@ -65,5 +66,6 @@ export function decodePlay(buffer: ArrayBuffer, h: PlayHeader): Play {
   };
   fillShots(play);
   addCutEvents(play);
+  addWhistleDetails(play);
   return play;
 }

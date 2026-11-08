@@ -47,6 +47,7 @@ sample_figures <- function() {
   games <- as.integer(fromJSON(file.path(a$root, "data", "matches.json"))$id)
 
   box <- list(); trk_rows <- list(); acts <- list(); zones <- list(); guards <- list(); ball <- list(); sprint <- list()
+  glass <- list(); glass_val <- list()
   VMAX <- 18.1147264926486      # the archived control model's league-wide top speed (web/src/lib/control.ts)
   PRIOR_FRAMES <- 15000L        # frames (10 minutes of live play) of the archetype's value in each player's estimate
   ACCEL_LAG <- 6L               # frames between the two velocities whose difference is an acceleration
@@ -133,6 +134,22 @@ sample_figures <- function() {
     b[, `:=`(team = team_of(pid), canon = roster$canon[match(pid, roster$pid)])]
     box[[length(box) + 1L]] <- b
 
+
+    # ---- rebounding roles while a teammate's shot is in the air (glass.R) ----
+    gl <- game_glass(g, ev)
+    if (!is.null(gl)) {
+      rb <- data.table(shot = a$chr_field(ev$rebounds, "shotId"), reb = a$int_field(ev$rebounds, "rebounderId"),
+                       def = a$lgl_field(ev$rebounds, "defensive"), got = a$lgl_field(ev$rebounds, "rebounded"),
+                       nextc = a$chr_field(ev$rebounds, "nextChanceId"))
+      trans <- setNames(a$lgl_field(ev$chances, "transition"), a$chr_field(ev$chances, "id"))
+      gl <- merge(gl, rb[got == TRUE & def == FALSE, .(shot, oreb_by = reb)], by = "shot", all.x = TRUE)
+      gl[, oreb := made == FALSE & !is.na(oreb_by) & oreb_by == pid]
+      gl[, team := team_of(pid)]
+      glass[[length(glass) + 1L]] <- gl
+      dr <- merge(gl[made == FALSE, .(nback = sum(role %in% c("back", "safety"))), by = shot], rb[def == TRUE, .(shot, nextc)], by = "shot")
+      dr[, trans := unname(trans[nextc])]
+      glass_val[[length(glass_val) + 1L]] <- dr
+    }
 
     # ---- touches ----
     tc <- ev$touches
@@ -262,6 +279,19 @@ sample_figures <- function() {
   G[, key := key_of(pid, team)]
   BL <- sum_key(rbindlist(ball))
   A <- rbindlist(acts)
+  GL <- rbindlist(glass)[!is.na(team)]
+  GL[, key := key_of(pid, team)]
+  GLk <- GL[!role %in% c("shooter", "follow"), .(n = .N, crash = sum(role == "crash"), back = sum(role == "back"),
+                                                safety = sum(role == "safety"), hold = sum(role == "hold"),
+                                                boxedN = sum(role == "crash" & !is.na(boxed)), boxed = sum(role == "crash" & boxed %in% TRUE),
+                                                crashMiss = sum(role == "crash" & made == FALSE), crashOreb = sum(role == "crash" & oreb),
+                                                seen = round(mean(seen, na.rm = TRUE), 2)), by = key]
+  GV <- rbindlist(glass_val)
+  glass_league <- list(
+    oreb = setNames(lapply(split(GL[made == FALSE], GL[made == FALSE]$role), function(d) I(c(nrow(d), sum(d$oreb)))),
+                    sort(unique(GL[made == FALSE]$role))),
+    boxed = lapply(list(met = TRUE, open = FALSE), function(v) { d <- GL[made == FALSE & role == "crash" & boxed %in% v]; I(c(nrow(d), sum(d$oreb))) }),
+    transition = lapply(split(GV[!is.na(trans)], pmin(GV[!is.na(trans)]$nback, 3L)), function(d) I(c(nrow(d), sum(d$trans)))))
   Ak <- A[!is.na(team)][, key := key_of(pid, team)][, .(n = .N, pts = sum(pts)), by = .(key, kind)]
 
   r1 <- function(v) round(v, 1)
@@ -275,6 +305,7 @@ sample_figures <- function() {
     gd <- G[key == k]
     bl <- BL[key == k]
     ak <- Ak[key == k]
+    gk <- GLk[key == k]
     rec <- list(
       g = r$g, min = r1(r$min), pts = r$pts, fga = r$fga, fgm = r$fgm, fg3a = r$fg3a, fg3m = r$fg3m, fta = r$fta, ftm = r$ftm,
       oreb = r$oreb, dreb = r$dreb, ast = r$ast, astd = r$astd, stl = r$stl, blk = r$blk, tov = r$tov, pf = r$pf,
@@ -294,6 +325,7 @@ sample_figures <- function() {
                               vmax = if (nrow(sp)) round(sp$vmax, 2) else NULL,
                               acc = if (nrow(sp)) round(sp$acc, 1) else NULL, amax = if (nrow(sp)) round(sp$amax, 2) else NULL,
                               dec = if (nrow(sp)) round(sp$dec, 1) else NULL, dmax = if (nrow(sp)) round(sp$dmax, 2) else NULL) else NULL,
+      glass = if (nrow(gk)) I(c(gk$n, gk$crash, gk$back, gk$safety, gk$hold, gk$boxedN, gk$boxed, gk$crashMiss, gk$crashOreb)) else NULL,
       acts = if (nrow(ak)) setNames(lapply(seq_len(nrow(ak)), function(j) I(c(ak$n[j], ak$pts[j]))), ak$kind) else NULL)
     players[[k]] <- rec[!vapply(rec, is.null, NA)]
   }
@@ -305,7 +337,7 @@ sample_figures <- function() {
   list(games = length(games),
        players = players,
        # Every FGA's SkillCorner xPoints (shot quality / 100 × the shot's value), sorted: the shot card's percentile.
-       league = list(xpts = I(sort(round(Z[!is.na(sq), sq * fifelse(three, 3, 2) / 100], 3))), sprint = round(pooled[["v"]], 2), accel = round(pooled[["a"]], 2), braking = round(pooled[["d"]], 2), zone = list(rim = I(zone_vec(Z[zone == "rim"])), mid = I(zone_vec(Z[zone == "mid"])),
+       league = list(glass = glass_league, xpts = I(sort(round(Z[!is.na(sq), sq * fifelse(three, 3, 2) / 100], 3))), sprint = round(pooled[["v"]], 2), accel = round(pooled[["a"]], 2), braking = round(pooled[["d"]], 2), zone = list(rim = I(zone_vec(Z[zone == "rim"])), mid = I(zone_vec(Z[zone == "mid"])),
                                  three = I(zone_vec(Z[zone == "three"]))),
                      acts = league_acts))
 }

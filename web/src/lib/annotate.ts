@@ -28,6 +28,8 @@ export interface AnnSections {
   tracking: boolean;
   possession: boolean;
   quality: boolean;
+  /** Each attacker's rebounding role while a shot is in the air (crash, back, safety, hold). */
+  glass: boolean;
 }
 
 /** A player's drawn position (blended between frames), in feet. */
@@ -517,7 +519,7 @@ function drawEventsOver(k: Ctx): void {
     const a = life(frame, c.f, c.f1, HOLD.closeout);
     if (!a) continue;
     ctx.globalAlpha = a;
-    tag(ctx, X(k, c.x1), Y(k, c.y1) + r + 9, `Closeout ${c.d0.toFixed(0)}→${c.d1.toFixed(0)} ft`, def.text, 10);
+    tag(ctx, X(k, c.x1), Y(k, c.y1) + r + 9, `Closeout ${c.d0.toFixed(0)}→${c.d1.toFixed(0)} ft${c.act ? ` · then ${c.act}` : ""}`, def.text, 10);
   }
   ctx.globalAlpha = 1;
 }
@@ -580,11 +582,35 @@ function drawTrackingOver(k: Ctx, focus: number | null): void {
   }
 }
 
+// Rebounding roles: from release until a second after the flight ends, a tag over each attacker. A crash met by its
+// matchup says so; a role read mostly from extrapolated positions (under half the window on camera) ends in "?".
+export const GLASS_NAMES: Record<string, string> = { crash: "Crash", back: "Back", safety: "Safety", hold: "Hold", follow: "Follows", shooter: "" };
+const GLASS_COLORS: Record<string, string> = { crash: "#FFB547", follow: "#FFB547", back: "#7FB2FF", safety: "#B8C2D6", hold: "#93A0B8" };
+function drawGlassOver(k: Ctx): void {
+  const { ctx, play, frame, r } = k, ann = play.ann!;
+  // Players already tagged above their dot by a drive or a cut get the role one line higher.
+  const busy = new Set<number>();
+  for (const d of ann.drives) if (life(frame, d.f, d.f1, HOLD.drive)) busy.add(d.pid);
+  for (const c of ann.cuts ?? []) if (life(frame, c.f, c.f1, HOLD.cut)) busy.add(c.pid);
+  for (const g of ann.glass ?? []) {
+    const a = life(frame, g.f, g.f1, 25);
+    const name = GLASS_NAMES[g.role];
+    if (!a || !name) continue;
+    const s = k.spots.get(g.pid);
+    if (!s) continue;
+    ctx.globalAlpha = a;
+    const text = `${name}${g.role === "crash" && g.boxed ? " · met" : ""}${(g.seen ?? 1) < 0.5 ? "?" : ""}`;
+    tag(ctx, X(k, s.x), Y(k, s.y) - r - (busy.has(g.pid) ? 26 : 10), text, GLASS_COLORS[g.role] ?? COLORS.ink, 10);
+  }
+  ctx.globalAlpha = 1;
+}
+
 /** Everything drawn over the player dots. */
 export function drawAnnotationsOver(k: Ctx, o: AnnSections, handler: number | null, focus: number | null): void {
   if (k.play.ann) {
     if (o.events || o.defense) drawScreenTags(k, o.events, o.defense);
     if (o.events) drawEventsOver(k);
+    if (o.glass) drawGlassOver(k);
     if (o.defense) drawDefenseOver(k, handler);
   }
   if (o.tracking) drawTrackingOver(k, focus);

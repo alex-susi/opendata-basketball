@@ -47,7 +47,7 @@
         {#if row.typeLabels || row.oreb > 0}
           <span class="pi-tags">
             {#if row.oreb > 0}<i class="oreb" title="Offensive rebounds collected by a player in this possession">{oreb(row)}</i>{/if}
-            {#if row.typeLabels}{#each row.typeLabels.split("|") as type}<i>{shortScreen(type)}</i>{/each}{/if}
+            {#if row.typeLabels}{#each row.typeLabels.split("|") as type, k}<i>{shortScreen(type)}{#if (row.typeCounts?.[k] ?? 1) > 1}&nbsp;×{row.typeCounts?.[k]}{/if}</i>{/each}{/if}
           </span>
         {/if}
       </button>

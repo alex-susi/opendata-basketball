@@ -41,7 +41,7 @@
   const span = $derived(box ? (box.h >= need ? { top: box.top, h: box.h } : { top: Math.max(4, box.top - (need - box.h) / 2), h: need }) : null);
   // Room kept for the cards from the start of a play, before its shot card appears, so the court does not shrink
   // mid-play: about the height of a full shot card, possession card and tracking card (px).
-  const RESERVE = { shot: 330, possession: 165, quality: 90 };
+  const RESERVE = { shot: 350, possession: 165, quality: 90 };
   const reserve = $derived((viewer.ann.shot ? RESERVE.shot : 0) + (viewer.ann.possession ? RESERVE.possession : 0)
     + (viewer.ann.quality ? RESERVE.quality : 0));
   $effect(() => {
@@ -64,7 +64,7 @@
 
 {#snippet card(c: Card)}
   <div class="ann-card">
-    <b style:color={c.tone}>{c.title}</b>
+    <b style:color={c.tone}>{c.title}{#if c.flag}<i class="event-flag">{c.flag}</i>{/if}</b>
     {#each c.lines as line}
       <span class="card-line" class:wrap={line.wrap}><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
     {/each}

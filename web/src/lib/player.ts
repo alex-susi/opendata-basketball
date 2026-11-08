@@ -177,6 +177,21 @@ function tracking(t: SampleFigures | null): StatSection[] {
       { k: "FGA Guarded / Game", title: "Opponents' FGA per game where he was the closest defender at release", cells: [cell(perGame(t.guard[0], t.g))] },
     ]),
   });
+  const gl = t.glass;
+  if (gl && gl[0]) {
+    out.push({
+      title: "Rebounding Roles", cols: [{ label: "Tracked", count: "Shots" }],
+      note: ["Teammates' shots, release to the ball reaching the rim", "Crash: on the glass · Back: retreating · Safety: already deep", "Met: his defender got between him and the hoop (rough)"],
+      rows: kept([
+        { k: "Crash", cells: [cell(pct(gl[1], gl[0]), gl[0])] },
+        { k: "Get Back", cells: [cell(pct(gl[2], gl[0]))] },
+        { k: "Safety", cells: [cell(pct(gl[3], gl[0]))] },
+        { k: "Hold", cells: [cell(pct(gl[4], gl[0]))] },
+        { k: "Crashes Met by His Man", cells: [cell(pct(gl[6], gl[5]), gl[5])] },
+        { k: "Off. Rebounds per Crash", title: "On missed shots he crashed", cells: [cell(pct(gl[8], gl[7]), gl[7])] },
+      ]),
+    });
+  }
   return out.filter((sec) => sec.rows.length);
 }
 

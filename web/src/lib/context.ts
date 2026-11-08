@@ -75,7 +75,7 @@ export function coverageText(s: AnnScreen): string {
 export const SCREEN_NAMES: Record<AnnScreen["kind"], string> = { pick: "Pick", handoff: "Handoff", off_ball_screen: "Screen" };
 
 const madeOf = (shot: AnnShot): string =>
-  `${shot.blocked ? "Blocked" : shot.made ? "Made" : "Missed"} ${shot.three ? 3 : 2}`;
+  `${shot.made ? "Made" : "Missed"} ${shot.three ? 3 : 2}`;   // a block is the title's badge
 
 /** The shot released most recently at or before frame `f`, if any. */
 export function lastShot(play: Play, f: number): AnnShot | null {
@@ -157,6 +157,8 @@ const MUTED = "#93A0B8";
 export interface Card {
   title: string;
   tone?: string;
+  /** A badge beside the title (a blocked shot's "Blocked"). */
+  flag?: string;
   lines: Line[];
 }
 
@@ -226,8 +228,15 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
     if (line) lines.push(line);
   }
+  const roles = (play.ann?.glass ?? []).filter((g) => g.f === shot.f);
+  if (roles.length) {
+    const n = (r: string) => roles.filter((g) => g.role === r).length;
+    const parts = [[n("crash") + n("follow"), "Crash"], [n("back"), "Back"], [n("safety"), "Safety"], [n("hold"), "Hold"]]
+      .filter(([c]) => (c as number) > 0).map(([c, w]) => `${c} ${w}`);
+    if (parts.length) lines.push({ k: "Rebounding Roles", v: parts.join(" · ") });
+  }
   if (shot.est) lines.push({ k: "Shot Context", v: shot.conflict ? `From Tracking; Spot ${shot.three ? "Inside" : "Beyond"} the Arc` : "From Tracking", tone: shot.conflict ? "#F5B02E" : MUTED });
-  return { title: `${madeOf(shot)} · ${nameOf(play, shot.pid)}`, tone: shot.made ? "#2FAE5A" : "#E04848", lines };
+  return { title: `${madeOf(shot)} · ${nameOf(play, shot.pid)}`, tone: shot.made ? "#2FAE5A" : "#E04848", flag: shot.blocked ? "Blocked" : undefined, lines };
 }
 
 // ---- drives and closeouts --------------------------------------------------------------------------
@@ -286,6 +295,7 @@ export function closeoutLines(play: Play, c: AnnCloseout): Line[] {
   return [
     { k: "Ball Handler", v: nameOf(play, c.pid) },
     { k: "Gap", v: `${c.d0.toFixed(1)} ft → ${c.d1.toFixed(1)} ft` },
+    ...(c.act ? [{ k: "After the Catch", v: c.act.charAt(0).toUpperCase() + c.act.slice(1) }] : []),
     ...movementLines(play, c.def, c.f, c.f1, "Defender"),
   ];
 }

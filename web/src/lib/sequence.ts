@@ -86,9 +86,13 @@ type Span = [number, number];
 const meets = (p: Span, q: Span, pad = 0): boolean => p[0] < q[1] + pad && q[0] < p[1] + pad;
 const run = (tick: Tick): number => Math.min(tick.width, TILT_CAP) * RUN;
 
-// Place one group of neighbouring ticks. A tick alone gets a flat caption. Ticks that crowd get tilted captions:
-// their anchors are spread TILT_GAP apart around the group (closer if the rail is too short for that), and the
-// group leans left if it would run off the right.
+// Place one group of neighbouring ticks. A tick alone gets a flat caption, centred on it. Ticks that crowd get tilted
+// captions, each leaning the way its leader runs (from the tick up to the caption's anchor on the rail): the group's
+// first captions lean left, their anchors at or left of their ticks, the rest lean right, anchored at or right of
+// theirs. Same-way neighbours are anchored at least `gap` apart (their captions are parallel); the two middle ones,
+// leaning apart, MID_GAP. The split between left and right is the one that keeps the leaders shortest with every
+// caption on the rail; if no split fits, the old way is used: anchors spread round the group, all leaning one way.
+const MID_GAP = 12;   // px between the anchors of the last left-leaning and first right-leaning captions
 function place(group: Tick[], width: number): void {
   const x = (tick: Tick) => tick.frac * width;
   if (group.length === 1) {
@@ -97,12 +101,28 @@ function place(group: Tick[], width: number): void {
     tick.at = clamp(x(tick) - tick.width / 2, 0, Math.max(0, width - tick.width));
     return;
   }
-  const gap = Math.max(14, Math.min(TILT_GAP, (width - 40) / (group.length - 1)));
-  const at = group.map(x);
-  for (let i = 1; i < at.length; i++) at[i] = Math.max(at[i], at[i - 1] + gap);
+  const n = group.length, xs = group.map(x);
+  const gap0 = Math.max(14, Math.min(TILT_GAP, (width - 40) / (n - 1)));
+  let best: number[] | null = null, bestSplit = 0, bestCost = Infinity;
+  // The widest spacing that lets some split fit (down to 14 px, as crowded rails always allowed).
+  for (let gap = gap0; gap >= 14 && !best; gap = gap > 14 ? Math.max(14, gap - 4) : 0) for (let s = 0; s <= n; s++) {
+    const at = new Array<number>(n);
+    for (let j = s; j < n; j++) at[j] = j === s ? xs[j] : Math.max(xs[j], at[j - 1] + gap);
+    for (let i = s - 1; i >= 0; i--) at[i] = i === s - 1 ? (s < n ? Math.min(xs[i], at[s] - MID_GAP) : xs[i]) : Math.min(xs[i], at[i + 1] - gap);
+    const fits = group.every((tick, i) => (i < s ? at[i] - run(tick) >= -6 : at[i] + run(tick) <= width + 6));
+    if (!fits) continue;
+    const cost = at.reduce((c, p, i) => c + Math.abs(p - xs[i]), 0);
+    if (cost < bestCost) { best = at; bestSplit = s; bestCost = cost; }
+  }
+  if (best) {
+    group.forEach((tick, i) => { tick.lean = i < bestSplit ? "left" : "right"; tick.at = best![i]; });
+    return;
+  }
+  const at = [...xs];
+  for (let i = 1; i < n; i++) at[i] = Math.max(at[i], at[i - 1] + gap0);
   // Centre the spread anchors on their ticks, then keep them on the rail.
-  const drift = at.reduce((sum, p, i) => sum + p - x(group[i]), 0) / at.length;
-  const nudge = Math.max(drift - at[0], Math.min(0, width + drift - at[at.length - 1]));
+  const drift = at.reduce((sum, p, i) => sum + p - xs[i], 0) / n;
+  const nudge = Math.max(drift - at[0], Math.min(0, width + drift - at[n - 1]));
   const anchors = at.map((p) => p - drift + nudge);
   const right = Math.max(...group.map((tick, i) => anchors[i] + run(tick)));
   const left = Math.min(...group.map((tick, i) => anchors[i] - run(tick)));
@@ -115,25 +135,27 @@ function place(group: Tick[], width: number): void {
   });
 }
 
-// The stretch of rail a group's captions occupy at the height of flat captions, and (tilted groups) higher up.
-function low(group: Tick[]): Span {
-  const first = group[0], last = group[group.length - 1];
-  if (first.lean === "flat") return [first.at, first.at + first.width];
-  return first.lean === "right" ? [first.at - 4, last.at + CLEAR] : [first.at - CLEAR, last.at + 4];
+// Where one caption sits: along the rail at the height of flat captions (`low`), and its tilted run (`high`).
+function low(tick: Tick): Span {
+  if (tick.lean === "flat") return [tick.at, tick.at + tick.width];
+  return tick.lean === "right" ? [tick.at - 4, tick.at + CLEAR] : [tick.at - CLEAR, tick.at + 4];
 }
-function high(group: Tick[]): Span | null {
-  if (group[0].lean === "flat") return null;
-  return group[0].lean === "right" ? [group[0].at, Math.max(...group.map((tick) => tick.at + run(tick)))]
-                                   : [Math.min(...group.map((tick) => tick.at - run(tick))), group[group.length - 1].at];
-}
+const high = (tick: Tick): Span => (tick.lean === "left" ? [tick.at - run(tick), tick.at] : [tick.at, tick.at + run(tick)]);
 
-// Whether two neighbouring groups' captions would collide. Tilted captions leaning the same way are parallel,
-// so they only need their anchors TILT_GAP apart.
+// Whether two groups' captions would collide: overlapping near the rail, a right-leaning caption running into a
+// left-leaning one anchored further along, or two parallel ones whose anchors are under TILT_GAP apart. (A
+// left-leaning caption and a right-leaning one anchored further along lean apart.)
 function collide(g: Tick[], h: Tick[]): boolean {
-  if (meets(low(g), low(h), 4)) return true;
-  const up = high(g), next = high(h);
-  if (!up || !next || !meets(up, next)) return false;
-  return g[0].lean !== h[0].lean || h[0].at - g[g.length - 1].at < TILT_GAP;
+  for (const a of g) {
+    for (const b of h) {
+      if (meets(low(a), low(b), 4)) return true;
+      if (a.lean === "flat" || b.lean === "flat" || !meets(high(a), high(b), 4)) continue;
+      const [l, r] = a.at <= b.at ? [a, b] : [b, a];
+      if (l.lean === "right" && r.lean === "left") return true;
+      if (a.lean === b.lean && Math.abs(b.at - a.at) < TILT_GAP) return true;
+    }
+  }
+  return false;
 }
 
 // Ticks for the possession's events, each captioned with the action above it and the player below. Captions that
@@ -146,15 +168,19 @@ export function layoutTimeline(play: Play, seq: number[], width: number, measure
     if (play.frames[seq[k]] - play.frames[seq[k - 1]] > 1) cuts.push(k / end);
   }
   for (const { k, event } of eventsInSeq(play, seq)) {
-    const w = Math.max(measure(shortScreen(event.short ?? "")), measure(event.who ?? "")) + 8;
+    const w = Math.max(measure(shortScreen(event.short ?? "")) + (event.flag ? 30 : 0), measure(event.who ?? "")) + 8;
     groups.push([{ k, frac: k / end, event, lean: "flat", at: 0, width: w }]);
   }
   groups.sort((g, h) => g[0].k - h[0].k);
   for (;;) {
     for (const group of groups) place(group, width);
-    const i = groups.findIndex((group, j) => j + 1 < groups.length && collide(group, groups[j + 1]));
-    if (i < 0) break;
-    groups.splice(i, 2, groups[i].concat(groups[i + 1]));
+    // Any two groups, not only neighbours: a tilted caption can reach past a flat one.
+    let hit = -1;
+    for (let i = 0; i + 1 < groups.length && hit < 0; i++) {
+      for (let j = i + 1; j < groups.length; j++) if (collide(groups[i], groups[j])) { hit = i; break; }
+    }
+    if (hit < 0) break;
+    groups.splice(hit, 2, groups[hit].concat(groups[hit + 1]));
   }
   return { ticks: groups.flat(), cuts, marks: eventMarks(play, seq) };
 }
