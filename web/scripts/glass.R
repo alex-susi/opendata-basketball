@@ -21,7 +21,9 @@
 # a defender holds the spot between him and the hoop for at least BOX_FRAMES frames, checked from BOX_BEFORE frames
 # before the ball reaches the rim until the rebound (at most BOX_AFTER frames after): closer to the hoop, within
 # BOX_NEAR ft of him, and within BOX_LANE ft of the straight line from him to the hoop (contact usually comes as the
-# ball comes off the rim, not at it). His assigned defender at release (matchups) is tried first, then the defender
+# ball comes off the rim, not at it). It must also hold: once in the spot, the defender is never beaten later in the
+# window (the attacker more than BOX_BEAT ft closer to the hoop than him), so a crasher who gets round or through
+# his man to the rim was not boxed out. His assigned defender at release (matchups) is tried first, then the defender
 # who held the spot longest; that defender is the "boxer". An earlier geometric box-out detector failed
 # its stability checks (decision log, 2026-11-05: one-foot moves changed pairings), so this is a coarse flag about
 # whether a crash was met, not a skill measure.
@@ -30,7 +32,7 @@
 # follows the ball, so players getting back are often off screen; every role carries it so it can be filtered.
 
 GLASS <- list(crash_near = 8, crash_gain = 4, back_gain = 3, safety_far = 28,
-              box_near = 5, box_lane = 3, box_before = 12L, box_after = 25L, box_frames = 3L,
+              box_near = 5, box_lane = 3, box_before = 12L, box_after = 25L, box_frames = 3L, box_beat = 1,
               max_flight = 75L, reach = 2L)
 GLASS_HOOP_X <- 14 * 3.28084 - 1.575 * 3.28084
 GLASS_THREE_R <- 6.75 * 3.28084
@@ -103,10 +105,16 @@ game_glass <- function(game_id, ev) {
       if (nrow(J)) {
         J[, `:=`(hx = GLASS_HOOP_X - ax, hy = -ay, vx = dx - ax, vy = dy - ay)]
         J[, len := pmax(sqrt(hx^2 + hy^2), 1e-6)]
-        J[, gap := sqrt(vx^2 + vy^2)]
-        J[, fits := sqrt((GLASS_HOOP_X - dx)^2 + dy^2) < len & gap <= G$box_near &
-                    (vx * hx + vy * hy) / len > 0 & abs(vx * hy - vy * hx) / len <= G$box_lane]
-        K <- J[, .(n = sum(fits), gap = mean(gap)), by = .(apid, dpid)]
+        J[, `:=`(gap = sqrt(vx^2 + vy^2), dd = sqrt((GLASS_HOOP_X - dx)^2 + dy^2))]
+        J[, fits := dd < len & gap <= G$box_near & (vx * hx + vy * hy) / len > 0 & abs(vx * hy - vy * hx) / len <= G$box_lane]
+        setorder(J, apid, dpid, frame)
+        # Held: in the spot for BOX_FRAMES frames, and never beaten afterwards (the attacker more than BOX_BEAT ft
+        # closer to the hoop than the defender at any later frame of the window).
+        K <- J[, {
+          f_fit <- if (any(fits)) frame[which(fits)[1]] else NA_integer_
+          .(n = sum(fits), gap = mean(gap),
+            beaten = !is.na(f_fit) && any(frame > f_fit & len < dd - G$box_beat))
+        }, by = .(apid, dpid)][beaten == FALSE]
         for (j in which(ids %in% J$apid)) {
           k <- K[apid == ids[j] & n >= G$box_frames][order(-n, gap)]
           m <- mu[off == ids[j] & f0 <= s$f & f1 >= s$f]$def

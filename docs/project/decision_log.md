@@ -2021,3 +2021,8 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   ball reaches the rim until the rebound (at most 25 frames after), needing 3+ frames in the spot. Crashes boxed out
   rose from 55% to 76% (986/1,293); boxed crashes rebound 9.6% of misses vs 11.1% open. Court cut tags drop "Screen"
   ("Cut · in" / "Cut · out"); the timeline keeps "Screen Cut In/Out".
+- **Box-out must hold (same day):** 114243-1-34 flagged #55 on #22 and #19 on #77, though both crashers got to the rim
+  (#22 0.8 ft from the hoop with #55 5 ft out). A box-out now also needs the defender never beaten after he first gets
+  in the spot: the attacker never more than 1 ft closer to the hoop than him for the rest of the window. 1-34 now
+  shows neither; 2-71 keeps Rousselle on Ubal. Crashes boxed out fell from 76% to 68% (873/1,293); boxed crashes
+  rebound 9.5% (83/873) vs 11.0% open (46/420).
