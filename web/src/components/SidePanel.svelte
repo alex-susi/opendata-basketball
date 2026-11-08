@@ -51,13 +51,21 @@
   <div class="panel display">
     <div class="panel-head">
       <h2>Display</h2>
+      <!-- What happens at the end of a play: replay it, or go on to the next one in the possession list. -->
+      <label class="switch two-way" title="At the end of a play: replay it (left) or play the next one in the possession list (right)">
+        <span class:on={viewer.atEnd === "loop"}>Loop</span>
+        <input type="checkbox" role="switch" aria-label="Play the next play at the end" checked={viewer.atEnd === "next"}
+               onchange={(ev) => (viewer.atEnd = ev.currentTarget.checked ? "next" : "loop")} />
+        <span class="switch-track"></span>
+        <span class:on={viewer.atEnd === "next"}>Next play</span>
+      </label>
       <button type="button" class="text-btn" class:recording={viewer.recording} disabled={!play} title="Record this play once through and save it as a video"
               onclick={() => (viewer.recording = !viewer.recording)}>
         {viewer.recording ? "Cancel recording" : "Save Video"}
       </button>
     </div>
-    <!-- Left column: what is drawn on the court. Right column: the trace panel under it, its captions and how the plays run. -->
-    <div class="toggle-grid by-column five">
+    <!-- Left column: what is drawn on the court. Right column: the trace panel under it, its captions, dead-ball time and court control. -->
+    <div class="toggle-grid by-column four">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
       <label class="toggle" title="Tag each player on the court with his archetype (abbreviated, in its colour), as beside his name below">
@@ -66,9 +74,6 @@
       <label class="toggle" title="A fading trail behind each player: where he has been over the last 0.6 seconds, so a longer trail means a faster player">
         <input type="checkbox" bind:checked={viewer.showTrails} />Player trails
       </label>
-      <label class="toggle" title="Court control: at every spot, which team would get to the ball first if it were passed there now, allowing for the ball's travel time and each player's speed and direction. Pale is a toss-up.">
-        <input type="checkbox" bind:checked={viewer.showControl} />Court control
-      </label>
       <label class="toggle" title="The panel under the court: the play's actions and either the ball's height or a player's distance to his nearest opponent">
         <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
       </label>
@@ -76,13 +81,8 @@
         <input type="checkbox" bind:checked={viewer.showTickLabels} />Action names
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
-      <!-- What happens at the end of a play: replay it, or go on to the next one in the possession list. -->
-      <label class="switch two-way" title="At the end of a play: replay it (left) or play the next one in the possession list (right)">
-        <span class:on={viewer.atEnd === "loop"}>Loop</span>
-        <input type="checkbox" role="switch" aria-label="Play the next play at the end" checked={viewer.atEnd === "next"}
-               onchange={(ev) => (viewer.atEnd = ev.currentTarget.checked ? "next" : "loop")} />
-        <span class="switch-track"></span>
-        <span class:on={viewer.atEnd === "next"}>Next play</span>
+      <label class="toggle" title="Court control: at every spot, which team would get to the ball first if it were passed there now, allowing for the ball's travel time and each player's speed and direction. Pale is a toss-up.">
+        <input type="checkbox" bind:checked={viewer.showControl} />Court control
       </label>
     </div>
     {#if viewer.showControl && play}

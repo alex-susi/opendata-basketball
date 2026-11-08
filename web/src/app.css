@@ -429,6 +429,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .text-btn.recording { border-color: var(--missed); color: var(--missed); }
 .note { margin-top: 6px; color: var(--muted); font-size: 12px; }
 .panel-head .switch { margin: 0; }
+/* The Display panel's Loop / Next play switch sits beside Save Video. */
+.display .panel-head .switch { margin-left: auto; margin-right: 6px; }
 
 /* Each roster panel carries its team's colours as --kit-* (set inline from the play): the number in a disc of the
    team's primary colour, as on the court. */
