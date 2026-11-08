@@ -153,9 +153,10 @@ describe("readouts", () => {
     const card = shotCard(play, shot, { peak: true, season: null });
     expect(card.title).toMatch(/^(Made|Missed|Blocked) [23] · #/);
     expect(card.lines[0]).toEqual({ k: "SkillCorner Shot Quality", v: expect.stringMatching(/^\d+ \/ 100$/) });
-    expect(card.lines[1]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
-    expect(card.lines[2].k).toBe("Region");
-    expect(card.lines[2].v).toMatch(/^[A-Z]/);
+    expect(card.lines[1].k).toBe("SkillCorner xPoints");   // no percentile without the league's xPoints
+    expect(card.lines[2]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
+    expect(card.lines[3].k).toBe("Region");
+    expect(card.lines[3].v).toMatch(/^[A-Z]/);
     for (const line of card.lines) expect(line.k).toMatch(/^[A-Z]/);
   });
 

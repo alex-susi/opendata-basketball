@@ -223,6 +223,10 @@ export interface AnnDrive {
   cat?: string;
 }
 
+/** An off-ball cut (cuts.ts): who, from when to when, and whether it went to the basket without a screen, or through
+ * an off-ball screen in toward it or out away from it; the coverage on the cutter for a screen. */
+export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "in" | "out"; cov?: string }
+
 /** A post-up or an isolation: who, when and his defender. */
 export interface AnnSolo { kind: "post" | "isolation"; f: number; pid: number; def?: number; section?: string }
 
@@ -269,7 +273,7 @@ export interface AnnChance {
 
 export interface Annotations {
   shots: AnnShot[]; passes: AnnPass[]; dribbles: AnnDribble[]; drives: AnnDrive[]; screens: AnnScreen[];
-  closeouts: AnnCloseout[]; solos?: AnnSolo[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
+  closeouts: AnnCloseout[]; solos?: AnnSolo[]; cuts?: AnnCut[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
   matchups: AnnMatchup[]; chances: AnnChance[];
 }
 
@@ -326,6 +330,11 @@ export interface SampleFigures {
     top?: number;
     /** Nearest opponent, sampled every 0.2 s on offense (open) and defense (near): [samples, summed feet]. */
     open: [number, number]; near: [number, number];
+    /** His 99th percentile of speed in live play (6-frame velocity, ft/s), and the sprint speed court control uses
+     * (shrunk toward the league and scaled to the archived VMAX's average). */
+    v99?: number; vmax?: number;
+    /** His 99th percentiles of speeding up and slowing down (ft/s²), and the shrunk values court control uses. */
+    acc?: number; amax?: number; dec?: number; dmax?: number;
   };
   acts?: Partial<Record<ActKey, [number, number]>>;
 }
@@ -334,6 +343,12 @@ export interface Sample {
   games: number;
   players: Record<string, SampleFigures>;
   league: {
+    /** Every FGA's SkillCorner xPoints in the tracked games, sorted (for the shot card's percentile). */
+    xpts?: number[];
+    /** The pooled 99th percentile of player speed in live play, ft/s. */
+    sprint?: number;
+    /** Pooled 99th percentiles of speeding up and slowing down in live play, ft/s². */
+    accel?: number; braking?: number;
     zone: Record<"rim" | "mid" | "three", [number, number, number, number, number]>;
     acts: Partial<Record<ActKey, { all: [number, number]; by: Record<string, [number, number]> }>>;
   };

@@ -11,6 +11,7 @@
 import { COLORS, px, py, type Layout } from "./court";
 import { CONTEST_COLORS, SCREEN_NAMES, coverageText, frameIndex, lastShot, playerOf } from "./context";
 import { clamp } from "./geometry";
+import { CUT_TAG } from "./cuts";
 import { inPaint, motion } from "./motion";
 import type { Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
@@ -47,7 +48,7 @@ interface Ctx {
 // How long markers stay up, in frames.
 // A pass is shown only while the ball is in the air (an interception's cross for a second after); screens, closeouts
 // and fouls for about a second after they happen.
-const HOLD = { dribble: 75, pass: 0, intercept: 25, drive: 37, screenBefore: 8, screenAfter: 20, closeout: 12,
+const HOLD = { dribble: 75, pass: 0, intercept: 25, drive: 37, cut: 25, screenBefore: 8, screenAfter: 20, closeout: 12,
                foul: 12, faded: 75, closest: 50, switch: 37, ghosts: 150, ball: 20 };
 
 /** Opacity of something that appears at `start`, stays full until `end`, then fades out over `fade` frames. */
@@ -160,10 +161,36 @@ function pathArrow(k: Ctx, path: [number, number][], color: string, width: numbe
   ctx.restore();
 }
 
-/** Where a drive's arrow ends now: the driver so far while it is under way, its tracked end once it is over. */
-function driveEnd(k: Ctx, d: { f: number; f1: number; pid: number; x1: number; y1: number }): [number, number] {
-  const path = pathOf(k, d.pid, d.f, Math.min(k.frame, d.f1));
-  return path.length ? path[path.length - 1] : [d.x1, d.y1];
+/** Where a moving player is now along his action (his tracked spot, held at the action's end once it is over). */
+function routeNow(k: Ctx, pid: number, f0: number, f1: number, fallback: [number, number]): [number, number] {
+  const path = pathOf(k, pid, f0, Math.min(Math.max(k.frame, f0), f1));
+  return path.length ? path[path.length - 1] : fallback;
+}
+
+/**
+ * A player's whole route for an action (drive, cut, closeout), from its first frame to its last, drawn from the
+ * start: the stretch he has already covered in `color`, the rest still ahead of him paler, and the head at the
+ * route's end. The colour runs along the route with him.
+ */
+function routeArrow(k: Ctx, pid: number, f0: number, f1: number, color: string, width: number, dashed = false): void {
+  const full = pathOf(k, pid, f0, f1);
+  if (full.length < 2) return;
+  const { ctx } = k;
+  const done = k.frame >= f1 ? full.length : pathOf(k, pid, f0, Math.max(k.frame, f0)).length;
+  if (dashed) ctx.setLineDash([6, 5]);
+  pathArrow(k, full, done >= full.length ? color : withAlpha(color, 0.35), width);
+  if (done >= 2 && done < full.length) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    full.slice(0, done).forEach(([x, y], i) => (i ? ctx.lineTo(X(k, x), Y(k, y)) : ctx.moveTo(X(k, x), Y(k, y))));
+    ctx.stroke();
+    ctx.restore();
+  }
+  ctx.setLineDash([]);
 }
 
 /** A small dark label centred on (x, y), in px. */
@@ -249,16 +276,22 @@ function drawEventsUnder(k: Ctx): void {
     const a = life(frame, d.f, d.f1, HOLD.drive);
     if (!a) continue;
     ctx.globalAlpha = 0.85 * a;
-    // The driver's tracked path, growing with him while the drive is under way (the head then stops at his dot).
-    const path = pathOf(k, d.pid, d.f, Math.min(frame, d.f1));
-    if (path.length >= 2) pathArrow(k, path, off.mark, 3.5, frame < d.f1 ? k.r + 2 : 0);
-    else arrow(k, d.x0, d.y0, d.x1, d.y1, off.mark, 3.5, false);
+    // The driver's whole tracked route, coloured as far as he has got.
+    routeArrow(k, d.pid, d.f, d.f1, off.mark, 3.5);
+  }
+  for (const c of ann.cuts ?? []) {
+    const a = life(frame, c.f, c.f1, HOLD.cut);
+    if (!a) continue;
+    ctx.globalAlpha = 0.85 * a;
+    routeArrow(k, c.pid, c.f, c.f1, off.mark, 2.5);
   }
   for (const c of ann.closeouts) {
     const a = life(frame, c.f, c.f1, HOLD.closeout);
     if (!a) continue;
     ctx.globalAlpha = 0.9 * a;
-    arrow(k, c.x0, c.y0, c.x1, c.y1, def.mark, 2.5, true);
+    // The defender's tracked run, coloured as far as he has got (his start and end spots if he is untracked).
+    if (pathOf(k, c.def, c.f, c.f1).length >= 2) routeArrow(k, c.def, c.f, c.f1, def.mark, 2.5, true);
+    else arrow(k, c.x0, c.y0, c.x1, c.y1, def.mark, 2.5, true);
   }
   for (const s of ann.screens) {
     const a = life(frame, s.f - HOLD.screenBefore, s.f, HOLD.screenAfter);
@@ -469,8 +502,16 @@ function drawEventsOver(k: Ctx): void {
     if (!a) continue;
     ctx.globalAlpha = a;
     const text = ["Drive", d.dir, d.blowby ? "blow-by" : null].filter(Boolean).join(" · ");
-    const [ex, ey] = driveEnd(k, d);
+    const [ex, ey] = routeNow(k, d.pid, d.f, d.f1, [d.x1, d.y1]);
     tag(ctx, X(k, ex), Y(k, ey) - r - 10, text, COLORS.ink, 10);
+  }
+  for (const c of ann.cuts ?? []) {
+    const a = life(frame, c.f, c.f1, HOLD.cut);
+    if (!a) continue;
+    const at = routeNow(k, c.pid, c.f, c.f1, [NaN, NaN]);
+    if (Number.isNaN(at[0])) continue;
+    ctx.globalAlpha = a;
+    tag(ctx, X(k, at[0]), Y(k, at[1]) - r - 10, CUT_TAG[c.kind], COLORS.ink, 10);
   }
   for (const c of ann.closeouts) {
     const a = life(frame, c.f, c.f1, HOLD.closeout);

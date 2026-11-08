@@ -5,7 +5,7 @@
   //   x     the pointer's tick line, window px (the card centres on it, kept inside the window)
   //   y     the top of the timeline, window px
   import StatTable from "./StatTable.svelte";
-  import { closeoutLines, coverageText, driveLines, shotCard, type Line } from "../lib/context";
+  import { closeoutLines, coverageText, cutLines, driveLines, shotCard, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { actionTable, type StatSection } from "../lib/player";
   import { FPS, type Tick } from "../lib/sequence";
@@ -21,7 +21,7 @@
     if (!ann) return none;
     if ((ev.kind === "made" || ev.kind === "missed") && viewer.ann.shot) {
       const shot = ann.shots.find((s) => s.f === ev.f);
-      return shot ? { lines: shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data }).lines, table: null } : none;
+      return shot ? { lines: shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data, xpts: season.sample?.league.xpts }).lines, table: null } : none;
     }
     if (ev.kind === "drive") {
       const d = ann.drives.find((r) => r.f === ev.f);
@@ -30,6 +30,10 @@
     if (ev.kind === "closeout") {
       const c = ann.closeouts.find((r) => r.f === ev.f);
       return c ? { lines: closeoutLines(play, c), table: actionTable(play, season.data, season.sample, { kind: "closeout", c }) } : none;
+    }
+    if (ev.kind === "cut") {
+      const c = ann.cuts?.find((r) => r.f === ev.f && play.players.find((p) => p.id === r.pid)?.last === ev.who);
+      return c ? { lines: cutLines(play, c), table: null } : none;
     }
     if (ev.kind === "post" || ev.kind === "isolation") {
       const solo = ann.solos?.find((r) => r.f === ev.f && r.kind === ev.kind);

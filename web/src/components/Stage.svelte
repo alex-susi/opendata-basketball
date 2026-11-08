@@ -6,7 +6,7 @@
   import Annotations from "./Annotations.svelte";
   import { FPS } from "../lib/sequence";
   import type { Play } from "../lib/types";
-  import { live, viewer } from "../lib/viewer.svelte";
+  import { live, season, viewer } from "../lib/viewer.svelte";
 
   /** onend: called once when a play has run to its end and the Display panel says to go on to the next play. */
   let { play, seq, note, onend }: { play: Play | null; seq: number[]; note: string; onend?: () => void } = $props();
@@ -47,7 +47,7 @@
   function render(ctx: CanvasRenderingContext2D): void {
     const focusPid = viewer.showTrace && viewer.trace === "nearest" ? viewer.focusPid : null;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos,
-                           { ...viewer, focusPid }, framed);
+                           { ...viewer, focusPid, sample: season.sample }, framed);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;

@@ -320,6 +320,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .trace-chart .mark.made { stroke: var(--made); opacity: .8; }
 .trace-chart .mark.missed, .trace-chart .mark.turnover { stroke: var(--missed); opacity: .8; }
 .trace-chart .mark.foul, .trace-chart .mark.rebound { stroke: #6C7A96; opacity: .8; }
+.trace-chart .mark.cut { stroke: #8FB3E8; }
 .trace-chart .mark.on { stroke-dasharray: none; stroke-width: 2; opacity: 1; }
 .trace-chart .cut { stroke: var(--panel); stroke-width: 3; }
 .trace-chart .hover { stroke: var(--muted); stroke-width: 1; }

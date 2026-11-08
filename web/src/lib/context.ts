@@ -3,7 +3,7 @@
 
 import { clock } from "./geometry";
 import { gapAt, stretch } from "./motion";
-import type { AnnChance, AnnCloseout, AnnDrive, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
+import type { AnnChance, AnnCloseout, AnnCut, AnnDrive, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
 
 export interface Line {
   k: string;
@@ -169,12 +169,40 @@ export function passLine(play: Play, shot: AnnShot): Line {
   return { k: "Pass", v: shot.made ? `From ${by} (No Assist Credited)` : `From ${by} (Potential Assist)` };
 }
 
-export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; season: Season | null }): Card {
+/** "1st", "2nd", "3rd", "4th", ..., "11th", "21st". */
+const ordinal = (n: number): string => {
+  const t = n % 100, u = n % 10;
+  return `${n}${t >= 11 && t <= 13 ? "th" : u === 1 ? "st" : u === 2 ? "nd" : u === 3 ? "rd" : "th"}`;
+};
+
+/** SkillCorner xPoints: shot quality (0-100) / 100 × the shot's value. */
+export const xPointsOf = (shot: AnnShot): number | null => (shot.sq == null ? null : (shot.sq * (shot.three ? 3 : 2)) / 100);
+
+/** Percentile (0-100) of an xPoints value among the tracked games' FGA (sorted), counting ties as half. */
+export function xPointsPercentile(xp: number, sorted: readonly number[]): number {
+  let lo = 0, hi = sorted.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (sorted[mid] < xp - 5e-4) lo = mid + 1; else hi = mid; }
+  let eq = lo;
+  while (eq < sorted.length && Math.abs(sorted[eq] - xp) <= 5e-4) eq++;
+  return (100 * (lo + (eq - lo) / 2)) / sorted.length;
+}
+
+/**
+ * The shot card. opts.xpts: every FGA's xPoints in the tracked games, sorted (sample.json), for the percentile.
+ */
+export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; season: Season | null; xpts?: readonly number[] | null }): Card {
   const lines: Line[] = [];
   const tone = shot.cl ? CONTEST_COLORS[shot.cl] : undefined;
   const blank = { v: "Not Provided", tone: MUTED };
+  const xp = xPointsOf(shot);
   if (shot.sq != null) lines.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
   else if (shot.est) lines.push({ k: "SkillCorner Shot Quality", ...blank });
+  if (xp != null) {
+    lines.push({ k: "SkillCorner xPoints", v: xp.toFixed(2) });
+    if (opts.xpts?.length) lines.push({ k: "xPoints Percentile", v: ordinal(Math.min(100, Math.max(1, Math.round(xPointsPercentile(xp, opts.xpts))))) });
+  } else if (shot.est) {
+    lines.push({ k: "SkillCorner xPoints", ...blank });
+  }
   if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
   if (shot.region) lines.push({ k: "Region", v: regionName(shot.region) });
   if (shot.cl) lines.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
@@ -233,6 +261,23 @@ export function driveLines(play: Play, d: AnnDrive): Line[] {
   }
   lines.push({ k: "Drive Length", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1, "ft") });
   lines.push(...movementLines(play, d.pid, d.f, d.f1, "Driver"));
+  return lines;
+}
+
+/** A cut: its kind, the coverage on a screen, his defender and the gap to him, whether he got the ball, and how he
+ * ran. His defender is his matchup when the cut starts (else the nearest opponent then). */
+export function cutLines(play: Play, c: AnnCut): Line[] {
+  const lines: Line[] = [{ k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-Ball Screen, ${c.kind === "in" ? "In" : "Out"}` }];
+  if (c.cov && c.cov !== "none") lines.push({ k: "Coverage", v: titleCase(c.cov) });
+  const m = play.ann?.matchups.find((x) => x.off === c.pid && x.f <= c.f && x.f1 >= c.f);
+  if (m) {
+    lines.push({ k: "Defender", v: nameOf(play, m.def) });
+    const a = gapAt(play, c.pid, m.def, c.f), b = gapAt(play, c.pid, m.def, c.f1);
+    lines.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
+  }
+  const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
+  lines.push({ k: "Got the Ball", v: catchAt ? `Yes, ${((catchAt.f0 - c.f) / 25).toFixed(1)} s in` : "No" });
+  lines.push(...movementLines(play, c.pid, c.f, c.f1, "Cutter"));
   return lines;
 }
 

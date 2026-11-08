@@ -16,7 +16,7 @@
 
   const frame = $derived(play ? play.frames[Math.min(live.i0, play.frames.length - 1)] : 0);
   const shot = $derived(play && viewer.ann.shot ? lastShot(play, frame) : null);
-  const shotInfo = $derived(play && shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data }) : null);
+  const shotInfo = $derived(play && shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data, xpts: season.sample?.league.xpts }) : null);
   const poss = $derived(play && play.ann && viewer.ann.possession ? possessionCard(play, frame, play.gc[live.i0] ?? 0) : null);
   const quality = $derived.by((): Card | null => {
     if (!play || !viewer.ann.quality) return null;
@@ -41,7 +41,7 @@
   const span = $derived(box ? (box.h >= need ? { top: box.top, h: box.h } : { top: Math.max(4, box.top - (need - box.h) / 2), h: need }) : null);
   // Room kept for the cards from the start of a play, before its shot card appears, so the court does not shrink
   // mid-play: about the height of a full shot card, possession card and tracking card (px).
-  const RESERVE = { shot: 270, possession: 165, quality: 90 };
+  const RESERVE = { shot: 330, possession: 165, quality: 90 };
   const reserve = $derived((viewer.ann.shot ? RESERVE.shot : 0) + (viewer.ann.possession ? RESERVE.possession : 0)
     + (viewer.ann.quality ? RESERVE.quality : 0));
   $effect(() => {

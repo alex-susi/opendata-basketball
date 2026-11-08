@@ -5,23 +5,35 @@
 //
 // How a cell is decided, step by step:
 //   1. The ball's travel time to the cell: BALL0 + BALL1 × distance (a pass at about 50 ft/s).
-//   2. Each player's arrival time: he keeps his current velocity for REACT seconds, then runs straight to the cell at
-//      VMAX ft/s.
+//   2. Each player's arrival time: he keeps his current velocity for the reaction time, then heads straight for the cell
+//      within his own motion limits (sample.json; "Motion limits" in web/scripts/sample_stats.R): his velocity toward
+//      the cell changes no faster than his acceleration (speeding up) or braking (first stopping, if he is moving
+//      away), up to his sprint speed. A player already running at the cell gets there sooner than one standing, and
+//      one running the other way has to stop first. His sideways velocity is ignored. Each limit is his own high
+//      percentile in the ten games' live play, shrunk toward his offensive archetype's average when he was seen
+//      briefly; sprint speeds are scaled so their average is the archived VMAX. Without the figures (and in the
+//      R parity test) every player runs at VMAX from the moment he reacts, as in the archived model.
 //   3. His arrival is uncertain: by time t he has arrived with a logistic probability in (t − arrival) whose spread
-//      is SIGMA seconds.
-//   4. From the moment the ball gets there, while nobody has the cell, each arrived player takes it at rate LAMBDA
+//      is the timing spread.
+//   4. From the moment the ball gets there, while nobody has the cell, each arrived player takes it at the claim rate
 //      per second (fast, so the first to arrive nearly always wins).
 //   5. The cell's colour is the offense's share of that (pale = a toss-up).
-// The constants are the archived ones: VMAX and the ball's speed measured from the ten games' tracking and passes,
-// REACT, SIGMA and LAMBDA picked from a small grid by how well they predicted which team ended up with passes.
+// Constants. VMAX (the archived single sprint speed) and the ball's speed were measured from the ten games' tracking
+// and passes. The reaction time, timing spread and claim rate come in two sets:
+//   ARCHIVED  the archived model's (one speed, instant top speed), kept for the R parity test and for players
+//             without figures in a play read without limits
+//   FITTED    refitted for the per-player limits by web/scripts/fit_control.R: the grid point whose control at each
+//             live pass's catch spot best separated completed from intercepted passes (3,728 passes, 66
+//             intercepted; logistic recalibration, log loss). Left one game out at a time, this model beat the
+//             archived one in 8 of 10 games (held-out log loss 0.0215 vs 0.0263; mean gain 0.0050, SE 0.0022);
+//             per-player sprint speeds alone, without acceleration, did not (0.0268).
 // Coordinates are the play's stored frame: feet, the offense attacking the hoop at +x.
 
 import { HALF_L, HALF_W, type Layout } from "./court";
-import type { Play } from "./types";
+import type { Play, Sample } from "./types";
 
-const REACT = 0.4;              // s
-const SIGMA = 0.15;             // s
-const LAMBDA = 100;             // per s
+const ARCHIVED = { react: 0.4, sigma: 0.15, lambda: 100 };   // s, s, per s
+const FITTED = { react: 0.05, sigma: 0.45, lambda: 50 };     // s, s, per s
 const VMAX = 18.1147264926486;  // ft/s
 const BALL0 = 0.0160704909212239, BALL1 = 0.0201103502526555;   // s, s per ft
 const DT = 0.04, MAX_T = 6, TOL = 0.99;
@@ -29,8 +41,49 @@ const CELL = 2;                 // ft
 const VEL_LAG = 6;              // frames: velocity from the position 0.24 s earlier
 const MAX_SPEED = 30;           // ft/s; faster is a tracking jump
 
-/** The players on court at one frame, offense first. */
-export interface Bodies { x: Float64Array; y: Float64Array; vx: Float64Array; vy: Float64Array; nOff: number }
+/** The league's acceleration and braking (ft/s²), for a player without his own figures. */
+const ACCEL = 12.4, BRAKE = 11.9;
+
+/** The players on court at one frame, offense first. With limits: each one's sprint speed, acceleration and braking
+ * (without: every player at VMAX from the moment he reacts). */
+export interface Bodies {
+  x: Float64Array; y: Float64Array; vx: Float64Array; vy: Float64Array; nOff: number;
+  vmax?: Float64Array; amax?: Float64Array; dmax?: Float64Array;
+}
+
+/** One player's motion limits: sprint speed (ft/s), acceleration and braking (ft/s²). */
+export interface Limits { v: number; a: number; d: number }
+
+/** Motion limits per player id for a play's players, from the tracked games' figures; null without them. */
+const limitCache = new WeakMap<Play, Map<number, Limits>>();
+export function motionLimits(play: Play, sample: Sample | null): Map<number, Limits> | null {
+  if (!sample) return null;
+  let out = limitCache.get(play);
+  if (!out) {
+    out = new Map();
+    for (const p of play.players) {
+      const t = p.canon != null && p.team != null ? sample.players[`${p.canon}:${p.team}`]?.trk : undefined;
+      if (t?.vmax != null) out.set(p.id, { v: t.vmax, a: t.amax ?? sample.league.accel ?? ACCEL, d: t.dmax ?? sample.league.braking ?? BRAKE });
+    }
+    limitCache.set(play, out);
+  }
+  return out;
+}
+
+/** Seconds to cover `dist` ft heading straight at it, starting at speed `u` toward it (negative: moving away), with
+ * acceleration a, braking d and top speed v. */
+export function runTime(dist: number, u: number, v: number, a: number, d: number): number {
+  let t = 0;
+  if (u < 0) {                       // stop first, which carries him further away
+    t = -u / d;
+    dist += (u * u) / (2 * d);
+    u = 0;
+  }
+  u = Math.min(u, v);
+  const ramp = (v * v - u * u) / (2 * a);   // distance covered while speeding up to v
+  if (ramp >= dist) return t + (Math.sqrt(u * u + 2 * a * dist) - u) / a;
+  return t + (v - u) / a + (dist - ramp) / v;
+}
 
 /** Cell centres in row-major order (top row first, left to right). */
 export interface Grid { nx: number; ny: number; at: Int32Array; x: Float64Array; y: Float64Array }
@@ -51,8 +104,8 @@ export function courtGrid(): Grid {
 }
 
 /** Positions and velocities at index i of the play's frames. Players without a position are left out. */
-export function bodiesAt(play: Play, i: number): Bodies {
-  const rows: [number, number, number, number, boolean][] = [];
+export function bodiesAt(play: Play, i: number, limits: Map<number, Limits> | null = null): Bodies {
+  const rows: [number, number, number, number, boolean, Limits][] = [];
   const back = i - VEL_LAG, joined = back >= 0 && play.frames[i] - play.frames[back] === VEL_LAG;
   for (const p of play.players) {
     const x = p.x[i], y = p.y[i];
@@ -65,29 +118,41 @@ export function bodiesAt(play: Play, i: number): Bodies {
       vx *= slow;
       vy *= slow;
     }
-    rows.push([x, y, vx, vy, p.role === "off"]);
+    rows.push([x, y, vx, vy, p.role === "off", limits?.get(p.id) ?? { v: VMAX, a: ACCEL, d: BRAKE }]);
   }
   rows.sort((a, b) => Number(b[4]) - Number(a[4]));
   return {
     x: Float64Array.from(rows, (r) => r[0]), y: Float64Array.from(rows, (r) => r[1]),
     vx: Float64Array.from(rows, (r) => r[2]), vy: Float64Array.from(rows, (r) => r[3]),
     nOff: rows.filter((r) => r[4]).length,
+    vmax: limits ? Float64Array.from(rows, (r) => r[5].v) : undefined,
+    amax: limits ? Float64Array.from(rows, (r) => r[5].a) : undefined,
+    dmax: limits ? Float64Array.from(rows, (r) => r[5].d) : undefined,
   };
 }
 
 /** The offense's share of control of each cell for a ball at (bx, by) (steps 1-5 above). */
 export function timeToBallControl(b: Bodies, g: Grid, bx: number, by: number): Float64Array {
+  // The refitted constants go with the motion limits; the archived ones with the archived motion.
+  const c0 = b.amax && b.dmax && b.vmax ? FITTED : ARCHIVED;
   const k = b.x.length, rx = new Float64Array(k), ry = new Float64Array(k);
   for (let j = 0; j < k; j++) {
-    rx[j] = b.x[j] + b.vx[j] * REACT;
-    ry[j] = b.y[j] + b.vy[j] * REACT;
+    rx[j] = b.x[j] + b.vx[j] * c0.react;
+    ry[j] = b.y[j] + b.vy[j] * c0.react;
   }
-  const scale = Math.PI / Math.sqrt(3) / SIGMA, steps = Math.ceil(MAX_T / DT), rate = LAMBDA * DT;
+  const scale = Math.PI / Math.sqrt(3) / c0.sigma, steps = Math.ceil(MAX_T / DT), rate = c0.lambda * DT;
   const tau = new Float64Array(k), P = new Float64Array(k), out = new Float64Array(g.x.length);
   for (let c = 0; c < g.x.length; c++) {
     const tBall = BALL0 + BALL1 * Math.hypot(g.x[c] - bx, g.y[c] - by);
     for (let j = 0; j < k; j++) {
-      tau[j] = REACT + Math.hypot(g.x[c] - rx[j], g.y[c] - ry[j]) / VMAX;
+      const dx = g.x[c] - rx[j], dy = g.y[c] - ry[j], dist = Math.hypot(dx, dy);
+      if (b.amax && b.dmax && b.vmax) {
+        // His speed toward the cell when he reacts (the velocity he kept), then the limited run.
+        const u = dist > 1e-9 ? (b.vx[j] * dx + b.vy[j] * dy) / dist : 0;
+        tau[j] = c0.react + runTime(dist, u, b.vmax[j], b.amax[j], b.dmax[j]);
+      } else {
+        tau[j] = c0.react + dist / (b.vmax ? b.vmax[j] : VMAX);
+      }
       P[j] = 0;
     }
     let tot = 0;
@@ -116,12 +181,13 @@ export interface ControlReading {
 }
 
 let lastKey = "", last: ControlReading | null = null;
-/** Court control at index i of the play's frames (needs five a side and the ball), or null. */
-export function controlAt(play: Play, i: number): ControlReading | null {
-  const key = `${play.id}:${i}`;
+/** Court control at index i of the play's frames (needs five a side and the ball), or null. With limits, each
+ * player moves within his own sprint speed, acceleration and braking. */
+export function controlAt(play: Play, i: number, limits: Map<number, Limits> | null = null): ControlReading | null {
+  const key = `${play.id}:${i}:${limits ? "own" : "one"}`;
   if (key === lastKey) return last;
   lastKey = key;
-  const b = bodiesAt(play, i), bx = play.ball.x[i], by = play.ball.y[i];
+  const b = bodiesAt(play, i, limits), bx = play.ball.x[i], by = play.ball.y[i];
   if (b.nOff < 5 || b.x.length - b.nOff < 5 || Number.isNaN(bx) || Number.isNaN(by)) return (last = null);
   const g = courtGrid(), pc = timeToBallControl(b, g, bx, by);
   let off = 0, half = 0, cells = 0;

@@ -3,14 +3,14 @@
 // from draw(), drawPlayer(), drawHeader() and drawCaption() in the Shiny app's www/player.js.
 
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
-import { controlAt, drawControl } from "./control";
+import { controlAt, drawControl, motionLimits } from "./control";
 import { logoImage } from "./logos.svelte";
 import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
 import { nearestAt } from "./trace";
-import type { Play, PlayerTrack, TeamColors } from "./types";
+import type { Play, PlayerTrack, Sample, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 const CAPTION_FRAMES = 62;   // how long an event label stays up
@@ -24,6 +24,8 @@ export interface DrawOptions {
   showTrails: boolean;
   /** Court control: which team would reach the ball first at each spot (control.ts). */
   showControl: boolean;
+  /** The tracked games' figures: court control uses each player's motion limits from them (null: one speed for all). */
+  sample?: Sample | null;
   /** Annotation sections drawn on the court (annotate.ts). */
   ann: AnnSections;
   /** The player whose nearest opponent is shown: both ringed and joined by a line. Null shows no pair. */
@@ -369,7 +371,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   const areaDef = drawHull(ctx, L, dots.def, play.colors.def, o.showDef);
   const areaOff = drawHull(ctx, L, dots.off, play.colors.off, o.showOff);
   // Court control goes over the hulls (their fill would hide it) and under everything else, at the tracking frame.
-  const cc = o.showControl ? controlAt(play, c.i0) : null;
+  const cc = o.showControl ? controlAt(play, c.i0, motionLimits(play, o.sample ?? null)) : null;
   if (cc) drawControl(ctx, L, cc, { off: play.colors.off.fill, def: play.colors.def.fill });
   const all = dots.def.concat(dots.off);
   if (o.showTrails) for (const d of all) drawTrail(ctx, L, play, d, c, r, play.colors[d.p.role]);

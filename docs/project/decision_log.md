@@ -1925,3 +1925,36 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   1.5 ft of the line and flagging larger contradictions on the shot card. Shot quality, type and release time show
   "Not Provided". `sample_stats.R` zones the blank twos by tracked distance and credits the nearest opponent as the
   closest defender. Play labels no longer print "(NA)" for a missing shot type (`INDEX_VERSION` 10).
+
+## 2026-11-08 — Court control: each player's own sprint speed
+
+- **Before:** every player ran to each spot at the archived VMAX, 18.11 ft/s (the league's 99th percentile of player
+  speed in live play).
+- **Now (`web/src/lib/control.ts`, figures from `web/scripts/sample_stats.R`):** each player runs at his own 99th
+  percentile of live-play speed, measured as the model measures velocity (6-frame difference, capped at 30 ft/s),
+  shrunk toward the pooled league value (17.84 ft/s) with 10 live minutes of prior weight, then scaled so the
+  frame-weighted player average is the archived VMAX that REACT, SIGMA and LAMBDA were fitted with. Range 16.4-20.0
+  ft/s; centres slowest, off-ball wings fastest. It is observed speed, so it mixes ability with role.
+- **Effect:** on 389 sampled frames from 40 plays the offense's court share moved by a median of 1.7 points
+  (90th percentile 8.4, max 21; the largest in open areas far from everyone). The R-parity test still runs with one
+  speed. The other constants were not refitted.
+- **2026-11-08 addition — acceleration and braking limits; archetype priors:** after reacting, a player's speed toward
+  a spot now changes no faster than his own acceleration (speeding up) and braking (stopping first if moving away),
+  up to his sprint speed (`runTime` in `web/src/lib/control.ts`); his sideways velocity is ignored. Limits are his
+  99th percentiles of the change in speed between 6-frame velocities 0.24 s apart (league 12.4 ft/s² up, 11.9
+  down). All three limits now shrink toward the frame-weighted average of his offensive archetype (10 live minutes
+  of prior weight) instead of the league. Sprint speeds are still scaled to the archived VMAX average (a 2.7%
+  increase: players' own 99th percentiles average 17.64 ft/s, frame-weighted). On 389 frames from 40 plays the
+  offense's court share moved by a median of 4.4 points from the archived model (90th percentile 19, max 51); the
+  largest swings are players running toward one end who can no longer reverse instantly. Still not refitted.
+- **2026-11-08 addition — constants refitted (`web/scripts/fit_control.R`):** rebuilt the archived fit's data from
+  the play viewer's tracking cache: 3,728 live passes (66 intercepted) with the ten players at release and the
+  catch spot. Control at the catch spot, recalibrated by a logistic, scored by log loss; one game held out at a
+  time. On this rebuild the archived motion's best point is reaction 0.3 s, spread 0.3 s, claim rate 50 (the
+  archived 0.4 / 0.15 / 100 came from the archived pass table; nearby points score almost the same). Held-out log
+  loss (base rate 0.0893): archived 0.0263; per-player sprint speeds only 0.0268 (no gain); per-player limits as
+  measured 0.0215, better in 8 of 10 games (mean gain 0.0050, SE 0.0022); limits with acceleration ×1.5 0.0206
+  (not adopted: an extra tuned factor for a gain within noise). Adopted for the limits model: reaction 0.05 s,
+  spread 0.45 s, claim rate 50 per s (`FITTED` in control.ts); the archived constants stay for the no-limits path
+  so the R parity test still holds. Caveats: only 66 interceptions; the players' limits use all ten games'
+  tracking, including the held-out game's (movement, not outcomes). Outputs in outputs/court_control/.

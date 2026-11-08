@@ -1,6 +1,7 @@
 // Decodes one play from a period's binary file. No DOM or fetch here, so tests can run it in Node.
 // Layout is documented at the top of web/scripts/export_data.R.
 
+import { findCuts } from "./cuts";
 import { fillShots } from "./shotfill";
 import { dotInk } from "./teamColors";
 import type { Play, PlayHeader, Role, Series, TeamColors } from "./types";
@@ -63,5 +64,6 @@ export function decodePlay(buffer: ArrayBuffer, h: PlayHeader): Play {
     frames: i32, gc, sc, stopped: u8.subarray(0, n), ball, players: tracks,
   };
   fillShots(play);
+  findCuts(play);
   return play;
 }

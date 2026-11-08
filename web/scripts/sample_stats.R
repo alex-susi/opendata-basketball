@@ -23,6 +23,16 @@
 #   Tracking       live play only (game clock running). Positions smoothed over 5 frames (as the site's motion.ts),
 #                  steps faster than 35 ft/s left out. Top speed is the fastest 0.5 s average. Paint time is time
 #                  on offense inside the key he attacks. Nearest opponent sampled every 5th frame (0.2 s).
+#   Motion limits  for court control (web/src/lib/control.ts), from live play, with velocity measured as the
+#                  control model measures it (position change over 6 frames, capped at 30 ft/s):
+#                    sprint speed  his 99th percentile of speed (the archived model's league-wide VMAX statistic)
+#                    acceleration  his 99th percentile of the change in speed between velocities 6 frames apart
+#                    braking       the same for the fall in speed (his 1st percentile, sign flipped)
+#                  Each is shrunk toward the average of his offensive archetype (outputs/archetypes/
+#                  offense_membership.csv; frame-weighted over its players), with PRIOR_FRAMES frames (10 minutes of
+#                  live play) of the archetype's weight, or toward the league for a player with no archetype. Sprint
+#                  speeds are then scaled so their frame-weighted average is the archived VMAX, which the model's
+#                  other constants were fitted with.
 
 sample_figures <- function() {
   M <- 3.28084
@@ -36,7 +46,10 @@ sample_figures <- function() {
   act_pts <- function(outs) vapply(outs, function(o) own_pts(o) + ast_pts(o), 0L)
   games <- as.integer(fromJSON(file.path(a$root, "data", "matches.json"))$id)
 
-  box <- list(); trk_rows <- list(); acts <- list(); zones <- list(); guards <- list(); ball <- list()
+  box <- list(); trk_rows <- list(); acts <- list(); zones <- list(); guards <- list(); ball <- list(); sprint <- list()
+  VMAX <- 18.1147264926486      # the archived control model's league-wide top speed (web/src/lib/control.ts)
+  PRIOR_FRAMES <- 15000L        # frames (10 minutes of live play) of the archetype's value in each player's estimate
+  ACCEL_LAG <- 6L               # frames between the two velocities whose difference is an acceleration
   for (g in games) {
     ev <- a$read_json_file(a$match_file(a$root, g, "_dynamic_events.json"))
     roster <- a$app_data$roster[game_id == g, .(pid, team = team_id, canon)]
@@ -163,7 +176,15 @@ sample_figures <- function() {
     pl[, `:=`(off_team = fifelse(inside, poss$off[pmax(k, 1L)], NA_integer_),
               sgn = fifelse(inside, fifelse(poss$left[pmax(k, 1L)], -1, 1), NA_real_), team = team_of(pid))]
     pl[, on_o := team == off_team]
+    # Velocity as the control model measures it: over 6 frames, capped at 30 ft/s.
+    pl[, `:=`(x6 = shift(x, 6L), y6 = shift(y, 6L), f6 = shift(frame, 6L)), by = pid]
+    pl[, v6 := fifelse(frame - f6 == 6L, pmin(sqrt((x - x6)^2 + (y - y6)^2) * 25 / 6, 30), NA_real_)]
     lv <- pl[stopped == FALSE]
+    # Change in speed between velocities ACCEL_LAG frames apart (ft/s per s), on unbroken stretches.
+    pl[, `:=`(v6n = shift(v6, ACCEL_LAG, type = "lead"), fn = shift(frame, ACCEL_LAG, type = "lead")), by = pid]
+    pl[, a6 := fifelse(fn - frame == ACCEL_LAG, (v6n - v6) * 25 / ACCEL_LAG, NA_real_)]
+    lv <- pl[stopped == FALSE]
+    sprint[[length(sprint) + 1L]] <- lv[!is.na(v6) & !is.na(team), .(pid, team, v6, a6)]
     t1 <- lv[, .(secs = .N / 25, dist = sum(step, na.rm = TRUE),
                  offSecs = sum(on_o %in% TRUE) / 25, offDist = sum(step[on_o %in% TRUE], na.rm = TRUE),
                  defSecs = sum(on_o %in% FALSE) / 25, defDist = sum(step[on_o %in% FALSE], na.rm = TRUE),
@@ -213,6 +234,24 @@ sample_figures <- function() {
     dt[, lapply(.SD, function(v) sum(v, na.rm = TRUE)), by = key, .SDcols = cols]
   }
   B <- sum_key(rbindlist(box, fill = TRUE))
+  S <- rbindlist(sprint)
+  S[, key := key_of(pid, team)]
+  q <- function(v, p) unname(quantile(v, p, na.rm = TRUE))
+  pooled <- c(v = q(S$v6, 0.99), a = q(S$a6, 0.99), d = -q(S$a6, 0.01))
+  Sp <- S[, .(v99 = q(v6, 0.99), acc = q(a6, 0.99), dec = -q(a6, 0.01), n = .N), by = key]
+  mem <- fread(file.path(a$root, "outputs", "archetypes", "offense_membership.csv"), select = c("pid", "archetype"))
+  Sp[, arch := mem$archetype[match(as.integer(sub(":.*", "", key)), mem$pid)]]
+  prior <- Sp[!is.na(arch), .(pv = weighted.mean(v99, n), pa = weighted.mean(acc, n), pd = weighted.mean(dec, n)), by = arch]
+  Sp <- merge(Sp, prior, by = "arch", all.x = TRUE)
+  Sp[is.na(pv), `:=`(pv = pooled[["v"]], pa = pooled[["a"]], pd = pooled[["d"]])]
+  shrink <- function(x, p, n) (n * x + PRIOR_FRAMES * p) / (n + PRIOR_FRAMES)
+  Sp[, `:=`(vmax = shrink(v99, pv, n), amax = shrink(acc, pa, n), dmax = shrink(dec, pd, n))]
+  Sp[, vmax := vmax * VMAX / weighted.mean(vmax, n)]
+  message(sprintf("  motion limits: pooled sprint %.2f ft/s (archived VMAX %.2f), acceleration %.1f, braking %.1f ft/s2; model sprint %.1f-%.1f, acceleration %.1f-%.1f, braking %.1f-%.1f",
+                  pooled[["v"]], VMAX, pooled[["a"]], pooled[["d"]], min(Sp$vmax), max(Sp$vmax), min(Sp$amax), max(Sp$amax),
+                  min(Sp$dmax), max(Sp$dmax)))
+  print(Sp[, .(players = .N, sprint = round(weighted.mean(vmax, n), 2), accel = round(weighted.mean(amax, n), 1),
+               braking = round(weighted.mean(dmax, n), 1)), by = arch][order(-sprint)])
   Tk <- rbindlist(trk_rows, fill = TRUE)[!is.na(team)]
   Tk[, key := key_of(pid, team)]
   Tk <- Tk[, c(lapply(.SD, function(v) sum(v, na.rm = TRUE)), list(top = suppressWarnings(max(top, na.rm = TRUE)))), by = key,
@@ -250,7 +289,11 @@ sample_figures <- function() {
       trk = if (nrow(t)) list(secs = r1(t$secs), dist = round(t$dist), offSecs = r1(t$offSecs), offDist = round(t$offDist),
                               defSecs = r1(t$defSecs), defDist = round(t$defDist), paint = r1(t$paint),
                               top = if (is.finite(t$top)) r1(t$top) else NULL,
-                              open = I(c(t$openN, r1(t$openSum))), near = I(c(t$nearN, r1(t$nearSum)))) else NULL,
+                              open = I(c(t$openN, r1(t$openSum))), near = I(c(t$nearN, r1(t$nearSum))),
+                              v99 = if (nrow(sp <- Sp[key == k])) round(sp$v99, 2) else NULL,
+                              vmax = if (nrow(sp)) round(sp$vmax, 2) else NULL,
+                              acc = if (nrow(sp)) round(sp$acc, 1) else NULL, amax = if (nrow(sp)) round(sp$amax, 2) else NULL,
+                              dec = if (nrow(sp)) round(sp$dec, 1) else NULL, dmax = if (nrow(sp)) round(sp$dmax, 2) else NULL) else NULL,
       acts = if (nrow(ak)) setNames(lapply(seq_len(nrow(ak)), function(j) I(c(ak$n[j], ak$pts[j]))), ak$kind) else NULL)
     players[[k]] <- rec[!vapply(rec, is.null, NA)]
   }
@@ -261,7 +304,8 @@ sample_figures <- function() {
   })
   list(games = length(games),
        players = players,
-       league = list(zone = list(rim = I(zone_vec(Z[zone == "rim"])), mid = I(zone_vec(Z[zone == "mid"])),
+       # Every FGA's SkillCorner xPoints (shot quality / 100 × the shot's value), sorted: the shot card's percentile.
+       league = list(xpts = I(sort(round(Z[!is.na(sq), sq * fifelse(three, 3, 2) / 100], 3))), sprint = round(pooled[["v"]], 2), accel = round(pooled[["a"]], 2), braking = round(pooled[["d"]], 2), zone = list(rim = I(zone_vec(Z[zone == "rim"])), mid = I(zone_vec(Z[zone == "mid"])),
                                  three = I(zone_vec(Z[zone == "three"]))),
                      acts = league_acts))
 }
