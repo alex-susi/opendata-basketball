@@ -18,9 +18,11 @@
 # The shooter is labelled separately: "follow" if he crashed after his own shot, else "shooter".
 #
 # Box-outs: a crasher, or any attacker who was already within CRASH_NEAR ft of the hoop at release, is boxed out when
-# a defender ends the flight between him and the hoop: closer to the hoop, within BOX_NEAR ft of him, and within
-# BOX_LANE ft of the straight line from him to the hoop. His assigned defender at release (matchups) is tried first,
-# then the nearest other defender who fits; that defender is the "boxer". An earlier geometric box-out detector failed
+# a defender holds the spot between him and the hoop for at least BOX_FRAMES frames, checked from BOX_BEFORE frames
+# before the ball reaches the rim until the rebound (at most BOX_AFTER frames after): closer to the hoop, within
+# BOX_NEAR ft of him, and within BOX_LANE ft of the straight line from him to the hoop (contact usually comes as the
+# ball comes off the rim, not at it). His assigned defender at release (matchups) is tried first, then the defender
+# who held the spot longest; that defender is the "boxer". An earlier geometric box-out detector failed
 # its stability checks (decision log, 2026-11-05: one-foot moves changed pairings), so this is a coarse flag about
 # whether a crash was met, not a skill measure.
 #
@@ -28,7 +30,8 @@
 # follows the ball, so players getting back are often off screen; every role carries it so it can be filtered.
 
 GLASS <- list(crash_near = 8, crash_gain = 4, back_gain = 3, safety_far = 28,
-              box_near = 5, box_lane = 3, max_flight = 75L, reach = 2L)
+              box_near = 5, box_lane = 3, box_before = 12L, box_after = 25L, box_frames = 3L,
+              max_flight = 75L, reach = 2L)
 GLASS_HOOP_X <- 14 * 3.28084 - 1.575 * 3.28084
 GLASS_THREE_R <- 6.75 * 3.28084
 GLASS_THREE_Y <- 6.6 * 3.28084
@@ -56,6 +59,8 @@ game_glass <- function(game_id, ev) {
   cpa <- data.table(chance = ann_chr(ev$chance_players, "chanceId"), pid = ann_int(ev$chance_players, "playerId"),
                     off = ann_lgl(ev$chance_players, "offense"))
   cp <- cpa[off == TRUE]; cpd <- cpa[off == FALSE]
+  rb <- data.table(shot = ann_chr(ev$rebounds, "shotId"), f = ann_int(ev$rebounds, "frame"))[!is.na(shot) & !is.na(f)]
+  reb_f <- setNames(rb$f, rb$shot)
   mu <- data.table(f0 = ann_int(ev$matchups, "startFrame"), f1 = ann_int(ev$matchups, "endFrame"),
                    def = ann_int(ev$matchups, "defPlayerId"), off = ann_int(ev$matchups, "offPlayerId"))
   # A player's spot at a frame, from the nearest tracked frame within `reach`, in the viewer's frame.
@@ -85,23 +90,30 @@ game_glass <- function(game_id, ev) {
     deepest <- d0 == max(d0[ids != s$shooter])
     role <- fifelse(crash, "crash", fifelse(back, "back", fifelse(d0 >= G$safety_far & deepest & d1 >= G$safety_far, "safety", "hold")))
     role[ids == s$shooter] <- ifelse(crash[ids == s$shooter] & d0[ids == s$shooter] - d1[ids == s$shooter] >= G$crash_gain, "follow", "shooter")
-    # Box-outs, at the end of the flight: the attacker's matchup at release first, then any other defender.
+    # Box-outs, frame by frame from BOX_BEFORE frames before the ball reaches the rim until the rebound (at most
+    # BOX_AFTER frames on): the attacker's matchup at release first, then the defender who held the spot longest.
     boxed <- rep(NA, length(ids)); boxer <- rep(NA_integer_, length(ids))
     defs <- unique(cpd[chance == s$chance, pid])
-    dpos <- if (length(defs)) spot(s$f1, defs, sgn) else matrix(NA_real_, 0, 2)
-    for (j in which(role %in% c("crash", "follow") | (role != "shooter" & d0 <= G$crash_near))) {
-      have <- !is.na(dpos[, 1])
-      if (!any(have)) next
-      hx <- GLASS_HOOP_X - p1[j, 1]; hy <- -p1[j, 2]; len <- sqrt(hx^2 + hy^2)
-      vx <- dpos[, 1] - p1[j, 1]; vy <- dpos[, 2] - p1[j, 2]
-      along <- if (len > 1e-6) (vx * hx + vy * hy) / len else rep(0, length(vx))
-      lane <- if (len > 1e-6) abs(vx * hy - vy * hx) / len else sqrt(vx^2 + vy^2)
-      d_def <- sqrt((GLASS_HOOP_X - dpos[, 1])^2 + dpos[, 2]^2)
-      gap <- sqrt(vx^2 + vy^2)
-      fits <- have & d_def < d1[j] & gap <= G$box_near & along > 0 & lane <= G$box_lane
-      m <- mu[off == ids[j] & f0 <= s$f & f1 >= s$f]$def
-      pick <- if (length(m) && m[1] %in% defs[fits]) m[1] else if (any(fits)) defs[fits][which.min(gap[fits])] else NA_integer_
-      boxed[j] <- !is.na(pick); boxer[j] <- pick
+    cand <- ids[role %in% c("crash", "follow") | (role != "shooter" & d0 <= G$crash_near)]
+    if (length(defs) && length(cand)) {
+      w1 <- max(s$f1, min(s$f1 + G$box_after, reb_f[s$id], na.rm = TRUE))
+      W <- trk[.(max(s$f, s$f1 - G$box_before):w1), nomatch = 0L][, .(frame, pid, x = sgn * x, y = -sgn * y)]
+      J <- merge(W[pid %in% cand, .(frame, apid = pid, ax = x, ay = y)],
+                 W[pid %in% defs, .(frame, dpid = pid, dx = x, dy = y)], by = "frame", allow.cartesian = TRUE)
+      if (nrow(J)) {
+        J[, `:=`(hx = GLASS_HOOP_X - ax, hy = -ay, vx = dx - ax, vy = dy - ay)]
+        J[, len := pmax(sqrt(hx^2 + hy^2), 1e-6)]
+        J[, gap := sqrt(vx^2 + vy^2)]
+        J[, fits := sqrt((GLASS_HOOP_X - dx)^2 + dy^2) < len & gap <= G$box_near &
+                    (vx * hx + vy * hy) / len > 0 & abs(vx * hy - vy * hx) / len <= G$box_lane]
+        K <- J[, .(n = sum(fits), gap = mean(gap)), by = .(apid, dpid)]
+        for (j in which(ids %in% J$apid)) {
+          k <- K[apid == ids[j] & n >= G$box_frames][order(-n, gap)]
+          m <- mu[off == ids[j] & f0 <= s$f & f1 >= s$f]$def
+          pick <- if (length(m) && m[1] %in% k$dpid) m[1] else if (nrow(k)) k$dpid[1] else NA_integer_
+          boxed[j] <- !is.na(pick); boxer[j] <- pick
+        }
+      }
     }
     seen <- vapply(ids, function(p) {
       w <- trk[.(s$f:s$f1, p), det]

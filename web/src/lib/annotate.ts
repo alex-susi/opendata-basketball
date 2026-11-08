@@ -618,7 +618,8 @@ function drawGlassOver(k: Ctx): void {
   const boxers = new Map<number, number>();
   for (const g of ann.glass ?? []) {
     if (g.boxer == null) continue;
-    const a = life(frame, g.f, g.f1, 25);
+    // Box-outs are found up to a second after the ball reaches the rim (glass.R), so the tag stays that long.
+    const a = life(frame, g.f, g.f1 + 25, 12);
     if (a) boxers.set(g.boxer, Math.max(a, boxers.get(g.boxer) ?? 0));
   }
   for (const [pid, a] of boxers) {

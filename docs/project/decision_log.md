@@ -2016,3 +2016,8 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   Offensive rebounds on misses: crash 10.0% (129/1,293), hold 1.3% (18/1,414), retreat 0.4% (2/475), safety 0.4%
   (1/224). Crashes boxed out rebound 9.4% (67/715) vs 10.7% open (62/578): still barely separates. Opponent
   transition after a defensive rebound by attackers back: 0 44% (74/169), 1 40% (86/216), 2 39% (29/75), 3+ 29% (6/21).
+- **Box-out timing (same day):** checking only the frame the ball reached the rim missed textbook cases (114243-2-71:
+  Rousselle 5.2 ft from Ubal at the rim, 1.9 ft at the rebound). Now checked frame by frame from 12 frames before the
+  ball reaches the rim until the rebound (at most 25 frames after), needing 3+ frames in the spot. Crashes boxed out
+  rose from 55% to 76% (986/1,293); boxed crashes rebound 9.6% of misses vs 11.1% open. Court cut tags drop "Screen"
+  ("Cut · in" / "Cut · out"); the timeline keeps "Screen Cut In/Out".

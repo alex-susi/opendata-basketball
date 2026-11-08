@@ -11,7 +11,7 @@ import type { AnnCut, Play, PlayEvent } from "./types";
 /** The timeline and caption name of each kind (the trace panel and play list shorten "Screen" to "Scr"). */
 export const CUT_LABEL: Record<AnnCut["kind"], string> = { basket: "Basket Cut", in: "Screen Cut In", out: "Screen Cut Out" };
 /** The tag on the court. */
-export const CUT_TAG: Record<AnnCut["kind"], string> = { basket: "Cut · basket", in: "Cut · Screen · in", out: "Cut · Screen · out" };
+export const CUT_TAG: Record<AnnCut["kind"], string> = { basket: "Cut · basket", in: "Cut · in", out: "Cut · out" };
 
 export function addCutEvents(play: Play): void {
   if (!play.ann?.cuts?.length) return;
