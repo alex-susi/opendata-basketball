@@ -1,21 +1,26 @@
-// The player card beside the rosters (four views) and the points-per-action tables in the trace panel's hover
-// cards. Two sources, always labelled:
-//   Season    season.json, the aggregates over 293 games: offense only, shots, drives and picks.
-//   Tracked   sample.json, the ten tracked games this site plays (web/scripts/sample_stats.R has every definition).
+// The player card beside the rosters (five views) and the points-per-action tables in the trace panel's hover
+// cards. Sources, always labelled:
+//   Season     season.json, the aggregates over 293 games: offense only, shots, drives and picks.
+//   Tracked    sample.json, the ten tracked games this site plays (web/scripts/sample_stats.R has every definition).
+//   Playstyle  playstyle.json, the archetype model's probabilities and component scores (web/scripts/playstyle.R).
 // Pure, so the tests can run it in Node.
 
 import { nameOf, playerOf, seasonOf, titleCase, words, type Season } from "./context";
-import type { ActKey, AnnCloseout, AnnDrive, AnnScreen, AnnSolo, Play, PlayerTrack, Sample, SampleFigures, SeasonFigures } from "./types";
+import type {
+  ActKey, AnnCloseout, AnnDrive, AnnScreen, AnnSolo, Play, PlayerTrack, Playstyle, Sample, SampleFigures, SeasonFigures,
+} from "./types";
 
-/** A table cell: a value, optionally with its sample size shown after it, or nothing. */
+/** A table cell: a value, optionally with its sample size (shown in the column's count column), or nothing. */
 export type Cell = { v: string; n?: number; tone?: string } | null;
 export interface StatRow { k: string; cells: Cell[]; note?: string; title?: string }
-export interface StatSection { title?: string; cols: string[]; rows: StatRow[]; note?: string }
+/** A column: its heading and, when its cells carry sample sizes, the heading of the count column beside it. */
+export interface Col { label: string; count?: string }
+export interface StatSection { title?: string; cols: Col[]; rows: StatRow[]; note?: string }
 
-export type CardView = "basic" | "advanced" | "tracking" | "actions";
+export type CardView = "basic" | "advanced" | "tracking" | "actions" | "playstyle";
 export const CARD_VIEWS: { key: CardView; label: string }[] = [
-  { key: "basic", label: "Basic" }, { key: "advanced", label: "Advanced" },
-  { key: "tracking", label: "Tracking" }, { key: "actions", label: "Actions" },
+  { key: "basic", label: "Basic" }, { key: "advanced", label: "Advanced" }, { key: "tracking", label: "Tracking" },
+  { key: "actions", label: "Actions" }, { key: "playstyle", label: "Playstyle" },
 ];
 
 export const sampleOf = (sample: Sample | null, p: PlayerTrack | undefined): SampleFigures | null =>
@@ -28,31 +33,40 @@ const fixed = (v: number | null, d = 1): string | null =>
   v == null || !Number.isFinite(v) ? null : d === 0 ? Math.round(v).toLocaleString("en-US") : v.toFixed(d);
 const pct = (a: number, b: number | undefined): string | null => (b ? `${Math.round((100 * a) / b)}%` : null);
 const frac = (made: number, att: number | undefined): string | null => (att ? `${made}/${att} (${pct(made, att)})` : null);
-const perGame = (v: number, g: number | undefined, d = 1): string | null => fixed(ratio(v, g), d);
-/** Points per action with its count, e.g. 0.89 (255). */
+const perGame = (v: number | undefined, g: number | undefined, d = 1): string | null => (v == null ? null : fixed(ratio(v, g), d));
+/** Points per action, with the number of actions as its count. */
 const pppCell = (pair: [number, number] | readonly number[] | undefined): Cell =>
   pair && pair[0] ? { v: (pair[1] / pair[0]).toFixed(2), n: pair[0] } : null;
 
 /** Drop rows with no value at all. */
 const kept = (rows: StatRow[]): StatRow[] => rows.filter((r) => r.cells.some((c) => c != null));
 
+const SEASON: Col = { label: "Season" }, TRACKED: Col = { label: "Tracked" };
+
 function basic(s: SeasonFigures | null, t: SampleFigures | null): StatSection[] {
-  const tg = t?.g;
+  const tg = t?.g, sg = s?.g;
   const rows: StatRow[] = [
-    { k: "Games", cells: [cell(s?.g != null ? String(s.g) : null), cell(t ? String(t.g) : null)] },
-    { k: "Minutes", title: "Per game: game clock over the chances he was on court for", cells: [null, cell(t ? perGame(t.min, tg) : null)] },
-    { k: "Points", title: "Per game, free throws included", cells: [cell(s?.pts != null ? perGame(s.pts, s.g) : null), cell(t ? perGame(t.pts, tg) : null)] },
-    { k: "Rebounds", title: "Per game (offensive in brackets)", cells: [null, cell(t ? `${perGame(t.oreb + t.dreb, tg)} (${perGame(t.oreb, tg)} Off)` : null)] },
-    { k: "Assists", title: "Per game: made shots he passed to (tracking's assist judgement)", cells: [null, cell(t ? perGame(t.ast, tg) : null)] },
-    { k: "Steals", cells: [null, cell(t ? perGame(t.stl, tg) : null)] },
-    { k: "Blocks", cells: [null, cell(t ? perGame(t.blk, tg) : null)] },
-    { k: "Turnovers", cells: [null, cell(t ? perGame(t.tov, tg) : null)] },
-    { k: "Fouls", title: "Personal fouls per game (technicals left out)", cells: [null, cell(t ? perGame(t.pf, tg) : null)] },
+    { k: "Games", cells: [cell(sg != null ? String(sg) : null), cell(t ? String(t.g) : null)] },
+    { k: "Minutes", title: "Per game: game clock over the chances he was on court for", cells: [null, cell(perGame(t?.min, tg))] },
+    { k: "Off. Possessions", title: "Offensive possessions on court, per game", cells: [cell(perGame(s?.poss, sg)), cell(perGame(t?.offPoss, tg))] },
+    { k: "Points", title: "Per game, free throws included", cells: [cell(perGame(s?.pts, sg)), cell(perGame(t?.pts, tg))] },
+    { k: "Rebounds", title: "Per game", cells: [null, cell(t ? perGame(t.oreb + t.dreb, tg) : null)] },
+    { k: "Off. Rebounds", cells: [null, cell(perGame(t?.oreb, tg))] },
+    { k: "Assists", title: "Per game: made shots he passed to (tracking's assist judgement)", cells: [null, cell(perGame(t?.ast, tg))] },
+    { k: "Steals", cells: [null, cell(perGame(t?.stl, tg))] },
+    { k: "Blocks", cells: [null, cell(perGame(t?.blk, tg))] },
+    { k: "Turnovers", cells: [null, cell(perGame(t?.tov, tg))] },
+    { k: "Fouls", title: "Personal fouls per game (technicals left out)", cells: [null, cell(perGame(t?.pf, tg))] },
+    { k: "Shooting Fouls Drawn", title: "Per game: his shots on which he was fouled (made or missed)", cells: [cell(perGame(s?.fouled, sg)), cell(perGame(t?.fouledShots, tg))] },
+    { k: "Shots Blocked", title: "Per game: his field goal attempts that were blocked", cells: [cell(perGame(s?.blkOn, sg)), cell(perGame(t?.blockedOn, tg))] },
     { k: "FG", title: "Made / attempted (FIBA: misses while fouled are not attempts)", cells: [cell(s?.fg ? frac(s.fg[1], s.fg[0]) : null), cell(t ? frac(t.fgm, t.fga) : null)] },
     { k: "3PT", cells: [cell(s?.fg3 ? frac(s.fg3[1], s.fg3[0]) : null), cell(t ? frac(t.fg3m, t.fg3a) : null)] },
     { k: "FT", cells: [cell(s?.ft ? frac(s.ft[1], s.ft[0]) : null), cell(t ? frac(t.ftm, t.fta) : null)] },
   ];
-  return [{ cols: ["Season", "Tracked"], rows: kept(rows) }];
+  return [{
+    cols: [SEASON, TRACKED], rows: kept(rows),
+    note: "The season aggregates have no minutes, rebounds, steals, blocks, fouls or full assist and turnover counts: they cover only the player's own shots, drives and picks.",
+  }];
 }
 
 /** True shooting, eFG and the rest from attempts, makes, threes made, free throws and points. */
@@ -66,13 +80,35 @@ function shooting(fga: number, fgm: number, fg3a: number, fg3m: number, fta: num
   };
 }
 
+type ZoneVec = readonly number[];
+const ZONES = ["rim", "mid", "three"] as const;
+const ZONE_ROWS: [string, (typeof ZONES)[number] | "all"][] = [["Overall", "all"], ["Rim", "rim"], ["Mid-Range", "mid"], ["Three", "three"]];
+const zoneSum = (src: Record<string, ZoneVec> | undefined): ZoneVec | undefined =>
+  src ? ZONES.reduce((acc, z) => acc.map((v, i) => v + src[z][i]), [0, 0, 0, 0, 0]) : undefined;
+const pick = (src: Record<string, ZoneVec> | undefined, z: (typeof ZONES)[number] | "all") => (z === "all" ? zoneSum(src) : src?.[z]);
+/** Mean shot quality of a zone vector [FGA, makes, threes made, scored FGA, quality sum], with its FGA. */
+const sqCell = (z: ZoneVec | undefined): Cell => (z && z[3] ? { v: (z[4] / z[3]).toFixed(0), n: z[0] } : null);
+const efgCell = (z: ZoneVec | undefined): Cell => (z && z[0] ? { v: pct(z[1] + 0.5 * z[2], z[0])! } : null);
+
+/** Shot quality by zone for one set of shots (his own, or those he guarded), with eFG and the league's quality. */
+function qualitySection(title: string, own: Record<string, ZoneVec> | undefined, league: Record<string, ZoneVec> | undefined, note: string): StatSection {
+  return {
+    title, note,
+    cols: [{ label: "Quality", count: "FGA" }, { label: "eFG" }, { label: "League" }],
+    rows: kept(ZONE_ROWS.map(([k, z]) => {
+      const lg = sqCell(pick(league, z));
+      return { k, cells: [sqCell(pick(own, z)), efgCell(pick(own, z)), lg ? { v: lg.v } : null] };
+    })).filter((r) => r.cells[0] != null),
+  };
+}
+
 function advanced(s: SeasonFigures | null, t: SampleFigures | null, league: Sample["league"] | null): StatSection[] {
   const out: StatSection[] = [];
   if (t) {
     const ortg = ratio(100 * t.offPts, t.offPoss), drtg = ratio(100 * t.defPts, t.defPoss);
     const net = ortg != null && drtg != null ? ortg - drtg : null;
     out.push({
-      title: "On Court", cols: ["Tracked"],
+      title: "On Court", cols: [{ label: "Tracked", count: "Possessions" }],
       rows: kept([
         { k: "Off. Rating", title: "His team's points per 100 possessions he was on court for", cells: [cell(fixed(ortg), t.offPoss)] },
         { k: "Def. Rating", title: "Opponents' points per 100 possessions he was on court for", cells: [cell(fixed(drtg), t.defPoss)] },
@@ -86,7 +122,7 @@ function advanced(s: SeasonFigures | null, t: SampleFigures | null, league: Samp
   const sv = s?.fg && s.fg3 && s.ft && s.pts != null ? shooting(s.fg[0], s.fg[1], s.fg3[0], s.fg3[1], s.ft[0], s.pts, s.astd) : null;
   const tv = t ? shooting(t.fga, t.fgm, t.fg3a, t.fg3m, t.fta, t.pts, t.astd) : null;
   out.push({
-    title: "Shooting", cols: ["Season", "Tracked"],
+    title: "Shooting", cols: [SEASON, TRACKED],
     rows: kept([
       { k: "True Shooting", title: "Points / (2 × (FGA + 0.44 FTA))", cells: [cell(sv?.ts ?? null), cell(tv?.ts ?? null)] },
       { k: "Effective FG", title: "(FG + 0.5 × 3PT made) / FGA", cells: [cell(sv?.efg ?? null), cell(tv?.efg ?? null)] },
@@ -96,27 +132,10 @@ function advanced(s: SeasonFigures | null, t: SampleFigures | null, league: Samp
     ]),
   });
   if (t) {
-    const sq = (z: readonly number[] | undefined): Cell => (z && z[3] ? { v: (z[4] / z[3]).toFixed(0), n: z[3] } : null);
-    const zones = ["rim", "mid", "three"] as const;
-    const sum = (src: Record<string, readonly number[]> | undefined) =>
-      src ? zones.reduce((acc, z) => acc.map((v, i) => v + src[z][i]), [0, 0, 0, 0, 0]) : undefined;
-    out.push({
-      title: "SkillCorner Shot Quality", cols: ["Player", "League"],
-      note: "Mean SkillCorner shot quality (0-100) of the FGA, tracked games only; League is every FGA in them. Rim is the restricted area, Mid-Range every other two.",
-      rows: kept([
-        { k: "Overall", cells: [sq(sum(t.zone)), sq(sum(league?.zone))] },
-        { k: "Rim", cells: [sq(t.zone.rim), sq(league?.zone.rim)] },
-        { k: "Mid-Range", cells: [sq(t.zone.mid), sq(league?.zone.mid)] },
-        { k: "Three", cells: [sq(t.zone.three), sq(league?.zone.three)] },
-      ]),
-    });
-    out.push({
-      title: "Defense", cols: ["Tracked"],
-      rows: kept([
-        { k: "Shots as Closest Def.", title: "Opponents' FGA per game where he was the closest defender at release", cells: [cell(perGame(t.guard[0], t.g))] },
-        { k: "Opp. Effective FG", title: "Opponents' eFG on those shots", cells: [cell(pct(t.guard[1] + 0.5 * t.guard[2], t.guard[0]), t.guard[0])] },
-      ]),
-    });
+    out.push(qualitySection("SkillCorner Shot Quality, His Shots", t.zone, league?.zone,
+      "Mean SkillCorner shot quality (0-100) of his FGA in the tracked games, his eFG on them, and the mean quality of every FGA in those games (League). Rim is the restricted area, Mid-Range every other two."));
+    out.push(qualitySection("SkillCorner Shot Quality, Shots He Guarded", t.guardZone, league?.zone,
+      "Opponents' FGA on which he was the closest defender at release, in the tracked games: their mean SkillCorner shot quality, the opponents' eFG on them, and the league's mean quality."));
   }
   return out.filter((sec) => sec.rows.length);
 }
@@ -128,7 +147,7 @@ function tracking(t: SampleFigures | null): StatSection[] {
   const perMin = (dist: number, secs: number) => fixed(ratio(dist, secs / 60), 0);
   const avg = (pair: [number, number]) => fixed(ratio(pair[1], pair[0]));
   const out: StatSection[] = [{
-    title: "Movement", cols: ["All", "Offense", "Defense"],
+    title: "Movement", cols: [{ label: "All" }, { label: "Offense" }, { label: "Defense" }],
     note: "Live play only (game clock running); positions smoothed over 0.2 s.",
     rows: kept([
       { k: "Live Minutes / Game", cells: [cell(perGame(k.secs / 60, t.g)), cell(perGame(k.offSecs / 60, t.g)), cell(perGame(k.defSecs / 60, t.g))] },
@@ -142,14 +161,15 @@ function tracking(t: SampleFigures | null): StatSection[] {
   }];
   const b = t.ball;
   out.push({
-    title: "Ball and Shots", cols: ["Tracked"],
+    title: "Ball and Shots", cols: [{ label: "Tracked", count: "FGA" }],
     rows: kept([
       { k: "Touches / Game", cells: [cell(b ? perGame(b[0], t.g) : null)] },
       { k: "Time on Ball / Game (s)", cells: [cell(b ? perGame(b[1], t.g) : null)] },
       { k: "Seconds / Touch", cells: [cell(b ? fixed(ratio(b[1], b[0])) : null)] },
       { k: "Dribbles / Touch", cells: [cell(b ? fixed(ratio(b[2], b[0])) : null)] },
       { k: "Closest Def. on Shots (ft)", title: "Average distance of the closest defender at his release", cells: [cell(fixed(ratio(t.shotDef[1], t.shotDef[0])), t.shotDef[0])] },
-      { k: "Contested Shots", title: "Share of his FGA with an average, plus or blocked contest", cells: [cell(pct(t.shotDef[2], t.shotDef[0]))] },
+      { k: "Contested Shots", title: "Share of his FGA with an average, plus or blocked contest", cells: [cell(pct(t.shotDef[2], t.shotDef[0]), t.shotDef[0])] },
+      { k: "FGA Guarded / Game", title: "Opponents' FGA per game where he was the closest defender at release", cells: [cell(perGame(t.guard[0], t.g))] },
     ]),
   });
   return out.filter((sec) => sec.rows.length);
@@ -174,18 +194,46 @@ function actions(s: SeasonFigures | null, t: SampleFigures | null): StatSection[
   })));
   if (s?.drives?.[0]) rows.push({ k: "Drive Success", title: "Drives ending in a make, an assist or a foul drawn", cells: [cell(pct(s.drives[1], s.drives[0])), null] });
   return [{
-    cols: ["Season", "Tracked"], rows,
-    note: "Points per action (number of actions in brackets): his own made shot plus the shot he assisted; free throws are left out, as in the season aggregates. Picks count direct picks only.",
+    cols: [{ label: "Season PPP", count: "Chances" }, { label: "Tracked PPP", count: "Chances" }], rows,
+    note: "Points per chance (each pick, drive or other action is one chance): his own made shot plus the shot he assisted; free throws are left out, as in the season aggregates. Picks count direct picks only.",
   }];
 }
 
-/** The player card's sections for one view. */
+/** The player card's table sections for one view (Playstyle has its own layout: playstyleOf). */
 export function playerSections(view: CardView, season: Season | null, sample: Sample | null, p: PlayerTrack): StatSection[] {
   const s = seasonOf(season, p), t = sampleOf(sample, p);
   if (view === "basic") return basic(s, t);
   if (view === "advanced") return advanced(s, t, sample?.league ?? null);
   if (view === "tracking") return tracking(t);
-  return actions(s, t);
+  if (view === "actions") return actions(s, t);
+  return [];
+}
+
+// ---- playstyle -----------------------------------------------------------------------------------
+
+export interface StyleSide {
+  side: "off" | "def";
+  title: string;
+  top: string; p: number; defines: boolean;
+  /** Every archetype, most likely first. */
+  archetypes: { name: string; slot?: string; p: number }[];
+  /** His score on each component (component standard deviations, + = the end named `plus`). */
+  components: { j: number; score: number | null; share: number; minus: string; plus: string; context: string }[];
+}
+
+/** His archetype probabilities and component scores on each side of the ball, as the Archetypes tab names them. */
+export function playstyleOf(style: Playstyle | null, p: PlayerTrack): StyleSide[] {
+  const me = style && p.canon != null ? style.players[String(p.canon)] : undefined;
+  if (!style || !me) return [];
+  return (["off", "def"] as const).flatMap((side) => {
+    const mine = me[side], model = style.sides[side];
+    if (!mine) return [];
+    return [{
+      side, title: side === "off" ? "Offense" : "Defense", top: mine.top, p: mine.p, defines: mine.defines,
+      archetypes: model.archetypes.map((a, i) => ({ name: a.name, slot: a.slot, p: mine.probs[i] ?? 0 })).sort((a, b) => b.p - a.p),
+      components: model.components.map((c, j) => ({ j: j + 1, score: mine.scores[j], share: c.share, minus: c.minus, plus: c.plus, context: c.context })),
+    }];
+  });
 }
 
 // ---- the trace panel's hover cards: points per action ----------------------------------------------
@@ -257,5 +305,5 @@ export function actionTable(
       league("iso", "All Isolations");
     }
   }
-  return rows.length ? { cols: ["PPP"], rows } : null;
+  return rows.length ? { cols: [{ label: "PPP", count: "Chances" }], rows } : null;
 }

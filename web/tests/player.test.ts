@@ -6,8 +6,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { passLine, seasonOf, type Season } from "../src/lib/context";
 import { decodePlay } from "../src/lib/decode";
-import { actionTable, CARD_VIEWS, playerSections, sampleOf } from "../src/lib/player";
-import type { PeriodIndex, Play, PlayRow, Sample } from "../src/lib/types";
+import { actionTable, CARD_VIEWS, playerSections, playstyleOf, sampleOf } from "../src/lib/player";
+import type { PeriodIndex, Play, PlayRow, Playstyle, Sample } from "../src/lib/types";
 
 const ROOT = join(__dirname, "..");
 const DATA = join(ROOT, "public", "data");
@@ -18,6 +18,7 @@ const bytes = (name: string): ArrayBuffer => {
 };
 const sample = json<Sample>("sample.json");
 const season = json<Season>("season.json");
+const style = json<Playstyle>("playstyle.json");
 const matches = JSON.parse(readFileSync(join(ROOT, "..", "data", "matches.json"), "utf8")) as
   { id: number; home_team: { id: number }; away_team: { id: number }; home_score: number; away_score: number }[];
 const plays = json<PlayRow[]>("plays.json");
@@ -79,11 +80,48 @@ describe("tracked-games figures", () => {
 describe("player card", () => {
   const p = period[0].players.find((q) => sampleOf(sample, q) && seasonOf(season, q)?.pts)!;
 
-  it("has figures in every view", () => {
-    for (const v of CARD_VIEWS) {
+  it("has figures in every table view", () => {
+    for (const v of CARD_VIEWS.filter((x) => x.key !== "playstyle")) {
       const sections = playerSections(v.key, season, sample, p);
       expect(sections.length, v.key).toBeGreaterThan(0);
       for (const sec of sections) for (const r of sec.rows) expect(r.cells.length).toBe(sec.cols.length);
+    }
+  });
+
+  it("puts sample sizes in count columns, never in brackets", () => {
+    for (const v of CARD_VIEWS) {
+      for (const sec of playerSections(v.key, season, sample, p)) {
+        for (const r of sec.rows) {
+          r.cells.forEach((c, j) => {
+            if (c?.n != null) expect(sec.cols[j].count, `${sec.title} ${r.k}`).toBeTruthy();
+            if (c) expect(c.v).not.toMatch(/^\d[\d.]* \(\d+\)$/);
+          });
+        }
+      }
+    }
+  });
+
+  it("shows shot quality on his shots and on the shots he guarded, by zone", () => {
+    const adv = playerSections("advanced", season, sample, p);
+    for (const title of ["SkillCorner Shot Quality, His Shots", "SkillCorner Shot Quality, Shots He Guarded"]) {
+      const sec = adv.find((s) => s.title === title);
+      expect(sec, title).toBeDefined();
+      expect(sec!.rows[0].k).toBe("Overall");
+    }
+    // Every guarded FGA belongs to someone (shots without a closest defender are left out).
+    const guarded = Object.values(sample.players).reduce((a, q) => a + q.guardZone.rim[0] + q.guardZone.mid[0] + q.guardZone.three[0], 0);
+    const all = sample.league.zone.rim[0] + sample.league.zone.mid[0] + sample.league.zone.three[0];
+    expect(guarded).toBeLessThanOrEqual(all);
+    expect(guarded).toBeGreaterThan(0.9 * all);
+  });
+
+  it("has a playstyle on both sides for players in the archetype model", () => {
+    const sides = playstyleOf(style, p);
+    expect(sides.map((s) => s.side)).toEqual(["off", "def"]);
+    for (const side of sides) {
+      expect(side.archetypes[0].name).toBe(side.top);
+      expect(side.archetypes.reduce((a, x) => a + x.p, 0)).toBeCloseTo(1, 1);
+      for (const c of side.components) expect(c.score).not.toBeNull();
     }
   });
 
@@ -102,7 +140,7 @@ describe("hover tables", () => {
       for (const s of play.ann!.screens.filter((x) => x.kind === "pick")) {
         const t = actionTable(play, season, sample, { kind: "screen", s });
         expect(t).not.toBeNull();
-        expect(t!.cols).toEqual(["PPP"]);
+        expect(t!.cols).toEqual([{ label: "PPP", count: "Chances" }]);
         expect(t!.rows.some((r) => r.k === "All Handlers")).toBe(true);
         for (const r of t!.rows) expect(Number(r.cells[0]!.v)).toBeGreaterThanOrEqual(0);
         seen++;

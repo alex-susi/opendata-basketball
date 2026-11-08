@@ -281,6 +281,9 @@ export interface SeasonFigures {
   ft?: [number, number];
   /** Made field goals assisted by a teammate. */
   astd?: number;
+  /** His attempts that were blocked, and his shots on which he was fouled. */
+  blkOn?: number;
+  fouled?: number;
   fg?: [number, number, number];
   cns?: [number, number, number];
   od?: [number, number, number];
@@ -306,8 +309,11 @@ export interface SampleFigures {
   zone: Record<"rim" | "mid" | "three", [number, number, number, number, number]>;
   /** His FGA, the summed closest-defender distance on them, and how many were contested. */
   shotDef: [number, number, number];
-  /** FGA where he was the closest defender: [attempts, makes, threes made]. */
+  /** FGA where he was the closest defender: [attempts, makes, threes made], and by zone (zone vectors). */
   guard: [number, number, number];
+  guardZone: Record<"rim" | "mid" | "three", [number, number, number, number, number]>;
+  /** His shots on which he was fouled (made or missed), and his FGA that were blocked. */
+  fouledShots: number; blockedOn: number;
   /** [touches, seconds on the ball, dribbles] */
   ball?: [number, number, number];
   trk?: {
@@ -326,4 +332,14 @@ export interface Sample {
     zone: Record<"rim" | "mid" | "three", [number, number, number, number, number]>;
     acts: Partial<Record<ActKey, { all: [number, number]; by: Record<string, [number, number]> }>>;
   };
+}
+
+/** playstyle.json (web/scripts/playstyle.R): the archetype model's two sides and each player's place in them. */
+export interface Playstyle {
+  sides: Record<"off" | "def", {
+    components: { share: number; context: string; minus: string; plus: string; minusText: string; plusText: string }[];
+    archetypes: { name: string; short: string; slot?: string; centre: number[] }[];
+  }>;
+  /** By canonical player id. probs follow sides[side].archetypes; scores follow its components (null when unknown). */
+  players: Record<string, Partial<Record<"off" | "def", { top: string; p: number; defines: boolean; probs: number[]; scores: (number | null)[] }>>>;
 }

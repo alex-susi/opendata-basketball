@@ -168,7 +168,7 @@
 </aside>
 
 {#if card && play}
-  <PlayerCard p={card.p} team={card.p.role === "off" ? play.off : play.def} top={card.top} right={card.right}
+  <PlayerCard p={card.p} kit={play.colors[card.p.role]} top={card.top} right={card.right}
               pinned={card === pinned} onenter={keep} onleave={leave}
               onclose={() => { pinned = null; hovered = null; viewer.focusPid = null; }} />
 {/if}

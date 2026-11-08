@@ -212,7 +212,7 @@ season_figures <- function() {
   zones <- c(ra = "zone_restricted_area", paint = "zone_paint_non_ra", mid = "zone_mid_range",
              c3 = "zone_corner_3", ab3 = "zone_above_break_3")
   shot_cols <- c("games_played", "possessions_played", "attempts", "mades", "three_attempts", "three_mades", "total_points",
-                 "ft_attempts", "ft_mades", "assisted_mades", "cns_attempts", "cns_mades", "cns_three_mades",
+                 "ft_attempts", "ft_mades", "assisted_mades", "blocked_on_attempts", "fouled_fg_attempts", "cns_attempts", "cns_mades", "cns_three_mades",
                  "od_attempts", "od_mades", "od_three_mades", paste0(rep(zones, each = 2), c("_attempts", "_mades")))
   shots <- sum_by(agg("shots"), shot_cols)
   drives <- sum_by(agg("drives"), c("total_drives", "successful_drives", "points"))
@@ -236,6 +236,8 @@ season_figures <- function() {
                 fg3 = if (nrow(s)) I(c(s$three_attempts, s$three_mades)) else NULL,
                 ft = if (nrow(s)) I(c(s$ft_attempts, s$ft_mades)) else NULL,
                 astd = if (nrow(s)) s$assisted_mades else NULL,
+                blkOn = if (nrow(s)) s$blocked_on_attempts else NULL,
+                fouled = if (nrow(s)) s$fouled_fg_attempts else NULL,
                 fg = if (nrow(s)) I(c(s$attempts, s$mades, s$three_mades)) else NULL,
                 cns = if (nrow(s)) I(c(s$cns_attempts, s$cns_mades, s$cns_three_mades)) else NULL,
                 od = if (nrow(s)) I(c(s$od_attempts, s$od_mades, s$od_three_mades)) else NULL,

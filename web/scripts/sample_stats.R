@@ -14,7 +14,8 @@
 #   OREB%, DREB%   his rebounds over every rebound (team rebounds too) after shots and free throws of chances he
 #                  was on court for, on that end.
 #   Shot quality   mean SkillCorner shotQuality of his FGA (null scores left out), overall and by zone: Rim = the
-#                  restricted area, Mid-Range = every other two, Three.
+#                  restricted area, Mid-Range = every other two, Three. guardZone: the same for the opponents' FGA
+#                  on which he was the closest defender at release (shots.closestDefId).
 #   Points per action  the points from the action's own outcomes: his made field goal (2 or 3) plus the shot he
 #                  assisted (AST3 = 3, AST2 or a bare AST = 2); free throws are left out, as in the season
 #                  aggregates. Picks count direct picks only (as the season aggregates do); every other action
@@ -45,7 +46,7 @@ sample_figures <- function() {
     sh <- ev$shots
     shots <- data.table(poss = a$chr_field(sh, "possessionId"), pid = a$int_field(sh, "shooterId"),
                         team = a$int_field(sh, "offTeamId"), made = a$lgl_field(sh, "outcome"),
-                        three = a$lgl_field(sh, "three"), fouled = a$lgl_field(sh, "fouled"),
+                        three = a$lgl_field(sh, "three"), fouled = a$lgl_field(sh, "fouled"), blocked = a$lgl_field(sh, "blocked"),
                         assisted = a$lgl_field(sh, "assisted"), passer = suppressWarnings(as.integer(a$chr_field(sh, "passerId"))),
                         blocker = a$int_field(sh, "blockerId"), region = a$chr_field(sh, "region"),
                         sq = a$num_field(sh, "shotQuality"), def = suppressWarnings(as.integer(a$chr_field(sh, "closestDefId"))),
@@ -100,7 +101,8 @@ sample_figures <- function() {
     # ---- the box score per player ----
     b <- Reduce(function(x, y) merge(x, y, by = "pid", all = TRUE), list(
       roster[, .(pid)], mins,
-      shots[, .(pts_fg = sum(pts), fga = sum(fga), fgm = sum(made), fg3a = sum(fga & three), fg3m = sum(made & three)), by = pid],
+      shots[, .(pts_fg = sum(pts), fga = sum(fga), fgm = sum(made), fg3a = sum(fga & three), fg3m = sum(made & three),
+                fouledShots = sum(fouled), blockedOn = sum(blocked & fga)), by = pid],
       ft[, .(fta = .N, ftm = sum(made)), by = pid],
       rb[got == TRUE, .(oreb = sum(!defensive), dreb = sum(defensive)), by = pid],
       shots[made == TRUE & assisted == TRUE & !is.na(passer), .(ast = .N), by = .(pid = passer)],
@@ -122,7 +124,7 @@ sample_figures <- function() {
     fs <- shots[fga == TRUE]
     fs[, zone := fifelse(three, "three", fifelse(region == "ra", "rim", "mid"))]
     zones[[length(zones) + 1L]] <- fs[, .(pid, team, zone, made, three, sq, defDist, contested)]
-    guards[[length(guards) + 1L]] <- fs[!is.na(def), .(pid = def, team = team_of(def), made, three)]
+    guards[[length(guards) + 1L]] <- fs[!is.na(def), .(pid = def, team = team_of(def), zone, made, three, sq)]
 
     # ---- touches ----
     tc <- ev$touches
@@ -223,6 +225,8 @@ sample_figures <- function() {
       zone = list(rim = I(zone_vec(z[zone == "rim"])), mid = I(zone_vec(z[zone == "mid"])), three = I(zone_vec(z[zone == "three"]))),
       shotDef = I(c(nrow(z), r1(sum(z$defDist, na.rm = TRUE)), sum(z$contested))),
       guard = I(c(nrow(gd), sum(gd$made), sum(gd$made & gd$three))),
+      guardZone = list(rim = I(zone_vec(gd[zone == "rim"])), mid = I(zone_vec(gd[zone == "mid"])), three = I(zone_vec(gd[zone == "three"]))),
+      fouledShots = r$fouledShots, blockedOn = r$blockedOn,
       ball = if (nrow(bl)) I(c(bl$touches, r1(bl$ballSecs), bl$dribbles)) else NULL,
       trk = if (nrow(t)) list(secs = r1(t$secs), dist = round(t$dist), offSecs = r1(t$offSecs), offDist = round(t$offDist),
                               defSecs = r1(t$defSecs), defDist = round(t$defDist), paint = r1(t$paint),

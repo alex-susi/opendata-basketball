@@ -174,9 +174,8 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
   if (shot.region) lines.push({ k: "Region", v: regionName(shot.region) });
   if (shot.cl) lines.push({ k: "Contest", v: titleCase(shot.cl), tone });
-  if (shot.defId != null) {
-    lines.push({ k: "Closest Defender", v: `${nameOf(play, shot.defId)}${shot.defDist != null ? ` · ${shot.defDist.toFixed(1)} ft` : ""}`, tone });
-  }
+  if (shot.defDist != null) lines.push({ k: "Closest Defender Distance", v: `${shot.defDist.toFixed(1)} ft`, tone });
+  if (shot.defId != null) lines.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
   if (shot.rt != null) lines.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
   if (shot.drb != null) lines.push({ k: "Dribbles", v: String(shot.drb) });
   if (shot.cns != null) lines.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });

@@ -1905,3 +1905,9 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
 - **Labelling:** every figure in the site's player card and hover tables says whether it is Season (aggregates,
   293 games) or Tracked (the ten games). Tracked samples are small (most players appear in one game); counts are
   shown beside each rate.
+- **2026-11-08 addition — Playstyle and guarded shot quality:** `web/scripts/playstyle.R` rebuilds each player's
+  component scores (the archetype script saves loadings and centres, not player scores) from the same feature cache,
+  scaling and fit players; the refit loadings match the saved ones to 0.002 and the fitted players' mean scores per
+  archetype sit within 0.18 SD of the saved mixture centres (0.02 on defense). `sample.json` adds, per player, the
+  shot quality and eFG of the opponents' FGA on which he was the closest defender, by zone. `export_data.R
+  --figures` rewrites only season.json, sample.json and playstyle.json.

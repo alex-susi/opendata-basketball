@@ -14,7 +14,7 @@
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
   import TimelineStrip from "./components/TimelineStrip.svelte";
-  import { loadMeta, loadPlay, loadPlays, loadSample, loadSeason } from "./lib/data";
+  import { loadMeta, loadPlay, loadPlays, loadPlaystyle, loadSample, loadSeason } from "./lib/data";
   import { loadLogos, logoUrl } from "./lib/logos.svelte";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp, quarter } from "./lib/geometry";
@@ -72,6 +72,20 @@
   // How far the court's centre line sits from the middle of the header (the stage and the header share a column).
   let headW = $state(0);
   const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
+  // The clocks' centre: halfway between the end of the scorebug (the away side's ball slot) and the court's right
+  // edge, in the header's coordinates.
+  let awayEnd = $state<HTMLElement>();
+  let clockX = $state<number | null>(null);
+  $effect(() => {
+    void headW; void courtShift; void play?.id;
+    const head = awayEnd?.closest(".play-head");
+    if (!awayEnd || !head || !live.box) { clockX = null; return; }
+    requestAnimationFrame(() => {
+      if (!awayEnd || !live.box) return;
+      const end = awayEnd.getBoundingClientRect().right - head.getBoundingClientRect().left;
+      clockX = Math.round((end + live.box.left + live.box.w) / 2);
+    });
+  });
   const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
   loadLogos();
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
@@ -152,6 +166,7 @@
   // Season figures (roster hover cards, the shot card's zone line, pick hovers) load once, in the background.
   loadSeason().then((d) => { season.data = d; }).catch(() => { /* the season lines are left out */ });
   loadSample().then((d) => { season.sample = d; }).catch(() => { /* the tracked-games lines are left out */ });
+  loadPlaystyle().then((d) => { season.style = d; }).catch(() => { /* the Playstyle view is left empty */ });
 
   Promise.all([loadMeta(), loadPlays()]).then(([m, all]) => {
     plays = all;
@@ -186,24 +201,24 @@
   </aside>
 
   <!-- Above the court only, so the right column starts level with the court. The scorebug's score sits on the
-       court's centre line; the running clocks to its right. A basketball outside the logo and a glow on the name mark
-       the team with the ball. -->
+       court's centre line; the running clocks are centred between the scorebug's end and the court's right edge. A
+       basketball just outside the logo marks the team with the ball. -->
   <header class="play-head-box">
     <div class="play-head" style:--court-shift="{courtShift}px" bind:clientWidth={headW}>
       {#if play && home && away}
         <div class="scorebug" title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
-          <span class="team home" class:has-ball={homeIsOff} style:color={home.text} style:--glow={home.text}>
+          <span class="team home" style:color={home.text}>
             {@render ball(homeIsOff)}
             {#if homeLogo}<img class="logo" src={homeLogo} alt="" />{:else}<span class="kit" style:background={home.fill}></span>{/if}<span class="team-name">{play.home}</span>
           </span>
           <b>{play.homeScore} – {play.awayScore}</b>
-          <span class="team away" class:has-ball={!homeIsOff} style:color={away.text} style:--glow={away.text}>
+          <span class="team away" style:color={away.text}>
             <span class="team-name">{play.away}</span>{#if awayLogo}<img class="logo" src={awayLogo} alt="" />{:else}<span class="kit" style:background={away.fill}></span>{/if}
-            {@render ball(!homeIsOff)}
+            <span class="ball-slot" bind:this={awayEnd}>{@render ball(!homeIsOff)}</span>
           </span>
         </div>
         <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
-        <div class="game-clock">
+        <div class="game-clock" style:left={clockX != null ? `${clockX}px` : null}>
           <span class="game-time" title="Game clock">{live.gameClock}</span>
           <span class="period-line"><span class="period">{quarter(play.period)}</span><span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span></span>
         </div>

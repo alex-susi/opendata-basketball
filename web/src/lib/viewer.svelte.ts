@@ -1,7 +1,7 @@
 // Playback and display state shared by the stage, the playback controls, the trace panel and the side panel.
 
 import type { Season } from "./context";
-import type { Sample } from "./types";
+import type { Playstyle, Sample } from "./types";
 import type { CourtView } from "./court";
 
 export const viewer = $state({
@@ -37,7 +37,7 @@ export const viewer = $state({
   showTickLabels: true,
   hoverPid: null as number | null,
   /** The player card beside the rosters: which view it shows. */
-  cardView: "basic" as "basic" | "advanced" | "tracking" | "actions",
+  cardView: "basic" as "basic" | "advanced" | "tracking" | "actions" | "playstyle",
   recording: false,
   /** True while another tab covers the viewer: keyboard shortcuts are off. */
   hidden: false,
@@ -69,4 +69,4 @@ export const live = $state({
 });
 
 /** Season figures by "<canonical id>:<team id>" (season.json), once loaded. */
-export const season = $state({ data: null as Season | null, sample: null as Sample | null });
+export const season = $state({ data: null as Season | null, sample: null as Sample | null, style: null as Playstyle | null });

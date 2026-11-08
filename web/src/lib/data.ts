@@ -3,7 +3,7 @@
 // export to the next, so without it a browser can run a new build against an older export it has cached.
 
 import type { Season } from "./context";
-import type { Sample } from "./types";
+import type { Playstyle, Sample } from "./types";
 import { decodePlay } from "./decode";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
@@ -35,6 +35,14 @@ export function loadSample(): Promise<Sample> {
   sample ??= fetchOk("sample.json").then((r) => r.json());
   sample.catch(() => { sample = null; });
   return sample;
+}
+
+let style: Promise<Playstyle> | null = null;
+/** Archetype probabilities and component scores per player (playstyle.json). */
+export function loadPlaystyle(): Promise<Playstyle> {
+  style ??= fetchOk("playstyle.json").then((r) => r.json());
+  style.catch(() => { style = null; });
+  return style;
 }
 
 let season: Promise<Season> | null = null;

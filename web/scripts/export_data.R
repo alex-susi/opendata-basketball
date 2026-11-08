@@ -1,6 +1,7 @@
 # Export the play viewer's data for the static site in web/.
 #   Rscript web/scripts/export_data.R          (from anywhere inside the repository)
 #   Rscript web/scripts/export_data.R --page   (only archetypes.html, after editing the Archetypes tab's wording)
+#   Rscript web/scripts/export_data.R --figures   (only season.json, sample.json and playstyle.json)
 #
 # Reads the Shiny app's caches through the app's own functions and writes to web/public/data/:
 #   meta.json            filter choices and the export's `generated` stamp
@@ -11,6 +12,7 @@
 #   season.json          season counts per person and team from data/aggregates/ (annotations.R)
 #   sample.json          per person and team over the ten tracked games: box score, ratings, shot quality,
 #                        tracking and points per action (sample_stats.R)
+#   playstyle.json       archetype probabilities and component scores per player (playstyle.R)
 #
 # Each play header also carries `ann`: the event locations and context the site draws over the court
 # (annotations.R). The Shiny app does not draw these.
@@ -32,6 +34,7 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_a
 a <- load_shiny_app()
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "annotations.R"))
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "sample_stats.R"))
+source(file.path(if (length(script)) dirname(script) else "web/scripts", "playstyle.R"))
 out_dir <- file.path(a$root, "web", "public", "data")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -40,6 +43,21 @@ dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 writeLines(enc2utf8(as.character(a$archetype_page(a$root))), file.path(out_dir, "archetypes.html"), useBytes = TRUE)
 if ("--page" %in% args) {
   message("Wrote archetypes.html only.")
+  quit(save = "no")
+}
+
+save_json <- function(x, name) {
+  write_json(x, file.path(out_dir, name), auto_unbox = TRUE, digits = NA, na = "null", null = "null")
+}
+# The player card's figures; they do not touch the plays, so the export stamp and parity reference stay valid.
+save_figures <- function() {
+  save_json(season_figures(), "season.json")
+  save_json(sample_figures(), "sample.json")
+  save_json(playstyle_figures(), "playstyle.json")
+}
+if ("--figures" %in% args) {
+  save_figures()
+  message("Wrote season.json, sample.json and playstyle.json only.")
   quit(save = "no")
 }
 
@@ -99,10 +117,6 @@ play_header <- function(p, offset, ann) {
        events = p$events, touches = p$touches, ann = ann)
 }
 
-save_json <- function(x, name) {
-  write_json(x, file.path(out_dir, name), auto_unbox = TRUE, digits = NA, na = "null", null = "null")
-}
-
 # ---- tracking, one pair of files per game period -------------------------------------
 
 plays <- copy(a$app_data$plays)
@@ -140,8 +154,7 @@ light <- lapply(seq_len(nrow(plays)), function(i) {
        actors = if (is.null(acted)) list() else lapply(seq_len(nrow(acted)), function(j) list(acted$type[j], acted$pid[j])))
 })
 save_json(light, "plays.json")
-save_json(season_figures(), "season.json")
-save_json(sample_figures(), "sample.json")
+save_figures()
 
 # ---- filter choices, exactly as the Shiny inputs list them -------------------------------------
 
