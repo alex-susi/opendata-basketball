@@ -11,7 +11,7 @@
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
   // chart to move playback there. A third tab, Players, swaps the chart for a table of the ten players on court
   // (TrackingTable.svelte). Shown or hidden from the Display panel.
-  import TrackingTable from "./TrackingTable.svelte";
+  import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
   import { closeoutLines, coverageText, driveLines, screenSeasonLines, shotCard, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
@@ -172,7 +172,16 @@
       <button type="button" role="radio" aria-checked={viewer.trace === "players"} class:on={viewer.trace === "players"}
               onclick={() => (viewer.trace = "players")}>Player Tracking</button>
     </div>
-    {#if viewer.trace === "nearest"}
+    <!-- Each tab's own controls and readout, on the right of the same line. -->
+    <div class="trace-tools">
+    {#if viewer.trace === "players"}
+      <div class="seg" role="radiogroup" aria-label="Columns shown">
+        {#each TRACK_GROUPS as g (g.key)}
+          <button type="button" role="radio" aria-checked={viewer.trackCols === g.key} class:on={viewer.trackCols === g.key}
+                  onclick={() => (viewer.trackCols = g.key)}>{g.label}</button>
+        {/each}
+      </div>
+    {:else if viewer.trace === "nearest"}
       <label class="trace-pick">
         <span>Player</span>
         <select value={focus ? String(focus.id) : ""} onchange={pick} style:color={kitText(focus)}>
@@ -202,6 +211,7 @@
         {#if hovered}at {hovered.t.toFixed(1)} s: <b>{fmt(hovered.v)}</b>{:else}ball height <b>{fmt(now?.v)}</b>{/if}
       </span>
     {/if}
+    </div>
   </div>
 
   <div class="trace-chart" bind:clientWidth={width}>

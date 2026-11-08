@@ -583,8 +583,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .season-sub { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
 
 /* The trace panel's Player Tracking tab (TrackingTable.svelte): one table, a heading row per team. */
-.track-groups { display: inline-flex; margin: 0 0 4px; }
-.track-groups button { padding: 2px 10px; font-size: 11.5px; }
+/* The active tab's controls and readout, right-aligned on the tabs' line. */
+.trace-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 12px; margin-left: auto; }
 .track-scroll { overflow-x: auto; }
 .track-table th.left, .track-table td.left { text-align: left; }
 .track-table { min-width: 100%; margin: 2px 0 6px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }

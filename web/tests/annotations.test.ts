@@ -135,7 +135,7 @@ describe("readouts", () => {
         const a = accelAt(play, m.speed[at], i);
         if (!Number.isNaN(a)) expect(Math.abs(a)).toBeLessThanOrEqual(40);
         if (!Number.isNaN(m.speed[at][i])) expect(Math.hypot(m.vx[at][i], m.vy[at][i])).toBeCloseTo(m.speed[at][i], 6);
-        expect(m.fast[at][i]).toBeLessThanOrEqual(m.covered[at][i] + 1e-9);
+        if (i) expect(m.top[at][i]).toBeGreaterThanOrEqual(m.top[at][i - 1]);
       }
     }
   });

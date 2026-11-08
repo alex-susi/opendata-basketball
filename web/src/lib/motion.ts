@@ -11,7 +11,6 @@ import type { Play, Role, Series } from "./types";
 
 const SMOOTH = 2;
 const MAX_SPEED = 35;   // ft/s; sprinting players reach about 25
-export const HIGH_SPEED = 15;   // ft/s: running, not jogging (about 10 mph)
 
 export interface Motion {
   /** Per player (same order as play.players): smoothed speed in ft/s, NaN where unknown. */
@@ -21,9 +20,8 @@ export interface Motion {
   /** Per player: smoothed velocity, ft/s (NaN where speed is unknown). */
   vx: Series[];
   vy: Series[];
-  /** Per player: fastest speed so far in the play, and feet covered so far above HIGH_SPEED. */
+  /** Per player: fastest speed so far in the play. */
   top: Series[];
-  fast: Series[];
 }
 
 const cache = new WeakMap<Play, Motion>();
@@ -50,11 +48,11 @@ export function motion(play: Play): Motion {
   let m = cache.get(play);
   if (m) return m;
   const n = play.frames.length;
-  m = { speed: [], covered: [], vx: [], vy: [], top: [], fast: [] };
+  m = { speed: [], covered: [], vx: [], vy: [], top: [] };
   for (const p of play.players) {
     const sx = smooth(play, p.x), sy = smooth(play, p.y);
     const speed = new Float64Array(n).fill(NaN), covered = new Float64Array(n);
-    const vx = new Float64Array(n).fill(NaN), vy = new Float64Array(n).fill(NaN), top = new Float64Array(n), fast = new Float64Array(n);
+    const vx = new Float64Array(n).fill(NaN), vy = new Float64Array(n).fill(NaN), top = new Float64Array(n);
     for (let i = 0; i < n; i++) {
       const a = i > 0 && joined(play, i - 1, i) && !Number.isNaN(sx[i - 1]) ? i - 1 : i;
       const b = i < n - 1 && joined(play, i, i + 1) && !Number.isNaN(sx[i + 1]) ? i + 1 : i;
@@ -67,14 +65,10 @@ export function motion(play: Play): Motion {
         }
       }
       covered[i] = i ? covered[i - 1] : 0;
-      fast[i] = i ? fast[i - 1] : 0;
       top[i] = Math.max(i ? top[i - 1] : 0, Number.isNaN(speed[i]) ? 0 : speed[i]);
       if (i && a === i - 1) {
         const step = Math.hypot(sx[i] - sx[i - 1], sy[i] - sy[i - 1]);
-        if (step * FPS <= MAX_SPEED) {
-          covered[i] += step;
-          if (speed[i] > HIGH_SPEED) fast[i] += step;
-        }
+        if (step * FPS <= MAX_SPEED) covered[i] += step;
       }
     }
     m.speed.push(speed);
@@ -82,7 +76,6 @@ export function motion(play: Play): Motion {
     m.vx.push(vx);
     m.vy.push(vy);
     m.top.push(top);
-    m.fast.push(fast);
   }
   cache.set(play, m);
   return m;

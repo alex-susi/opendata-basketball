@@ -1,10 +1,18 @@
+<script lang="ts" module>
+  export type TrackGroup = "movement" | "position" | "ball" | "all";
+  /** The column groups, picked in the trace panel's header (TracePanel.svelte). */
+  export const TRACK_GROUPS: { key: TrackGroup; label: string }[] = [
+    { key: "movement", label: "Movement" }, { key: "position", label: "Position" }, { key: "ball", label: "Ball" }, { key: "all", label: "All" },
+  ];
+</script>
+
 <script lang="ts">
   // The trace panel's Player Tracking tab: the ten players on court at the current frame in one table, the offense's
   // five then the defense's, each under a heading row with the team's spacing (mean distance between its players on
   // court), its players in the paint and, for the defense, the rim protector. An orange dot marks the ball handler.
-  // The columns come in three groups, picked above the table (All shows every column and scrolls sideways):
-  //   Movement  speed, acceleration, speed toward the basket and across it, top speed so far, distance covered and
-  //             distance covered above 15 ft/s (smoothed tracking, lib/motion.ts)
+  // The columns come in three groups, picked in the panel's header (All shows every column and scrolls sideways):
+  //   Movement  speed, acceleration, speed toward the basket and across it, top speed so far and distance covered
+  //             (smoothed tracking, lib/motion.ts)
   //   Position  court region (lib/regions.ts), distance to the basket, in the paint, the nearest opponent and how
   //             that gap changed over the last second, a contest level for the offense from that gap
   //             (lib/regions.ts), and the matchup: the defender assigned to an offensive player, or the player a
@@ -21,11 +29,7 @@
 
   let { play }: { play: Play } = $props();
 
-  type Group = "movement" | "position" | "ball" | "all";
-  const GROUPS: { key: Group; label: string }[] = [
-    { key: "movement", label: "Movement" }, { key: "position", label: "Position" }, { key: "ball", label: "Ball" }, { key: "all", label: "All" },
-  ];
-  interface Column { key: string; head: string; title: string; group: Exclude<Group, "all">; left?: boolean }
+  interface Column { key: string; head: string; title: string; group: Exclude<TrackGroup, "all">; left?: boolean }
   const COLUMNS: Column[] = [
     { key: "speed", head: "Speed (ft/s)", title: "Smoothed speed now", group: "movement" },
     { key: "accel", head: "Acceleration (ft/s²)", title: "Change in smoothed speed over 0.4 s; negative while slowing down", group: "movement" },
@@ -33,7 +37,6 @@
     { key: "across", head: "Sideways (ft/s)", title: "Speed across the line to the basket", group: "movement" },
     { key: "top", head: "Top Speed (ft/s)", title: "Fastest smoothed speed so far in this play", group: "movement" },
     { key: "covered", head: "Distance Covered (ft)", title: "Distance covered so far in this play", group: "movement" },
-    { key: "fast", head: "High-Speed Distance (ft)", title: "Distance covered so far above 15 ft/s", group: "movement" },
     { key: "region", head: "Court Region", title: "Where he stands, in SkillCorner's regions", group: "position", left: true },
     { key: "hoop", head: "To Basket (ft)", title: "Distance to the basket the offense attacks", group: "position" },
     { key: "paint", head: "In Paint", title: "In the paint", group: "position" },
@@ -107,7 +110,6 @@
         across: { v: fixed(Math.abs(vx * uy - vy * ux)) },
         top: { v: fixed(moved.top[at][i]) },
         covered: { v: fixed(moved.covered[at][i], 0) },
-        fast: { v: fixed(moved.fast[at][i], 0) },
         region: { v: regionName(courtRegion(x, y)) },
         hoop: { v: fixed(toHoop) },
         paint: { v: "", dot: spaced.paint[role].includes(p.id) ? kit.fill : undefined },
@@ -131,12 +133,6 @@
   }
 </script>
 
-<div class="track-groups seg" role="radiogroup" aria-label="Columns shown">
-  {#each GROUPS as g (g.key)}
-    <button type="button" role="radio" aria-checked={viewer.trackCols === g.key} class:on={viewer.trackCols === g.key}
-            onclick={() => (viewer.trackCols = g.key)}>{g.label}</button>
-  {/each}
-</div>
 <div class="track-scroll">
   <table class="track-table">
     <thead>
