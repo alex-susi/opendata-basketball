@@ -175,6 +175,8 @@ export interface AnnShot {
   x: number; y: number;
   pid: number;
   made: boolean; three: boolean; fouled: boolean; blocked: boolean; assisted: boolean;
+  /** SkillCorner's assist opportunity: assisted, or shot within 3 s of catching a pass (made or missed). */
+  ao?: boolean;
   blocker?: number;
   /** Shooter to hoop at release, ft. */
   dist?: number;
@@ -212,7 +214,12 @@ export interface AnnDrive {
   f: number; f1: number; pid: number; def?: number;
   x0: number; y0: number; x1: number; y1: number;
   blowby: boolean; dir?: string; end?: string;
+  /** How the drive was created: pick, handoff, offBallScreen, iso, closeout, miscellaneous. */
+  cat?: string;
 }
+
+/** A post-up or an isolation: who, when and his defender. */
+export interface AnnSolo { kind: "post" | "isolation"; f: number; pid: number; def?: number; section?: string }
 
 export interface AnnScreen {
   f: number;
@@ -233,6 +240,8 @@ export interface AnnCloseout {
   x0: number; y0: number; x1: number; y1: number;
   /** Ball handler to defender at the start and end, ft. */
   d0: number; d1: number;
+  /** What the ball handler did after the catch: shot, drive, pass, other. */
+  act?: string;
 }
 
 export interface AnnFoul { f: number; x?: number; y?: number; by: number; on?: number; shooting: boolean; type?: string; ft: boolean[] }
@@ -255,21 +264,66 @@ export interface AnnChance {
 
 export interface Annotations {
   shots: AnnShot[]; passes: AnnPass[]; dribbles: AnnDribble[]; drives: AnnDrive[]; screens: AnnScreen[];
-  closeouts: AnnCloseout[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
+  closeouts: AnnCloseout[]; solos?: AnnSolo[]; fouls: AnnFoul[]; rebounds: AnnRebound[]; turnovers: AnnTurnover[];
   matchups: AnnMatchup[]; chances: AnnChance[];
 }
 
 /** season.json: one person's season counts with one team, from data/aggregates/. Pairs are [count, makes or
- * points]; fg, cns and od are [attempts, makes, threes made]. */
+ * points]; fg, cns and od are [attempts, makes, threes made]; drives are [drives, successful, points]. */
 export interface SeasonFigures {
   g?: number;
+  /** Offensive possessions on court. */
+  poss?: number;
+  /** Points, free throws included. */
+  pts?: number;
+  /** [attempts, makes] */
+  fg3?: [number, number];
+  ft?: [number, number];
+  /** Made field goals assisted by a teammate. */
+  astd?: number;
   fg?: [number, number, number];
   cns?: [number, number, number];
   od?: [number, number, number];
   zone?: Record<"ra" | "paint" | "mid" | "c3" | "ab3", [number, number]>;
-  drives?: [number, number];
+  drives?: [number, number] | [number, number, number];
   handler?: [number, number];
   screener?: [number, number];
   handlerVs?: Record<string, [number, number]>;
   screenerVs?: Record<string, [number, number]>;
+}
+
+/** Points-per-action keys in sample.json: pick handler and screener, drive, handoff receiver, off-ball screen cutter
+ * and screener, post-up, isolation, attacking a closeout. */
+export type ActKey = "pickH" | "pickS" | "drive" | "handoff" | "obs" | "obsS" | "post" | "iso" | "closeout";
+
+/** sample.json: one person with one team over the tracked games (web/scripts/sample_stats.R has the definitions).
+ * Zone vectors are [FGA, makes, threes made, scored attempts, shot quality sum]. Action pairs are [count, points]. */
+export interface SampleFigures {
+  g: number; min: number; pts: number; fga: number; fgm: number; fg3a: number; fg3m: number; fta: number; ftm: number;
+  oreb: number; dreb: number; ast: number; astd: number; stl: number; blk: number; tov: number; pf: number;
+  offPoss: number; offPts: number; defPoss: number; defPts: number; plays: number; teamPlays: number;
+  orebOpp: number; drebOpp: number;
+  zone: Record<"rim" | "mid" | "three", [number, number, number, number, number]>;
+  /** His FGA, the summed closest-defender distance on them, and how many were contested. */
+  shotDef: [number, number, number];
+  /** FGA where he was the closest defender: [attempts, makes, threes made]. */
+  guard: [number, number, number];
+  /** [touches, seconds on the ball, dribbles] */
+  ball?: [number, number, number];
+  trk?: {
+    secs: number; dist: number; offSecs: number; offDist: number; defSecs: number; defDist: number; paint: number;
+    top?: number;
+    /** Nearest opponent, sampled every 0.2 s on offense (open) and defense (near): [samples, summed feet]. */
+    open: [number, number]; near: [number, number];
+  };
+  acts?: Partial<Record<ActKey, [number, number]>>;
+}
+
+export interface Sample {
+  games: number;
+  players: Record<string, SampleFigures>;
+  league: {
+    zone: Record<"rim" | "mid" | "three", [number, number, number, number, number]>;
+    acts: Partial<Record<ActKey, { all: [number, number]; by: Record<string, [number, number]> }>>;
+  };
 }

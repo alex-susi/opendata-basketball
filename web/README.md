@@ -13,7 +13,7 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | `scripts/parity_reference.R` | Runs filter cases through the real Shiny server and writes `tests/parity_reference.json` |
 | `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
 | `scripts/annotations.R` | The annotations the site draws and the Shiny app does not: event locations and context from the event files, season counts from `data/aggregates/` |
-| `public/data/` | `meta.json`, `plays.json`, `season.json`, `archetypes.html`, and one `.json` + `.bin` pair per game period |
+| `public/data/` | `meta.json`, `plays.json`, `season.json`, `sample.json` (per-player figures over the ten tracked games, `scripts/sample_stats.R`), `archetypes.html`, and one `.json` + `.bin` pair per game period |
 | `public/logos/` | Optional team logos: `logos.json` maps a team id to an image file in the folder. Without it the scoreboard shows colour dots and the court has no midcourt logo |
 | `src/lib/` | Decoding, filters, playback sequence, the trace panel's samples, court and scene drawing, annotations (`annotate.ts` on the court, `context.ts` for the cards, `motion.ts` for speed, acceleration and spacing), court control (`control.ts`, time to ball), team logos (`logos.svelte.ts`) — no framework code |
 | `src/components/`, `src/App.svelte` | The three tabs: the viewer (filters, play list, court, trace panel with the play's timeline and a Players tab, playback controls, side panel), Archetypes and Rebounding |

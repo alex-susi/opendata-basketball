@@ -147,14 +147,15 @@ describe("readouts", () => {
     for (const id of [...s.paint.off, ...s.paint.def]) expect(play.players.some((p) => p.id === id)).toBe(true);
   });
 
-  it("write a shot card with the distance first, then the region in Title Case", () => {
-    const play = sample.find((p) => p.ann!.shots.some((s) => s.region))!;
-    const shot = play.ann!.shots.find((s) => s.region)!;
+  it("write a shot card with shot quality first, then distance and the region in Title Case", () => {
+    const play = sample.find((p) => p.ann!.shots.some((s) => s.region && s.sq != null))!;
+    const shot = play.ann!.shots.find((s) => s.region && s.sq != null)!;
     const card = shotCard(play, shot, { peak: true, season: null });
     expect(card.title).toMatch(/^(Made|Missed|Blocked) [23] · #/);
-    expect(card.lines[0]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
-    expect(card.lines[1].k).toBe("Region");
-    expect(card.lines[1].v).toMatch(/^[A-Z]/);
+    expect(card.lines[0]).toEqual({ k: "SkillCorner Shot Quality", v: expect.stringMatching(/^\d+ \/ 100$/) });
+    expect(card.lines[1]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
+    expect(card.lines[2].k).toBe("Region");
+    expect(card.lines[2].v).toMatch(/^[A-Z]/);
     for (const line of card.lines) expect(line.k).toMatch(/^[A-Z]/);
   });
 

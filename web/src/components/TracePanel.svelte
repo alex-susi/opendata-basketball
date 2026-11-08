@@ -11,14 +11,14 @@
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
   // chart to move playback there. A third tab, Players, swaps the chart for a table of the ten players on court
   // (TrackingTable.svelte). Shown or hidden from the Display panel.
+  import ActionCard from "./ActionCard.svelte";
   import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
-  import { closeoutLines, coverageText, driveLines, screenSeasonLines, shotCard, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
   import { blend, cursorAt, FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
   import { nearestAt, traceSamples, type TraceKind, type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
-  import { season, viewer } from "../lib/viewer.svelte";
+  import { viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
@@ -41,33 +41,6 @@
   // Every action whose line is within a few pixels of the pointer, in time order: actions that happen at almost the
   // same moment (a pick and the drive off it) share one card, a section each.
   let hoverTicks = $state<Tick[]>([]);
-  const hoverTick = $derived(hoverTicks[0] ?? null);
-
-  // More about a hovered action, from the annotations that are switched on.
-  function linesFor(tick: Tick): Line[] {
-    const ev = tick.event, ann = play?.ann;
-    if (!ann || !play) return [];
-    if ((ev.kind === "made" || ev.kind === "missed") && viewer.ann.shot) {
-      const shot = ann.shots.find((x) => x.f === ev.f);
-      return shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data }).lines : [];
-    }
-    if (ev.kind === "drive") {
-      const drive = ann.drives.find((x) => x.f === ev.f);
-      return drive ? driveLines(play, drive) : [];
-    }
-    if (ev.kind === "closeout") {
-      const closeout = ann.closeouts.find((x) => x.f === ev.f);
-      return closeout ? closeoutLines(play, closeout) : [];
-    }
-    const screen = ann.screens.find((x) => x.f === ev.f && x.kind === ev.kind);
-    if (!screen) return [];
-    const out: Line[] = [];
-    const cov = coverageText(screen);
-    if (viewer.ann.defense && cov) out.push({ k: "Coverage", v: cov });
-    out.push(...screenSeasonLines(play, season.data, screen));
-    return out;
-  }
-  const hoverCards = $derived(hoverTicks.map((tick) => ({ tick, lines: linesFor(tick) })));
 
   // Players who appear on the tracked court at some point in this play, offense first.
   const tracked = $derived((play?.players ?? []).filter((p) => p.x.some((v) => !Number.isNaN(v)))
@@ -141,6 +114,7 @@
   }
   // The sample under the pointer, and the action whose line is within a few pixels of it (for its card).
   function hover(ev: PointerEvent): void {
+    chartBox = chartEl?.getBoundingClientRect() ?? null;
     const box = svg!.getBoundingClientRect(), x = ev.clientX - box.left, t = tAt(ev);
     hoverK = samples.length ? samples.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a)).k : null;
     const near = timeline.ticks.filter((tick) => Math.abs(M.left + tick.frac * plotW - x) < 7).sort((a, b) => a.k - b.k);
@@ -151,10 +125,9 @@
     hoverK = null;
     hoverTicks = [];
   }
-  // The hovered action's title: a field goal's label without its shot type (the card's Type line has it).
-  const cardTitle = (tick: Tick) =>
-    tick.event.kind === "made" || tick.event.kind === "missed" ? tick.event.label.replace(/ \([^)]*\)$/, "") : tick.event.label;
-  let cardW = $state(260);
+  // The card is fixed to the window (not clipped by the scrolling panel), so it can rise over the court.
+  let chartEl = $state<HTMLDivElement>();
+  let chartBox = $state<DOMRect | null>(null);
 
   function pick(ev: Event): void {
     const v = (ev.currentTarget as HTMLSelectElement).value;
@@ -214,7 +187,7 @@
     </div>
   </div>
 
-  <div class="trace-chart" bind:clientWidth={width}>
+  <div class="trace-chart" bind:clientWidth={width} bind:this={chartEl}>
     {#if !play}
       <p class="trace-empty">No play selected.</p>
     {:else if viewer.trace === "players"}
@@ -286,18 +259,8 @@
           {/each}
         </div>
       {/if}
-      {#if hoverTick}
-        {@const x = M.left + hoverTick.frac * plotW}
-        <!-- A card with details opens upward, over the court, so it never runs off the bottom of the page. -->
-        <div class="trace-card" class:up={hoverCards.some((c) => c.lines.length > 0) || hoverCards.length > 1} bind:clientWidth={cardW}
-             style:left="{clamp(x - cardW / 2, 0, Math.max(0, width - cardW))}px" style:top="{top + 6}px">
-          {#each hoverCards as card, n (n)}
-            <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{cardTitle(card.tick)}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
-            {#each card.lines as line}
-              <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
-            {/each}
-          {/each}
-        </div>
+      {#if hoverTicks.length && chartBox}
+        <ActionCard {play} ticks={hoverTicks} x={chartBox.left + M.left + hoverTicks[0].frac * plotW} y={chartBox.top + top} />
       {/if}
     {/if}
   </div>

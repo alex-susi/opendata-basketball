@@ -13,7 +13,8 @@
   import SidePanel from "./components/SidePanel.svelte";
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
-  import { loadMeta, loadPlay, loadPlays, loadSeason } from "./lib/data";
+  import TimelineStrip from "./components/TimelineStrip.svelte";
+  import { loadMeta, loadPlay, loadPlays, loadSample, loadSeason } from "./lib/data";
   import { loadLogos, logoUrl } from "./lib/logos.svelte";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp, quarter } from "./lib/geometry";
@@ -68,9 +69,11 @@
   const home = $derived(play ? (homeIsOff ? play.colors.off : play.colors.def) : null);
   const away = $derived(play ? (homeIsOff ? play.colors.def : play.colors.off) : null);
   const homeLogo = $derived(play ? logoUrl(play.homeTeam) : null);
+  // How far the court's centre line sits from the middle of the header (the stage and the header share a column).
+  let headW = $state(0);
+  const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
   const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
   loadLogos();
-  const subtitle = $derived(play ? [(play.who ? `${play.result} (${play.who})` : play.result) + (play.and1 ? ", and-1" : ""), ...play.types].join(" · ") : "");
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
 
   // The address names the selected play, or the document tab while one is open.
@@ -148,6 +151,7 @@
 
   // Season figures (roster hover cards, the shot card's zone line, pick hovers) load once, in the background.
   loadSeason().then((d) => { season.data = d; }).catch(() => { /* the season lines are left out */ });
+  loadSample().then((d) => { season.sample = d; }).catch(() => { /* the tracked-games lines are left out */ });
 
   Promise.all([loadMeta(), loadPlays()]).then(([m, all]) => {
     plays = all;
@@ -181,38 +185,41 @@
          onpointermove={dragLeft} ondblclick={() => setLeft(LEFT_DEFAULT)} onkeydown={keyLeft}></div>
   </aside>
 
-  <!-- Above the court only, so the right column starts level with the court. Title over its subtitle on the left;
-       the score and the running clocks centred in the space beside them. -->
+  <!-- Above the court only, so the right column starts level with the court. The scorebug's score sits on the
+       court's centre line; the running clocks to its right. A basketball outside the logo and a glow on the name mark
+       the team with the ball. -->
   <header class="play-head-box">
-    <div class="play-head">
-      <div class="play-head-text">
-        {#if play}
-          <h1>{play.off} possession</h1>
-          <p title={subtitle}>{subtitle}</p>
-        {:else}
-          <h1>{meta ? "No play selected" : "Loading plays…"}</h1>
-        {/if}
-      </div>
+    <div class="play-head" style:--court-shift="{courtShift}px" bind:clientWidth={headW}>
       {#if play && home && away}
-        <div class="play-head-score">
-          <div class="scorebug" title={`${play.game} · score at the start of the possession`}>
-            <span class="team home" style:color={home.text}>
-              {#if homeLogo}<img class="logo" src={homeLogo} alt="" />{:else}<span class="kit" style:background={home.fill}></span>{/if}{play.home}
-            </span>
-            <b>{play.homeScore} – {play.awayScore}</b>
-            <span class="team away" style:color={away.text}>
-              {play.away}{#if awayLogo}<img class="logo" src={awayLogo} alt="" />{:else}<span class="kit" style:background={away.fill}></span>{/if}
-            </span>
-          </div>
-          <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
-          <div class="game-clock">
-            <span class="game-time" title="Game clock">{live.gameClock}</span>
-            <span class="period-line"><span class="period">{quarter(play.period)}</span><span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span></span>
-          </div>
+        <div class="scorebug" title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
+          <span class="team home" class:has-ball={homeIsOff} style:color={home.text} style:--glow={home.text}>
+            {@render ball(homeIsOff)}
+            {#if homeLogo}<img class="logo" src={homeLogo} alt="" />{:else}<span class="kit" style:background={home.fill}></span>{/if}<span class="team-name">{play.home}</span>
+          </span>
+          <b>{play.homeScore} – {play.awayScore}</b>
+          <span class="team away" class:has-ball={!homeIsOff} style:color={away.text} style:--glow={away.text}>
+            <span class="team-name">{play.away}</span>{#if awayLogo}<img class="logo" src={awayLogo} alt="" />{:else}<span class="kit" style:background={away.fill}></span>{/if}
+            {@render ball(!homeIsOff)}
+          </span>
         </div>
+        <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
+        <div class="game-clock">
+          <span class="game-time" title="Game clock">{live.gameClock}</span>
+          <span class="period-line"><span class="period">{quarter(play.period)}</span><span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span></span>
+        </div>
+      {:else}
+        <h1 class="play-head-note">{meta ? "No play selected" : "Loading plays…"}</h1>
       {/if}
     </div>
   </header>
+
+  {#snippet ball(on: boolean)}
+    <svg class="poss-ball" class:on viewBox="0 0 20 20" aria-hidden={!on} role="img" aria-label="Has the ball">
+      <circle cx="10" cy="10" r="8.6" fill="#E8742A" stroke="#1B1208" stroke-width="1.1" />
+      <path d="M1.6 10h16.8M10 1.4v17.2M4.2 3.9c2.6 3.4 2.6 8.8 0 12.2M15.8 3.9c-2.6 3.4-2.6 8.8 0 12.2"
+            fill="none" stroke="#1B1208" stroke-width="1.1" />
+    </svg>
+  {/snippet}
 
   <section class="viewer">
     <!-- At least tall enough for the cards over the court; the trace panel under it scrolls if that squeezes it. -->
@@ -221,6 +228,8 @@
     </div>
     {#if viewer.showTrace}
       <TracePanel {play} {seq} />
+    {:else}
+      <TimelineStrip {play} {seq} />
     {/if}
   </section>
 

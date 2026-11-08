@@ -1890,3 +1890,18 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   plus 2.8 ft, light 4.1, average 4.5, open 6.0). The tab's stand-in grades the nearest defender's distance with
   cut-offs 3.5 / 5.5 / 6.5 ft (plus / average / light / open): SkillCorner's level on 50% of the ten games' shots,
   within one level on 81%. Labelled as a stand-in in the column's tooltip.
+
+## 2026-11-08 — Player card and points-per-action figures from the ten tracked games
+
+- **Why:** the season aggregates are offense-only and cover shots, drives and picks; rebounds, assists, minutes,
+  ratings, shot quality, tracking and the other actions exist only in the ten games' events and tracking.
+- **What (`web/scripts/sample_stats.R` → `web/public/data/sample.json`):** per person and team over the ten games:
+  box score (FIBA FGA: fouled misses left out), on-court offensive and defensive ratings from the shots and free
+  throws of the possessions he was on court for, usage, rebound shares, mean SkillCorner `shotQuality` of his FGA
+  (rim = restricted area, mid-range = other twos, three), live-play tracking (speed, distance, top 0.5 s speed,
+  paint time, nearest opponent) and points per action (own make plus assisted make, free throws left out; picks
+  direct only, as in the season aggregates). Team points close to every final score; chance-based minutes run
+  1-2% short of the full game clock (chances do not cover every second).
+- **Labelling:** every figure in the site's player card and hover tables says whether it is Season (aggregates,
+  293 games) or Tracked (the ten games). Tracked samples are small (most players appear in one game); counts are
+  shown beside each rate.

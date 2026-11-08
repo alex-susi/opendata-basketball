@@ -59,7 +59,7 @@ game_annotations <- function(game_id) {
                       defDist = round(ann_num(s, "closestDefDist"), 1), rt = round(ann_num(s, "releaseTime"), 2),
                       drb = ann_int(s, "dribblesBefore"), cns = ann_lgl(s, "catchAndShoot"),
                       type = ann_chr(s, "complexShotType"), sc = round(ann_num(s, "shotClock"), 1),
-                      passer = ann_int(s, "passerId"), assisted = ann_lgl(s, "assisted"),
+                      passer = ann_int(s, "passerId"), assisted = ann_lgl(s, "assisted"), ao = ann_lgl(s, "assistOpp"),
                       region = ann_chr(s, "region"), chance = ann_chr(s, "chanceId"))
     out[, ft := ft_of("shot", ann_chr(s, "id"))]
     out[, ghosts := lapply(chance, function(ch) if (is.null(ghost_list[[ch]])) list() else ghost_list[[ch]])]
@@ -85,8 +85,17 @@ game_annotations <- function(game_id) {
     l1 <- ann_loc(d, "endLoc")
     data.table(f = ann_int(d, "startFrame"), f1 = ann_int(d, "endFrame"), pid = ann_int(d, "ballhandlerId"),
                def = ann_int(d, "ballhandlerDefId"), x0 = l0[[1]], y0 = l0[[2]], x1 = l1[[1]], y1 = l1[[2]],
-               blowby = ann_lgl(d, "blowby"), dir = ann_chr(d, "direction"), end = ann_chr(d, "endType"))
+               blowby = ann_lgl(d, "blowby"), dir = ann_chr(d, "direction"), end = ann_chr(d, "endType"),
+               cat = ann_chr(d, "category"))
   })
+
+  # Post-ups and isolations: who, when, his defender (for the trace panel's points-per-action lines).
+  solos <- rbind(
+    ann_table(ev$posts, function(p) data.table(kind = "post", f = ann_int(p, "startFrame"), pid = ann_int(p, "ballhandlerId"),
+                                              def = ann_int(p, "ballhandlerDefId"), section = ann_chr(p, "section"))),
+    ann_table(ev$isolations, function(p) data.table(kind = "isolation", f = ann_int(p, "startFrame"),
+                                                    pid = ann_int(p, "ballhandlerId"), def = ann_int(p, "ballhandlerDefId"),
+                                                    section = NA_character_)))
 
   # Picks, handoffs and off-ball screens: the screener's (setter's) spot, who used the screen and both coverages.
   screen_rows <- function(recs, kind, scr, use, cov_use, cov_scr) {
@@ -117,7 +126,8 @@ game_annotations <- function(game_id) {
     l1 <- ann_loc(c, "endLoc")
     data.table(f = ann_int(c, "startFrame"), f1 = ann_int(c, "endFrame"), def = ann_int(c, "ballhandlerDefId"),
                pid = ann_int(c, "ballhandlerId"), x0 = l0[[1]], y0 = l0[[2]], x1 = l1[[1]], y1 = l1[[2]],
-               d0 = round(ann_num(c, "startDistance"), 1), d1 = round(ann_num(c, "endDistance"), 1))
+               d0 = round(ann_num(c, "startDistance"), 1), d1 = round(ann_num(c, "endDistance"), 1),
+               act = ann_chr(c, "bhrAction"))
   })
 
   fouls <- ann_table(ev$fouls, function(fo) {
@@ -161,7 +171,7 @@ game_annotations <- function(game_id) {
   })
 
   list(shots = shots, passes = passes, dribbles = dribbles, drives = drives, screens = screens, closeouts = closeouts,
-       fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
+       solos = solos, fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
 }
 
 #' The annotations inside one play's viewing window, as lists of records ready for JSON.
@@ -180,6 +190,7 @@ play_annotations <- function(g, lo, hi) {
   ch <- if (is.null(g$chances)) NULL else g$chances[, .(id, poss, f = c0, f1 = c1, start, transition, q, pts, mins)]
   list(shots = rows(g$shots), passes = rows(g$passes, "f", "f1"), dribbles = rows(g$dribbles),
        drives = rows(g$drives, "f", "f1"), screens = rows(g$screens), closeouts = rows(g$closeouts, "f", "f1"),
+       solos = rows(g$solos),
        fouls = rows(g$fouls), rebounds = rows(g$rebounds), turnovers = rows(g$turnovers),
        matchups = rows(g$matchups, "f", "f1"), chances = rows(ch, "f", "f1"))
 }
@@ -200,10 +211,11 @@ season_figures <- function() {
   sum_by <- function(dt, cols) dt[, lapply(.SD, function(v) sum(v, na.rm = TRUE)), by = .(canon, team_id), .SDcols = cols]
   zones <- c(ra = "zone_restricted_area", paint = "zone_paint_non_ra", mid = "zone_mid_range",
              c3 = "zone_corner_3", ab3 = "zone_above_break_3")
-  shot_cols <- c("games_played", "attempts", "mades", "three_mades", "cns_attempts", "cns_mades", "cns_three_mades",
+  shot_cols <- c("games_played", "possessions_played", "attempts", "mades", "three_attempts", "three_mades", "total_points",
+                 "ft_attempts", "ft_mades", "assisted_mades", "cns_attempts", "cns_mades", "cns_three_mades",
                  "od_attempts", "od_mades", "od_three_mades", paste0(rep(zones, each = 2), c("_attempts", "_mades")))
   shots <- sum_by(agg("shots"), shot_cols)
-  drives <- sum_by(agg("drives"), c("total_drives", "successful_drives"))
+  drives <- sum_by(agg("drives"), c("total_drives", "successful_drives", "points"))
   h_cov <- c("blitz", "ice", "over", "switch", "under")
   s_cov <- c("blitz", "ice", "show", "soft", "switch")
   pick_cols <- c("handler_total_picks", "handler_points", "screener_total_picks", "screener_points",
@@ -219,11 +231,16 @@ season_figures <- function() {
     p <- picks[canon == k$canon & team_id == k$team_id]
     pair <- function(dt, n, m) if (nrow(dt)) I(c(dt[[n]], dt[[m]])) else NULL
     rec <- list(g = if (nrow(s)) s$games_played else NULL,
+                poss = if (nrow(s)) s$possessions_played else NULL,
+                pts = if (nrow(s)) s$total_points else NULL,
+                fg3 = if (nrow(s)) I(c(s$three_attempts, s$three_mades)) else NULL,
+                ft = if (nrow(s)) I(c(s$ft_attempts, s$ft_mades)) else NULL,
+                astd = if (nrow(s)) s$assisted_mades else NULL,
                 fg = if (nrow(s)) I(c(s$attempts, s$mades, s$three_mades)) else NULL,
                 cns = if (nrow(s)) I(c(s$cns_attempts, s$cns_mades, s$cns_three_mades)) else NULL,
                 od = if (nrow(s)) I(c(s$od_attempts, s$od_mades, s$od_three_mades)) else NULL,
                 zone = if (nrow(s)) lapply(zones, function(z) I(c(s[[paste0(z, "_attempts")]], s[[paste0(z, "_mades")]]))) else NULL,
-                drives = pair(d, "total_drives", "successful_drives"),
+                drives = if (nrow(d)) I(c(d$total_drives, d$successful_drives, d$points)) else NULL,
                 handler = pair(p, "handler_total_picks", "handler_points"),
                 screener = pair(p, "screener_total_picks", "screener_points"),
                 handlerVs = if (nrow(p)) lapply(setNames(h_cov, h_cov), function(c) I(c(p[[paste0("handler_picks_vs_", c)]], p[[paste0("handler_points_vs_", c)]]))) else NULL,

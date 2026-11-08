@@ -40,9 +40,9 @@ export const titleCase = (s: string): string =>
   s.split(" ").map((w, i) => (i && MINOR.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(" ");
 
 /** A court region in Title Case: "left wing three" → "Left Wing Three", "ra" → "Restricted Area", "middle three" →
- * "Above the Break Three". */
+ * "ATB Three" (above the break). */
 export const regionName = (r: string): string =>
-  r === "ra" ? "Restricted Area" : r === "middle three" ? "Above the Break Three" : titleCase(r);
+  r === "ra" ? "Restricted Area" : r === "middle three" ? "ATB Three" : titleCase(r);
 
 export function playerOf(play: Play, pid: number | undefined): PlayerTrack | undefined {
   return pid == null ? undefined : play.players.find((p) => p.id === pid);
@@ -112,7 +112,7 @@ const ZONE_OF_REGION: Record<string, keyof NonNullable<SeasonFigures["zone"]>> =
   "right wing two": "mid", "middle two": "mid", "left corner three": "c3", "right corner three": "c3",
   "left wing three": "ab3", "right wing three": "ab3", "middle three": "ab3",
 };
-const ZONE_NAMES = { ra: "the Restricted Area", paint: "the Paint", mid: "Mid-Range", c3: "the Corner 3", ab3: "Above the Break" };
+const ZONE_NAMES = { ra: "the Restricted Area", paint: "the Paint", mid: "Mid-Range", c3: "the Corner 3", ab3: "ATB Three" };
 
 /** A player's season in a few lines (offense only: the aggregates have no defensive figures). */
 export function seasonLines(fig: SeasonFigures | null): Line[] {
@@ -158,12 +158,21 @@ export interface Card {
   lines: Line[];
 }
 
+/** Who passed to the shooter, whenever the pass set up an assist chance (SkillCorner's assistOpp: assisted, or the
+ * shot came within 3 s of the catch), made or missed. */
+export function passLine(play: Play, shot: AnnShot): Line {
+  if (shot.passer == null || !(shot.assisted || shot.ao)) return { k: "Pass", v: "Unassisted" };
+  const by = nameOf(play, shot.passer);
+  if (shot.assisted && shot.made) return { k: "Pass", v: `Assisted by ${by}` };
+  return { k: "Pass", v: shot.made ? `From ${by} (No Assist Credited)` : `From ${by} (Potential Assist)` };
+}
+
 export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; season: Season | null }): Card {
   const lines: Line[] = [];
   const tone = shot.cl ? CONTEST_COLORS[shot.cl] : undefined;
+  if (shot.sq != null) lines.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
   if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
   if (shot.region) lines.push({ k: "Region", v: regionName(shot.region) });
-  if (shot.sq != null) lines.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
   if (shot.cl) lines.push({ k: "Contest", v: titleCase(shot.cl), tone });
   if (shot.defId != null) {
     lines.push({ k: "Closest Defender", v: `${nameOf(play, shot.defId)}${shot.defDist != null ? ` · ${shot.defDist.toFixed(1)} ft` : ""}`, tone });
@@ -173,7 +182,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   if (shot.cns != null) lines.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
   if (shot.type) lines.push({ k: "Type", v: titleCase(words(shot.type)) });
   if (shot.sc != null) lines.push({ k: "Shot Clock", v: `${shot.sc.toFixed(1)} s` });
-  lines.push({ k: "Pass", v: shot.assisted && shot.passer != null ? `Assisted by ${nameOf(play, shot.passer)}` : "Unassisted" });
+  lines.push(passLine(play, shot));
   if (shot.blocked && shot.blocker != null) lines.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
   if (shot.fouled) lines.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
   if (opts.peak) {

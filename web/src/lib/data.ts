@@ -3,6 +3,7 @@
 // export to the next, so without it a browser can run a new build against an older export it has cached.
 
 import type { Season } from "./context";
+import type { Sample } from "./types";
 import { decodePlay } from "./decode";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
@@ -26,6 +27,14 @@ export function loadMeta(): Promise<Meta> {
 let plays: Promise<PlayRow[]> | null = null;
 export function loadPlays(): Promise<PlayRow[]> {
   return (plays ??= fetchOk("plays.json").then((r) => r.json()));
+}
+
+let sample: Promise<Sample> | null = null;
+/** Per person and team over the tracked games (sample.json): box score, ratings, tracking, points per action. */
+export function loadSample(): Promise<Sample> {
+  sample ??= fetchOk("sample.json").then((r) => r.json());
+  sample.catch(() => { sample = null; });
+  return sample;
 }
 
 let season: Promise<Season> | null = null;

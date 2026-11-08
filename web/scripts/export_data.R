@@ -9,6 +9,8 @@
 #   g<game>_p<period>.bin    that period's tracking
 #   archetypes.html      the app's Archetypes tab, as the app renders it (needs outputs/archetypes/)
 #   season.json          season counts per person and team from data/aggregates/ (annotations.R)
+#   sample.json          per person and team over the ten tracked games: box score, ratings, shot quality,
+#                        tracking and points per action (sample_stats.R)
 #
 # Each play header also carries `ann`: the event locations and context the site draws over the court
 # (annotations.R). The Shiny app does not draw these.
@@ -29,6 +31,7 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_a
 
 a <- load_shiny_app()
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "annotations.R"))
+source(file.path(if (length(script)) dirname(script) else "web/scripts", "sample_stats.R"))
 out_dir <- file.path(a$root, "web", "public", "data")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -138,6 +141,7 @@ light <- lapply(seq_len(nrow(plays)), function(i) {
 })
 save_json(light, "plays.json")
 save_json(season_figures(), "season.json")
+save_json(sample_figures(), "sample.json")
 
 # ---- filter choices, exactly as the Shiny inputs list them -------------------------------------
 
