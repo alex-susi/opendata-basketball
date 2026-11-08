@@ -177,6 +177,11 @@ export interface AnnShot {
   made: boolean; three: boolean; fouled: boolean; blocked: boolean; assisted: boolean;
   /** SkillCorner's assist opportunity: assisted, or shot within 3 s of catching a pass (made or missed). */
   ao?: boolean;
+  /** SkillCorner left the shot's context blank: location, distance, region, closest defender and contest were
+   * rebuilt from the tracking on load (shotfill.ts); contest is then the distance-based estimate. */
+  est?: boolean;
+  /** Rebuilt, but the tracked spot is clearly on the other side of the line from the official two or three. */
+  conflict?: boolean;
   blocker?: number;
   /** Shooter to hoop at release, ft. */
   dist?: number;

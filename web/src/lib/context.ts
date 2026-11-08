@@ -152,6 +152,8 @@ export function screenSeasonLines(play: Play, season: Season | null, s: AnnScree
 
 // ---- shot card -----------------------------------------------------------------------------------
 
+const MUTED = "#93A0B8";
+
 export interface Card {
   title: string;
   tone?: string;
@@ -170,16 +172,20 @@ export function passLine(play: Play, shot: AnnShot): Line {
 export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; season: Season | null }): Card {
   const lines: Line[] = [];
   const tone = shot.cl ? CONTEST_COLORS[shot.cl] : undefined;
+  const blank = { v: "Not Provided", tone: MUTED };
   if (shot.sq != null) lines.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
+  else if (shot.est) lines.push({ k: "SkillCorner Shot Quality", ...blank });
   if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
   if (shot.region) lines.push({ k: "Region", v: regionName(shot.region) });
-  if (shot.cl) lines.push({ k: "Contest", v: titleCase(shot.cl), tone });
+  if (shot.cl) lines.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
   if (shot.defDist != null) lines.push({ k: "Closest Defender Distance", v: `${shot.defDist.toFixed(1)} ft`, tone });
   if (shot.defId != null) lines.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
   if (shot.rt != null) lines.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
+  else if (shot.est) lines.push({ k: "Release Time", ...blank });
   if (shot.drb != null) lines.push({ k: "Dribbles", v: String(shot.drb) });
   if (shot.cns != null) lines.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
   if (shot.type) lines.push({ k: "Type", v: titleCase(words(shot.type)) });
+  else if (shot.est) lines.push({ k: "Type", ...blank });
   if (shot.sc != null) lines.push({ k: "Shot Clock", v: `${shot.sc.toFixed(1)} s` });
   lines.push(passLine(play, shot));
   if (shot.blocked && shot.blocker != null) lines.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
@@ -188,10 +194,11 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
     const peak = shotPeak(play, shot);
     if (peak != null) lines.push({ k: "Ball Peak", v: `${peak.toFixed(1)} ft` });
   }
-  if (opts.season) {
+  if (opts.season && !shot.conflict) {   // a flagged spot would name the wrong zone
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
     if (line) lines.push(line);
   }
+  if (shot.est) lines.push({ k: "Shot Context", v: shot.conflict ? `From Tracking; Spot ${shot.three ? "Inside" : "Beyond"} the Arc` : "From Tracking", tone: shot.conflict ? "#F5B02E" : MUTED });
   return { title: `${madeOf(shot)} · ${nameOf(play, shot.pid)}`, tone: shot.made ? "#2FAE5A" : "#E04848", lines };
 }
 

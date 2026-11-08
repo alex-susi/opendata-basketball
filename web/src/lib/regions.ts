@@ -27,6 +27,12 @@ export function isThree(x: number, y: number): boolean {
   return Math.hypot(x - HOOP_X, y) > THREE_R;
 }
 
+/** Distance (ft) from a spot to the three-point line: along the corners, the straight part; elsewhere the arc. */
+export function lineGap(x: number, y: number): number {
+  if (x >= CORNER_X && Math.abs(Math.abs(y) - THREE_Y) < Math.abs(Math.hypot(x - HOOP_X, y) - THREE_R)) return Math.abs(Math.abs(y) - THREE_Y);
+  return Math.abs(Math.hypot(x - HOOP_X, y) - THREE_R);
+}
+
 /** The SkillCorner region of a spot in the play's stored frame (offense attacking +x), lower case. */
 export function courtRegion(x: number, y: number): string {
   if (x < 0) return "backcourt";

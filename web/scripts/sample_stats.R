@@ -44,7 +44,7 @@ sample_figures <- function() {
 
     # ---- events ----
     sh <- ev$shots
-    shots <- data.table(poss = a$chr_field(sh, "possessionId"), pid = a$int_field(sh, "shooterId"),
+    shots <- data.table(poss = a$chr_field(sh, "possessionId"), pid = a$int_field(sh, "shooterId"), f = a$int_field(sh, "startFrame"),
                         team = a$int_field(sh, "offTeamId"), made = a$lgl_field(sh, "outcome"),
                         three = a$lgl_field(sh, "three"), fouled = a$lgl_field(sh, "fouled"), blocked = a$lgl_field(sh, "blocked"),
                         assisted = a$lgl_field(sh, "assisted"), passer = suppressWarnings(as.integer(a$chr_field(sh, "passerId"))),
@@ -120,11 +120,6 @@ sample_figures <- function() {
     b[, `:=`(team = team_of(pid), canon = roster$canon[match(pid, roster$pid)])]
     box[[length(box) + 1L]] <- b
 
-    # ---- shot quality by zone, shots on his defence ----
-    fs <- shots[fga == TRUE]
-    fs[, zone := fifelse(three, "three", fifelse(region == "ra", "rim", "mid"))]
-    zones[[length(zones) + 1L]] <- fs[, .(pid, team, zone, made, three, sq, defDist, contested)]
-    guards[[length(guards) + 1L]] <- fs[!is.na(def), .(pid = def, team = team_of(def), zone, made, three, sq)]
 
     # ---- touches ----
     tc <- ev$touches
@@ -180,6 +175,30 @@ sample_figures <- function() {
              .(d = min(sqrt((x - i.x)^2 + (y - i.y)^2))), by = .(frame, pid = i.pid, on_o = i.on_o)]
     t2 <- near[, .(openN = sum(on_o), openSum = sum(d[on_o]), nearN = sum(!on_o), nearSum = sum(d[!on_o])), by = pid]
     trk_rows[[length(trk_rows) + 1L]] <- merge(t1, t2, by = "pid", all.x = TRUE)
+
+    # ---- shot quality by zone, shots on his defence ----
+    # SkillCorner left the context of a few shots blank (no region or closest defender; see web/src/lib/shotfill.ts).
+    # Their zone comes from the shooter's tracked distance to the hoop he attacks at release (rim within the 4.1 ft
+    # restricted area), and their closest defender is the nearest tracked opponent then.
+    fs <- shots[fga == TRUE]
+    fs[, zone := fifelse(three, "three", fifelse(region == "ra", "rim", "mid"))]
+    blank <- fs[is.na(region) | is.na(def), which = TRUE]
+    for (r in blank) {
+      at <- pl[frame >= fs$f[r] - 3L & frame <= fs$f[r] + 3L][order(abs(frame - fs$f[r]))]
+      me <- at[pid == fs$pid[r]][1]
+      if (is.na(me$x)) next
+      at <- at[frame == me$frame]
+      if (is.na(fs$region[r]) && !fs$three[r]) {
+        hoop <- me$sgn * (HALF_L - 1.575 * M)
+        set(fs, r, "zone", if (!is.na(hoop) && sqrt((me$x - hoop)^2 + me$y^2) <= 1.25 * M) "rim" else "mid")
+      }
+      if (is.na(fs$def[r])) {
+        opp <- at[!is.na(team) & team != me$team]
+        if (nrow(opp)) set(fs, r, "def", opp$pid[which.min(sqrt((opp$x - me$x)^2 + (opp$y - me$y)^2))])
+      }
+    }
+    zones[[length(zones) + 1L]] <- fs[, .(pid, team, zone, made, three, sq, defDist, contested)]
+    guards[[length(guards) + 1L]] <- fs[!is.na(def), .(pid = def, team = team_of(def), zone, made, three, sq)]
     message("  sample figures: game ", g)
   }
 

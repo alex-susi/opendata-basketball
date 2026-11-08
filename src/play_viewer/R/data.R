@@ -4,10 +4,11 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 2L          # tracking cache (each position's predError since 2)
-INDEX_VERSION <- 9L          # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+INDEX_VERSION <- 10L         # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
                              # play types in the order they happen and picks credited to the screener since 5;
                              # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7;
-                             # and-ones as made shots since 8; windows cut at each possession's deciding event since 9)
+                             # and-ones as made shots since 8; windows cut at each possession's deciding event since 9;
+                             # no "(NA)" in a shot's label when SkillCorner gave no shot type since 10)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
@@ -270,9 +271,11 @@ action_labels <- function(type, recs, nm) {
          isolation = sprintf("Isolation: %s", who("ballhandlerId")),
          post = sprintf("Post-up: %s", who("ballhandlerId")),
          closeout = sprintf("Closeout: %s on %s", who("ballhandlerDefId"), who("ballhandlerId")),
-         shot = sprintf("%s %s: %s (%s)", ifelse(made, "Made", "Missed"),
-                        ifelse(lgl_field(recs, "three"), "3", "2"), who("shooterId"),
-                        camel_to_words(chr_field(recs, "complexShotType"))))
+         shot = {
+           kind <- chr_field(recs, "complexShotType")
+           sprintf("%s %s: %s%s", ifelse(made, "Made", "Missed"), ifelse(lgl_field(recs, "three"), "3", "2"),
+                   who("shooterId"), ifelse(is.na(kind), "", sprintf(" (%s)", camel_to_words(kind))))
+         })
 }
 
 # Which player a timeline tick is credited to, per action family.

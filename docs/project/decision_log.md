@@ -1911,3 +1911,17 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   archetype sit within 0.18 SD of the saved mixture centres (0.02 on defense). `sample.json` adds, per player, the
   shot quality and eFG of the opponents' FGA on which he was the closest defender, by zone. `export_data.R
   --figures` rewrites only season.json, sample.json and playstyle.json.
+
+## 2026-11-08 — Shots without SkillCorner context rebuilt from tracking
+
+- **Finding:** 26 of the ten games' 1,459 shot events have every tracking-derived field blank (location, distance,
+  region, shotQuality, contestLevel, closestDef*, complexShotType). The tracking has all ten players and the ball at
+  the release frame on 25 of them. Likely causes: 14 of the 17 threes were tracked within half a foot of the line
+  (21.7-22.3 ft); six twos are tip-ins or putbacks at the rim; a few spots contradict the official value (a three
+  from 10.9 ft, twos from 27-40 ft), suggesting a mistimed frame or player mix-up. For located shots, the tracked
+  spot at startFrame matches SkillCorner's distance to 0.03 ft (median).
+- **Treatment:** the site rebuilds location, distance, region, closest defender and a distance-based contest
+  estimate from the tracking (`web/src/lib/shotfill.ts`), letting the official two/three decide the region within
+  1.5 ft of the line and flagging larger contradictions on the shot card. Shot quality, type and release time show
+  "Not Provided". `sample_stats.R` zones the blank twos by tracked distance and credits the nearest opponent as the
+  closest defender. Play labels no longer print "(NA)" for a missing shot type (`INDEX_VERSION` 10).
