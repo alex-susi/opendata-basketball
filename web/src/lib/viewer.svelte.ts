@@ -20,6 +20,8 @@ export const viewer = $state({
   showTrails: true,
   /** Court control under the players (time-to-ball version, control.ts). */
   showControl: false,
+  /** The court control readout: shares of the whole court, or of the half the offense attacks. */
+  controlScope: "court" as "court" | "half",
   /** Annotation sections (the Display panel's Annotations toggles; annotate.ts, Annotations.svelte). */
   ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false },
   /** The trace panel under the court. */
@@ -55,8 +57,8 @@ export const live = $state({
   shotClock: "",
   /** Index into the play's frames of the frame last drawn, refreshed a few times a second while playing. */
   i0: 0,
-  /** With court control on: the offense's share of the court at the frame drawn, or null. */
-  control: null as number | null,
+  /** With court control on: the offense's share of the whole court and of its attacking half at the frame drawn. */
+  control: null as { court: number; half: number } | null,
   /** Height (px) the cards over the court need (Annotations.svelte); the court window is kept at least this tall. */
   annNeed: 0,
   /** The court's box on the canvas (CSS px) and which half is the backcourt, for the cards over it. */

@@ -216,7 +216,7 @@
 
   <section class="viewer">
     <!-- At least tall enough for the cards over the court; the trace panel under it scrolls if that squeezes it. -->
-    <div class="stage-row" style:min-height={live.annNeed ? `${Math.max(260, live.annNeed + 12)}px` : null}>
+    <div class="stage-row" style:min-height={live.annNeed ? `${Math.max(260, live.annNeed + 36)}px` : null}>
       <Stage {play} {seq} {note} onend={playNext} />
     </div>
     {#if viewer.showTrace}

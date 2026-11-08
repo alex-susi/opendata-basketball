@@ -9,7 +9,8 @@
 <script lang="ts">
   // The trace panel's Player Tracking tab: the ten players on court at the current frame in one table, the offense's
   // five then the defense's, each under a heading row with the team's spacing (mean distance between its players on
-  // court), its players in the paint and, for the defense, the rim protector. An orange dot marks the ball handler.
+  // court; hover for an explanation). An orange dot marks the ball handler and a shield the rim protector (the
+  // defender nearest the basket).
   // The columns come in three groups, picked in the panel's header (All shows every column and scrolls sideways):
   //   Movement  speed, acceleration, speed toward the basket and across it, top speed so far and distance covered
   //             (smoothed tracking, lib/motion.ts)
@@ -20,7 +21,7 @@
   //   Ball      minutes played entering the chance, and this possession's touches, dribbles and seconds on the ball
   // "The basket" is the one the offense attacks, which the defense defends. Hovering a row rings the player on the
   // court; clicking it follows his nearest opponent in the Nearest Opponent tab.
-  import { CONTEST_COLORS, minutesAt, nameOf, ownChances, regionName, titleCase } from "../lib/context";
+  import { CONTEST_COLORS, minutesAt, ownChances, regionName, titleCase } from "../lib/context";
   import { HOOP_X } from "../lib/court";
   import { accelAt, motion, spacing } from "../lib/motion";
   import { contestOf, courtRegion } from "../lib/regions";
@@ -127,6 +128,15 @@
 
   const rows = (role: Role) => play.players.filter((p) => p.role === role && here(p, i)).map((p) => rowOf(p, role));
 
+  // Width of the Player column, so each team's heading lines its side and spacing up under the other's.
+  let nameW = $state(0);
+  // The spacing explainer, fixed on the page (the panel scrolls and would clip it).
+  let tip = $state<{ x: number; y: number } | null>(null);
+  function showTip(ev: MouseEvent): void {
+    const r = (ev.currentTarget as HTMLElement).getBoundingClientRect();
+    tip = { x: r.left, y: r.bottom + 6 };
+  }
+
   function follow(id: number): void {
     viewer.focusPid = id;
     viewer.trace = "nearest";
@@ -137,7 +147,7 @@
   <table class="track-table">
     <thead>
       <tr>
-        <th class="name">Player</th>
+        <th class="name" bind:clientWidth={nameW}>Player</th>
         {#each shown as c (c.key)}
           {@const words = c.head.split(" ")}
           <th class:al={c.left} title={c.title}>{words.slice(0, -1).join(" ")}{words.length > 1 ? " " : ""}<span class="keep">{words.at(-1)}{#if c.unit}&nbsp;({c.unit}){/if}</span></th>
@@ -150,15 +160,20 @@
       <tbody>
         <tr class="group">
           <td colspan={shown.length + 1}>
-            <b style:color={kit.text}>{role === "off" ? play.off : play.def}</b>
-            <span>{role === "off" ? "Offense" : "Defense"} · Spacing {fixed(spaced.spread[role])} ft · {spaced.paint[role].length} in paint{#if role === "def" && spaced.rim}{" · "}Rim protector {nameOf(play, spaced.rim.pid)} {spaced.rim.dist.toFixed(1)} ft{/if}</span>
+            <!-- Sticky, so the heading stays in view when the table scrolls sideways. -->
+            <div class="group-line">
+              <b class="group-team" style:color={kit.text} style:width="{nameW}px">{role === "off" ? play.off : play.def}</b>
+              <span class="group-side">{role === "off" ? "Offense" : "Defense"}</span>
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <span class="group-spacing" onmouseenter={showTip} onmouseleave={() => (tip = null)}>Spacing {fixed(spaced.spread[role])} ft <i class="info">i</i></span>
+            </div>
           </td>
         </tr>
         {#each list as r (r.p.id)}
           <tr class="player" class:has-ball={live.handler === r.p.id} onmouseenter={() => (viewer.hoverPid = r.p.id)}
               onmouseleave={() => (viewer.hoverPid = null)} onclick={() => follow(r.p.id)}
               title="Click to follow his distance to the nearest opponent">
-            <td class="name"><span class="num" style:background={kit.fill} style:color={kit.ink}>{r.p.jersey}</span>{r.p.name}{#if live.handler === r.p.id}<span class="ball-dot" title="Has the ball"></span>{/if}</td>
+            <td class="name"><span class="num" style:background={kit.fill} style:color={kit.ink}>{r.p.jersey}</span>{r.p.name}{#if live.handler === r.p.id}<span class="ball-dot" title="Has the ball"></span>{/if}{#if role === "def" && spaced.rim?.pid === r.p.id}<svg class="rim-shield" viewBox="0 0 16 16" aria-label="Rim protector"><title>Rim protector: the defender nearest the basket ({spaced.rim.dist.toFixed(1)} ft)</title><path d="M8 1 2.5 3v4.6c0 3.4 2.4 6 5.5 7.4 3.1-1.4 5.5-4 5.5-7.4V3z" /></svg>{/if}</td>
             {#each shown as c (c.key)}
               {@const cell = r.cells[c.key]}
               <td class:al={c.left} style:color={cell.tone}>
@@ -172,3 +187,11 @@
     {/each}
   </table>
 </div>
+
+{#if tip}
+  <div class="spacing-tip" style:left="{tip.x}px" style:top="{tip.y}px">
+    <b>Spacing</b>
+    <span>The average distance between every pair of a team's players on court (ten pairs with five a side), at this
+      moment. Higher means the team is more spread out; it falls as players crowd the ball or the paint.</span>
+  </div>
+{/if}

@@ -39,8 +39,13 @@
   let topH = $state(0), botH = $state(0);
   const need = $derived(topH + botH + (topH && botH ? 8 : 0) + 20);
   const span = $derived(box ? (box.h >= need ? { top: box.top, h: box.h } : { top: Math.max(4, box.top - (need - box.h) / 2), h: need }) : null);
+  // Room kept for the cards from the start of a play, before its shot card appears, so the court does not shrink
+  // mid-play: about the height of a full shot card, possession card and tracking card (px).
+  const RESERVE = { shot: 270, possession: 165, quality: 90 };
+  const reserve = $derived((viewer.ann.shot ? RESERVE.shot : 0) + (viewer.ann.possession ? RESERVE.possession : 0)
+    + (viewer.ann.quality ? RESERVE.quality : 0));
   $effect(() => {
-    const n = play && box && box.w >= 480 && (shotInfo || poss || quality) ? Math.round(need) : 0;
+    const n = play && box && box.w >= 480 && reserve ? Math.round(Math.max(need, reserve + 28)) : 0;
     if (n !== live.annNeed) live.annNeed = n;
   });
 </script>

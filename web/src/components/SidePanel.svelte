@@ -87,14 +87,25 @@
     </div>
     {#if viewer.showControl && play}
       <!-- Each team's share of the court: who would reach the ball first if it went to each spot. -->
-      <div class="control-read" title="Share of the court each team would reach first if the ball went there now">
-        {#if live.control != null}
-          {#each [["off", live.control], ["def", 1 - live.control]] as const as [role, share] (role)}
-            <span class="legend"><i style:background={play.colors[role].fill}></i>{role === "off" ? play.off : play.def}<b>{Math.round(share * 100)}%</b></span>
-          {/each}
+      {@const off = live.control ? (viewer.controlScope === "half" ? live.control.half : live.control.court) : null}
+      <div class="control-read">
+        {#if off != null}
+          <div class="control-shares" title={viewer.controlScope === "half"
+            ? "Share of the half the offense attacks that each team would reach first if the ball went there now"
+            : "Share of the whole court each team would reach first if the ball went there now"}>
+            {#each [["off", off], ["def", 1 - off]] as const as [role, share] (role)}
+              <i style:background={play.colors[role].fill}></i><span>{role === "off" ? play.off : play.def}</span><b>{Math.round(share * 100)}%</b>
+            {/each}
+          </div>
         {:else}
-          <span>Court control needs five players a side and the ball in view.</span>
+          <span class="control-note">Court control needs five players a side and the ball in view.</span>
         {/if}
+        <div class="seg control-scope" role="radiogroup" aria-label="Court control over">
+          <button type="button" role="radio" aria-checked={viewer.controlScope === "court"} class:on={viewer.controlScope === "court"}
+                  title="Shares of the whole court" onclick={() => (viewer.controlScope = "court")}>Full</button>
+          <button type="button" role="radio" aria-checked={viewer.controlScope === "half"} class:on={viewer.controlScope === "half"}
+                  title="Shares of the half the offense attacks (the one that matters in a half-court set)" onclick={() => (viewer.controlScope = "half")}>Half</button>
+        </div>
       </div>
     {/if}
     <h3 class="sub-head">Annotations</h3>

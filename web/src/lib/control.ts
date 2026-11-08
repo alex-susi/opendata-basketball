@@ -110,8 +110,9 @@ export function timeToBallControl(b: Bodies, g: Grid, bx: number, by: number): F
 
 export interface ControlReading {
   pc: Float64Array;
-  /** The offense's share of the whole court (the defense has the rest). */
+  /** The offense's share of the whole court, and of the half it attacks (the defense has the rest). */
   offShare: number;
+  offHalf: number;
 }
 
 let lastKey = "", last: ControlReading | null = null;
@@ -123,9 +124,12 @@ export function controlAt(play: Play, i: number): ControlReading | null {
   const b = bodiesAt(play, i), bx = play.ball.x[i], by = play.ball.y[i];
   if (b.nOff < 5 || b.x.length - b.nOff < 5 || Number.isNaN(bx) || Number.isNaN(by)) return (last = null);
   const g = courtGrid(), pc = timeToBallControl(b, g, bx, by);
-  let off = 0;
-  for (let c = 0; c < pc.length; c++) off += pc[c];
-  return (last = { pc, offShare: off / pc.length });
+  let off = 0, half = 0, cells = 0;
+  for (let c = 0; c < pc.length; c++) {
+    off += pc[c];
+    if (g.x[c] >= 0) { half += pc[c]; cells++; }
+  }
+  return (last = { pc, offShare: off / pc.length, offHalf: half / cells });
 }
 
 const MAX_ALPHA = 0.6;
