@@ -4,15 +4,16 @@
 suppressPackageStartupMessages(library(data.table))
 
 CACHE_VERSION <- 2L          # tracking cache (each position's predError since 2)
-INDEX_VERSION <- 10L         # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
+INDEX_VERSION <- 11L         # play index (viewing windows and re-homed action markings since 3; offensive rebounds since 4;
                              # play types in the order they happen and picks credited to the screener since 5;
                              # rebounds captioned "Def. Reb" / "Off. Reb" since 6; jerseys in labels since 7;
                              # and-ones as made shots since 8; windows cut at each possession's deciding event since 9;
-                             # no "(NA)" in a shot's label when SkillCorner gave no shot type since 10)
+                             # no "(NA)" in a shot's label when SkillCorner gave no shot type since 10;
+                             # "Off-ball Screen" with a capital S since 11)
 MIN_LIVE_FRAMES <- 25L
 MAX_GAMES_IN_MEMORY <- 3L
 
-PLAY_TYPES <- c(pick = "Pick", handoff = "Handoff", off_ball_screen = "Off-ball screen", drive = "Drive",
+PLAY_TYPES <- c(pick = "Pick", handoff = "Handoff", off_ball_screen = "Off-ball Screen", drive = "Drive",
                 isolation = "Isolation", post = "Post-up", closeout = "Closeout", transition = "Transition")
 
 # Roster tag for each playstyle archetype: the label shown beside a name and its colour slot (--arch-* in
@@ -266,7 +267,7 @@ action_labels <- function(type, recs, nm) {
   switch(type,
          pick = sprintf("Pick: %s screens for %s", who("screenerId"), who("ballhandlerId")),
          handoff = sprintf("Handoff: %s to %s", who("setterId"), who("receiverId")),
-         off_ball_screen = sprintf("Off-ball screen: %s for %s", who("screenerId"), who("cutterId")),
+         off_ball_screen = sprintf("Off-ball Screen: %s for %s", who("screenerId"), who("cutterId")),
          drive = sprintf("Drive: %s", who("ballhandlerId")),
          isolation = sprintf("Isolation: %s", who("ballhandlerId")),
          post = sprintf("Post-up: %s", who("ballhandlerId")),

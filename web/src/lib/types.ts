@@ -223,7 +223,7 @@ export interface AnnDrive {
   cat?: string;
 }
 
-/** An off-ball cut (cuts.ts): who, from when to when, and whether it went to the basket without a screen, or through
+/** An off-ball cut (web/scripts/cuts.R, lib/cuts.ts): who, from when to when, and whether it went to the basket without a screen, or through
  * an off-ball screen in toward it or out away from it; the coverage on the cutter for a screen. */
 export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "in" | "out"; cov?: string }
 

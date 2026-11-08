@@ -33,6 +33,7 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_a
 
 a <- load_shiny_app()
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "annotations.R"))
+source(file.path(if (length(script)) dirname(script) else "web/scripts", "cuts.R"))
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "sample_stats.R"))
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "playstyle.R"))
 out_dir <- file.path(a$root, "web", "public", "data")
@@ -144,14 +145,42 @@ for (stem in unique(plays$file)) {
 shown <- fromJSON(a$plays_json(a$app_data, plays), simplifyDataFrame = TRUE)
 stopifnot(identical(shown$id, plays$id))
 actors <- split(a$app_data$actors[, .(type, pid)], a$app_data$actors$poss_id)
+# Cuts (cuts.R; the site only, not the Shiny app): a play has the cuts that start inside its viewing window. They
+# join its actions for the Action filter, its chips in the play list (in the order they happen) and its actors.
+CUT_TYPES <- c(cut_basket = "Basket Cut", cut_in = "Off-Ball Screen Cut (In)", cut_out = "Off-Ball Screen Cut (Out)")
+CUT_CHIPS <- c(cut_basket = "Basket Cut", cut_in = "Screen Cut In", cut_out = "Screen Cut Out")
+first_at <- a$app_data$events[, .(frame = min(frame)), by = .(poss_id, type)]
+play_actions <- function(i) {
+  id <- plays$id[i]
+  types <- as.character(plays$types[[i]])
+  at <- first_at[poss_id == id][match(types, type), frame]
+  at[types == "transition"] <- -Inf
+  cuts <- game_ann[[as.character(plays$game_id[i])]]$cuts
+  cuts <- if (is.null(cuts)) cuts else cuts[f >= plays$view_start[i] & f <= plays$view_end[i]]
+  # Only this possession's offense: a cut near the window's edge can belong to the neighbouring possession.
+  if (!is.null(cuts) && nrow(cuts)) {
+    team <- a$app_data$roster[game_id == plays$game_id[i]][match(cuts$pid, pid), team_id]
+    cuts <- cuts[team %in% plays$off_team[i]]
+  }
+  if (!is.null(cuts) && nrow(cuts)) {
+    cut_first <- cuts[, .(f = min(f)), by = .(code = paste0("cut_", kind))]
+    types <- c(types, cut_first$code)
+    at <- c(at, cut_first$f)
+  }
+  at[is.na(at)] <- Inf
+  types <- types[order(at)]
+  list(types = types, labels = paste(c(a$PLAY_TYPES, CUT_CHIPS)[types], collapse = "|"),
+       actors = if (is.null(cuts) || !nrow(cuts)) list() else lapply(seq_len(nrow(cuts)), function(j) list(paste0("cut_", cuts$kind[j]), cuts$pid[j])))
+}
 light <- lapply(seq_len(nrow(plays)), function(i) {
   acted <- actors[[plays$id[i]]]
+  acts <- play_actions(i)
   list(id = plays$id[i], file = plays$file[i], gameId = plays$game_id[i], game = shown$game[i], q = shown$q[i],
        clock = shown$clock[i], off = shown$off[i], def = shown$def[i], secs = shown$secs[i], result = shown$result[i], and1 = isTRUE(plays$and1[i]),
-       who = shown$who[i], typeLabels = shown$types[i], types = I(as.character(plays$types[[i]])),
+       who = shown$who[i], typeLabels = acts$labels, types = I(acts$types),
        shotTypes = I(as.character(plays$shot_types[[i]])), offTeam = plays$off_team[i], defTeam = plays$def_team[i],
        oreb = plays$n_oreb[i], offIds = I(as.integer(plays$off_ids[[i]])), defIds = I(as.integer(plays$def_ids[[i]])),
-       actors = if (is.null(acted)) list() else lapply(seq_len(nrow(acted)), function(j) list(acted$type[j], acted$pid[j])))
+       actors = c(if (is.null(acted)) list() else lapply(seq_len(nrow(acted)), function(j) list(acted$type[j], acted$pid[j])), acts$actors))
 })
 save_json(light, "plays.json")
 save_figures()
@@ -163,7 +192,7 @@ players <- a$choices$player[nzchar(a$choices$player)]
 generated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
 save_json(list(generated = generated, plays = nrow(plays), files = length(unique(plays$file)),
                game = options_of(a$choices$game), team = options_of(a$choices$team), player = options_of(players),
-               period = options_of(a$choices$period), types = options_of(a$choices$types),
+               period = options_of(a$choices$period), types = c(options_of(a$choices$types), options_of(setNames(names(CUT_TYPES), CUT_TYPES))),
                result = options_of(a$choices$result), shotType = options_of(a$choices$shot_type),
                teamColors = lapply(a$TEAM_COLORS, function(pair) I(unname(pair)))),
           "meta.json")

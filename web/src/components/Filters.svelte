@@ -42,7 +42,7 @@
       </label>
     </div>
     <div class="pair">
-      <MultiSelect label="Play type" options={meta.types} placeholder="Any play type" bind:value={filters.types} />
+      <MultiSelect label="Action" options={meta.types} placeholder="Any action" bind:value={filters.types} />
       <label class="field"><span class="field-label">Match</span>
         <select bind:value={filters.typesMode}>
           <option value="any">Any selected</option>

@@ -36,6 +36,8 @@ interface Reference { export_generated: string; filters: FilterCase[]; payloads:
 const reference = json<Reference>("../../tests/parity_reference.json");
 const meta = json<Meta>("meta.json");
 const plays = json<PlayRow[]>("plays.json");
+const shinyPlays = plays.map((p) => ({ ...p, types: p.types.filter((t) => !t.startsWith("cut_")),
+                                       actors: p.actors.filter(([t]) => !String(t).startsWith("cut_")) }));
 
 const total = (v: ArrayLike<number>): number => {
   let sum = 0;
@@ -105,7 +107,8 @@ describe("filters match the Shiny server", () => {
       const f: FilterState = { game: c.inputs.game, period: c.inputs.period, result: c.inputs.result, shotType: c.inputs.shot_type,
                                types: c.inputs.types, typesMode: c.inputs.types_mode, team: c.inputs.team, teamSide: c.inputs.team_side,
                                player: c.inputs.player, playerRole: c.inputs.player_role, oreb: c.inputs.oreb };
-      expect(filterPlays(plays, f).map((p) => p.id)).toEqual(c.ids);
+      // Cuts are the site's own (web/scripts/cuts.R), so the Shiny app knows nothing of them: compare without them.
+      expect(filterPlays(shinyPlays, f).map((p) => p.id)).toEqual(c.ids);
     });
   }
 

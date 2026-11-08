@@ -146,7 +146,7 @@ export function layoutTimeline(play: Play, seq: number[], width: number, measure
     if (play.frames[seq[k]] - play.frames[seq[k - 1]] > 1) cuts.push(k / end);
   }
   for (const { k, event } of eventsInSeq(play, seq)) {
-    const w = Math.max(measure(event.short ?? ""), measure(event.who ?? "")) + 8;
+    const w = Math.max(measure(shortScreen(event.short ?? "")), measure(event.who ?? "")) + 8;
     groups.push([{ k, frac: k / end, event, lean: "flat", at: 0, width: w }]);
   }
   groups.sort((g, h) => g[0].k - h[0].k);
@@ -185,3 +185,6 @@ export function ballHandler(play: Play, frame: number): number | null {
   for (const t of play.touches) if (t.f0 <= frame && frame <= t.f1) pid = t.pid;
   return pid;
 }
+
+/** A caption shortened for the trace panel and the play list: "Screen" becomes "Scr". */
+export const shortScreen = (text: string): string => text.replace(/\bScreen\b/g, "Scr");

@@ -15,7 +15,7 @@
   import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
-  import { blend, cursorAt, FPS, layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
+  import { blend, cursorAt, FPS, layoutTimeline, shortScreen, type Tick, type Timeline } from "../lib/sequence";
   import { nearestAt, traceSamples, type TraceKind, type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
   import { viewer } from "../lib/viewer.svelte";
@@ -242,7 +242,7 @@
           </svg>
           {#each timeline.ticks as tick}
             <span class="tick-label above lean-{tick.lean} {tick.event.kind}" class:on={hoverTicks.includes(tick)}
-                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.short ?? ""}</span>
+                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{shortScreen(tick.event.short ?? "")}</span>
           {/each}
         </div>
         <!-- The player under the time axis. -->

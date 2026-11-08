@@ -4,6 +4,7 @@
   // being cut off, so the whole entry stays readable however narrow the column is.
   import { tick } from "svelte";
   import { quarter } from "../lib/geometry";
+  import { shortScreen } from "../lib/sequence";
   import type { PlayRow } from "../lib/types";
   import TeamPill from "./TeamPill.svelte";
 
@@ -46,7 +47,7 @@
         {#if row.typeLabels || row.oreb > 0}
           <span class="pi-tags">
             {#if row.oreb > 0}<i class="oreb" title="Offensive rebounds collected by a player in this possession">{oreb(row)}</i>{/if}
-            {#if row.typeLabels}{#each row.typeLabels.split("|") as type}<i>{type}</i>{/each}{/if}
+            {#if row.typeLabels}{#each row.typeLabels.split("|") as type}<i>{shortScreen(type)}</i>{/each}{/if}
           </span>
         {/if}
       </button>

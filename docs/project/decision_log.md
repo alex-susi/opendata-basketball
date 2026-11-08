@@ -1958,3 +1958,17 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   spread 0.45 s, claim rate 50 per s (`FITTED` in control.ts); the archived constants stay for the no-limits path
   so the R parity test still holds. Caveats: only 66 interceptions; the players' limits use all ten games'
   tracking, including the held-out game's (movement, not outcomes). Outputs in outputs/court_control/.
+
+## 2026-11-08 — Cuts (site): detection, Action filter, labels
+
+- **Cuts** are detected at export (`web/scripts/cuts.R`; drawn by `web/src/lib/annotate.ts`, events from
+  `web/src/lib/cuts.ts`): basket cuts without a screen from the tracking (an attacker off the ball, frontcourt, live
+  play, ≥ 9 ft/s with ≥ 7 ft/s toward the hoop for ≥ 0.48 s, gaining ≥ 8 ft, from within 32 ft to within 14 ft),
+  and every off-ball screen's cutter's run through the screen ("in" if it ends closer to the basket, "out" if
+  further). 2,242 cuts in the ten games; 1,085 of 1,561 possessions have one. Only the possession's offense counts.
+- **Action filter** (was "Play type"): the play types plus Basket Cut and Off-Ball Screen Cut (In/Out). Cuts are the
+  site's own; the Shiny app's filter (renamed "Action" too) has no cut kinds, so the parity test compares without them.
+- **Labels:** "Off-ball Screen" with a capital S (`INDEX_VERSION` 11); shortened to "Scr" in the trace panel's
+  captions and the play list's chips, full in the filter and the caption under the court.
+- **xPoints** on the shot card: SkillCorner shot quality / 100 × the shot's value, and its percentile among the ten
+  games' 1,322 FGA with a shot quality (dunks average the 90th; mean xPoints 1.015 vs 1.034 actual points per FGA).

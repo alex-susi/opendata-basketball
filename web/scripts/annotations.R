@@ -121,6 +121,8 @@ game_annotations <- function(game_id) {
                    screen_rows(ev$off_ball_screens, "off_ball_screen", "screenerId", "cutterId", "cutterDefType",
                                "screenerDefType"))
 
+  cuts <- game_cuts(game_id, ev, screens)
+
   closeouts <- ann_table(ev$closeouts, function(c) {
     l0 <- ann_loc(c, "startLoc")
     l1 <- ann_loc(c, "endLoc")
@@ -171,7 +173,7 @@ game_annotations <- function(game_id) {
   })
 
   list(shots = shots, passes = passes, dribbles = dribbles, drives = drives, screens = screens, closeouts = closeouts,
-       solos = solos, fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
+       solos = solos, cuts = cuts, fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
 }
 
 #' The annotations inside one play's viewing window, as lists of records ready for JSON.
@@ -190,7 +192,7 @@ play_annotations <- function(g, lo, hi) {
   ch <- if (is.null(g$chances)) NULL else g$chances[, .(id, poss, f = c0, f1 = c1, start, transition, q, pts, mins)]
   list(shots = rows(g$shots), passes = rows(g$passes, "f", "f1"), dribbles = rows(g$dribbles),
        drives = rows(g$drives, "f", "f1"), screens = rows(g$screens), closeouts = rows(g$closeouts, "f", "f1"),
-       solos = rows(g$solos),
+       solos = rows(g$solos), cuts = rows(g$cuts, "f", "f1"),
        fouls = rows(g$fouls), rebounds = rows(g$rebounds), turnovers = rows(g$turnovers),
        matchups = rows(g$matchups, "f", "f1"), chances = rows(ch, "f", "f1"))
 }
