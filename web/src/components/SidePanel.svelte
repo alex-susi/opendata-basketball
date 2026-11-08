@@ -5,10 +5,9 @@
   // probability on hover. Clicking a row makes the trace panel under the court follow that player's distance to his
   // nearest opponent (clicking it again lets him go).
   //
-  // Hovering a row opens his player card (PlayerCard.svelte): season and tracked-game figures in four views. The
-  // card stays open while the pointer is on it; clicking the row pins it (and follows him in the trace panel) until
-  // the row is clicked again or the card's × is pressed. Hovering another row meanwhile shows that player's card,
-  // and the pinned one comes back when the pointer leaves.
+  // Hovering a row opens his player card (PlayerCard.svelte) beside the column; it stays open while the pointer is
+  // on it. Clicking the row pins the card under his team's roster (and follows him in the trace panel) until the row
+  // is clicked again or the card's × is pressed. Other rows still open their floating cards meanwhile.
   import PlayerCard from "./PlayerCard.svelte";
   import { logoUrl } from "../lib/logos.svelte";
   import type { Play, PlayerTrack, Role } from "../lib/types";
@@ -29,12 +28,10 @@
     { key: "quality", label: "Data Quality", title: "Extrapolated players drawn faint, tracking's expected error round each player, the chance's quality index" },
   ];
 
-  // The player card beside a roster row (fixed, so the scrolling column does not clip it): the hovered row's, else
-  // the pinned one.
+  // The floating card beside a hovered row (fixed, so the scrolling column does not clip it), and the pinned player.
   type At = { p: PlayerTrack; top: number; right: number };
   let hovered = $state<At | null>(null);
-  let pinned = $state<At | null>(null);
-  const card = $derived(hovered ?? pinned);
+  let pinned = $state<PlayerTrack | null>(null);
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
   const at = (ev: MouseEvent, p: PlayerTrack): At => {
     const box = (ev.currentTarget as HTMLElement).getBoundingClientRect();
@@ -43,7 +40,7 @@
   function enter(ev: MouseEvent, p: PlayerTrack): void {
     clearTimeout(hideTimer);
     viewer.hoverPid = p.id;
-    hovered = pinned?.p.id === p.id ? null : at(ev, p);
+    hovered = pinned?.id === p.id ? null : at(ev, p);
   }
   // A short grace before the card goes, so the pointer can cross the gap onto it.
   function leave(): void {
@@ -53,9 +50,9 @@
   }
   const keep = () => clearTimeout(hideTimer);
 
-  function follow(ev: MouseEvent, p: PlayerTrack): void {
-    const on = pinned?.p.id === p.id;
-    pinned = on ? null : at(ev, p);
+  function follow(p: PlayerTrack): void {
+    const on = pinned?.id === p.id;
+    pinned = on ? null : p;
     hovered = null;
     viewer.focusPid = on ? null : p.id;
     viewer.trace = "nearest";
@@ -152,9 +149,9 @@
         {#each play?.players.filter((p) => p.role === side.role) ?? [] as p (p.id)}
           <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
           <li class:bench={!live.onCourt.includes(p.id)} class:has-ball={live.handler === p.id} class:following={following(p.id)}
-              class:pinned={pinned?.p.id === p.id}
+              class:pinned={pinned?.id === p.id}
               title="Click to pin his card and follow his distance to the nearest opponent"
-              onmouseenter={(ev) => enter(ev, p)} onmouseleave={leave} onclick={(ev) => follow(ev, p)}>
+              onmouseenter={(ev) => enter(ev, p)} onmouseleave={leave} onclick={() => follow(p)}>
             <span class="num">{p.jersey}</span><span class="name" title={p.name}>{p.name}</span><span class="ball-mark"></span>
             {#if p.arch}
               <span class="arch" style:--arch-color={`var(--arch-${p.arch.slot})`}
@@ -164,11 +161,12 @@
         {/each}
       </ul>
     </div>
+    {#if play && pinned?.role === side.role}
+      <PlayerCard p={pinned} kit={play.colors[side.role]} inline onclose={() => { pinned = null; viewer.focusPid = null; }} />
+    {/if}
   {/each}
 </aside>
 
-{#if card && play}
-  <PlayerCard p={card.p} kit={play.colors[card.p.role]} top={card.top} right={card.right}
-              pinned={card === pinned} onenter={keep} onleave={leave}
-              onclose={() => { pinned = null; hovered = null; viewer.focusPid = null; }} />
+{#if hovered && play}
+  <PlayerCard p={hovered.p} kit={play.colors[hovered.p.role]} top={hovered.top} right={hovered.right} onenter={keep} onleave={leave} />
 {/if}

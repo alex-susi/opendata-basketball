@@ -10,7 +10,7 @@
 {#each sections as sec, i (i)}
   {@const notes = sec.rows.some((r) => r.note)}
   {#if sec.title}
-    <span class="stat-title">{sec.title}{#if sec.note}<span class="stat-info" title={sec.note}>i</span>{/if}</span>
+    <span class="stat-title">{sec.title}{#if sec.note}<span class="stat-info" title={sec.note.join("\n")}>i</span>{/if}</span>
   {/if}
   <div class="stat-grid" style:grid-template-columns="minmax(max-content, 1fr) {sec.cols.map((c) => (c.count ? 'auto auto' : 'auto')).join(' ')} {notes ? 'auto' : ''}">
     <span></span>
@@ -27,5 +27,5 @@
       {#if notes}<span class="stat-note">{r.note ?? ""}</span>{/if}
     {/each}
   </div>
-  {#if sec.note && !sec.title}<p class="stat-foot">{sec.note}</p>{/if}
+  {#if sec.note && !sec.title}<ul class="stat-foot">{#each sec.note as n (n)}<li>{n}</li>{/each}</ul>{/if}
 {/each}

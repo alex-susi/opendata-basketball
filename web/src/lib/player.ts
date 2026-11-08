@@ -15,7 +15,8 @@ export type Cell = { v: string; n?: number; tone?: string } | null;
 export interface StatRow { k: string; cells: Cell[]; note?: string; title?: string }
 /** A column: its heading and, when its cells carry sample sizes, the heading of the count column beside it. */
 export interface Col { label: string; count?: string }
-export interface StatSection { title?: string; cols: Col[]; rows: StatRow[]; note?: string }
+/** note: short bullet points (a footnote under an untitled section, the (i) tooltip of a titled one). */
+export interface StatSection { title?: string; cols: Col[]; rows: StatRow[]; note?: string[] }
 
 export type CardView = "basic" | "advanced" | "tracking" | "actions" | "playstyle";
 export const CARD_VIEWS: { key: CardView; label: string }[] = [
@@ -65,7 +66,7 @@ function basic(s: SeasonFigures | null, t: SampleFigures | null): StatSection[] 
   ];
   return [{
     cols: [SEASON, TRACKED], rows: kept(rows),
-    note: "The season aggregates have no minutes, rebounds, steals, blocks, fouls or full assist and turnover counts: they cover only the player's own shots, drives and picks.",
+    note: ["No season minutes, rebounds, steals, blocks or fouls", "Season assists and turnovers only exist within drives and picks"],
   }];
 }
 
@@ -91,7 +92,7 @@ const sqCell = (z: ZoneVec | undefined): Cell => (z && z[3] ? { v: (z[4] / z[3])
 const efgCell = (z: ZoneVec | undefined): Cell => (z && z[0] ? { v: pct(z[1] + 0.5 * z[2], z[0])! } : null);
 
 /** Shot quality by zone for one set of shots (his own, or those he guarded), with eFG and the league's quality. */
-function qualitySection(title: string, own: Record<string, ZoneVec> | undefined, league: Record<string, ZoneVec> | undefined, note: string): StatSection {
+function qualitySection(title: string, own: Record<string, ZoneVec> | undefined, league: Record<string, ZoneVec> | undefined, note: string[]): StatSection {
   return {
     title, note,
     cols: [{ label: "Quality", count: "FGA" }, { label: "eFG" }, { label: "League" }],
@@ -132,10 +133,11 @@ function advanced(s: SeasonFigures | null, t: SampleFigures | null, league: Samp
     ]),
   });
   if (t) {
+    const zones = "Rim: restricted area · Mid-Range: other twos";
     out.push(qualitySection("SkillCorner Shot Quality, His Shots", t.zone, league?.zone,
-      "Mean SkillCorner shot quality (0-100) of his FGA in the tracked games, his eFG on them, and the mean quality of every FGA in those games (League). Rim is the restricted area, Mid-Range every other two."));
+      ["Mean quality (0-100) of his FGA, tracked games", "League: every FGA in those games", zones]));
     out.push(qualitySection("SkillCorner Shot Quality, Shots He Guarded", t.guardZone, league?.zone,
-      "Opponents' FGA on which he was the closest defender at release, in the tracked games: their mean SkillCorner shot quality, the opponents' eFG on them, and the league's mean quality."));
+      ["Opponents' FGA with him the closest defender at release", "eFG: opponents' on those shots", zones]));
   }
   return out.filter((sec) => sec.rows.length);
 }
@@ -148,7 +150,7 @@ function tracking(t: SampleFigures | null): StatSection[] {
   const avg = (pair: [number, number]) => fixed(ratio(pair[1], pair[0]));
   const out: StatSection[] = [{
     title: "Movement", cols: [{ label: "All" }, { label: "Offense" }, { label: "Defense" }],
-    note: "Live play only (game clock running); positions smoothed over 0.2 s.",
+    note: ["Live play only (clock running)", "Positions smoothed over 0.2 s"],
     rows: kept([
       { k: "Live Minutes / Game", cells: [cell(perGame(k.secs / 60, t.g)), cell(perGame(k.offSecs / 60, t.g)), cell(perGame(k.defSecs / 60, t.g))] },
       { k: "Avg Speed (ft/s)", cells: [cell(speed(k.dist, k.secs)), cell(speed(k.offDist, k.offSecs)), cell(speed(k.defDist, k.defSecs))] },
@@ -194,8 +196,8 @@ function actions(s: SeasonFigures | null, t: SampleFigures | null): StatSection[
   })));
   if (s?.drives?.[0]) rows.push({ k: "Drive Success", title: "Drives ending in a make, an assist or a foul drawn", cells: [cell(pct(s.drives[1], s.drives[0])), null] });
   return [{
-    cols: [{ label: "Season PPP", count: "Chances" }, { label: "Tracked PPP", count: "Chances" }], rows,
-    note: "Points per chance (each pick, drive or other action is one chance): his own made shot plus the shot he assisted; free throws are left out, as in the season aggregates. Picks count direct picks only.",
+    cols: [{ label: "Season", count: "Chances" }, { label: "Tracked", count: "Chances" }], rows,
+    note: ["Points per chance (PPP): own makes + assisted makes, no free throws", "Chance: one pick, drive or other action", "Picks: direct only, as in the season data"],
   }];
 }
 

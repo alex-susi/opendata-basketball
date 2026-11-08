@@ -1,16 +1,17 @@
 <script lang="ts">
-  // The card beside a roster row: one player's figures in five views (Basic, Advanced, Tracking, Actions,
-  // Playstyle), from the season aggregates, the ten tracked games and the archetype model (lib/player.ts). Tinted
-  // with his team's primary colour; the chosen view's button in its secondary colour. It stays open while the
-  // pointer is on it, and while pinned (clicking the row); the × closes a pinned card.
+  // One player's figures in five views (Basic, Advanced, Tracking, Actions, Playstyle), from the season aggregates,
+  // the ten tracked games and the archetype model (lib/player.ts). Tinted with his team's primary colour; the chosen
+  // view's button in its secondary colour. Two placements:
+  //   floating  beside a hovered roster row (fixed to the window), open while the pointer is on the row or the card
+  //   inline    pinned (the row was clicked): under his team's roster in the right column, until closed
   import StatTable from "./StatTable.svelte";
   import { CARD_VIEWS, playerSections, playstyleOf } from "../lib/player";
   import type { PlayerTrack, TeamColors } from "../lib/types";
   import { season, viewer } from "../lib/viewer.svelte";
 
-  let { p, kit, top, right, pinned, onenter, onleave, onclose }: {
-    p: PlayerTrack; kit: TeamColors; top: number; right: number; pinned: boolean;
-    onenter: () => void; onleave: () => void; onclose: () => void;
+  let { p, kit, top = 0, right = 0, inline = false, onenter, onleave, onclose }: {
+    p: PlayerTrack; kit: TeamColors; top?: number; right?: number; inline?: boolean;
+    onenter?: () => void; onleave?: () => void; onclose?: () => void;
   } = $props();
 
   let h = $state(0);
@@ -28,17 +29,40 @@
     return L > 0.4 ? "#0F1522" : "#FFFFFF";
   }
   const pctOf = (v: number) => `${Math.round(v * 100)}%`;
-  const FULL = 2.5;   // a component score this far from 0 fills its half of the bar
-  const barOf = (v: number) => Math.min(Math.abs(v) / FULL, 1) * 50;
+  const swatch = (slot?: string) => (slot ? `var(--arch-${slot})` : "var(--muted)");
+
+  // The archetype pie: one slice per archetype with a probability of at least 1%, its percentage inside when the
+  // slice is big enough to hold it.
+  const R = 40, C = 44;
+  function slices(arch: { name: string; slot?: string; p: number }[]) {
+    const shown = arch.filter((a) => a.p >= 0.01);
+    const total = shown.reduce((t, a) => t + a.p, 0) || 1;
+    let at = -Math.PI / 2;
+    return shown.map((a) => {
+      const sweep = (a.p / total) * 2 * Math.PI, mid = at + sweep / 2;
+      const x0 = C + R * Math.cos(at), y0 = C + R * Math.sin(at);
+      at += sweep;
+      const x1 = C + R * Math.cos(at), y1 = C + R * Math.sin(at);
+      const d = sweep >= 2 * Math.PI - 1e-6 ? null : `M${C},${C} L${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z`;
+      const r = sweep > 5 ? 0 : R * 0.62;
+      return { ...a, d, lx: C + r * Math.cos(mid), ly: C + r * Math.sin(mid), label: a.p >= 0.09 };
+    });
+  }
+
+  // Component bars: the fill runs from the centre toward the score's end, never narrower than its number.
+  const FULL = 2.5;   // a score this far from 0 fills its half
+  const MIN_FILL = 30;   // % of the axis: room for "+1.58"
+  const fillOf = (v: number) => Math.max(MIN_FILL / 2, Math.min(Math.abs(v) / FULL, 1) * 50);
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="season-card player-card" class:pinned style:top="{y}px" style:right="{right}px" bind:clientHeight={h}
+<div class="player-card" class:season-card={!inline} class:inline style:top={inline ? null : `${y}px`}
+     style:right={inline ? null : `${right}px`} bind:clientHeight={h}
      style:--team-fill={kit.fill} style:--team-edge={kit.edge} style:--team-edge-ink={inkOn(kit.edge)}
      onmouseenter={onenter} onmouseleave={onleave}>
   <div class="pc-head">
     <b>#{p.jersey} {p.name}</b>
-    {#if pinned}<button type="button" class="pc-close" aria-label="Close the card" title="Close (or click his row again)" onclick={onclose}>×</button>{/if}
+    {#if inline}<button type="button" class="pc-close" aria-label="Close the card" title="Close (or click his row again)" onclick={onclose}>×</button>{/if}
   </div>
   <div class="pc-views" role="radiogroup" aria-label="Figures shown">
     {#each CARD_VIEWS as v (v.key)}
@@ -52,46 +76,53 @@
         <div class="ps-side">
           <span class="stat-title">{side.title}</span>
           <div class="ps-arch">
-            {#each side.archetypes.filter((a, i) => i < 4 && a.p >= 0.01) as a (a.name)}
-              <span class="ps-name" class:top={a.name === side.top}>
-                <i style:background={a.slot ? `var(--arch-${a.slot})` : "var(--muted)"}></i>{a.name}
-              </span>
-              <span class="ps-bar"><span style:width="{a.p * 100}%" style:background={a.slot ? `var(--arch-${a.slot})` : "var(--muted)"}></span></span>
-              <span class="ps-pct">{pctOf(a.p)}</span>
-            {/each}
+            <svg class="ps-pie" viewBox="0 0 {2 * C} {2 * C}" role="img" aria-label="{side.title} archetype probabilities">
+              {#each slices(side.archetypes) as sl (sl.name)}
+                {#if sl.d}<path d={sl.d} fill={swatch(sl.slot)} />{:else}<circle cx={C} cy={C} r={R} fill={swatch(sl.slot)} />{/if}
+              {/each}
+              {#each slices(side.archetypes).filter((sl) => sl.label) as sl (sl.name)}
+                <text x={sl.lx} y={sl.ly} text-anchor="middle" dominant-baseline="central">{pctOf(sl.p)}</text>
+              {/each}
+            </svg>
+            <ul class="ps-key">
+              {#each side.archetypes.filter((a) => a.p >= 0.01) as a (a.name)}
+                <li class:top={a.name === side.top}><i style:background={swatch(a.slot)}></i><span>{a.name}</span><b>{pctOf(a.p)}</b></li>
+              {/each}
+            </ul>
           </div>
           <div class="ps-comps">
             {#each side.components as c (c.j)}
               <span class="ps-end minus" title={c.context}>{c.minus}</span>
-              <span class="ps-axis" title={`Component ${c.j} (${Math.round(c.share * 100)}% of variance): ${c.context}`}>
+              <span class="ps-axis" title={`Component ${c.j}, ${Math.round(c.share * 100)}% of variance: ${c.context}`}>
                 {#if c.score != null}
-                  <span class="ps-fill" class:neg={c.score < 0} style:width="{barOf(c.score)}%" style:left="{c.score < 0 ? 50 - barOf(c.score) : 50}%"></span>
+                  <span class="ps-fill" style:width="{fillOf(c.score)}%" style:left="{c.score < 0 ? 50 - fillOf(c.score) : 50}%">
+                    {c.score > 0 ? "+" : ""}{c.score.toFixed(2)}
+                  </span>
+                {:else}
+                  <span class="ps-none">–</span>
                 {/if}
               </span>
               <span class="ps-end plus" title={c.context}>{c.plus}</span>
-              <span class="ps-score">{c.score == null ? "–" : `${c.score > 0 ? "+" : ""}${c.score.toFixed(2)}`}</span>
             {/each}
           </div>
-          {#if !side.defines}
-            <p class="pc-foot">Not one of the players the model was fitted on (too few tracked chances or season shots): his archetype comes from the data he has.</p>
-          {/if}
+          {#if !side.defines}<ul class="pc-foot"><li>Outside the model's fit set (small sample)</li></ul>{/if}
         </div>
       {/each}
-      <p class="pc-foot">Archetype probabilities from the archetype model; component scores in standard deviations from the average fitted player, as on the Archetypes tab. Hover a component for what it measures.</p>
     {:else}
-      <span class="pc-empty">{season.style ? "This player is not in the archetype model." : "Loading…"}</span>
+      <span class="pc-empty">{season.style ? "Not in the archetype model" : "Loading…"}</span>
     {/if}
   {:else if !season.data && !season.sample}
     <span class="pc-empty">Loading…</span>
   {:else if sections.length}
     <StatTable {sections} />
   {:else}
-    <span class="pc-empty">No figures for this view.</span>
+    <span class="pc-empty">No figures for this view</span>
   {/if}
   {#if viewer.cardView !== "playstyle"}
-    <p class="pc-foot">
-      <b>Season</b>: the aggregates over 293 games, offense only (shots, drives, picks).
-      <b>Tracked</b>: the {games} games in this viewer, with this team. Hover a row's name for its definition.
-    </p>
+    <ul class="pc-foot">
+      <li><b>Season</b>: aggregates, 293 games, offense only</li>
+      <li><b>Tracked</b>: the {games} viewer games, this team</li>
+      <li>Hover a label for its definition</li>
+    </ul>
   {/if}
 </div>
