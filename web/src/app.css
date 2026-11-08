@@ -285,7 +285,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .stage-row .stage { min-width: 0; }
 
 /* ---- the trace panel, between the court and the timeline ---- */
-.trace { flex: none; padding: 8px 12px 4px; }
+/* Shrinks (and scrolls) when the court window needs more height for its cards. */
+.trace { flex: 0 1 auto; min-height: 110px; overflow-y: auto; padding: 8px 12px 4px; }
 .trace-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 4px; font-size: 12.5px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
 .seg button { padding: 3px 10px; border: 0; background: none; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -388,8 +389,12 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .toggle-grid.by-column { grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
 .toggle-grid.by-column.four { grid-template-rows: repeat(4, auto); }
 .toggle-grid.by-column.five { grid-template-rows: repeat(5, auto); }
-.control-read { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 8px 0 0; color: var(--muted); font-size: 11.5px; }
-.control-read .legend { display: inline-flex; align-items: center; gap: 5px; }
+.control-read {
+  display: grid; gap: 3px; margin: 8px 0 0; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px;
+  color: var(--muted); font-size: 11.5px;
+}
+.control-read .legend { display: flex; align-items: center; gap: 6px; }
+.control-read .legend b { margin-left: auto; font-variant-numeric: tabular-nums; }
 .control-read .legend i { width: 10px; height: 10px; border-radius: 2px; }
 .control-read b { color: var(--ink); }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
@@ -566,8 +571,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   position: absolute; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 6px;
   padding: 10px; box-sizing: border-box; pointer-events: none;
 }
-.ann-cards.right { align-items: flex-end; }
-.ann-cards.left { align-items: flex-start; }
+.ann-cards.on-right { align-items: flex-end; }
+.ann-cards.on-left { align-items: flex-start; }
 .ann-stack { display: flex; flex-direction: column; gap: 6px; align-items: inherit; }
 .ann-card { width: max-content; min-width: 190px; }
 .ann-card, .season-card {
@@ -578,6 +583,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .card-line { display: flex; justify-content: space-between; gap: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .card-line > span:first-child { flex: none; color: var(--muted); }
 .card-line > span:last-child { min-width: 0; text-align: right; }
+/* A line allowed to wrap (a long value): the card keeps the width of its other lines. */
+.card-line.wrap { white-space: normal; }
+.card-line.wrap > span:last-child { flex: 1 1 0; }
 .trace-card .card-line { font-size: 11.5px; }
 .season-card { position: fixed; z-index: 20; width: 270px; pointer-events: none; background: var(--raised); }
 .season-sub { color: var(--muted); font-size: 11px; margin-bottom: 2px; }
@@ -586,11 +594,12 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* The active tab's controls and readout, right-aligned on the tabs' line. */
 .trace-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 12px; margin-left: auto; }
 .track-scroll { overflow-x: auto; }
-.track-table th.left, .track-table td.left { text-align: left; }
+.track-table th.al, .track-table td.al { text-align: left; }
 .track-table { min-width: 100%; margin: 2px 0 6px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
-/* Headers wrap between words; each unit is joined to the word before it (a no-break space), so it stays on its line. */
 .track-table th { padding: 3px 8px; color: var(--muted); font-size: 11px; font-weight: 600; line-height: 1.2; text-align: right; vertical-align: bottom; border-bottom: 1px solid var(--line); }
 .track-table th.name { max-width: none; white-space: nowrap; }
+/* A header wraps between words, but its last word and unit stay together: "Toward / Basket (ft/s)". */
+.track-table th .keep { white-space: nowrap; }
 .track-table td { padding: 0 8px; line-height: 18px; text-align: right; white-space: nowrap; }
 .track-table .name { position: sticky; left: 0; z-index: 1; background: var(--panel); text-align: left; }
 .track-table tr.player:hover td.name { background: var(--raised); }

@@ -27,7 +27,6 @@ export interface AnnSections {
   tracking: boolean;
   possession: boolean;
   quality: boolean;
-  season: boolean;
 }
 
 /** A player's drawn position (blended between frames), in feet. */

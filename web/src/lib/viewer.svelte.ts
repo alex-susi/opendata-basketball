@@ -21,7 +21,7 @@ export const viewer = $state({
   /** Court control under the players (time-to-ball version, control.ts). */
   showControl: false,
   /** Annotation sections (the Display panel's Annotations toggles; annotate.ts, Annotations.svelte). */
-  ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false, season: false },
+  ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false },
   /** The trace panel under the court. */
   showTrace: true,
   /** What it shows: the ball's height, one player's distance to the closest opponent, or the players on court. */
@@ -55,8 +55,10 @@ export const live = $state({
   shotClock: "",
   /** Index into the play's frames of the frame last drawn, refreshed a few times a second while playing. */
   i0: 0,
-  /** With court control on: the offense's share of its attacking half at the frame drawn, or null. */
+  /** With court control on: the offense's share of the court at the frame drawn, or null. */
   control: null as number | null,
+  /** Height (px) the cards over the court need (Annotations.svelte); the court window is kept at least this tall. */
+  annNeed: 0,
   /** The court's box on the canvas (CSS px) and which half is the backcourt, for the cards over it. */
   box: null as { left: number; top: number; w: number; h: number; backLeft: boolean } | null,
 });

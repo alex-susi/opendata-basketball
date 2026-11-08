@@ -10,6 +10,8 @@ export interface Line {
   v: string;
   /** Optional colour of the value. */
   tone?: string;
+  /** The value may wrap onto more lines (the card keeps its other lines' width). */
+  wrap?: boolean;
 }
 
 /** Contest levels from open to blocked, and the colour each is drawn in (markers and card). */
@@ -37,8 +39,10 @@ const MINOR = new Set(["a", "and", "by", "for", "from", "in", "of", "on", "the",
 export const titleCase = (s: string): string =>
   s.split(" ").map((w, i) => (i && MINOR.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(" ");
 
-/** A court region in Title Case: "left wing three" → "Left Wing Three", "ra" → "Restricted Area". */
-export const regionName = (r: string): string => (r === "ra" ? "Restricted Area" : titleCase(r));
+/** A court region in Title Case: "left wing three" → "Left Wing Three", "ra" → "Restricted Area", "middle three" →
+ * "Above the Break Three". */
+export const regionName = (r: string): string =>
+  r === "ra" ? "Restricted Area" : r === "middle three" ? "Above the Break Three" : titleCase(r);
 
 export function playerOf(play: Play, pid: number | undefined): PlayerTrack | undefined {
   return pid == null ? undefined : play.players.find((p) => p.id === pid);
@@ -245,7 +249,7 @@ export function possessionCard(play: Play, f: number, gc: number): Card {
   const start = own[0]?.f ?? play.frames[0];
   const live = <T extends { f: number }>(rows: T[] | undefined) => (rows ?? []).filter((r) => r.f >= start && r.f <= f);
   const lines: Line[] = [];
-  if (play.startType) lines.push({ k: "Start", v: START_LABELS[play.startType] ?? play.startType });
+  if (play.startType) lines.push({ k: "Start", v: START_LABELS[play.startType] ?? play.startType, wrap: true });
   const now = own.filter((c) => c.f <= f);
   if (own.length) {
     const orb = live(ann?.rebounds).filter((r) => !r.def && !r.team).length;
@@ -264,13 +268,6 @@ export function possessionCard(play: Play, f: number, gc: number): Card {
   if (touches.length) {
     lines.push({ k: "Ball", v: touches.map((t) => `${nameOf(play, t.pid).split(" ")[0]} ${((Math.min(f, t.f1) - t.f0) / 25).toFixed(1)}s`).join(" → ") });
   }
-  const offScore = play.offTeam === play.homeTeam ? play.homeScore : play.awayScore;
-  const defScore = play.offTeam === play.homeTeam ? play.awayScore : play.homeScore;
-  const margin = offScore - defScore;
-  const state = margin ? `${play.off} ${margin > 0 ? "Up" : "Down"} ${Math.abs(margin)}` : "Tied";
-  const clutch = play.period >= 4 && gc <= 300 && Math.abs(margin) <= 5;
-  lines.push({ k: "Game", v: `${state} · ${play.period <= 4 ? `Q${play.period}` : `OT${play.period - 4}`} ${clock(gc)}${clutch ? " · Clutch" : ""}`,
-               tone: clutch ? "#F5B02E" : undefined });
   // Every free throw carries its foul, so the fouls' lists hold them all once (a shot's list repeats its foul's).
   const ft = live(ann?.fouls).flatMap((x) => x.ft);
   if (ft.length) lines.push({ k: "Free Throws", v: `${ft.filter(Boolean).length}/${ft.length}` });

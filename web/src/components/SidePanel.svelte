@@ -26,7 +26,6 @@
     { key: "tracking", label: "Tracking Readouts", title: "Openness of each offensive player (feet to the nearest defender), the followed player's speed, the ball's path and the shot's ball peak" },
     { key: "possession", label: "Possession Context", title: "How the possession began, chances, touches, passes and dribbles so far, who has had the ball, game state, free throws" },
     { key: "quality", label: "Data Quality", title: "Extrapolated players drawn faint, tracking's expected error round each player, the chance's quality index" },
-    { key: "season", label: "Season Context", title: "Season figures from the aggregates (293 games, offense only) on hover in the rosters, for the shot's zone and for picks" },
   ];
 
   // The season card beside a hovered roster row (fixed, so the scrolling column does not clip it).
@@ -87,18 +86,19 @@
       </label>
     </div>
     {#if viewer.showControl && play}
-      <p class="control-read">
+      <!-- Each team's share of the court: who would reach the ball first if it went to each spot. -->
+      <div class="control-read" title="Share of the court each team would reach first if the ball went there now">
         {#if live.control != null}
-          <span class="legend"><i style:background={play.colors.off.fill}></i>{play.off}</span>
-          <span class="legend"><i style:background={play.colors.def.fill}></i>{play.def}</span>
-          <span>Offense controls <b>{Math.round(live.control * 100)}%</b> of its half</span>
+          {#each [["off", live.control], ["def", 1 - live.control]] as const as [role, share] (role)}
+            <span class="legend"><i style:background={play.colors[role].fill}></i>{role === "off" ? play.off : play.def}<b>{Math.round(share * 100)}%</b></span>
+          {/each}
         {:else}
-          Court control needs five players a side and the ball in view.
+          <span>Court control needs five players a side and the ball in view.</span>
         {/if}
-      </p>
+      </div>
     {/if}
     <h3 class="sub-head">Annotations</h3>
-    <div class="toggle-grid by-column four">
+    <div class="toggle-grid by-column">
       {#each SECTIONS as sec}
         <label class="toggle" title={sec.title}><input type="checkbox" bind:checked={viewer.ann[sec.key]} />{sec.label}</label>
       {/each}
@@ -133,7 +133,7 @@
   {/each}
 </aside>
 
-{#if card && viewer.ann.season && play}
+{#if card && season.data && play}
   <div class="season-card" style:top="{card.top}px" style:right="{card.right}px">
     <b>{card.p.name}</b>
     <span class="season-sub">Season, {card.p.role === "off" ? play.off : play.def} · offense</span>

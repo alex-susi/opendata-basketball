@@ -49,7 +49,7 @@
     if (!ann || !play) return [];
     if ((ev.kind === "made" || ev.kind === "missed") && viewer.ann.shot) {
       const shot = ann.shots.find((x) => x.f === ev.f);
-      return shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: viewer.ann.season ? season.data : null }).lines : [];
+      return shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data }).lines : [];
     }
     if (ev.kind === "drive") {
       const drive = ann.drives.find((x) => x.f === ev.f);
@@ -64,7 +64,7 @@
     const out: Line[] = [];
     const cov = coverageText(screen);
     if (viewer.ann.defense && cov) out.push({ k: "Coverage", v: cov });
-    if (viewer.ann.season) out.push(...screenSeasonLines(play, season.data, screen));
+    out.push(...screenSeasonLines(play, season.data, screen));
     return out;
   }
   const hoverCards = $derived(hoverTicks.map((tick) => ({ tick, lines: linesFor(tick) })));

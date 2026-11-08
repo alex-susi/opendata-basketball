@@ -16,7 +16,7 @@
 
   const frame = $derived(play ? play.frames[Math.min(live.i0, play.frames.length - 1)] : 0);
   const shot = $derived(play && viewer.ann.shot ? lastShot(play, frame) : null);
-  const shotInfo = $derived(play && shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: viewer.ann.season ? season.data : null }) : null);
+  const shotInfo = $derived(play && shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data }) : null);
   const poss = $derived(play && play.ann && viewer.ann.possession ? possessionCard(play, frame, play.gc[live.i0] ?? 0) : null);
   const quality = $derived.by((): Card | null => {
     if (!play || !viewer.ann.quality) return null;
@@ -34,14 +34,23 @@
   });
 
   const box = $derived(live.box);
+  // The two stacks' natural heights. When they need more room than the court's box, the column is taller than the box
+  // (centred on it) and the court window grows to hold it (live.annNeed, read by App.svelte).
+  let topH = $state(0), botH = $state(0);
+  const need = $derived(topH + botH + (topH && botH ? 8 : 0) + 20);
+  const span = $derived(box ? (box.h >= need ? { top: box.top, h: box.h } : { top: Math.max(4, box.top - (need - box.h) / 2), h: need }) : null);
+  $effect(() => {
+    const n = play && box && box.w >= 480 && (shotInfo || poss || quality) ? Math.round(need) : 0;
+    if (n !== live.annNeed) live.annNeed = n;
+  });
 </script>
 
 {#if play && box && box.w >= 480 && (shotInfo || poss || quality)}
   <!-- Cards sit against the backcourt's sideline end; each is as wide as its longest line. -->
-  <div class="ann-cards {box.backLeft ? 'left' : 'right'}" style:left="{box.left}px" style:top="{box.top}px"
-       style:width="{box.w}px" style:height="{box.h}px">
-    <div class="ann-stack">{#if shotInfo}{@render card(shotInfo)}{/if}</div>
-    <div class="ann-stack">
+  <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{span?.top}px"
+       style:width="{box.w}px" style:height="{span?.h}px">
+    <div class="ann-stack" bind:clientHeight={topH}>{#if shotInfo}{@render card(shotInfo)}{/if}</div>
+    <div class="ann-stack" bind:clientHeight={botH}>
       {#if poss}{@render card(poss)}{/if}
       {#if quality}{@render card(quality)}{/if}
     </div>
@@ -52,7 +61,7 @@
   <div class="ann-card">
     <b style:color={c.tone}>{c.title}</b>
     {#each c.lines as line}
-      <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
+      <span class="card-line" class:wrap={line.wrap}><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
     {/each}
   </div>
 {/snippet}

@@ -146,10 +146,8 @@
     select(linked);
   }
 
-  // Season figures load the first time the Season Context annotations are switched on.
-  $effect(() => {
-    if (viewer.ann.season && !season.data) loadSeason().then((d) => { season.data = d; }).catch((err: Error) => { problem = err.message; });
-  });
+  // Season figures (roster hover cards, the shot card's zone line, pick hovers) load once, in the background.
+  loadSeason().then((d) => { season.data = d; }).catch(() => { /* the season lines are left out */ });
 
   Promise.all([loadMeta(), loadPlays()]).then(([m, all]) => {
     plays = all;
@@ -217,7 +215,8 @@
   </header>
 
   <section class="viewer">
-    <div class="stage-row">
+    <!-- At least tall enough for the cards over the court; the trace panel under it scrolls if that squeezes it. -->
+    <div class="stage-row" style:min-height={live.annNeed ? `${Math.max(260, live.annNeed + 12)}px` : null}>
       <Stage {play} {seq} {note} onend={playNext} />
     </div>
     {#if viewer.showTrace}

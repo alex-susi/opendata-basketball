@@ -46,7 +46,7 @@ export interface FrameInfo {
   box: { left: number; top: number; w: number; h: number; backLeft: boolean };
   /** Index of the tracking frame drawn (the earlier of the two being blended). */
   i0: number;
-  /** With court control on: the offense's share of its attacking half, or null when it cannot be computed. */
+  /** With court control on: the offense's share of the court, or null when it cannot be computed. */
   control: number | null;
 }
 
@@ -423,5 +423,5 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
            gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]),
            hits: all.map((d) => ({ id: d.p.id, x: px(L, d.x), y: py(L, d.y), r })),
            box: { left: L.left, top: L.top, w: L.cw, h: L.ch, backLeft: L.f === 1 }, i0: c.i0,
-           control: cc ? cc.offHalf : null };
+           control: cc ? cc.offShare : null };
 }

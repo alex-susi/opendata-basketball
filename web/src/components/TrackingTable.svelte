@@ -29,25 +29,25 @@
 
   let { play }: { play: Play } = $props();
 
-  interface Column { key: string; head: string; title: string; group: Exclude<TrackGroup, "all">; left?: boolean }
+  interface Column { key: string; head: string; unit?: string; title: string; group: Exclude<TrackGroup, "all">; left?: boolean }
   const COLUMNS: Column[] = [
-    { key: "speed", head: "Speed (ft/s)", title: "Smoothed speed now", group: "movement" },
-    { key: "accel", head: "Acceleration (ft/s²)", title: "Change in smoothed speed over 0.4 s; negative while slowing down", group: "movement" },
-    { key: "toward", head: "Toward Basket (ft/s)", title: "Speed toward the basket (negative: away from it)", group: "movement" },
-    { key: "across", head: "Sideways (ft/s)", title: "Speed across the line to the basket", group: "movement" },
-    { key: "top", head: "Top Speed (ft/s)", title: "Fastest smoothed speed so far in this play", group: "movement" },
-    { key: "covered", head: "Distance Covered (ft)", title: "Distance covered so far in this play", group: "movement" },
+    { key: "speed", head: "Speed", unit: "ft/s", title: "Smoothed speed now", group: "movement" },
+    { key: "accel", head: "Acceleration", unit: "ft/s²", title: "Change in smoothed speed over 0.4 s; negative while slowing down", group: "movement" },
+    { key: "toward", head: "Toward Basket", unit: "ft/s", title: "Speed toward the basket (negative: away from it)", group: "movement" },
+    { key: "across", head: "Sideways", unit: "ft/s", title: "Speed across the line to the basket", group: "movement" },
+    { key: "top", head: "Top Speed", unit: "ft/s", title: "Fastest smoothed speed so far in this play", group: "movement" },
+    { key: "covered", head: "Distance Covered", unit: "ft", title: "Distance covered so far in this play", group: "movement" },
     { key: "region", head: "Court Region", title: "Where he stands, in SkillCorner's regions", group: "position", left: true },
-    { key: "hoop", head: "To Basket (ft)", title: "Distance to the basket the offense attacks", group: "position" },
+    { key: "hoop", head: "To Basket", unit: "ft", title: "Distance to the basket the offense attacks", group: "position" },
     { key: "paint", head: "In Paint", title: "In the paint", group: "position" },
-    { key: "near", head: "Nearest Opp. (ft)", title: "Distance to the nearest player of the other team, and who he is", group: "position" },
-    { key: "sep", head: "Separation Change, 1 s (ft)", title: "How the gap to the nearest opponent changed over the last second (positive: more space)", group: "position" },
+    { key: "near", head: "Nearest Opp.", unit: "ft", title: "Distance to the nearest player of the other team, and who he is", group: "position" },
+    { key: "sep", head: "Separation Change, 1 s", unit: "ft", title: "How the gap to the nearest opponent changed over the last second (positive: more space)", group: "position" },
     { key: "contest", head: "Contest", title: "Offense only: a contest level from the nearest defender's distance (under 3.5 ft plus, 3.5-5.5 average, 5.5-6.5 light, else open), a stand-in for SkillCorner's shot contest levels", group: "position" },
-    { key: "match", head: "Matchup (ft)", title: "The defender assigned to him (offense) or the player he is assigned to (defense), and the gap between them", group: "position" },
+    { key: "match", head: "Matchup", unit: "ft", title: "The defender assigned to him (offense) or the player he is assigned to (defense), and the gap between them", group: "position" },
     { key: "min", head: "Minutes Played", title: "Minutes played entering this chance", group: "ball" },
     { key: "touches", head: "Touches", title: "Touches this possession so far", group: "ball" },
     { key: "dribbles", head: "Dribbles", title: "Dribbles this possession so far", group: "ball" },
-    { key: "ballTime", head: "Time on Ball (s)", title: "Seconds with the ball this possession so far", group: "ball" },
+    { key: "ballTime", head: "Time on Ball", unit: "s", title: "Seconds with the ball this possession so far", group: "ball" },
   ];
   const shown = $derived(viewer.trackCols === "all" ? COLUMNS : COLUMNS.filter((c) => c.group === viewer.trackCols));
 
@@ -138,7 +138,10 @@
     <thead>
       <tr>
         <th class="name">Player</th>
-        {#each shown as c (c.key)}<th class:left={c.left} title={c.title}>{c.head}</th>{/each}
+        {#each shown as c (c.key)}
+          {@const words = c.head.split(" ")}
+          <th class:al={c.left} title={c.title}>{words.slice(0, -1).join(" ")}{words.length > 1 ? " " : ""}<span class="keep">{words.at(-1)}{#if c.unit}&nbsp;({c.unit}){/if}</span></th>
+        {/each}
       </tr>
     </thead>
     {#each ["off", "def"] as const as role (role)}
@@ -158,7 +161,7 @@
             <td class="name"><span class="num" style:background={kit.fill} style:color={kit.ink}>{r.p.jersey}</span>{r.p.name}{#if live.handler === r.p.id}<span class="ball-dot" title="Has the ball"></span>{/if}</td>
             {#each shown as c (c.key)}
               {@const cell = r.cells[c.key]}
-              <td class:left={c.left} style:color={cell.tone}>
+              <td class:al={c.left} style:color={cell.tone}>
                 {#if cell.dot}<span class="paint-dot" style:background={cell.dot} title="In the paint"></span>{:else}{cell.v}{#if cell.tag}&nbsp;<span class="opp" style:color={cell.tagTone}>{cell.tag}</span>{/if}{/if}
               </td>
             {/each}
