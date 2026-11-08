@@ -222,7 +222,7 @@ play_annotations <- function(g, lo, hi) {
   list(shots = rows(g$shots), passes = rows(g$passes, "f", "f1"), dribbles = rows(g$dribbles),
        drives = rows(g$drives, "f", "f1"), screens = rows(g$screens), closeouts = rows(g$closeouts, "f", "f1"),
        solos = rows(g$solos), cuts = rows(g$cuts, "f", "f1"),
-       glass = rows(if (is.null(g$glass)) NULL else g$glass[, .(f, f1, pid, role, d0, d1, boxed, boxer, seen)], "f", "f1"),
+       glass = rows(if (is.null(g$glass)) NULL else g$glass[, .(f, f1, pid, role, d0, d1, boxed, boxer, bf, b1, seen)], "f", "f1"),
        fouls = rows(g$fouls), rebounds = rows(g$rebounds), turnovers = rows(g$turnovers),
        matchups = rows(g$matchups, "f", "f1"), chances = rows(ch, "f", "f1"))
 }

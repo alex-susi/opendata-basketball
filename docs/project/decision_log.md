@@ -2026,3 +2026,11 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   in the spot: the attacker never more than 1 ft closer to the hoop than him for the rest of the window. 1-34 now
   shows neither; 2-71 keeps Rousselle on Ubal. Crashes boxed out fell from 76% to 68% (873/1,293); boxed crashes
   rebound 9.5% (83/873) vs 11.0% open (46/420).
+- **Box-out start (same day, display only):** the tag showed from release. Which crashes are boxed out is unchanged
+  (held 3+ frames, never beaten: 873/1,293, 9.5% vs 11.0% as above); only when the tag appears moved. It starts
+  (`bf`) at the first frame the crasher stalled at the defender: in the spot within 3 ft of him, with his speed toward
+  the hoop (±3 frames) under 3 ft/s or under 70% of his fastest so far in the window (else the first frame within
+  3 ft, else the first frame in the spot), and runs to the end of the window (`b1`). 2-71: Speight on Steinbergs from
+  6 frames after the ball reached the rim, Rousselle on Ubal from 11 (Ubal kept drifting in at ~3.5 ft/s against a
+  5.8 ft/s peak, so an absolute 3 ft/s cut alone missed him). A first version wrongly also required the stall to
+  count a box-out (dropping it to 619/1,293); reverted.

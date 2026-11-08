@@ -238,6 +238,8 @@ export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "
 export interface AnnGlass {
   f: number; f1: number; pid: number; role: "crash" | "back" | "safety" | "hold" | "follow" | "shooter";
   d0: number; d1: number; boxed?: boolean; boxer?: number; seen?: number;
+  /** The box-out, from when the attacker stalled at the boxer to the end of the window (frames). */
+  bf?: number; b1?: number;
 }
 
 /** A post-up or an isolation: who, when and his defender. */
