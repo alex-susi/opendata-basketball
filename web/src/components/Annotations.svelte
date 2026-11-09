@@ -48,7 +48,7 @@
   <!-- Cards sit against the backcourt's sideline end; each is as wide as its longest line. -->
   <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
        style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
-    <div class="ann-stack top" bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
+    <div class="ann-stack top" class:low={shift > 0} bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
       {#if shotInfo}{@render card(shotInfo)}{/if}
     </div>
     <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">

@@ -608,6 +608,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* A shot card taller than the court scrolls inside it (the court keeps its size). */
 .ann-stack.top { top: var(--pad); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #3A4866 transparent; pointer-events: auto; }
 .ann-stack.bottom { bottom: var(--pad); }
+/* Side by side (the bottom stack moved toward center court): the shot card lines up with its bottom edge too. */
+.ann-stack.top.low { top: auto; bottom: var(--pad); }
 .ann-cards.on-right .ann-stack { align-items: flex-end; }
 .ann-cards.on-right .ann-stack.top { right: var(--pad); }
 .ann-cards.on-right .ann-stack.bottom { right: calc(var(--pad) + var(--shift, 0px)); }
