@@ -88,7 +88,7 @@ describe("xPoints", () => {
     expect(xPointsPercentile(xs[xs.length - 1], xs)).toBeGreaterThan(99);
     expect(xPointsPercentile(xs[0], xs)).toBeLessThan(1);
     const { play, shot } = loaded.flatMap((p) => p.ann!.shots.map((s) => ({ play: p, shot: s }))).find((x) => x.shot.sq != null)!;
-    const lines = shotCard(play, shot, { peak: false, season: null, xpts: xs }).lines;
+    const lines = shotCard(play, shot, { peak: false, season: null, xpts: xs }).lines.filter((l) => !l.head);
     expect(lines[1]).toEqual({ k: "SkillCorner xPoints", v: xPointsOf(shot)!.toFixed(2) });
     expect(lines[2].k).toBe("xPoints Percentile");
     expect(lines[2].v).toMatch(/^\d+(st|nd|rd|th)$/);

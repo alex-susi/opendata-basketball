@@ -2104,3 +2104,18 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
 - **Readability:** prose on the exploration tabs is bullets (`BUL`, multi-item `TAKE`/`CAVEAT`); every table header
   has a one-line description (`web/scripts/explore/columns.R`); larger text and spacing on the non-viewer tabs;
   Archetypes split "what sets it apart" into above- and below-average columns (green/red), also in the Shiny app.
+
+## 2026-11-09 (later) — Shot and possession cards, player card, wide tables (site)
+
+- **Shot card** grouped under subheaders (Shot Quality, Location, Defense, Creation, Result and Season, Rebounding
+  Roles). New: **Shooter Speed** at release (the shooter's smoothed tracked speed at shots.startFrame, as motion.ts
+  computes speed; over 80% of shots have one). Pass now names the passer (SkillCorner passerId) or "None", and
+  **Potential Assist** is its own Yes/No line (assisted, or SkillCorner's assistOpp). Rebounding roles are one line
+  each with the number of attackers.
+- **Possession card:** Dribbles and Ball now describe only the current ball handler (the latest touch to start: his
+  dribbles on this touch and his time on the ball), instead of every touch so far.
+- **Player card:** each rebounding role shows its own shot count, plus an "All Roles" row with the total; more space
+  between sections and a thin rule under each header. Labels "True Shooting" and "Effective FG" are now TS% and eFG%.
+- **Tables on the reading tabs** (`web/src/lib/fitwide.ts`): names never wrap; a table wider than the text column
+  grows into the page margins instead of scrolling; numeric headers may take two lines; grids holding a table stack.
+  At a 1500 px window no table scrolls.

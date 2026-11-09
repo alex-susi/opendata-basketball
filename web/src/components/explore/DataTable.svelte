@@ -2,6 +2,7 @@
   // A sortable table for the exploration tabs. Columns with a reference value tint each cell: blue above the
   // reference, red below, stronger the further away (full strength at `scale`); the tooltip gives the reference and
   // says when lower is the better side. The first `limit` rows show until "Show all" is pressed.
+  import { fitWide } from "../../lib/fitwide";
   import { format, type Col, type Row } from "./types";
 
   let { title = "", cols, rows, limit = 15, note = null }: { title?: string; cols: Col[]; rows: Row[]; limit?: number; note?: string | null } = $props();
@@ -52,7 +53,7 @@
 
 <div class="dt">
   {#if title}<h4>{title}</h4>{/if}
-  <div class="table-wrap">
+  <div class="table-wrap" use:fitWide>
     <table class="scores dt-table">
       <thead>
         {#if groups.some((g) => g.name)}
@@ -92,9 +93,10 @@
 <style>
   .dt { margin: 24px 0; min-width: 0; }
   .dt h4 { margin: 0 0 8px; }
-  .dt-table { min-width: 0; font-size: 14.5px; }
-  .dt-table th, .dt-table td { padding: 6px 9px; font-size: 14.5px; white-space: nowrap; }
-  .dt-table td:first-child { white-space: normal; min-width: 120px; }
+  .dt-table { width: max-content; min-width: 100%; font-size: 14.5px; }
+  .dt-table th, .dt-table td { padding: 6px 8px; font-size: 14.5px; white-space: nowrap; }
+  /* Numeric headers may take two lines, so long labels do not widen their columns. */
+  .dt-table thead tr:last-child th.count { white-space: normal; max-width: 92px; vertical-align: bottom; line-height: 1.25; }
   .sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-transform: inherit; cursor: pointer; text-align: inherit; }
   .sort:hover { color: var(--ink); }
   .arrow { margin-left: 3px; font-size: 10px; }

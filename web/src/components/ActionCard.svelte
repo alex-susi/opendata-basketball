@@ -69,7 +69,7 @@
     {#each cards as card, n (n)}
       <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{title(card.tick)}{#if card.tick.event.flag}<i class="event-flag">{card.tick.event.flag === "BLK" ? "Blocked" : "Steal"}</i>{/if}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
       {#each card.lines as line}
-        <span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>
+        {#if line.head}<span class="card-head">{line.k}</span>{:else}<span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>{/if}
       {/each}
       {#if card.table}<StatTable sections={[card.table]} />{/if}
     {/each}

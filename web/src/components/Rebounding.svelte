@@ -4,6 +4,7 @@
   // line and smoothing; every number comes from rebounding_eda.json, frozen from the archived rebounding pipeline
   // (zz_Archive/src/rebounding/run_audit.R, run_eda.R, run_export.R), so the text cannot drift from the tables.
   import { loadReboundEda } from "../lib/data";
+  import { fitWide } from "../lib/fitwide";
   import Columns from "./charts/Columns.svelte";
   import CourtMap from "./charts/CourtMap.svelte";
   import { gridOf, kde, peak } from "./charts/kde";
@@ -104,7 +105,7 @@
 </script>
 
 {#snippet table(cols: Col[], rows: Row[], wide = false)}
-  <div class="table-wrap">
+  <div class="table-wrap" use:fitWide>
     <table class="scores rb-table" class:narrow={!wide}>
       <thead><tr>{#each cols as c (c.key)}<th class:count={c.num} title={c.title}>{c.label}</th>{/each}</tr></thead>
       <tbody>
@@ -392,7 +393,7 @@
   .rb-more summary { cursor: pointer; color: var(--off); font-size: 15px; }
   .rb-more .table-wrap { margin-top: 10px; }
   .rb-table.narrow { min-width: 0; width: auto; }
-  .rb-table td { font-size: 15px; }
+  .rb-table td { font-size: 15px; white-space: nowrap; }
   code { font-size: 14px; }
   @media (max-width: 860px) {
     .rb-grid.two { grid-template-columns: minmax(0, 1fr); }

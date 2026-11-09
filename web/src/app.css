@@ -577,6 +577,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .scores th, .scores td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: bottom; }
 .scores th { font-size: 14px; font-weight: 600; color: var(--muted); }
 .scores td { font-size: 15px; }
+/* Names and labels never wrap onto a second line on the reading tabs. */
+.doc .scores td:first-child, .doc .scores .arch-name { white-space: nowrap; }
 .scores th .pc-title { text-align: center; }
 .scores th .ends { display: flex; justify-content: space-between; gap: 10px; margin-top: 2px; font-size: 12px; font-weight: 400; line-height: 1.25; }
 .scores th .ends span { flex: 1; }
@@ -620,6 +622,12 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* A line allowed to wrap (a long value): the card keeps the width of its other lines. */
 /* contain: inline-size keeps the line out of the card's width, so the card is as wide as its other lines and this one wraps. */
 .card-line.wrap { white-space: normal; contain: inline-size; }
+/* A subheader inside a card (shot details groups): space above, a small label, a thin rule under it. */
+.card-head {
+  margin: 7px 0 2px; padding-bottom: 1px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 10.5px;
+  font-weight: 700; letter-spacing: .04em; text-transform: uppercase; opacity: .85;
+}
+.ann-card > b + .card-head, .trace-card-head + .card-head { margin-top: 3px; }
 .card-line.wrap > span:last-child { flex: 1 1 0; }
 .trace-card .card-line { font-size: 11.5px; }
 .season-card { position: fixed; z-index: 20; width: 270px; pointer-events: none; background: var(--raised); }
@@ -670,6 +678,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .ps-none { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
 .pc-empty { color: var(--muted); font-size: 11.5px; }
 .pc-foot { margin: 6px 0 0; padding-left: 14px; color: var(--muted); font-size: 10.5px; line-height: 1.35; white-space: normal; }
+/* Sections of the player card: more air between them, and a thin rule under each section's header. */
+.player-card .stat-title { margin-top: 14px; margin-bottom: 3px; padding-bottom: 3px; border-bottom: 1px solid color-mix(in srgb, var(--team-edge, var(--line)) 35%, var(--line)); }
+.player-card .pc-views + .stat-grid, .player-card .pc-views + .stat-title, .player-card .pc-views + .ps-side .stat-title { margin-top: 4px; }
+.player-card .ps-side + .ps-side { margin-top: 12px; }
+.player-card .pc-foot { margin-top: 12px; }
 .side li.pinned { outline: 1px solid #F5B02E; outline-offset: -1px; }
 
 /* Aligned stat tables (StatTable.svelte): label, then value and (count) per column, then a note. */

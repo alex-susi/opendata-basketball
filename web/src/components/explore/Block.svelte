@@ -50,7 +50,8 @@
     {/each}
   </div>
 {:else if block.type === "grid"}
-  <div class="x-grid" style:--cols={block.cols}>
+  <!-- Tables need their full width, so a grid holding one stacks its blocks. -->
+  <div class="x-grid" style:--cols={block.blocks.some((b) => b.type === "table") ? 1 : block.cols}>
     {#each block.blocks as b, i (i)}<div class="x-cell"><Block block={b} /></div>{/each}
   </div>
 {:else if block.type === "details"}

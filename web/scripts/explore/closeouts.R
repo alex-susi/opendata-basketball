@@ -170,9 +170,9 @@ topic_closeouts <- function(BL) {
         col("d1", "End dist. (ft)", "num1", ref = mean(co$d1, na.rm = TRUE), scale = 1.5, low = TRUE),
         col("run", "Run (ft)", "num1"), col("peak", "Peak (ft/s)", "num1"), col("arrival", "Arrival (ft/s)", "num1"),
         col("reaction", "Reaction (s)", "num2"), col("shot", "Shot allowed", "pct", ref = br$shot, scale = 0.2, low = TRUE),
-        col("drive", "Drive allowed", "pct"), col("blowby", "Blow-by / drive", "pct", ref = mean(co[act == "drive"]$blowby, na.rm = TRUE), scale = 0.3, low = TRUE),
-        col("ppc", "Pts/chance after", "num2", ref = mean(co$pts), scale = 0.4, low = TRUE),
-        col("faced3", "Opp. 3P% (season)", "pct1"), col("shooters", "Shooters faced", "pct")),
+        col("drive", "Drive allowed", "pct"), col("blowby", "Blow-by/drive", "pct", ref = mean(co[act == "drive"]$blowby, na.rm = TRUE), scale = 0.3, low = TRUE),
+        col("ppc", "Pts/ch after", "num2", ref = mean(co$pts), scale = 0.4, low = TRUE),
+        col("faced3", "Opp. 3P%", "pct1"), col("shooters", "Shooters faced", "pct")),
         note = "Tints compare with all closeouts. For end distance, blow-bys and points, lower is the defense's better side. Counts are small."),
       TABLE("Players closed out on 5+ times", limit = 30, rows = offn, cols = list(
         col("name", "Player"), col("profile", "Profile"), col("n", "Closeouts", "int"), col("v3", "3PA/100", "num1"),

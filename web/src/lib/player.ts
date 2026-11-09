@@ -95,7 +95,7 @@ const efgCell = (z: ZoneVec | undefined): Cell => (z && z[0] ? { v: pct(z[1] + 0
 function qualitySection(title: string, own: Record<string, ZoneVec> | undefined, league: Record<string, ZoneVec> | undefined, note: string[]): StatSection {
   return {
     title, note,
-    cols: [{ label: "Quality", count: "FGA" }, { label: "eFG" }, { label: "League" }],
+    cols: [{ label: "Quality", count: "FGA" }, { label: "eFG%" }, { label: "League" }],
     rows: kept(ZONE_ROWS.map(([k, z]) => {
       const lg = sqCell(pick(league, z));
       return { k, cells: [sqCell(pick(own, z)), efgCell(pick(own, z)), lg ? { v: lg.v } : null] };
@@ -125,8 +125,8 @@ function advanced(s: SeasonFigures | null, t: SampleFigures | null, league: Samp
   out.push({
     title: "Shooting", cols: [SEASON, TRACKED],
     rows: kept([
-      { k: "True Shooting", title: "Points / (2 × (FGA + 0.44 FTA))", cells: [cell(sv?.ts ?? null), cell(tv?.ts ?? null)] },
-      { k: "Effective FG", title: "(FG + 0.5 × 3PT made) / FGA", cells: [cell(sv?.efg ?? null), cell(tv?.efg ?? null)] },
+      { k: "TS%", title: "Points / (2 × (FGA + 0.44 FTA))", cells: [cell(sv?.ts ?? null), cell(tv?.ts ?? null)] },
+      { k: "eFG%", title: "(FG + 0.5 × 3PT made) / FGA", cells: [cell(sv?.efg ?? null), cell(tv?.efg ?? null)] },
       { k: "3PA Rate", title: "Share of his FGA that were threes", cells: [cell(sv?.par3 ?? null), cell(tv?.par3 ?? null)] },
       { k: "FT Rate", title: "Free throw attempts per FGA", cells: [cell(sv?.ftr ?? null), cell(tv?.ftr ?? null)] },
       { k: "Assisted Makes", title: "Share of his made field goals that a teammate assisted", cells: [cell(sv?.astd ?? null), cell(tv?.astd ?? null)] },
@@ -137,7 +137,7 @@ function advanced(s: SeasonFigures | null, t: SampleFigures | null, league: Samp
     out.push(qualitySection("SkillCorner Shot Quality, His Shots", t.zone, league?.zone,
       ["Mean quality (0-100) of his FGA, tracked games", "League: every FGA in those games", zones]));
     out.push(qualitySection("SkillCorner Shot Quality, Shots He Guarded", t.guardZone, league?.zone,
-      ["Opponents' FGA with him the closest defender at release", "eFG: opponents' on those shots", zones]));
+      ["Opponents' FGA with him the closest defender at release", "eFG%: opponents' on those shots", zones]));
   }
   return out.filter((sec) => sec.rows.length);
 }
@@ -183,10 +183,12 @@ function tracking(t: SampleFigures | null): StatSection[] {
       title: "Rebounding Roles", cols: [{ label: "Tracked", count: "Shots" }],
       note: ["Teammates' shots, release to the ball reaching the rim", "Crash: on the glass · Retreat: heading back · Safety: already deep", "Boxed out: a defender got between him and the hoop (rough)"],
       rows: kept([
-        { k: "Crash", cells: [cell(pct(gl[1], gl[0]), gl[0])] },
-        { k: "Retreat", cells: [cell(pct(gl[2], gl[0]))] },
-        { k: "Safety", cells: [cell(pct(gl[3], gl[0]))] },
-        { k: "Hold", cells: [cell(pct(gl[4], gl[0]))] },
+        // Each role's share of his teammates' shots, with the number of shots on which he took it.
+        { k: "Crash", cells: [cell(pct(gl[1], gl[0]), gl[1])] },
+        { k: "Retreat", cells: [cell(pct(gl[2], gl[0]), gl[2])] },
+        { k: "Safety", cells: [cell(pct(gl[3], gl[0]), gl[3])] },
+        { k: "Hold", cells: [cell(pct(gl[4], gl[0]), gl[4])] },
+        { k: "All Roles", title: "Teammates' shots while he was on the court and tracked", cells: [cell("100%", gl[0])] },
         { k: "Crashes Boxed Out", cells: [cell(pct(gl[6], gl[5]), gl[5])] },
         { k: "Off. Rebounds per Crash", title: "On missed shots he crashed", cells: [cell(pct(gl[8], gl[7]), gl[7])] },
       ]),

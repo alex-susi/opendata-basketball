@@ -55,8 +55,12 @@ describe("rebounding roles", () => {
   it("appear on the shot card and the player card", () => {
     const { play, shot } = loaded.flatMap((p) => p.ann!.shots.map((s) => ({ play: p, shot: s })))
       .find(({ play, shot }) => (play.ann!.glass ?? []).some((g) => g.f === shot.f && g.role === "crash"))!;
-    const line = shotCard(play, shot, { peak: false, season: null }).lines.find((l) => l.k === "Rebounding Roles");
-    expect(line?.v).toMatch(/\d Crash/);
+    // The roles get their own group on the shot card, one line each with how many attackers took it.
+    const lines = shotCard(play, shot, { peak: false, season: null }).lines;
+    const at = lines.findIndex((l) => l.head && l.k === "Rebounding Roles");
+    expect(at).toBeGreaterThan(-1);
+    expect(lines.slice(at + 1, at + 5).map((l) => l.k)).toEqual(["Crash", "Retreat", "Safety", "Hold"]);
+    expect(Number(lines[at + 1].v)).toBeGreaterThan(0);
     const p = play.players.find((q) => sampleOf(sample, q)?.glass)!;
     const sec = playerSections("tracking", null, sample, p).find((x) => x.title === "Rebounding Roles");
     expect(sec?.rows.map((r) => r.k)).toContain("Crash");

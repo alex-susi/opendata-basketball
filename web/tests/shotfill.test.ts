@@ -49,7 +49,7 @@ describe("shots without SkillCorner context", () => {
   it("show what is rebuilt and what is not provided on the shot card", () => {
     const odd = shots.find((x) => x.shot.est && x.shot.conflict)!;
     expect(shotCard(odd.play, odd.shot, { peak: false, season: null }).lines.find((l) => l.k === "Shot Context")?.v)
-      .toMatch(/^From Tracking; Spot (Inside|Beyond) the Arc$/);
+      .toMatch(/^From Tracking, Spot (Inside|Beyond) the Arc$/);
     const { play, shot } = shots.find((x) => x.shot.est && !x.shot.conflict)!;
     const lines = shotCard(play, shot, { peak: false, season: null }).lines;
     const get = (k: string) => lines.find((l) => l.k === k)?.v;

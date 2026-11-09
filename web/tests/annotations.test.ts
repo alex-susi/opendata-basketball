@@ -152,15 +152,33 @@ describe("readouts", () => {
     const shot = play.ann!.shots.find((s) => s.region && s.sq != null)!;
     const card = shotCard(play, shot, { peak: true, season: null });
     expect(card.title).toMatch(/^(Made|Missed|Blocked) [23] · #/);
-    expect(card.lines[0]).toEqual({ k: "SkillCorner Shot Quality", v: expect.stringMatching(/^\d+ \/ 100$/) });
-    expect(card.lines[1].k).toBe("SkillCorner xPoints");   // no percentile without the league's xPoints
-    expect(card.lines[2]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
-    expect(card.lines[3].k).toBe("Region");
-    expect(card.lines[3].v).toMatch(/^[A-Z]/);
+    // Groups under subheaders: quality, then location, then defense and creation.
+    const heads = card.lines.filter((l) => l.head).map((l) => l.k);
+    expect(heads.slice(0, 2)).toEqual(["Shot Quality", "Location"]);
+    const rows = card.lines.filter((l) => !l.head);
+    expect(rows[0]).toEqual({ k: "SkillCorner Shot Quality", v: expect.stringMatching(/^\d+ \/ 100$/) });
+    expect(rows[1].k).toBe("SkillCorner xPoints");   // no percentile without the league's xPoints
+    expect(rows[2]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
+    expect(rows[3].k).toBe("Region");
+    expect(rows[3].v).toMatch(/^[A-Z]/);
     for (const line of card.lines) expect(line.k).toMatch(/^[A-Z]/);
+    // Shooter speed sits between release time and dribbles; the potential assist has its own line after the pass.
+    const keys = rows.map((l) => l.k);
+    if (keys.includes("Shooter Speed")) {
+      expect(card.lines.find((l) => l.k === "Shooter Speed")!.v).toMatch(/^\d+\.\d ft\/s$/);
+      if (keys.includes("Release Time")) expect(keys.indexOf("Release Time")).toBe(keys.indexOf("Shooter Speed") - 1);
+      if (keys.includes("Dribbles")) expect(keys.indexOf("Dribbles")).toBe(keys.indexOf("Shooter Speed") + 1);
+    }
+    expect(keys.indexOf("Potential Assist")).toBe(keys.indexOf("Pass") + 1);
   });
 
-  it("write a possession card with dribbles counted per touch", () => {
+  it("gives most released shots a shooter speed", () => {
+    const shots = sample.flatMap((play) => play.ann!.shots.map((shot) => ({ play, shot })));
+    const speeds = shots.map(({ play, shot }) => shotCard(play, shot, { peak: false, season: null }).lines.find((l) => l.k === "Shooter Speed"));
+    expect(speeds.filter(Boolean).length / shots.length).toBeGreaterThan(0.8);
+  });
+
+  it("write a possession card with the current ball handler's dribbles and time on the ball", () => {
     const play = sample.find((p) => p.touches.length >= 3 && p.ann!.dribbles.length)!;
     const card = possessionCard(play, play.frames[play.frames.length - 1], play.gc[0]);
     const keys = card.lines.map((l) => l.k);
@@ -168,8 +186,8 @@ describe("readouts", () => {
     expect(keys.indexOf("Passes")).toBeLessThan(keys.indexOf("Dribbles"));
     const touches = Number(card.lines.find((l) => l.k === "Touches")!.v);
     if (touches) {
-      expect(card.lines.find((l) => l.k === "Dribbles")!.v.split(" | ")).toHaveLength(touches);
-      expect(card.lines.find((l) => l.k === "Ball")!.v.split(" → ")).toHaveLength(touches);
+      expect(card.lines.find((l) => l.k === "Dribbles")!.v).toMatch(/^\d+$/);
+      expect(card.lines.find((l) => l.k === "Ball")!.v).toMatch(/^#\S+ .+ \d+\.\d s$/);
     }
   });
 

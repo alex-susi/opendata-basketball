@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { passLine, seasonOf, type Season } from "../src/lib/context";
+import { passLines, seasonOf, type Season } from "../src/lib/context";
 import { decodePlay } from "../src/lib/decode";
 import { actionTable, CARD_VIEWS, playerSections, playstyleOf, sampleOf } from "../src/lib/player";
 import type { PeriodIndex, Play, PlayRow, Playstyle, Sample } from "../src/lib/types";
@@ -170,17 +170,19 @@ describe("hover tables", () => {
   });
 });
 
-describe("shot card pass line", () => {
-  it("names the passer on assist chances, made or missed", () => {
+describe("shot card pass lines", () => {
+  it("name the passer when there was one, and say yes or no to a potential assist on its own line", () => {
     const shots = period.flatMap((play) => play.ann!.shots.map((shot) => ({ play, shot })));
-    let missed = 0;
+    let yes = 0;
     for (const { play, shot } of shots) {
-      const v = passLine(play, shot).v;
-      if (shot.passer != null && (shot.assisted || shot.ao)) {
-        expect(v).not.toBe("Unassisted");
-        if (!shot.made) { expect(v).toMatch(/^From .+ \(Potential Assist\)$/); missed++; }
-      } else expect(v).toBe("Unassisted");
+      const [pass, pa] = passLines(play, shot);
+      expect(pass.k).toBe("Pass");
+      expect(pa.k).toBe("Potential Assist");
+      if (shot.passer != null) expect(pass.v).toMatch(/^From #/); else expect(pass.v).toBe("None");
+      const opp = shot.passer != null && (shot.assisted || shot.ao);
+      expect(pa.v).toBe(opp ? "Yes" : "No");
+      if (opp) yes++;
     }
-    expect(missed).toBeGreaterThan(0);
+    expect(yes).toBeGreaterThan(0);
   });
 });

@@ -2,7 +2,7 @@
 // context, tracking quality and season figures. Pure, so the tests can run it in Node.
 
 import { clock } from "./geometry";
-import { gapAt, stretch } from "./motion";
+import { gapAt, motion, stretch } from "./motion";
 import type { AnnChance, AnnCloseout, AnnCut, AnnDrive, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
 
 export interface Line {
@@ -12,7 +12,12 @@ export interface Line {
   tone?: string;
   /** The value may wrap onto more lines (the card keeps its other lines' width). */
   wrap?: boolean;
+  /** A subheader that starts a new group of lines (`k` is its text, `v` is empty). */
+  head?: boolean;
 }
+
+/** A subheader line for the cards. */
+export const head = (k: string): Line => ({ k, v: "", head: true });
 
 /** Contest levels from open to blocked, and the colour each is drawn in (markers and card). */
 export const CONTEST_COLORS: Record<string, string> = {
@@ -103,7 +108,7 @@ export const seasonOf = (season: Season | null, p: PlayerTrack | undefined): Sea
 
 const share = (made: number, n: number): string => (n ? `${Math.round((100 * made) / n)}%` : "–");
 const efg = (t: [number, number, number] | undefined): string =>
-  t && t[0] ? `${Math.round((100 * (t[1] + 0.5 * t[2])) / t[0])}% eFG (${t[0]})` : "–";
+  t && t[0] ? `eFG% ${Math.round((100 * (t[1] + 0.5 * t[2])) / t[0])}% (${t[0]})` : "–";
 const ppp = (pair: [number, number] | undefined): string =>
   pair && pair[0] ? `${(pair[1] / pair[0]).toFixed(2)} PPP (${pair[0]})` : "–";
 
@@ -162,13 +167,25 @@ export interface Card {
   lines: Line[];
 }
 
-/** Who passed to the shooter, whenever the pass set up an assist chance (SkillCorner's assistOpp: assisted, or the
- * shot came within 3 s of the catch), made or missed. */
-export function passLine(play: Play, shot: AnnShot): Line {
-  if (shot.passer == null || !(shot.assisted || shot.ao)) return { k: "Pass", v: "Unassisted" };
-  const by = nameOf(play, shot.passer);
-  if (shot.assisted && shot.made) return { k: "Pass", v: `Assisted by ${by}` };
-  return { k: "Pass", v: shot.made ? `From ${by} (No Assist Credited)` : `From ${by} (Potential Assist)` };
+/** Who passed to the shooter (SkillCorner's passerId), and whether that pass was a potential assist (SkillCorner's
+ * assistOpp: the shot was assisted, or came within 3 s of the catch), made or missed. */
+export function passLines(play: Play, shot: AnnShot): Line[] {
+  const from = shot.passer != null ? nameOf(play, shot.passer) : null;
+  return [
+    { k: "Pass", v: from ? `From ${from}` : "None" },
+    { k: "Potential Assist", v: from && (shot.assisted || shot.ao) ? "Yes" : "No" },
+  ];
+}
+
+/** The shooter's speed at release (ft/s, smoothed as in motion.ts), from the tracking; null when he is not tracked
+ * then. */
+export function shooterSpeed(play: Play, shot: AnnShot): number | null {
+  const j = play.players.findIndex((p) => p.id === shot.pid);
+  if (j < 0) return null;
+  const i = frameIndex(play, shot.f);
+  if (Math.abs(play.frames[i] - shot.f) > 2) return null;
+  const v = motion(play).speed[j][i];
+  return Number.isNaN(v) ? null : v;
 }
 
 /** "1st", "2nd", "3rd", "4th", ..., "11th", "21st". */
@@ -197,45 +214,65 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   const tone = shot.cl ? CONTEST_COLORS[shot.cl] : undefined;
   const blank = { v: "Not Provided", tone: MUTED };
   const xp = xPointsOf(shot);
-  if (shot.sq != null) lines.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
-  else if (shot.est) lines.push({ k: "SkillCorner Shot Quality", ...blank });
+  // Groups, each under its own subheader (a group with no lines is left out).
+  const group = (title: string, rows: Line[]) => { if (rows.length) lines.push(head(title), ...rows); };
+
+  const quality: Line[] = [];
+  if (shot.sq != null) quality.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
+  else if (shot.est) quality.push({ k: "SkillCorner Shot Quality", ...blank });
   if (xp != null) {
-    lines.push({ k: "SkillCorner xPoints", v: xp.toFixed(2) });
-    if (opts.xpts?.length) lines.push({ k: "xPoints Percentile", v: ordinal(Math.min(100, Math.max(1, Math.round(xPointsPercentile(xp, opts.xpts))))) });
+    quality.push({ k: "SkillCorner xPoints", v: xp.toFixed(2) });
+    if (opts.xpts?.length) quality.push({ k: "xPoints Percentile", v: ordinal(Math.min(100, Math.max(1, Math.round(xPointsPercentile(xp, opts.xpts))))) });
   } else if (shot.est) {
-    lines.push({ k: "SkillCorner xPoints", ...blank });
+    quality.push({ k: "SkillCorner xPoints", ...blank });
   }
-  if (shot.dist != null) lines.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
-  if (shot.region) lines.push({ k: "Region", v: regionName(shot.region) });
-  if (shot.cl) lines.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
-  if (shot.defDist != null) lines.push({ k: "Closest Defender Distance", v: `${shot.defDist.toFixed(1)} ft`, tone });
-  if (shot.defId != null) lines.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
-  if (shot.rt != null) lines.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
-  else if (shot.est) lines.push({ k: "Release Time", ...blank });
-  if (shot.drb != null) lines.push({ k: "Dribbles", v: String(shot.drb) });
-  if (shot.cns != null) lines.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
-  if (shot.type) lines.push({ k: "Type", v: titleCase(words(shot.type)) });
-  else if (shot.est) lines.push({ k: "Type", ...blank });
-  if (shot.sc != null) lines.push({ k: "Shot Clock", v: `${shot.sc.toFixed(1)} s` });
-  lines.push(passLine(play, shot));
-  if (shot.blocked && shot.blocker != null) lines.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
-  if (shot.fouled) lines.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
+  group("Shot Quality", quality);
+
+  const where: Line[] = [];
+  if (shot.dist != null) where.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
+  if (shot.region) where.push({ k: "Region", v: regionName(shot.region) });
+  group("Location", where);
+
+  const defense: Line[] = [];
+  if (shot.cl) defense.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
+  if (shot.defDist != null) defense.push({ k: "Closest Defender Distance", v: `${shot.defDist.toFixed(1)} ft`, tone });
+  if (shot.defId != null) defense.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
+  group("Defense", defense);
+
+  const creation: Line[] = [];
+  if (shot.rt != null) creation.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
+  else if (shot.est) creation.push({ k: "Release Time", ...blank });
+  const speed = shooterSpeed(play, shot);
+  if (speed != null) creation.push({ k: "Shooter Speed", v: `${speed.toFixed(1)} ft/s` });
+  if (shot.drb != null) creation.push({ k: "Dribbles", v: String(shot.drb) });
+  if (shot.cns != null) creation.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
+  if (shot.type) creation.push({ k: "Type", v: titleCase(words(shot.type)) });
+  else if (shot.est) creation.push({ k: "Type", ...blank });
+  if (shot.sc != null) creation.push({ k: "Shot Clock", v: `${shot.sc.toFixed(1)} s` });
+  creation.push(...passLines(play, shot));
+  group("Creation", creation);
+
+  const result: Line[] = [];
+  if (shot.blocked && shot.blocker != null) result.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
+  if (shot.fouled) result.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
   if (opts.peak) {
     const peak = shotPeak(play, shot);
-    if (peak != null) lines.push({ k: "Ball Peak", v: `${peak.toFixed(1)} ft` });
+    if (peak != null) result.push({ k: "Ball Peak", v: `${peak.toFixed(1)} ft` });
   }
   if (opts.season && !shot.conflict) {   // a flagged spot would name the wrong zone
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
-    if (line) lines.push(line);
+    if (line) result.push(line);
   }
+  group("Result and Season", result);
+
+  // One line per rebounding role, with how many attackers took it (the shooter's own crash counts as a crash).
   const roles = (play.ann?.glass ?? []).filter((g) => g.f === shot.f);
   if (roles.length) {
     const n = (r: string) => roles.filter((g) => g.role === r).length;
-    const parts = [[n("crash") + n("follow"), "Crash"], [n("back"), "Retreat"], [n("safety"), "Safety"], [n("hold"), "Hold"]]
-      .filter(([c]) => (c as number) > 0).map(([c, w]) => `${c} ${w}`);
-    if (parts.length) lines.push({ k: "Rebounding Roles", v: parts.join(" · ") });
+    group("Rebounding Roles", ([[n("crash") + n("follow"), "Crash"], [n("back"), "Retreat"], [n("safety"), "Safety"], [n("hold"), "Hold"]] as [number, string][])
+      .map(([c, w]) => ({ k: w, v: String(c), tone: c ? undefined : MUTED })));
   }
-  if (shot.est) lines.push({ k: "Shot Context", v: shot.conflict ? `From Tracking; Spot ${shot.three ? "Inside" : "Beyond"} the Arc` : "From Tracking", tone: shot.conflict ? "#F5B02E" : MUTED });
+  if (shot.est) group("Data Note", [{ k: "Shot Context", v: shot.conflict ? `From Tracking, Spot ${shot.three ? "Inside" : "Beyond"} the Arc` : "From Tracking", tone: shot.conflict ? "#F5B02E" : MUTED }]);
   return { title: `${madeOf(shot)} · ${nameOf(play, shot.pid)}`, tone: shot.made ? "#2FAE5A" : "#E04848", flag: shot.blocked ? "Blocked" : undefined, lines };
 }
 
@@ -330,13 +367,14 @@ export function possessionCard(play: Play, f: number, gc: number): Card {
   const dribbles = (ann?.dribbles ?? []).filter((d) => d.f >= Math.min(start, touches[0]?.f0 ?? start) && d.f <= f);
   lines.push({ k: "Touches", v: String(touches.length) });
   lines.push({ k: "Passes", v: String(live(ann?.passes).length) });
-  // Dribbles by touch, in order: "4 | 0 | 2" is four dribbles on the first touch, none on the second and two so far
-  // on the third.
-  lines.push({ k: "Dribbles", v: touches.length
-    ? touches.map((t) => dribbles.filter((d) => d.pid === t.pid && d.f >= t.f0 && d.f <= t.f1).length).join(" | ")
-    : String(dribbles.length) });
-  if (touches.length) {
-    lines.push({ k: "Ball", v: touches.map((t) => `${nameOf(play, t.pid).split(" ")[0]} ${((Math.min(f, t.f1) - t.f0) / 25).toFixed(1)}s`).join(" → ") });
+  // The current ball handler: the latest touch to have started (while a pass is in the air, the passer's touch).
+  // Dribbles and Ball are his alone: dribbles on this touch so far, and how long he has held it.
+  const cur = touches.reduce<(typeof touches)[number] | null>((a, t) => (!a || t.f0 >= a.f0 ? t : a), null);
+  if (cur) {
+    lines.push({ k: "Dribbles", v: String(dribbles.filter((d) => d.pid === cur.pid && d.f >= cur.f0 && d.f <= Math.min(f, cur.f1)).length) });
+    lines.push({ k: "Ball", v: `${nameOf(play, cur.pid)} ${((Math.min(f, cur.f1) - cur.f0) / 25).toFixed(1)} s` });
+  } else {
+    lines.push({ k: "Dribbles", v: "0" });
   }
   // Every free throw carries its foul, so the fouls' lists hold them all once (a shot's list repeats its foul's).
   const ft = live(ann?.fouls).flatMap((x) => x.ft);
