@@ -2123,3 +2123,42 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   possession/tracking cards in the bottom corner. When they would overlap, the bottom stack slides toward center court
   beside the shot card; a shot card taller than the court scrolls inside it. The court window no longer grows
   (live.annNeed stays 0), so the trace panel keeps its room.
+- **Fix (same day):** three outcome tables showed placeholder zeros for eFG%, OREB% and live misses (Advantage's
+  action table and its outcome charts, Closeouts' table by the ball handler's action, eFG% in Crashing's next-chance
+  table): their action tables did not carry those chance columns. They now carry the chance's real outcomes; the
+  Closeouts table also uses the chance's xPts instead of the shot after the closeout, so every column is per chance.
+  A scan finds no other all-zero or empty column on the seven tabs.
+
+## 2026-11-09 (later) — Kickout transformer (learning exercise, not the entry)
+
+- New `src/kickout_transformer/` (R torch): predicts shot / drive / pass / other for the receiver of a perimeter
+  pass from a 10-player freeze frame, with and without the last second of movement. 1,738 catches (115 strict
+  kickouts), leave-one-game-out. Write-up and how to run: `src/kickout_transformer/EXPLAINER.md`.
+- Result: the freeze-frame transformer ties a 10-feature multinomial logistic (log loss 0.985 vs 0.980, paired
+  difference +0.005, game-bootstrap 95% interval −0.006 to +0.015); movement history makes it worse (+0.019). Both beat
+  league / archetype / player tendencies (~1.10), which do not differ from each other. Owner choices: train on all
+  perimeter catches and report the kickout subset; four classes including "other"; build freeze then history.
+
+## 2026-11-09 (later) — Kickout transformer, three-class variant
+
+Re-ran the kickout learning exercise without the "other" class (`--drop-other`; outputs in `outputs/kickout_transformer_3class/`). 1,662 catches, 106 strict kickouts. Held-out log loss on all catches: league 0.961, logistic 0.833, freeze transformer 0.838, history transformer 0.861. Conclusions unchanged: the transformer ties the logistic model, movement history hurts, player/archetype tendencies add nothing. Fixed a training bug exposed by the smaller sample (a one-catch final batch lost a tensor dimension); the four-class run never hit it.
+
+## 2026-11-09 (later) — Pick coverage EDA tab (groundwork for a coverage transformer; no model)
+
+- New exploration tab **Pick coverage** after Gravity (`#/explore/coverage`, `web/scripts/explore/coverage.R`,
+  built by `build.R coverage` in about 3 s from the cached bundles). Descriptive only; the owner asked for EDA before
+  any transformer.
+- **Label:** bhrDefType and scrDefType are one call. Switch, ice and blitz are always called for both defenders;
+  over/under always pair with soft/show (6 picks with screener 'none'). Seven joint calls over 1,520 picks:
+  over · show 502, over · soft 496, under · soft 167, under · show 113, switch 218, ice 14, blitz 4. Season direct
+  picks have a similar mix (over 66%, under 15%, switch 18%).
+- **Timing:** picks.frame is the screen (handler closest to screener a median 0.2 s later). Single-measure AUC:
+  under/over 0.59 at −1 s, 0.97 at +0.4 s; show/soft 0.67 at −0.4 s, 0.84 at 0; switch 0.64 at 0, 0.91 at +2 s.
+  A model that sees past the screen is mostly recognising the label; "before the screen" is the real forecast.
+- **Context:** switches rise as the shot clock falls (7% with 18+ s, 25% with 6 s or less); under is more common
+  when the handler starts 13+ ft above the screen (32%) and, season-wide, against handlers with little off-dribble
+  three volume (r = −0.27); soft is less common against popping screeners (r = −0.53). Defenses differ in their mix,
+  but within a game calls are not streaky (31% repeat vs 30% by chance).
+- **Baselines (frequency look-ups, leave one game out):** league shares log loss 1.52; no honest look-up improves it
+  by more than 0.02; a defense's whole-game mix (uses the answers) gives 1.42. The matchups table confirms 71% of
+  switches hand the handler to the screener's defender.

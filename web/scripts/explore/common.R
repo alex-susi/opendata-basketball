@@ -1,4 +1,4 @@
-# Shared layer for the site's seven exploration tabs (web/scripts/explore/build.R sources this first).
+# Shared layer for the site's eight exploration tabs (web/scripts/explore/build.R sources this first).
 #
 # Everything here is descriptive: counting, averaging and simple geometry on the ten tracked games. No model is
 # fitted. Each topic script turns one per-game "bundle" into a document of sections and blocks that the site's

@@ -19,7 +19,7 @@
 topic_closeouts <- function(BL) {
   rows <- list()
   for (B in BL) {
-    co <- merge(B$co, B$ch[, .(chance, pts, xpts_ch = xpts, tov, ftrip, transition, off)], by = "chance")
+    co <- merge(B$co, B$ch[, .(chance, pts, xpts_ch = xpts, tov, ftrip, fga, efg_pts, live, oreb, transition, off)], by = "chance")
     if (!nrow(co)) next
     stat <- rbindlist(lapply(seq_len(nrow(co)), function(i) {
       c <- co[i]
@@ -132,7 +132,7 @@ topic_closeouts <- function(BL) {
            COLS("By where he caught it", c("corner three", "above-break three", "inside the arc"),
                 lapply(c("shot", "drive", "pass"), function(a_) SERIES1(a_, sapply(c("corner three", "above-break three", "inside the arc"),
                        function(s) mean(co[spot == s]$act == a_)), PAL[match(a_, c("shot", "drive", "pass"))])), labels = FALSE)),
-      outcome_table(copy(co)[, `:=`(xpts = s_xpts, oreb = FALSE, live = FALSE, fga = !is.na(s_fga) & s_fga, efg_pts = fifelse(is.na(s_made), 0, s_made * fifelse(s_three, 1.5, 1)))],
+      outcome_table(copy(co)[, xpts := xpts_ch],
                     "act", label = "Ball handler's action", title = "The chance's outcome by the ball handler's action", min_n = 5)),
     SECTION("co-run", "The defender's run",
       BUL("How tight, how fast and how early the defender arrived, from SkillCorner's end distance and the tracking",

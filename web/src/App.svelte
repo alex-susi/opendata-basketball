@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Ten tabs: the three below, then seven exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
+  // Eleven tabs: the three below, then eight exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
@@ -31,7 +31,7 @@
   const TOPICS = [
     { id: "paint", label: "Paint touches" }, { id: "chains", label: "Pre-shot actions" }, { id: "closeouts", label: "Closeouts" },
     { id: "crash", label: "Crashing" }, { id: "lanes", label: "Driving lanes" }, { id: "advantage", label: "Advantage" },
-    { id: "gravity", label: "Gravity" },
+    { id: "gravity", label: "Gravity" }, { id: "coverage", label: "Pick coverage" },
   ];
   type Tab = string;   // "viewer", "archetypes", "rebounding" or "x-<topic>"
   const tabOfHash = (h: string): Tab => {

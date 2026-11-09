@@ -27,7 +27,7 @@ topic_crash <- function(BL) {
     s <- merge(s, rb[, .(shot, defensive, got, rpid = pid, rf = f, next_chance, rx = x, ry = y)], by = "shot", all.x = TRUE)
     s[, oreb := live & defensive %in% FALSE]
     nx <- B$ch[, .(next_chance = chance, n_pts = pts, n_trans = transition, n_tov = tov, n_ft = ftrip, n_xpts = xpts,
-                   n_secs = (cut_f - c0) / FPS, n_off = off, n_fga = fga, n_live = live, n_oreb = oreb)]
+                   n_secs = (cut_f - c0) / FPS, n_off = off, n_fga = fga, n_live = live, n_oreb = oreb, n_efg = efg_pts)]
     s <- merge(s, nx, by = "next_chance", all.x = TRUE)
     # Numbers at the rim.
     W <- B$P[.(unique(s$f1)), nomatch = 0L][, d := hoop_dist(x, y)]
@@ -144,7 +144,7 @@ topic_crash <- function(BL) {
         RATES("Opponent's next chance is transition, by attackers back", lapply(cr_lv, function(l) { x <- dreb[bkb == l & !is.na(n_trans)]; rrow(l, sum(x$n_trans), nrow(x)) }),
               ref = mean(dreb$n_trans, na.rm = TRUE), unit = "transition")),
       outcome_table(copy(dreb)[, `:=`(pts = n_pts, xpts = n_xpts, tov = n_tov, ftrip = n_ft, live = n_live %in% TRUE, oreb = n_oreb %in% TRUE, fga = n_fga %in% TRUE,
-                                      efg_pts = 0, g = as.character(crb))], "g", label = "Attackers who crashed", title = "The opponent's next chance in full, by crashers", min_n = 10),
+                                      efg_pts = n_efg, g = as.character(crb))], "g", label = "Attackers who crashed", title = "The opponent's next chance in full, by crashers", min_n = 10),
       TABLE("The trade per live miss", limit = 6, rows = tr, cols = list(
         col("crb", "Crashers"), col("n", "Live misses", "int"), col("p_oreb", "P(keep)", "pct"), col("pts_after_oreb", "Pts after keeping", "num2"),
         col("opp_pts", "Opp. pts after losing it", "num2"), col("opp_trans", "Opp. transition", "pct"),

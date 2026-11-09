@@ -57,7 +57,7 @@ The EPV, court control and rebounding models, their panels and their data files 
 
 ### Exploration tabs
 
-Seven tabs (Paint touches, Pre-shot actions, Closeouts, Crashing, Driving lanes, Advantage, Gravity), one per
+Eight tabs (Paint touches, Pre-shot actions, Closeouts, Crashing, Driving lanes, Advantage, Gravity, Pick coverage), one per
 candidate competition topic, address `#/explore/<topic>`. Each reads `public/data/explore_<topic>.json`, written by
 `web/scripts/explore/<topic>.R`; text, charts and tables all come from that script, and
 `src/components/explore/` only lays them out (`Explore.svelte`, `Block.svelte`, `DataTable.svelte`). Descriptive

@@ -1,4 +1,4 @@
-# Build the data for the site's seven exploration tabs.
+# Build the data for the site's eight exploration tabs.
 #   Rscript web/scripts/explore/build.R                 every topic (bundles read from cache when present)
 #   Rscript web/scripts/explore/build.R paint gravity   only those topics
 #   Rscript web/scripts/explore/build.R --rebuild       rebuild the per-game bundles first (after an export change)
@@ -22,7 +22,7 @@ source(file.path(scripts, "glass.R"))
 source(file.path(here, "common.R"))
 source(file.path(here, "columns.R"))
 
-TOPICS <- c("paint", "chains", "closeouts", "crash", "lanes", "advantage", "gravity")
+TOPICS <- c("paint", "chains", "closeouts", "crash", "lanes", "advantage", "gravity", "coverage")
 want <- intersect(args, TOPICS)
 if (!length(want)) want <- TOPICS
 

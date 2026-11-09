@@ -23,7 +23,7 @@ topic_advantage <- function(BL) {
                   B$posts[, .(kind = "post-up", chance, f0, actor, adef, cov = NA_character_)],
                   B$drives[, .(kind = "drive", chance, f0, actor, adef, cov = NA_character_)],
                   B$obs[, .(kind = "off-ball screen", chance, f0, actor, adef, cov)], fill = TRUE)
-    acts <- merge(acts, B$ch[in_pop == TRUE, .(chance, pts, xpts, tov, ftrip, cut_f, transition, poss0 = poss)], by = "chance")
+    acts <- merge(acts, B$ch[in_pop == TRUE, .(chance, pts, xpts, tov, ftrip, fga, efg_pts, live, oreb, cut_f, transition, poss0 = poss)], by = "chance")
     acts <- acts[!is.na(actor) & !is.na(f0)]
     if (!nrow(acts)) next
     acts[is.na(adef), adef := marker_of(B, f0, actor)]
@@ -109,10 +109,10 @@ topic_advantage <- function(BL) {
         RATES("Closeout followed within 4 s", lapply(kind_lv, function(k) rrow(k, sum(A[kind == k]$co_after), nrow(A[kind == k]))), ref = mean(A$co_after), unit = "a closeout followed")),
       COLS("How advantages were made, by action", kind_lv, lapply(how_lv[1:4], function(h) SERIES1(h, sapply(kind_lv, function(k) mean(A[kind == k]$how == h)), PAL[match(h, how_lv)])),
            note = "Shares of each action type's events. The rest created none."),
-      outcome_table(copy(A)[, `:=`(oreb = FALSE, live = FALSE, fga = !is.na(xpts), efg_pts = 0, g = paste(kind, "·", fifelse(adv, "advantage", "none")))], "g",
+      outcome_table(copy(A)[, `:=`(g = paste(kind, "·", fifelse(adv, "advantage", "none")))], "g",
                     label = "Action · advantage", title = "The chance's outcome after each action, with and without an advantage", min_n = 15, limit = 14)),
     SECTION("ad-value", "What an advantage is worth",
-      outcome_panel(copy(hc)[, `:=`(grp = how, live = FALSE, oreb = FALSE)][], order = how_lv, base = hc, title = "Half court, by advantage"),
+      outcome_panel(copy(hc)[, grp := how], order = how_lv, base = hc, title = "Half court, by advantage"),
       CAVEAT("A chance can hold several actions, so a chance's points appear once per action in it.")),
     SECTION("ad-players", "Who creates advantages (ten tracked games)",
       TABLE("Players with 15+ half-court actions", limit = 40, rows = pl, cols = list(
