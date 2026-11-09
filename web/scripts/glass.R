@@ -23,7 +23,9 @@
 # BOX_NEAR ft of him, and within BOX_LANE ft of the straight line from him to the hoop (contact usually comes as the
 # ball comes off the rim, not at it). It must also hold: once in the spot, the defender is never beaten later in the
 # window (the attacker more than BOX_BEAT ft closer to the hoop than him), so a crasher who gets round or through
-# his man to the rim was not boxed out. For display, the box-out starts (bf) when the defender stopped him: the first
+# his man to the rim was not boxed out. And there must be contact: at least one frame in the spot within BOX_TOUCH ft
+# of him (a defender standing 3-5 ft in front who never meets the crasher is not boxing out). For display, the box-out
+# starts (bf) when the defender stopped him: the first
 # frame in the spot within BOX_TOUCH ft of him where the attacker's speed toward the hoop (over SLOW_HALF frames
 # either side) is under BOX_SLOW ft/s or under BOX_DROP of his fastest so far in the window; it lasts to the end of
 # the window (b1). The timing does not decide whether there was a box-out. His assigned defender at release (matchups) is tried first, then the defender
@@ -50,7 +52,9 @@ inside_three <- function(x, y) {
 
 #' One row per attacker per shot: f, f1 (frames), shot id, pid, role, d0/d1 (ft from the hoop at release and at the
 #' end of the flight), boxed and boxer (crashers and attackers who started near the hoop), seen (0-1), made (the
-#' shot), plus the shot's possession.
+#' shot), plus the shot's possession. rd: ft from his spot when the flight ended to where the rebound was taken (the
+#' rebounder's tracked spot at the rebound frame; NA for team rebounds or untracked rebounders), for asking whether
+#' the ball came his way.
 game_glass <- function(game_id, ev) {
   G <- GLASS
   gid <- game_id
@@ -64,7 +68,8 @@ game_glass <- function(game_id, ev) {
   cpa <- data.table(chance = ann_chr(ev$chance_players, "chanceId"), pid = ann_int(ev$chance_players, "playerId"),
                     off = ann_lgl(ev$chance_players, "offense"))
   cp <- cpa[off == TRUE]; cpd <- cpa[off == FALSE]
-  rb <- data.table(shot = ann_chr(ev$rebounds, "shotId"), f = ann_int(ev$rebounds, "frame"))[!is.na(shot) & !is.na(f)]
+  rb <- data.table(shot = ann_chr(ev$rebounds, "shotId"), f = ann_int(ev$rebounds, "frame"),
+                   reb = ann_int(ev$rebounds, "rebounderId"), got = ann_lgl(ev$rebounds, "rebounded"))[!is.na(shot) & !is.na(f)]
   reb_f <- setNames(rb$f, rb$shot)
   mu <- data.table(f0 = ann_int(ev$matchups, "startFrame"), f1 = ann_int(ev$matchups, "endFrame"),
                    def = ann_int(ev$matchups, "defPlayerId"), off = ann_int(ev$matchups, "offPlayerId"))
@@ -90,6 +95,12 @@ game_glass <- function(game_id, ev) {
     if (!any(ok)) next
     ids <- ids[ok]; p0 <- p0[ok, , drop = FALSE]; p1 <- p1[ok, , drop = FALSE]
     d0 <- sqrt((GLASS_HOOP_X - p0[, 1])^2 + p0[, 2]^2); d1 <- sqrt((GLASS_HOOP_X - p1[, 1])^2 + p1[, 2]^2)
+    rd <- rep(NA_real_, length(ids))
+    rr <- rb[shot == s$id & got %in% TRUE & !is.na(reb)]
+    if (nrow(rr)) {
+      q <- spot(rr$f[1], rr$reb[1], sgn)
+      if (!is.na(q[1, 1])) rd <- round(sqrt((p1[, 1] - q[1, 1])^2 + (p1[, 2] - q[1, 2])^2), 1)
+    }
     crash <- d1 <= G$crash_near | (d0 - d1 >= G$crash_gain & inside_three(p1[, 1], p1[, 2]))
     back <- (p0[, 1] - p1[, 1] >= G$back_gain) | p1[, 1] < 0
     deepest <- d0 == max(d0[ids != s$shooter])
@@ -122,19 +133,19 @@ game_glass <- function(game_id, ev) {
         J[, `:=`(gap = sqrt(vx^2 + vy^2), dd = sqrt((GLASS_HOOP_X - dx)^2 + dy^2))]
         J[, fits := dd < len & gap <= G$box_near & (vx * hx + vy * hy) / len > 0 & abs(vx * hy - vy * hx) / len <= G$box_lane]
         setorder(J, apid, dpid, frame)
-        # Held: in the spot for BOX_FRAMES frames and never beaten afterwards (the attacker more than BOX_BEAT ft
-        # closer to the hoop than the defender at any later frame of the window). That alone decides a box-out.
-        # When it starts (display only): the first frame the attacker stalled in the spot (within BOX_TOUCH ft, his
-        # speed toward the hoop under BOX_SLOW ft/s or under BOX_DROP of his peak: the defender stopped him); failing
-        # that, the first frame in the spot within BOX_TOUCH ft; failing that, the first frame in the spot.
+        # Held: in the spot for BOX_FRAMES frames, in contact there at least once (within BOX_TOUCH ft), and never
+        # beaten afterwards (the attacker more than BOX_BEAT ft closer to the hoop than the defender at any later
+        # frame of the window). That decides a box-out. When it starts (display only): the first frame the attacker
+        # stalled in contact (his speed toward the hoop under BOX_SLOW ft/s or under BOX_DROP of his peak: the
+        # defender stopped him); failing that, the first frame in contact.
         K <- J[, {
           f_fit <- if (any(fits)) frame[which(fits)[1]] else NA_integer_
-          stall <- fits & gap <= G$box_touch & !is.na(closing) & (closing < G$box_slow | closing < G$box_drop * peak)
           touch <- fits & gap <= G$box_touch
-          .(n = sum(fits), gap = mean(gap),
-            start = if (any(stall)) frame[which(stall)[1]] else if (any(touch)) frame[which(touch)[1]] else f_fit,
+          stall <- touch & !is.na(closing) & (closing < G$box_slow | closing < G$box_drop * peak)
+          .(n = sum(fits), gap = mean(gap), contact = any(touch),
+            start = if (any(stall)) frame[which(stall)[1]] else if (any(touch)) frame[which(touch)[1]] else NA_integer_,
             beaten = !is.na(f_fit) && any(frame > f_fit & len < dd - G$box_beat))
-        }, by = .(apid, dpid)][beaten == FALSE]
+        }, by = .(apid, dpid)][beaten == FALSE & contact == TRUE]
         for (j in which(ids %in% J$apid)) {
           k <- K[apid == ids[j] & n >= G$box_frames][order(-n, gap)]
           m <- mu[off == ids[j] & f0 <= s$f & f1 >= s$f]$def
@@ -149,7 +160,7 @@ game_glass <- function(game_id, ev) {
       if (all(is.na(w))) NA_real_ else round(mean(w == 1L, na.rm = TRUE), 2)
     }, 0)
     rows[[i]] <- data.table(f = s$f, f1 = s$f1, shot = s$id, poss = s$poss, made = s$made, pid = ids, role = role,
-                            d0 = round(d0, 1), d1 = round(d1, 1), boxed = boxed, boxer = boxer, bf = bf, b1 = b1, seen = seen)
+                            d0 = round(d0, 1), d1 = round(d1, 1), boxed = boxed, boxer = boxer, bf = bf, b1 = b1, rd = rd, seen = seen)
   }
   out <- rbindlist(rows)
   if (!nrow(out)) NULL else out

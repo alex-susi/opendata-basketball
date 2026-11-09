@@ -371,7 +371,9 @@ export interface Sample {
   league: {
     /** Rebounding roles' validation: offensive rebounds per role on misses [n, rebounds]; crashers met / open by their
      * matchup [n, rebounds]; opponent transition after a defensive rebound by attackers back (0-3+) [n, transitions]. */
-    glass?: { oreb: Record<string, [number, number]>; boxed: Record<"met" | "open", [number, number]>; transition: Record<string, [number, number]> };
+    glass?: { oreb: Record<string, [number, number]>; boxed: Record<"met" | "open", [number, number]>;
+      /** The same, only crashes where the rebound was taken within 4, 6 or 8 ft of him when the flight ended. */
+      boxedNear?: Record<string, Record<"met" | "open", [number, number]>>; transition: Record<string, [number, number]> };
     /** Every FGA's SkillCorner xPoints in the tracked games, sorted (for the shot card's percentile). */
     xpts?: number[];
     /** The pooled 99th percentile of player speed in live play, ft/s. */

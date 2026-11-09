@@ -291,6 +291,10 @@ sample_figures <- function() {
     oreb = setNames(lapply(split(GL[made == FALSE], GL[made == FALSE]$role), function(d) I(c(nrow(d), sum(d$oreb)))),
                     sort(unique(GL[made == FALSE]$role))),
     boxed = lapply(list(met = TRUE, open = FALSE), function(v) { d <- GL[made == FALSE & role == "crash" & boxed %in% v]; I(c(nrow(d), sum(d$oreb))) }),
+    # The same split, only where the ball came his way: the rebound was taken within R ft of where he was when the
+    # flight ended (glass.R, rd), for R = 4, 6, 8.
+    boxedNear = lapply(c(`4` = 4, `6` = 6, `8` = 8), function(R) lapply(list(met = TRUE, open = FALSE), function(v) {
+      d <- GL[made == FALSE & role == "crash" & boxed %in% v & !is.na(rd) & rd <= R]; I(c(nrow(d), sum(d$oreb))) })),
     transition = lapply(split(GV[!is.na(trans)], pmin(GV[!is.na(trans)]$nback, 3L)), function(d) I(c(nrow(d), sum(d$trans)))))
   Ak <- A[!is.na(team)][, key := key_of(pid, team)][, .(n = .N, pts = sum(pts)), by = .(key, kind)]
 

@@ -2034,3 +2034,17 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   6 frames after the ball reached the rim, Rousselle on Ubal from 11 (Ubal kept drifting in at ~3.5 ft/s against a
   5.8 ft/s peak, so an absolute 3 ft/s cut alone missed him). A first version wrongly also required the stall to
   count a box-out (dropping it to 619/1,293); reverted.
+- **Box-out needs contact (same day, owner's call):** 465 of 1,497 tagged box-outs never showed the crasher stalling;
+  414 of them never came within 3 ft (a defender standing 3-5 ft in front, e.g. 114243-1-36 Benitez on Rousselle,
+  5 ft at closest). A box-out now also needs at least one frame in the spot within 3 ft. Crashes boxed out: 50%
+  (646/1,293); boxed crashes rebound 10.2% (66/646) vs 9.7% open (63/647). The examples without contact (1-36,
+  2-56, 4-133) no longer show; 2-71 keeps both. 114234-1-42 keeps Soriano on Aranitovic: contact comes 25 frames
+  after the ball reaches the rim, past the end of that clip (end of quarter), so its tag never shows in the viewer.
+- **Box-out check, conditioned on where the ball went (same day, owner's question):** the 10.2%% vs 9.7%% above counts
+  whether that crasher got the offensive rebound wherever the ball went, so long caroms count against boxed and open
+  crashers alike. glass.R now also exports rd (ft from the crasher's spot when the flight ended to the rebounder's
+  tracked spot at the rebound frame; NA on team rebounds) and sample.json league.glass.boxedNear splits misses by it.
+  Crasher got it, boxed vs open: within 4 ft 38%% (41/108) vs 51%% (36/70); 6 ft 30%% (52/175) vs 33%% (46/139); 8 ft
+  21%% (54/253) vs 27%% (54/199). Boxed crashers get the ball less when it comes their way, as expected, but samples
+  are small (about 1.8 binomial SE at 4 ft, less at 6-8 ft; shots not clustered by game), so this is a sanity check
+  on the flag, not a finding. Caveat: the box-out window starts 12 frames before the rim, so rd is not fully before it.
