@@ -40,7 +40,7 @@
   <clipPath id={`plot-${uid}`}><rect x={LEFT} y={TOP - 4} width={W - LEFT - RIGHT} height={H - BOTTOM - TOP + 8} /></clipPath>
   <g clip-path={`url(#plot-${uid})`}>
   {#each points as p, i (i)}
-    <circle cx={x(p.x)} cy={y(p.y)} r={radius} fill={SERIES[p.g ?? 0]} opacity={opacity}><title>{p.tip ?? `${xfmt(p.x)}, ${yfmt(p.y)}`}</title></circle>
+    <circle cx={x(p.x)} cy={y(p.y)} r={radius} fill={SERIES[p.g ?? 0]} opacity={opacity}><title>{p.tip ?? `${xlabel} ${xfmt(p.x)}\n${ylabel} ${yfmt(p.y)}`}</title></circle>
   {/each}
   {#each lines as l, i (i)}
     <path d={path(l.points)} fill="none" stroke={l.color ?? "var(--ink)"} stroke-width="2" stroke-linejoin="round" stroke-linecap="round"
@@ -63,9 +63,9 @@
   .grid { stroke: var(--line); stroke-width: 1; }
   .axis { stroke: var(--muted); stroke-width: 1; }
   .ref { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
-  .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-  .ev { font-size: 10px; }
-  .legend-row { display: flex; gap: 14px; margin-top: 4px; color: var(--muted); font-size: 12px; }
+  .tick { fill: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .ev { font-size: 12px; }
+  .legend-row { display: flex; gap: 14px; margin-top: 4px; color: var(--muted); font-size: 14px; }
   .legend-row span { display: inline-flex; align-items: center; gap: 6px; }
   .legend-row i { width: 10px; height: 10px; border-radius: 50%; }
 </style>

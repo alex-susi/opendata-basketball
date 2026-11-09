@@ -90,16 +90,16 @@
   .finder { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; margin: 12px 0; }
   .finder-side { display: flex; flex-direction: column; gap: 12px; }
   .presets { display: flex; flex-wrap: wrap; gap: 6px; }
-  .presets button { padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--raised); color: var(--ink); font-size: 12px; cursor: pointer; }
+  .presets button { padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--raised); color: var(--ink); font-size: 13.5px; cursor: pointer; }
   .presets button:hover { background: var(--hover); }
   .presets button.on { border-color: var(--off); color: var(--ink); background: var(--hover); }
-  .slider { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  .slider { display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--muted); }
   .slider b { color: var(--ink); }
-  .check { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .check { display: flex; align-items: center; gap: 6px; font-size: 15px; }
   .finder-stats { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .finder-stats div { padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised); }
-  .finder-stats dt { color: var(--muted); font-size: 11px; }
-  .finder-stats dd { margin: 2px 0 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .warn { margin: 0; padding: 7px 9px; border-left: 3px solid #F5B02E; background: var(--raised); font-size: 12.5px; }
+  .finder-stats dt { color: var(--muted); font-size: 12.5px; }
+  .finder-stats dd { margin: 2px 0 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .warn { margin: 0; padding: 7px 9px; border-left: 3px solid #F5B02E; background: var(--raised); font-size: 14px; }
   @media (max-width: 860px) { .finder { grid-template-columns: 1fr; } .finder-map { max-width: 520px; } }
 </style>

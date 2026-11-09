@@ -132,7 +132,7 @@ topic_advantage <- function(BL) {
           col("ppp_shrunk", "Shrunk", "num2"), col("succ", "Successful", "pct"), col("switch_picks", "vs switch", "int")))),
       P(if (is.na(rr)) "Too few players to compare the tracked advantage rate with the season blow-by rate." else
         sprintf("For the %d players with 15+ tracked actions and 50+ season drives, the tracked advantage rate and the shrunk season blow-by rate correlate at %.2f.", nrow(cmp), rr)),
-      SCAT("Tracked advantage rate against season blow-by rate", points = cmp[, .(x = r2(bb_shrunk), y = r2(adv), g = 0L, tip = sprintf("%s: %.0f%% advantage over %d actions; season blow-by %.0f%% (%d drives)", name, 100 * adv, n, 100 * bb_shrunk, drives))],
+      SCAT("Tracked advantage rate against season blow-by rate", points = cmp[, .(x = r2(bb_shrunk), y = r2(adv), g = 0L, tip = sprintf("%s\n%.0f%% advantage over %d actions\nseason blow-by %.0f%% over %d drives", name, 100 * adv, n, 100 * bb_shrunk, drives))],
            xlabel = "season blow-by rate (shrunk)", ylabel = "tracked advantage rate", xfmt = "pct", yfmt = "pct", radius = 4)),
     SECTION("ad-limits", "What this shows and does not",
       P("It shows which actions and players knock the defense out of balance by a simple, checkable rule. It does not account for who is guarding the creator, the shot clock, or whether the advantage was used."),

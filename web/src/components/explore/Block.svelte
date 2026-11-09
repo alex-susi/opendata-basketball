@@ -51,7 +51,7 @@
     <figure class="x-fig">
       <h4>{cap(block.title)}</h4>
       <RateDots rows={rateRows(block)} reference={block.ref} min={r.min} max={r.max} format={formatter(block.fmt)} unit={block.unit}
-                refLabel={block.refLabel} labelWidth={block.labelWidth} />
+                refLabel={block.refLabel} labelWidth={Math.round(block.labelWidth * 1.15)} />
       {#if block.note}<figcaption>{block.note}</figcaption>{/if}
     </figure>
   {/if}
@@ -86,25 +86,25 @@
 <style>
   .x-h { margin: 18px 0 8px; }
   .x-caveat { display: flex; gap: 12px; margin: 14px 0; padding: 10px 14px; border-left: 3px solid #c98500; border-radius: 0 8px 8px 0; background: rgba(201, 133, 0, .08); }
-  .x-caveat b { flex: none; color: #c98500; font-size: 12px; letter-spacing: .01em; line-height: 1.55; }
+  .x-caveat b { flex: none; color: #c98500; font-size: 13.5px; letter-spacing: .01em; line-height: 1.55; }
   .decision { display: flex; gap: 12px; margin: 14px 0; padding: 10px 14px; border-left: 3px solid var(--off); border-radius: 0 8px 8px 0; background: rgba(76, 154, 255, .08); }
-  .decision b { flex: none; color: var(--off); font-size: 12px; letter-spacing: .01em; line-height: 1.55; }
+  .decision b { flex: none; color: var(--off); font-size: 13.5px; letter-spacing: .01em; line-height: 1.55; }
   .x-caveat span, .decision span { color: var(--ink); }
   .x-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 14px 0; }
   .x-kpi { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
-  .x-kpi b { font-size: 20px; font-variant-numeric: tabular-nums; }
-  .x-kpi-label { color: var(--muted); font-size: 12px; }
-  .x-kpi-sub { color: var(--muted); font-size: 11.5px; }
+  .x-kpi b { font-size: 23px; font-variant-numeric: tabular-nums; }
+  .x-kpi-label { color: var(--muted); font-size: 14px; }
+  .x-kpi-sub { color: var(--muted); font-size: 13px; }
   .x-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 8px 22px; margin: 10px 0; align-items: start; }
   .x-cell { min-width: 0; }
   .x-fig { margin: 10px 0; min-width: 0; max-width: 760px; }
-  .x-fig h4 { margin-top: 0; text-transform: none; font-size: 12px; color: var(--ink); }
-  .x-fig figcaption { margin-top: 4px; color: var(--muted); font-size: 12px; }
+  .x-fig h4 { margin-top: 0; text-transform: none; font-size: 14.5px; color: var(--ink); }
+  .x-fig figcaption { margin-top: 4px; color: var(--muted); font-size: 14px; }
   .x-court { max-width: 420px; }
-  .x-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; color: var(--muted); font-size: 12px; }
+  .x-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; color: var(--muted); font-size: 14px; }
   .x-legend span { display: inline-flex; align-items: center; gap: 6px; }
   .x-legend i { width: 14px; height: 3px; border-radius: 2px; }
   .x-more { margin: 12px 0; }
-  .x-more summary { cursor: pointer; color: var(--off); font-size: 13px; }
+  .x-more summary { cursor: pointer; color: var(--off); font-size: 15px; }
   @media (max-width: 760px) { .x-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -33,7 +33,7 @@
   }
   function tip(c: Col, v: unknown): string | undefined {
     if (c.ref == null || typeof v !== "number" || !Number.isFinite(v)) return c.title ?? undefined;
-    return `${format(v, c.fmt)} vs ${format(c.ref, c.fmt)} for all${c.low ? " (lower is better here)" : ""}`;
+    return `${c.label} ${format(v, c.fmt)}\nAll ${format(c.ref, c.fmt)}${c.low ? "\nLower is better here" : ""}`;
   }
 </script>
 
@@ -74,12 +74,12 @@
 <style>
   .dt { margin: 14px 0; min-width: 0; }
   .dt h4 { margin-top: 0; }
-  .dt-table { min-width: 0; font-size: 12.5px; }
-  .dt-table th, .dt-table td { padding: 5px 8px; white-space: nowrap; }
+  .dt-table { min-width: 0; font-size: 14.5px; }
+  .dt-table th, .dt-table td { padding: 6px 9px; font-size: 14.5px; white-space: nowrap; }
   .dt-table td:first-child { white-space: normal; min-width: 120px; }
   .sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-transform: inherit; cursor: pointer; text-align: inherit; }
   .sort:hover { color: var(--ink); }
   .arrow { margin-left: 3px; font-size: 10px; }
   .dt-foot { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin-top: 6px; }
-  .dt-note { color: var(--muted); font-size: 12px; }
+  .dt-note { color: var(--muted); font-size: 14px; }
 </style>

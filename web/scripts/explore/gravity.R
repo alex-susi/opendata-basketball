@@ -111,9 +111,9 @@ topic_gravity <- function(BL) {
                                                              v3 = three_per100[1], p3 = three_shrunk[1], arch = archetype[1]), by = canon][frames >= 100]
   per[, se := 0]  # placeholder for the table's column order
   per <- per[order(-grav)]
-  per[, shooter := fifelse(is.na(v3), "no season profile", fifelse(v3 >= 10 & p3 >= lg3, "high-volume shooter (10+ 3PA/100, at or above league %)",
-                   fifelse(v3 >= 5, "some volume (5-10 3PA/100, or below league %)", "rarely shoots threes (<5 3PA/100)")))]
-  sh_lv <- c("high-volume shooter (10+ 3PA/100, at or above league %)", "some volume (5-10 3PA/100, or below league %)", "rarely shoots threes (<5 3PA/100)")
+  per[, shooter := fifelse(is.na(v3), "no season profile", fifelse(v3 >= 10 & p3 >= lg3, "high-volume shooter",
+                   fifelse(v3 >= 5, "some volume", "rarely shoots threes")))]
+  sh_lv <- c("high-volume shooter", "some volume", "rarely shoots threes")
   A[, shooter := per$shooter[match(canon, per$canon)]]
   A[is.na(shooter), shooter := fifelse(is.na(three_per100), "no season profile", fifelse(three_per100 >= 10 & three_shrunk >= lg3, sh_lv[1], fifelse(three_per100 >= 5, sh_lv[2], sh_lv[3])))]
   rr_v <- per[!is.na(v3), cor(grav, v3)]
@@ -149,14 +149,15 @@ topic_gravity <- function(BL) {
             cols = c(list(col("zone4", "Zone")), lapply(band_lv, function(b) col(b, paste("ball", b), "num1")))),
       GRID(
         RATES("Room in the corner, by shooter type", lapply(sh_lv, function(l) mrow(l, A[spot == TRUE & zone4 == "corner three" & shooter == l]$near)), fmt = "num1",
-              ref = mean(A[spot == TRUE & zone4 == "corner three"]$near), unit = "ft to the nearest defender", label_width = 230),
+              ref = mean(A[spot == TRUE & zone4 == "corner three"]$near), unit = "ft to the nearest defender", label_width = 190),
         RATES("Room above the break, by shooter type", lapply(sh_lv, function(l) mrow(l, A[spot == TRUE & zone4 == "above-break three" & shooter == l]$near)), fmt = "num1",
-              ref = mean(A[spot == TRUE & zone4 == "above-break three"]$near), unit = "ft to the nearest defender", label_width = 230),
+              ref = mean(A[spot == TRUE & zone4 == "above-break three"]$near), unit = "ft to the nearest defender", label_width = 190),
         RATES("Spot-up gravity (expected − actual room), by shooter type", lapply(sh_lv, function(l) mrow(l, A[spot == TRUE & shooter == l]$grav)),
-              fmt = "num2", ref = 0, refLabel = "typical", unit = "ft tighter than typical", label_width = 230),
+              fmt = "num2", ref = 0, refLabel = "typical", unit = "ft tighter than typical", label_width = 190),
         RATES("Marker's position toward the ball (0 = on his man, 1 = at the ball)", lapply(sh_lv, function(l) mrow(l, A[spot == TRUE & shooter == l]$toward)),
-              fmt = "num2", ref = mean(A[spot == TRUE]$toward, na.rm = TRUE), unit = "of the way to the ball", label_width = 230)),
-      P(sprintf("Shooter types use the season aggregates (league three-point percentage %s; percentages shrunk with 100 attempts of prior weight). ", pct(lg3, 1)),
+              fmt = "num2", ref = mean(A[spot == TRUE]$toward, na.rm = TRUE), unit = "of the way to the ball", label_width = 190)),
+      P(sprintf("Shooter types use the season aggregates (league three-point percentage %s; percentages shrunk with 100 attempts of prior weight): ", pct(lg3, 1)),
+        "**high-volume shooter** = 10+ three-point attempts per 100 possessions at or above the league percentage; **some volume** = 5+ attempts otherwise; **rarely shoots threes** = under 5. ",
         sprintf("Across the %d players with 100+ spot-up frames (perimeter, 15+ ft from the ball, not just after his own screen), spot-up gravity correlates %.2f with three-point attempts per 100 possessions and %.2f with shrunk three-point percentage.",
                 nrow(per), rr_v, rr_p)),
       TAKE(sprintf("As a group, high-volume shooters were guarded %.2f ft tighter than a typical player in the same spot; players with some volume %.2f ft and players who rarely shoot threes %.2f ft. ",
@@ -166,11 +167,11 @@ topic_gravity <- function(BL) {
     SECTION("gv-players", "Players: spot-up gravity",
       GRID(
         SCAT("Spot-up gravity against season three-point volume", points = per[!is.na(v3), .(x = r2(v3, 1), y = r2(grav, 2), g = as.integer(p3 < lg3),
-                                                                                              tip = sprintf("%s: %.2f ft tighter than typical over %d frames; %.1f 3PA/100, %.1f%%", name, grav, frames, v3, 100 * p3))],
+                                                                                              tip = sprintf("%s\n%.2f ft tighter than typical\n%d frames\n%.1f 3PA per 100 possessions\n%.1f%% from three (shrunk)", name, grav, frames, v3, 100 * p3))],
              groups = c("3P% at or above league", "below league"), xlabel = "season 3PA per 100 possessions", ylabel = "gravity (ft)", radius = 4,
              lines = list(LINE(c(0, max(per$v3, na.rm = TRUE)), c(0, 0), color = "var(--muted)", dashed = TRUE))),
         SCAT("Spot-up gravity against shrunk three-point percentage", points = per[!is.na(p3), .(x = r2(p3, 3), y = r2(grav, 2), g = as.integer(v3 < 5),
-                                                                                                  tip = sprintf("%s: %.2f ft; %.1f%% (shrunk)", name, grav, 100 * p3))],
+                                                                                                  tip = sprintf("%s\n%.2f ft tighter than typical\n%.1f%% from three (shrunk)", name, grav, 100 * p3))],
              groups = c("5+ 3PA/100", "under 5"), xlabel = "season 3P% (shrunk)", ylabel = "gravity (ft)", xfmt = "pct1", radius = 4)),
       TABLE("Players with 100+ spot-up frames, by spot-up gravity", limit = 40, rows = per, cols = list(
         col("name", "Player"), col("team", "Team"), col("arch", "Archetype"), col("frames", "Frames", "int"),

@@ -32,7 +32,7 @@
       {@const v = s.values[i]}
       {@const bx = LEFT + band * i + band / 2 - (bw * series.length) / 2 + j * bw + 1}
       <g>
-        <title>{c} · {s.name}: {format(v)}</title>
+        <title>{`${c}\n${s.name}\n${format(v)}`}</title>
         <rect x={LEFT + band * i} y={TOP} width={band} height={H - BOTTOM - TOP} class="hit" />
         <path d={`M${bx},${H - BOTTOM} V${y(v) + Math.min(4, H - BOTTOM - y(v))} q0,-4 4,-4 h${bw - 10} q4,0 4,4 V${H - BOTTOM} Z`}
               fill={s.color ?? SERIES[j]} />
@@ -53,10 +53,10 @@
   .grid { stroke: var(--line); stroke-width: 1; }
   .axis { stroke: var(--muted); stroke-width: 1; }
   .ref { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
-  .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .tick { fill: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
   .hit { fill: transparent; }
   g:hover .hit { fill: rgba(255, 255, 255, .04); }
-  .legend-row { display: flex; gap: 14px; margin-top: 4px; color: var(--muted); font-size: 12px; }
+  .legend-row { display: flex; gap: 14px; margin-top: 4px; color: var(--muted); font-size: 14px; }
   .legend-row span { display: inline-flex; align-items: center; gap: 6px; }
   .legend-row i { width: 10px; height: 10px; border-radius: 2px; }
 </style>

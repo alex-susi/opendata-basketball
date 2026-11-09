@@ -181,7 +181,7 @@ topic_chains <- function(BL) {
       GRID(outcome_table(copy(hs)[, g := as.character(arcb)], "g", base = hc, label = "Attackers beyond the arc (mean)", title = "Shooters spotted up"),
            outcome_table(copy(hs)[, g := as.character(dpb)], "g", base = hc, label = "Defenders in the key (mean)", title = "Defenders packing the key")),
       SCAT("Offense hull against defense hull (one point per chance, coloured by whether it scored)",
-           points = hs[, .(x = r2(off_hull, 0), y = r2(def_hull, 0), g = as.integer(pts == 0), tip = sprintf("%s: %d pts, offense %.0f, defense %.0f sq ft", chance, pts, off_hull, def_hull))],
+           points = hs[, .(x = r2(off_hull, 0), y = r2(def_hull, 0), g = as.integer(pts == 0), tip = sprintf("%s\n%d points\noffense hull %.0f sq ft\ndefense hull %.0f sq ft", chance, pts, off_hull, def_hull))],
            groups = c("scored", "did not score"), xlabel = "offense hull (sq ft)", ylabel = "defense hull (sq ft)", xfmt = "int", yfmt = "int", radius = 2.5, opacity = 0.4),
       P("At the release of the shot (FGA chances): how many attackers were beyond the arc and how many defenders were in the key, against the shot's quality."),
       GRID(RATES("xPts per FGA by attackers beyond the arc at release", lapply(levels(R$arcb), function(l) mrow(l, R[arcb == l]$xpts)), fmt = "num2",

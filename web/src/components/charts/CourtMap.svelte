@@ -89,6 +89,6 @@
   .target-dot { fill: #0B0E14; pointer-events: none; }
   .probe { fill: none; stroke: #0B0E14; stroke-width: 1.2; stroke-dasharray: 4 3; pointer-events: none; }
   .readout { fill: #0B0E14; font-size: 13px; font-weight: 600; paint-order: stroke; stroke: #F1F3F6; stroke-width: 4px; pointer-events: none; }
-  figcaption { margin-top: 4px; font-size: 12px; color: var(--ink); text-align: center; }
+  figcaption { margin-top: 4px; font-size: 14px; color: var(--ink); text-align: center; }
   figcaption span { color: var(--muted); }
 </style>

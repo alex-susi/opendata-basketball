@@ -54,7 +54,7 @@
   const mapMax = $derived(Math.max(...RANGES.map((rg) => peak(kde(byRange(rg), gridOf(-30, 5.6, -24.6, 24.6), 1.5)))));
   const finderSpots = $derived(spots.map((r) => ({ sx: n(r.sx), sy: n(r.sy), rx: n(r.rx), ry: n(r.ry), off: r.off === true || r.off === "TRUE" })));
   const spotScatter = $derived(spots.map((r) => ({ x: n(r.shot_dist), y: n(r.r), g: r.off === true || r.off === "TRUE" ? 0 : 1,
-                                                   tip: `Shot from ${f(0)(r.shot_dist)} ft, rebound ${f(1)(r.r)} ft from the hoop` })));
+                                                   tip: `Shot from ${f(0)(r.shot_dist)} ft\nRebound ${f(1)(r.r)} ft from the hoop` })));
   // Each range's median rebound distance, drawn across the shot distances that range covers.
   const medianLines = $derived(RANGES.map((rg) => {
     const rows = spots.filter((r) => r.range === rg), d = rows.map((r) => n(r.shot_dist));
@@ -90,7 +90,7 @@
   const belowZero = $derived(E("bounce_minima").filter((r) => n(r.z) < 0).reduce((s, r) => s + n(r.n), 0));
   const allMinima = $derived(E("bounce_minima").reduce((s, r) => s + n(r.n), 0));
   const crossings = $derived(E("hoop_crossings").map((r) => ({ x: n(r.dx), y: n(r.dy), g: r.end === "camera right" ? 0 : 1,
-                                                               tip: `Game ${r.game_id}, ${r.end}: ${f(2)(r.dx)} ft along, ${f(2)(r.dy)} ft across` })));
+                                                               tip: `Game ${r.game_id}\n${r.end}\n${f(2)(r.dx)} ft along\n${f(2)(r.dy)} ft across` })));
   const meanOf = (rows: Row[] | undefined, key: string) => { const v = (rows ?? []).map((r) => n(r[key])).filter((x) => !Number.isNaN(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : NaN; };
   const rangeOf = (rows: Row[] | undefined, key: string) => { const v = (rows ?? []).map((r) => n(r[key])); return [Math.min(...v), Math.max(...v)]; };
   const median = (rows: Row[], key: string) => { const v = rows.map((r) => n(r[key])).filter((x) => !Number.isNaN(x)).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : NaN; };
@@ -200,7 +200,7 @@
         <div>
           <h4>One miss, ball height over time</h4>
           <Scatter points={example.map((r) => ({ x: n(r.t), y: n(r.z), g: r.key === true || r.key === "TRUE" ? 0 : 1,
-                                                  tip: `${f(2)(r.t)} s: ${f(2)(r.z)} ft${r.key === true || r.key === "TRUE" ? "" : " (interpolated)"}` }))}
+                                                  tip: `${f(2)(r.t)} s\n${f(2)(r.z)} ft high${r.key === true || r.key === "TRUE" ? "" : "\ninterpolated"}` }))}
                    lines={[{ points: example.map((r): [number, number] => [n(r.t), n(r.z)]), color: "var(--muted)" }]}
                    groups={["Keyframe", "Midpoint of its neighbours"]} events={exEvents} xlabel="Seconds after release" ylabel="Ball height (ft)"
                    radius={3.5} opacity={0.9} />
@@ -370,8 +370,8 @@
 
 <style>
   .rb-doc { max-width: 1120px; }
-  .rb-toc { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
-  .rb-toc .link { font-size: 13px; }
+  .rb-toc { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 14px 0 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .rb-toc .link { font-size: 15px; text-align: left; }
   .rb-grid { display: grid; gap: 20px; margin: 14px 0; align-items: start; }
   .rb-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rb-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -379,21 +379,21 @@
   .rb-explain p { color: var(--muted); }
   .rb-explain b, .rb-explain i { color: var(--ink); }
   .decision { display: flex; gap: 12px; margin: 14px 0; padding: 10px 14px; border-left: 3px solid var(--off); border-radius: 0 8px 8px 0; background: rgba(76, 154, 255, .08); }
-  .decision b { flex: none; color: var(--off); font-size: 12px; letter-spacing: .01em; text-transform: capitalize; line-height: 1.55; }
+  .decision b { flex: none; color: var(--off); font-size: 13.5px; letter-spacing: .01em; text-transform: capitalize; line-height: 1.55; }
   .concept { margin: 14px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .concept h4 { margin-top: 0; color: var(--ink); }
   .concept p { margin: 0; color: var(--muted); }
   .concept p + p { margin-top: 8px; }
   section > h3 { margin-top: 22px; }
   .concept b { color: var(--ink); }
-  .rb-note { color: var(--muted); font-size: 12.5px; }
+  .rb-note { color: var(--muted); font-size: 14.5px; }
   .rb-note b { color: var(--ink); }
   .rb-more { margin: 12px 0; }
-  .rb-more summary { cursor: pointer; color: var(--off); font-size: 13px; }
+  .rb-more summary { cursor: pointer; color: var(--off); font-size: 15px; }
   .rb-more .table-wrap { margin-top: 10px; }
   .rb-table.narrow { min-width: 0; width: auto; }
-  .rb-table td { font-size: 13px; }
-  code { font-size: 12.5px; }
+  .rb-table td { font-size: 15px; }
+  code { font-size: 14px; }
   @media (max-width: 860px) {
     .rb-grid.two { grid-template-columns: minmax(0, 1fr); }
     .rb-grid.three { gap: 8px; }

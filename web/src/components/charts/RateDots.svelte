@@ -28,7 +28,7 @@
   {#each rows as r, i (r.label)}
     {@const cy = TOP + i * ROW + ROW / 2}
     <g class="row">
-      <title>{r.label}: {format(r.rate, 1)} {unit} (90% interval {format(r.lo, 1)} to {format(r.hi, 1)}), n = {r.n}</title>
+      <title>{`${r.label}\n${format(r.rate, 1)} ${unit}\n90% interval ${format(r.lo, 1)} to ${format(r.hi, 1)}\nn = ${r.n}`}</title>
       <rect x="0" y={cy - ROW / 2} width={W} height={ROW} class="hit" />
       <text x={LEFT - 10} y={cy + 4} class="label" text-anchor="end">{r.label}</text>
       <line x1={x(r.lo)} x2={x(r.hi)} y1={cy} y2={cy} stroke={color} stroke-width="2" stroke-linecap="round" opacity="0.55" />
@@ -42,8 +42,8 @@
   .chart { width: 100%; height: auto; display: block; }
   .grid { stroke: var(--line); stroke-width: 1; }
   .ref { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
-  .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-  .label { fill: var(--ink); font-size: 12px; }
+  .tick { fill: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .label { fill: var(--ink); font-size: 14px; }
   .hit { fill: transparent; }
   .row:hover .hit { fill: rgba(255, 255, 255, .04); }
 </style>
