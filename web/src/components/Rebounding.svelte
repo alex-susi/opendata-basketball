@@ -372,13 +372,13 @@
   .rb-doc { max-width: 1120px; }
   .rb-toc { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 14px 0 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .rb-toc .link { font-size: 15px; text-align: left; }
-  .rb-grid { display: grid; gap: 20px; margin: 14px 0; align-items: start; }
+  .rb-grid { display: grid; gap: 28px; margin: 22px 0; align-items: start; }
   .rb-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rb-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .rb-grid h4 { margin-top: 0; }
   .rb-explain p { color: var(--muted); }
   .rb-explain b, .rb-explain i { color: var(--ink); }
-  .decision { display: flex; gap: 12px; margin: 14px 0; padding: 10px 14px; border-left: 3px solid var(--off); border-radius: 0 8px 8px 0; background: rgba(76, 154, 255, .08); }
+  .decision { display: flex; gap: 14px; margin: 22px 0; padding: 12px 16px; border-left: 3px solid var(--off); border-radius: 0 8px 8px 0; background: rgba(76, 154, 255, .08); }
   .decision b { flex: none; color: var(--off); font-size: 13.5px; letter-spacing: .01em; text-transform: capitalize; line-height: 1.55; }
   .concept { margin: 14px 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .concept h4 { margin-top: 0; color: var(--ink); }

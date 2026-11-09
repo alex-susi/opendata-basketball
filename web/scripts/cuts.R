@@ -12,13 +12,22 @@
 #   in/out  every off-ball screen's cutter: his run through the screen, from LEAD frames before it until he slows
 #           below SETTLE ft/s or AFTER frames pass (or gets the ball); "in" if it ends closer to the basket than it
 #           started, "out" if further. A basket cut it overlaps becomes that screen cut ("in").
+#   pop     a pick-and-pop: the screener of a SkillCorner pick, followed from the screen for up to POP_WIN frames (or
+#           until he gets the ball), set at least POP_SET ft from the hoop, who does not roll (never within ROLL_NEAR
+#           ft of the hoop and never ROLL_GAIN ft closer than at the screen) and ends at least POP_END ft out, either
+#           having moved POP_AWAY ft further from the hoop or finishing beyond the arc after running at least
+#           POP_RUN ft. The run is drawn like a cut; the coverage is the one on the screener (scrDefType).
 
 CUT_RULES <- list(min_speed = 9, min_toward = 7, min_frames = 12L, gap = 3L, min_gain = 8, max_start = 32, max_end = 14,
-                  lead = 12L, after = 50L, settle = 6, max_speed = 35)
+                  lead = 12L, after = 50L, settle = 6, max_speed = 35,
+                  pop_win = 62L, pop_set = 12, roll_near = 10, roll_gain = 6, pop_end = 16, pop_away = 3, pop_run = 4)
+CUT_THREE_R <- 6.75 * 3.28084
+CUT_THREE_Y <- 6.6 * 3.28084
 CUT_M <- 3.28084
 CUT_HOOP_X <- 14 * CUT_M - 1.575 * CUT_M
 
-#' The cuts of one game: f, f1 (tracking frames), pid, kind (basket, in, out) and the coverage on a screen's cutter.
+#' The cuts of one game: f, f1 (tracking frames), pid, kind (basket, in, out, pop) and the coverage on the cutter (on
+#' the screener for a pop).
 game_cuts <- function(game_id, ev, screens) {
   R <- CUT_RULES
   trk <- a$get_tracking(a$app_data, game_id)
@@ -99,6 +108,27 @@ game_cuts <- function(game_id, ev, screens) {
     }
     out <- rbind(out, data.table(f = g0, f1 = g1, pid = s$use, kind = if (p$hoop[b] < p$hoop[a0]) "in" else "out",
                                  cov = s$covUse))
+  }
+
+  # Pick-and-pops: the screener's run after his screen, if he moves out instead of rolling.
+  pk <- if (is.null(screens)) NULL else screens[kind == "pick" & !is.na(scr)]
+  for (i in seq_len(if (is.null(pk)) 0L else nrow(pk))) {
+    s <- pk[i]
+    p <- d[pid == s$scr & frame >= s$f & frame <= s$f + R$pop_win]
+    if (nrow(p) < 10 || p$frame[1] - s$f > 3) next
+    # Unbroken from the screen, up to and including the frame he gets the ball.
+    brk <- which(diff(p$frame) != 1L)
+    if (length(brk)) p <- p[seq_len(brk[1])]
+    got <- which(p$hold)
+    if (length(got)) p <- p[seq_len(got[1])]
+    if (nrow(p) < 10) next
+    h0 <- p$hoop[1]; h1 <- p$hoop[nrow(p)]
+    if (h0 < R$pop_set || min(p$hoop) <= R$roll_near || h0 - min(p$hoop) >= R$roll_gain || h1 < R$pop_end) next
+    dx <- CUT_HOOP_X - p$x[nrow(p)]
+    arc <- if (dx <= sqrt(CUT_THREE_R^2 - CUT_THREE_Y^2)) abs(p$y[nrow(p)]) >= CUT_THREE_Y else h1 >= CUT_THREE_R
+    run <- sum(sqrt(diff(p$sx)^2 + diff(p$sy)^2), na.rm = TRUE)
+    if (!(h1 - h0 >= R$pop_away || (arc && run >= R$pop_run))) next
+    out <- rbind(out, data.table(f = s$f, f1 = p$frame[nrow(p)], pid = s$scr, kind = "pop", cov = s$covScr))
   }
   if (!nrow(out)) return(NULL)
   out[order(f)]

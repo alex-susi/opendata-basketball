@@ -8,10 +8,12 @@ export type Fmt = "text" | "int" | "num1" | "num2" | "pct" | "pct1";
 
 export interface RateRow { label: string; rate: number; lo: number | null; hi: number | null; n: number }
 export interface Line { points: [number, number][]; label?: string | null; name?: string; color?: string | null; dashed?: boolean }
-export interface Col { key: string; label: string; fmt: Fmt; ref?: number | null; scale?: number | null; low?: boolean; title?: string | null }
+export interface Col { key: string; label: string; fmt: Fmt; ref?: number | null; scale?: number | null; low?: boolean; title?: string | null; group?: string | null }
 
 export type Block =
-  | { type: "p" | "h" | "takeaway" | "caveat"; text: string }
+  | { type: "p" | "h"; text: string }
+  | { type: "list" | "takeaway" | "caveat"; items: string[] }
+  | { type: "widget"; name: string; data?: string | null }
   | { type: "kpis"; items: { label: string; value: string; sub: string }[] }
   | { type: "grid"; cols: number; blocks: Block[] }
   | { type: "details"; summary: string; blocks: Block[] }

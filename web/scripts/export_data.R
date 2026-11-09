@@ -148,8 +148,8 @@ stopifnot(identical(shown$id, plays$id))
 actors <- split(a$app_data$actors[, .(type, pid)], a$app_data$actors$poss_id)
 # Cuts (cuts.R; the site only, not the Shiny app): a play has the cuts that start inside its viewing window. They
 # join its actions for the Action filter, its chips in the play list (in the order they happen) and its actors.
-CUT_TYPES <- c(cut_basket = "Basket Cut", cut_in = "Off-Ball Screen Cut (In)", cut_out = "Off-Ball Screen Cut (Out)")
-CUT_CHIPS <- c(cut_basket = "Basket Cut", cut_in = "Screen Cut In", cut_out = "Screen Cut Out")
+CUT_TYPES <- c(cut_basket = "Basket Cut", cut_in = "Off-Ball Screen Cut (In)", cut_out = "Off-Ball Screen Cut (Out)", cut_pop = "Pick and Pop")
+CUT_CHIPS <- c(cut_basket = "Basket Cut", cut_in = "Screen Cut In", cut_out = "Screen Cut Out", cut_pop = "Pick and Pop")
 # Each action's first frame and how many times it happens in the possession (the chips show "×n" for more than one).
 first_at <- a$app_data$events[, .(frame = min(frame), n = .N), by = .(poss_id, type)]
 play_actions <- function(i) {

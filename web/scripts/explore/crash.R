@@ -109,14 +109,17 @@ topic_crash <- function(BL) {
 
   sections <- list(
     SECTION("cr-question", "The question and the data",
-      P("After a shot goes up, each attacker chooses: go to the glass, hold his spot or get back. Crashing wins offensive rebounds; getting back stops transition. ",
-        "This tab counts those choices on every shot in the ten games (roles from the site's rebounding roles, judged during the flight, before the ball comes off the rim) and follows each live miss to its rebound and to the next chance."),
+      P("After a shot goes up, each attacker chooses to go to the glass, hold his spot or get back."),
+      BUL("Crashing wins offensive rebounds. Getting back stops transition",
+          "This tab counts those choices on every shot in the ten games, using the site's rebounding roles",
+          "Roles are judged during the shot's flight, before the ball comes off the rim",
+          "Each live miss is followed to its rebound and to the next chance"),
       KPIS(KPI("Live misses", int(nrow(m)), sprintf("of %s shots", int(nrow(s)))),
            KPI("Crashers per miss", sprintf("%.2f", mean(m$n_crash)), sprintf("%.2f retreat or safety", mean(m$n_back))),
            KPI("Offense keeps the ball", pct(base_oreb), "offensive or team rebound"),
            KPI("Opponent after a defensive rebound", sprintf("%.2f pts", dreb_base), sprintf("transition %s", pct(mean(dreb$n_trans, na.rm = TRUE))))),
-      CAVEAT("Roles come from simple distance rules on the tracking (glass.R). Players getting back are often off camera (", pct(mean(m$seen_back, na.rm = TRUE)),
-             " of their frames detected), so their positions are partly extrapolated.")),
+      CAVEAT("Roles come from simple distance rules on the tracking (web/scripts/glass.R)",
+             sprintf("Players getting back are often off camera (%s of their frames detected), so their positions are partly extrapolated", pct(mean(m$seen_back, na.rm = TRUE))))),
     SECTION("cr-rate", "Crash rate and offensive rebounds",
       GRID(
         RATES("Offense keeps the ball, by number of crashers", lapply(cr_lv, function(l) rrow(l, sum(m[crb == l]$oreb), nrow(m[crb == l]))), ref = base_oreb, unit = "of live misses kept", refLabel = "all"),
@@ -126,12 +129,13 @@ topic_crash <- function(BL) {
         RATES("…when the shooter followed his shot", list(rrow("followed", sum(m[follow == TRUE]$oreb), nrow(m[follow == TRUE])),
                                                          rrow("did not", sum(m[follow == FALSE]$oreb), nrow(m[follow == FALSE]))), ref = base_oreb, unit = "of live misses kept")),
       TABLE("Crashers by shot range", limit = 12, rows = dcast(m[!is.na(zone3), .(r = mean(oreb), n = .N), by = .(zone3, crb)], zone3 ~ crb, value.var = c("r", "n")), cols = c(
-        list(col("zone3", "Shot")), lapply(cr_lv, function(l) col(paste0("r_", l), paste(l, "crashing"), "pct", ref = base_oreb, scale = 0.15)),
+        list(col("zone3", "Shot range", title = "Where the missed shot was taken from")), lapply(cr_lv, function(l) col(paste0("r_", l), paste(l, "crashing"), "pct", ref = base_oreb, scale = 0.15)),
         lapply(cr_lv, function(l) col(paste0("n_", l), paste("n", l), "int")))),
-      TAKE(sprintf("With no crasher the offense kept %s of live misses; with one %s, two %s, three or more %s.",
-                   pct(tr[crb == "0"]$p_oreb), pct(tr[crb == "1"]$p_oreb), pct(tr[crb == "2"]$p_oreb), pct(tr[crb == "3+"]$p_oreb)))),
+      TAKE(sprintf("With no crasher the offense kept %s of live misses", pct(tr[crb == "0"]$p_oreb)),
+           sprintf("With one crasher %s, two %s, three or more %s", pct(tr[crb == "1"]$p_oreb), pct(tr[crb == "2"]$p_oreb), pct(tr[crb == "3+"]$p_oreb)))),
     SECTION("cr-cost", "What crashing costs: the opponent's next chance",
-      P("When the defense gets the rebound, the attackers who crashed are behind the play. The opponent's next chance (rebounds.nextChanceId) by how many attackers crashed and how many got back."),
+      BUL("When the defense gets the rebound, the attackers who crashed are behind the play",
+          "These charts follow the opponent's next chance (rebounds.nextChanceId), by how many attackers crashed and how many got back"),
       GRID(
         RATES("Opponent's points in the next chance, by crashers", lapply(cr_lv, function(l) mrow(l, dreb[crb == l]$n_pts)), fmt = "num2", ref = dreb_base, unit = "points per chance"),
         RATES("Opponent's next chance is transition, by crashers", lapply(cr_lv, function(l) { x <- dreb[crb == l & !is.na(n_trans)]; rrow(l, sum(x$n_trans), nrow(x)) }),
@@ -145,7 +149,7 @@ topic_crash <- function(BL) {
         col("crb", "Crashers"), col("n", "Live misses", "int"), col("p_oreb", "P(keep)", "pct"), col("pts_after_oreb", "Pts after keeping", "num2"),
         col("opp_pts", "Opp. pts after losing it", "num2"), col("opp_trans", "Opp. transition", "pct"),
         col("net", "Net per miss", "num2", ref = 0, scale = 0.3)),
-        note = "Net = P(keep) × points in the offense's next chance − (1 − P(keep)) × the opponent's points in theirs. A tally of these games, not a model; each term has its own noise."),
+        note = "Net = P(keep) × points in the offense's next chance − (1 − P(keep)) × the opponent's points in theirs. A tally of these games, not a model. Each term has its own noise."),
       COLS("Net points per live miss by crashers", cr_lv, list(SERIES1("Net", tr$net)), fmt = "num2", labels = TRUE)),
     SECTION("cr-who", "Crashers: start, gain and box-outs",
       GRID(
@@ -160,14 +164,16 @@ topic_crash <- function(BL) {
                                                                                    nrow(cz[zone == l | (l == "other two" & zone %in% c("paint", "mid-range"))]))),
               ref = mean(cz$got_it), unit = "of misses he crashed"))),
     SECTION("cr-position", "Who was nearest the ball, and who got it",
-      P(sprintf("For %s rebounds a player secured, the player nearest the spot where it was secured, measured when the ball reached the rim, got it %s of the time. ",
-                int(uniqueN(nr$shot)), pct(near_share)),
-        sprintf("The offense had the nearest player on %s of these rebounds and secured %s of them. ", pct(off_near), pct(off_got)),
-        "A player who collects more than he was nearest for beats closer players to the ball (reach, timing, effort); fewer means others took balls that came his way. This is a simple stand-in for the archived court-control question."),
+      BUL(sprintf("For %s rebounds a player secured, the player nearest the spot where it was secured (measured when the ball reached the rim) got it %s of the time",
+                  int(uniqueN(nr$shot)), pct(near_share)),
+          sprintf("The offense had the nearest player on %s of these rebounds and secured %s of them", pct(off_near), pct(off_got)),
+          "A player who collects more than he was nearest for beats closer players to the ball (reach, timing, effort)",
+          "Fewer means others took balls that came his way",
+          "This is a simple stand-in for the archived court-control question"),
       TABLE("Players: rebounds collected vs times nearest when the ball hit the rim", limit = 30, rows = pos, cols = list(
         col("name", "Player"), col("team", "Team"), col("nearest", "Nearest", "int"), col("got", "Collected", "int"),
         col("beyond", "Collected − nearest", "int", ref = 0, scale = 4)),
-        note = "Rebounds both teams secured; six or more as nearest or collector. 'Nearest' uses the spot where the ball was secured, which already depends on who got it."),
+        note = "Rebounds both teams secured, six or more as nearest or collector. 'Nearest' uses the spot where the ball was secured, which already depends on who got it."),
       TABLE("Attackers: crash rate and offensive rebounds (40+ shots on court, not shooting)", limit = 30, rows = pl, cols = list(
         col("name", "Player"), col("team", "Team"), col("shots", "Shots", "int"), col("crash_rate", "Crash rate", "pct", ref = mean(g[role != "shooter"]$role %in% c("crash", "follow")), scale = 0.2),
         col("back", "Got back", "int"), col("misses_crashed", "Misses crashed", "int"), col("oreb", "OREB", "int"),
@@ -180,10 +186,13 @@ topic_crash <- function(BL) {
         col("opp_pts", "Opp. pts after DREB", "num2", ref = dreb_base, scale = 0.3, low = TRUE)),
         note = "One or two games per team.")),
     SECTION("cr-limits", "What this shows and does not",
-      P("It shows how crash numbers relate to offensive rebounds and to the opponent's next chance in these games. It does not show what would happen if a team crashed one more player: ",
-        "teams crash more on certain shots (short misses, bigs on the floor) and against certain opponents."),
-      P("If this becomes the topic: the interactive version the brief describes (move players after the release and see P(offensive rebound) and the transition risk) needs a rebound-location model and a ",
-        "who-gets-there-first model; both were built and archived on 2026-11-06 (zz_Archive/src/rebounding, court control in web/src/lib/control.ts). The descriptive tables here are the ground truth they would have to reproduce."))
+      BUL("It shows how crash numbers relate to offensive rebounds and to the opponent's next chance in these games",
+          "It does not show what would happen if a team crashed one more player",
+          "Teams crash more on certain shots (short misses, bigs on the floor) and against certain opponents"),
+      H("If this becomes the topic"),
+      BUL("The interactive version (move players after the release, see P(offensive rebound) and the transition risk) needs a rebound-location model and a who-gets-there-first model",
+          "Both were built and archived on 2026-11-06 (zz_Archive/src/rebounding, court control in web/src/lib/control.ts)",
+          "The descriptive tables here are the ground truth they would have to reproduce"))
   )
   DOC("crash", "Crashing the glass", "How many attackers crash after a shot, what it buys in offensive rebounds, and what it costs in the opponent's next chance.", sections)
 }

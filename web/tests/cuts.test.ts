@@ -41,6 +41,20 @@ describe("cuts", () => {
     }
   });
 
+  it("include pick-and-pops by a pick's screener who ends away from the rim", () => {
+    const pops = cuts.filter(({ c }) => c.kind === "pop");
+    const picks = loaded.flatMap((play) => play.ann!.screens.filter((s) => s.kind === "pick"));
+    expect(pops.length).toBeGreaterThan(0);
+    expect(pops.length / picks.length).toBeLessThan(0.4);
+    for (const { play, c } of pops) {
+      expect(play.ann!.screens.some((s) => s.kind === "pick" && s.scr === c.pid && s.f === c.f)).toBe(true);
+      const p = play.players.find((q) => q.id === c.pid)!;
+      const i1 = play.frames.indexOf(c.f1);
+      if (i1 < 0 || Number.isNaN(p.x[i1])) continue;
+      expect(Math.hypot(HOOP_X - p.x[i1], p.y[i1])).toBeGreaterThanOrEqual(14);   // 16 ft on smoothed positions at export
+    }
+  });
+
   it("cover every off-ball screen's cutter", () => {
     let screens = 0, covered = 0;
     for (const play of loaded) {

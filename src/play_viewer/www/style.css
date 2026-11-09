@@ -422,6 +422,12 @@ body {
 .apart, .pc-end ul { margin: 0; padding: 0; list-style: none; font-size: 13px; }
 .apart li, .pc-end li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 6px; padding: 2px 0; }
 .apart .num, .pc-end .num { color: var(--muted); text-align: right; }
+/* What sets an archetype apart: features above the league average on the left, below it on the right. */
+.apart-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 28px; }
+.apart-col h5 { margin: 0 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+.apart .num.pos { color: #4cc27a; font-weight: 600; }
+.apart .num.neg { color: #e66767; font-weight: 600; }
+@media (max-width: 640px) { .apart-cols { grid-template-columns: minmax(0, 1fr); } }
 .facts { max-width: 820px; margin: 14px 0 0; padding-left: 18px; color: var(--muted); }
 .facts li { margin-bottom: 4px; }
 .facts b { color: var(--ink); font-weight: 600; }

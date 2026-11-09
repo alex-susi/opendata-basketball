@@ -38,6 +38,6 @@
 
 <style>
   .x-doc { max-width: 1180px; }
-  .x-toc { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 14px 0 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .x-toc { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin: 18px 0 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
   .x-toc .link { font-size: 15px; text-align: left; }
 </style>

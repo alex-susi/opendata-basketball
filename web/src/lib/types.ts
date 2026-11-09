@@ -228,8 +228,8 @@ export interface AnnDrive {
 }
 
 /** An off-ball cut (web/scripts/cuts.R, lib/cuts.ts): who, from when to when, and whether it went to the basket without a screen, or through
- * an off-ball screen in toward it or out away from it; the coverage on the cutter for a screen. */
-export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "in" | "out"; cov?: string }
+ * an off-ball screen in toward it or out away from it, or a pick-and-pop by the screener; the coverage on the cutter for a screen (on the screener for a pop). */
+export interface AnnCut { f: number; f1: number; pid: number; kind: "basket" | "in" | "out" | "pop"; cov?: string }
 
 /** One attacker's rebounding role while a shot is in the air (web/scripts/glass.R): crash, back (shown "Retreat"),
  * safety, hold, or for the shooter, follow / shooter. d0, d1: ft from the hoop at release and when the flight ends.

@@ -2082,3 +2082,25 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   typical, others ~0.25 ft looser, but player-level gravity barely tracks season shooting (r −0.02 volume, 0.11 %).
 - **Not done:** the interactive crash app (needs the archived rebound and court-control models); any adjustment for
   team, opponent or lineup; game-clustered intervals.
+
+## 2026-11-09 — Pick-and-pops, four-situation gravity, room explorer, readability (site)
+
+- **Pick-and-pops (`web/scripts/cuts.R`, kind `pop`):** the screener of a SkillCorner pick, followed for up to 2.5 s
+  (or until he gets the ball), set 12+ ft from the hoop, who never rolls (never within 10 ft of the hoop, never 6 ft
+  closer) and ends 16+ ft out, having moved 3+ ft further away or finished beyond the arc after a 4+ ft run. 320 in
+  the ten games (about 16% of picks). Shown in the play viewer like cuts (route, "Pop" tag, "Pick and Pop" on the
+  timeline and in the Action filter, `cut_pop`), on the Pre-shot actions tab ("Pick → Pop") and the Gravity tab.
+  Export and parity reference rerun; a test checks that every pop is a pick's screener ending away from the rim.
+- **Gravity, four situations (NBA-style):** on or off the ball × perimeter (more than 20 ft from the hoop, the NBA's
+  split) or interior. Gravity = expected minus actual distance to the nearest defender, expected = mean over all
+  attackers in the same role, hoop-distance band and (off the ball) ball-distance band. Minutes = sampled half-court
+  frames × 0.2 s. Only 195 such minutes exist across the ten games (all ten players must be on camera), so the table
+  keeps players with 3+ minutes and blanks cells under half a minute. The NBA uses a defensive-pressure model; this
+  uses distance, which is said on the tab.
+- **Room explorer (`GravityRoom.svelte`, `explore_gravity_room.json`):** pick an off-ball spot, a ball spot and how
+  often that kind of player shoots from his zone (thirds of season attempts per 100 possessions in that zone); the
+  court shows the kernel-weighted mean room (bandwidths 2.5 ft on the player, 5 ft on the ball, every 3rd off-ball
+  frame, mirrored left-right). Descriptive, not a model.
+- **Readability:** prose on the exploration tabs is bullets (`BUL`, multi-item `TAKE`/`CAVEAT`); every table header
+  has a one-line description (`web/scripts/explore/columns.R`); larger text and spacing on the non-viewer tabs;
+  Archetypes split "what sets it apart" into above- and below-average columns (green/red), also in the Shiny app.

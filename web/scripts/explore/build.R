@@ -20,6 +20,7 @@ source(file.path(scripts, "annotations.R"))
 source(file.path(scripts, "cuts.R"))
 source(file.path(scripts, "glass.R"))
 source(file.path(here, "common.R"))
+source(file.path(here, "columns.R"))
 
 TOPICS <- c("paint", "chains", "closeouts", "crash", "lanes", "advantage", "gravity")
 want <- intersect(args, TOPICS)

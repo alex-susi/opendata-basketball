@@ -140,16 +140,20 @@ archetype_card <- function(k, side_out) {
   prof <- side_out$cluster_profiles[cluster == k]
   typical <- m[defines_clusters == TRUE][order(-probability, -season_possessions)][seq_len(min(EXAMPLES, .N)), player]
   feature_row <- function(r) {
-    tags$li(span(class = "num", sprintf("%+.1f", r$z)), lower_first(dictionary_text(r$feature, side_out)))
+    tags$li(span(class = paste("num", if (r$z >= 0) "pos" else "neg"), sprintf("%+.1f", r$z)), lower_first(dictionary_text(r$feature, side_out)))
   }
-  rows <- rbind(prof[order(-z)][seq_len(TOP_FEATURES)], prof[order(z)][seq_len(2L)])
+  # Two columns: the features furthest above the league average, and those furthest below it.
+  hi <- prof[z > 0][order(-z)][seq_len(min(TOP_FEATURES, .N))]
+  lo <- prof[z < 0][order(z)][seq_len(min(TOP_FEATURES, .N))]
+  side_list <- function(rows, title) div(class = "apart-col", tags$h5(title),
+                                         tags$ul(class = "apart", lapply(seq_len(nrow(rows)), function(i) feature_row(rows[i]))))
   div(class = "panel arch-card",
       tags$h3(swatch(name), name),
       p(class = "meta", sprintf("%d players · %d well-sampled · mean probability %.2f", nrow(m), sum(m$defines_clusters), mean(m$probability))),
       if (!is.null(ARCHETYPE_NOTES[[name]])) p(ARCHETYPE_NOTES[[name]]),
       p(class = "meta", tags$b("Most typical: "), paste(typical, collapse = ", ")),
       tags$h4("What sets it apart"),
-      tags$ul(class = "apart", lapply(seq_len(nrow(rows)), function(i) feature_row(rows[i]))))
+      div(class = "apart-cols", side_list(hi, "More than average"), side_list(lo, "Less than average")))
 }
 
 dictionary_text <- function(feature, side_out) side_out$component_loadings$definition[match(feature, side_out$component_loadings$feature)]

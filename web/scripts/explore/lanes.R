@@ -109,8 +109,10 @@ topic_lanes <- function(BL) {
 
   sections <- list(
     SECTION("ln-question", "The question and the data",
-      P("A driving lane is the path from the ball handler to the rim. It opens when his own defender is beaten or out of position and the help is far from that path. ",
-        "For each of SkillCorner's drives this tab measures the lane at the start of the drive and in the three seconds before, and relates it to what the drive produced."),
+      P("A driving lane is the path from the ball handler to the rim."),
+      BUL("It opens when his own defender is beaten or out of position, and the help is far from that path",
+          sprintf("**Lane** = the straight line from the ball handler to the hoop. A defender is in it when he is within %d ft of it and between the two", LANE_W),
+          "For each of SkillCorner's drives, this tab measures the lane at the start of the drive and in the three seconds before, and relates it to what the drive produced"),
       KPIS(KPI("Drives", int(nrow(d)), sprintf("%s with full tracking at the start", int(nrow(ok)))),
            KPI("Blow-by", pct(bb), "SkillCorner's flag"),
            KPI("Help in the lane at the start", sprintf("%.2f", mean(ok$help_lane)), sprintf("defenders within %d ft of the path, besides his own", LANE_W)),
@@ -124,7 +126,9 @@ topic_lanes <- function(BL) {
       drive_panel("angb", levels(ok$angb), "Own defender's angle"),
       drive_panel("gapb", levels(ok$gapb), "On-ball gap")),
     SECTION("ln-spacing", "Spacing around the drive",
-      P("Spacers are the four other attackers beyond the arc; bigs in the key are attackers (not the driver) standing in the key. Both are measured at the drive's start."),
+      BUL("**Spacers** = the four other attackers beyond the arc",
+          "**Attackers in the key** = attackers other than the driver standing in the key",
+          "Both are measured at the drive's start"),
       drive_panel("spb", levels(ok$spb), "Spacers beyond the arc"),
       drive_panel("bkb", levels(ok$bkb), "Attackers in the key"),
       GRID(RATES("Help defenders in the lane by spacers", lapply(levels(ok$spb), function(l) mrow(l, ok[spb == l]$help_lane)), fmt = "num2",
@@ -132,18 +136,19 @@ topic_lanes <- function(BL) {
            RATES("Help defenders in the lane by attackers in the key", lapply(levels(ok$bkb), function(l) mrow(l, ok[bkb == l]$help_lane)), fmt = "num2",
                  ref = mean(ok$help_lane), unit = "help defenders in the lane", refLabel = "all"))),
     SECTION("ln-how", "How lanes open: the three seconds before",
-      P("The same measures every 0.2 s from 3 s before the drive's start to 1 s after, averaged by how SkillCorner says the drive was created (at least 15 drives per point)."),
+      BUL("The same measures every 0.2 s, from 3 s before the drive's start to 1 s after",
+          "Averaged by how SkillCorner says the drive was created, with at least 15 drives per point"),
       GRID(
         SCAT("Help defenders in the lane", lines = LINES_BY(tlm, "t", "help_lane", "cat", cat_lv), xlabel = "seconds from the drive's start", ylabel = "defenders"),
         SCAT("On-ball gap (ft)", lines = LINES_BY(tlm, "t", "gap", "cat", cat_lv), xlabel = "seconds from the drive's start", ylabel = "ft"),
         SCAT("Own defender's angle from the lane (°)", lines = LINES_BY(tlm, "t", "angle", "cat", cat_lv), xlabel = "seconds from the drive's start", ylabel = "degrees", yfmt = "int"),
         SCAT("Blow-by vs not: own defender's angle (°)", lines = LINES_BY(tlb, "t", "angle", "grp", c("blow-by", "no blow-by")), xlabel = "seconds from the drive's start", ylabel = "degrees", yfmt = "int")),
       TABLE("Two seconds before vs the start, by how the drive was created", limit = 8, rows = chg, cols = list(
-        col("cat", "Created by"), col("n", "Drives", "int"), col("hl0", "Help in lane −2 s", "num2"), col("hl1", "at start", "num2"),
-        col("g0", "On-ball gap −2 s", "num1"), col("g1", "at start", "num1"), col("a0", "Angle −2 s (°)", "num1"), col("a1", "at start (°)", "num1"))),
-      TAKE(sprintf("Blow-by drives start with the ball handler's defender at %.0f° from the lane on average, against %.0f° for the rest; ",
+        col("cat", "Created by"), col("n", "Drives", "int"), col("hl0", "Help in lane −2 s", "num2"), col("hl1", "Help in lane at start", "num2"),
+        col("g0", "On-ball gap −2 s", "num1"), col("g1", "On-ball gap at start", "num1"), col("a0", "Angle −2 s (°)", "num1"), col("a1", "Angle at start (°)", "num1"))),
+      TAKE(sprintf("Blow-by drives start with the ball handler's defender %.0f° off the lane on average, against %.0f° for the rest",
                    mean(ok[blowby %in% TRUE]$angle, na.rm = TRUE), mean(ok[blowby %in% FALSE]$angle, na.rm = TRUE)),
-           sprintf("with no help defender in the lane %s of drives end in a shot near the basket, with two or more %s.",
+           sprintf("With no help defender in the lane, %s of drives end in a shot near the basket. With two or more, %s",
                    pct(mean(ok[help_lane == 0]$rim_shot)), pct(mean(ok[help_lane >= 2]$rim_shot))))),
     SECTION("ln-players", "Drivers",
       TABLE("Players with 8+ drives: the lanes they attacked", limit = 30, rows = pl, cols = list(
@@ -151,8 +156,11 @@ topic_lanes <- function(BL) {
         col("help_lane", "Help in lane", "num2", ref = mean(ok$help_lane), scale = 0.5, low = TRUE), col("gap", "On-ball gap (ft)", "num1"),
         col("spacers", "Spacers", "num1"), col("rim", "Shot near basket", "pct"), col("ppc", "Pts/chance", "num2", ref = mean(d$pts), scale = 0.4)))),
     SECTION("ln-limits", "What this shows and does not",
-      P("It shows the state of the floor when drives start and how it changes in the seconds before, by how the drive was set up. The lane is a straight line to the rim, which simplifies real drives (they curve, and finish off either side)."),
-      P("If this becomes the topic: the shape of the lane over time is the natural feature for a drive-outcome model; compare it with the same shape on possessions where no drive happened, to see whether drivers pick open lanes or open lanes create drives."))
+      BUL("It shows the state of the floor when drives start and how it changes in the seconds before, by how the drive was set up",
+          "The lane is a straight line to the rim, which simplifies real drives. They curve, and finish off either side"),
+      H("If this becomes the topic"),
+      BUL("The shape of the lane over time is the natural feature for a drive-outcome model",
+          "Compare it with the same shape on possessions where no drive happened, to see whether drivers pick open lanes or open lanes create drives"))
   )
   DOC("lanes", "Driving lanes", "How the path to the rim looks when drives start, how it opens in the seconds before, and what open and crowded lanes produce.", sections)
 }

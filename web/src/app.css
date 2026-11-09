@@ -516,11 +516,13 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .doc { height: calc(100vh - var(--bar)); overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 .doc-inner { max-width: 1080px; margin: 0 auto; padding: 28px 20px 56px; font-size: 16px; line-height: 1.55; }
 .doc h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }
-.doc h2 { margin: 0 0 12px; font-size: 21px; font-weight: 700; }
+.doc h2 { margin: 0 0 18px; font-size: 21px; font-weight: 700; }
 .doc h3 { margin: 0; font-size: 17px; font-weight: 700; }
-.doc h4 { margin: 12px 0 4px; font-size: 13px; font-weight: 600; letter-spacing: .01em; text-transform: capitalize; color: var(--muted); }
-.doc p { margin: 0 0 10px; }
-.doc section { margin-top: 40px; }
+.doc h4 { margin: 20px 0 8px; font-size: 13px; font-weight: 600; letter-spacing: .01em; text-transform: capitalize; color: var(--muted); }
+.doc p { margin: 0 0 14px; }
+.doc section { margin-top: 56px; }
+/* A rule and some air between big sections, so each topic starts clearly. */
+.doc section + section { padding-top: 36px; border-top: 1px solid var(--line); }
 .doc .lead { max-width: 820px; margin-bottom: 12px; color: var(--muted); font-size: 16px; font-weight: 400; line-height: 1.55; }
 .doc h1 + .lead { font-size: 17px; color: var(--ink); }
 .doc .meta { color: var(--muted); font-size: 14px; }
@@ -548,6 +550,12 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .apart, .pc-end ul { margin: 0; padding: 0; list-style: none; font-size: 15px; }
 .apart li, .pc-end li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 6px; padding: 2px 0; }
 .apart .num, .pc-end .num { color: var(--muted); text-align: right; }
+/* What sets an archetype apart: features above the league average on the left, below it on the right. */
+.apart-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 28px; }
+.apart-col h5 { margin: 0 0 4px; color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+.apart .num.pos { color: #4cc27a; font-weight: 600; }
+.apart .num.neg { color: #e66767; font-weight: 600; }
+@media (max-width: 640px) { .apart-cols { grid-template-columns: minmax(0, 1fr); } }
 .facts { max-width: 820px; margin: 14px 0 0; padding-left: 18px; color: var(--muted); }
 .facts li { margin-bottom: 4px; }
 .facts b { color: var(--ink); font-weight: 600; }

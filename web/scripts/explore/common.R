@@ -157,10 +157,15 @@ outcome_table <- function(ch, by, base = ch, min_n = 10, label = "Group", limit 
 
 # ---- document blocks (rendered by web/src/components/explore/Block.svelte) ----------------------------------------
 
+#' One short paragraph (its pieces are pasted together).
 P <- function(...) list(type = "p", text = paste0(...))
 H <- function(text) list(type = "h", text = text)
-TAKE <- function(...) list(type = "takeaway", text = paste0(...))
-CAVEAT <- function(...) list(type = "caveat", text = paste0(...))
+#' A bulleted list: each argument is one bullet (a character vector of length > 1 is pasted into one bullet).
+bullets <- function(...) lapply(list(...), function(x) paste0(x, collapse = ""))
+BUL <- function(...) list(type = "list", items = bullets(...))
+#' A takeaway or caveat box: each argument is one bullet (a single argument shows as plain text).
+TAKE <- function(...) list(type = "takeaway", items = bullets(...))
+CAVEAT <- function(...) list(type = "caveat", items = bullets(...))
 KPIS <- function(...) list(type = "kpis", items = list(...))
 KPI <- function(label, value, sub = "") list(label = label, value = value, sub = sub)
 GRID <- function(..., cols = 2) list(type = "grid", cols = cols, blocks = Filter(Negate(is.null), list(...)))
@@ -199,8 +204,10 @@ COURT <- function(title, x, y, w = NULL, caption = NULL, bw = 1.5) {
 }
 #' A table column. fmt: text, int, num1, num2, pct, pct1. ref/scale tint the cell blue above ref and red below
 #' (low = TRUE flips which side is called better in the tooltip).
-col <- function(key, label, fmt = "text", ref = NULL, scale = NULL, low = FALSE, title = NULL) {
-  list(key = key, label = label, fmt = fmt, ref = ref, scale = scale, low = low, title = title)
+col <- function(key, label, fmt = "text", ref = NULL, scale = NULL, low = FALSE, title = NULL, group = NULL) {
+  if (is.null(title)) title <- COL_DESC[[label]]
+  if (is.null(title)) warning("No description for table column '", label, "'", call. = FALSE)
+  list(key = key, label = label, fmt = fmt, ref = ref, scale = scale, low = low, title = title, group = group)
 }
 TABLE <- function(title, cols, rows, limit = 15, note = NULL) {
   list(type = "table", title = title, cols = cols, rows = rows, limit = limit, note = note)

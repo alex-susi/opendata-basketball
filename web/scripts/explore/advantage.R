@@ -90,14 +90,17 @@ topic_advantage <- function(BL) {
 
   sections <- list(
     SECTION("ad-question", "The question and the definition",
-      P("An advantage is a moment when the defense is out of balance: the man with the ball has beaten his defender, or a second defender has had to come, or a screen has forced a switch. ",
-        "This tab marks, for every pick, handoff, drive, isolation, post-up and off-ball screen, whether one of those happened in the next 2 s, and asks who creates them and with what."),
+      P("An advantage is a moment when the defense is out of balance. This tab counts three kinds:"),
+      BUL(sprintf("**Beaten** = the man with the action got more than %g ft nearer the hoop than his own defender", ADV$beat),
+          sprintf("**Help drawn** = a second defender had to come, so two defenders were within %g ft of him at once", ADV$two),
+          "**Switch** = a pick or handoff forced a switch (SkillCorner's coverage)",
+          "Each of the first two must last about 0.3 s, within 2 s of a pick, handoff, drive, isolation, post-up or off-ball screen"),
       KPIS(KPI("Actions", int(nrow(A)), sprintf("%s in the half court", int(nrow(hc)))),
            KPI("Created an advantage", pct(base_adv), "beaten, help drawn or switch"),
            KPI("Beaten", pct(mean(A$beaten)), sprintf("help drawn %s", pct(mean(A$help)))),
            KPI("Switches", pct(mean(A[kind %in% c("pick", "handoff")]$switched)), "of picks and handoffs")),
-      CAVEAT(sprintf("Thresholds: beaten = more than %g ft nearer the hoop than his own defender; help drawn = two defenders within %g ft at once; each must last about 0.3 s. ", ADV$beat, ADV$two),
-             "A post-up or a pick naturally has two defenders near the ball (the screener's man), so 'help drawn' means different things for different actions; compare players within an action type.")),
+      CAVEAT("A post-up or a pick naturally has two defenders near the ball (the screener's man), so help drawn means different things for different actions",
+             "Compare players within an action type")),
     SECTION("ad-actions", "Which actions create advantages",
       GRID(
         RATES("Advantage rate by action", lapply(kind_lv, function(k) rrow(k, sum(A[kind == k]$adv), nrow(A[kind == k]))), ref = base_adv, unit = "created an advantage"),
@@ -105,7 +108,7 @@ topic_advantage <- function(BL) {
         RATES("Help drawn, by action", lapply(kind_lv, function(k) rrow(k, sum(A[kind == k]$help), nrow(A[kind == k]))), ref = mean(A$help), unit = "two defenders on him"),
         RATES("Closeout followed within 4 s", lapply(kind_lv, function(k) rrow(k, sum(A[kind == k]$co_after), nrow(A[kind == k]))), ref = mean(A$co_after), unit = "a closeout followed")),
       COLS("How advantages were made, by action", kind_lv, lapply(how_lv[1:4], function(h) SERIES1(h, sapply(kind_lv, function(k) mean(A[kind == k]$how == h)), PAL[match(h, how_lv)])),
-           note = "Shares of each action type's events; the rest created none."),
+           note = "Shares of each action type's events. The rest created none."),
       outcome_table(copy(A)[, `:=`(oreb = FALSE, live = FALSE, fga = !is.na(xpts), efg_pts = 0, g = paste(kind, "·", fifelse(adv, "advantage", "none")))], "g",
                     label = "Action · advantage", title = "The chance's outcome after each action, with and without an advantage", min_n = 15, limit = 14)),
     SECTION("ad-value", "What an advantage is worth",
@@ -120,23 +123,28 @@ topic_advantage <- function(BL) {
         col("co_after", "Closeout followed", "pct"), col("ppc", "Pts/chance", "num2", ref = mean(hc$pts), scale = 0.4)),
         note = "Per-action rates need five or more actions of that type. Most players appear in one game.")),
     SECTION("ad-season", "Season view (aggregates, 293 games)",
-      P(sprintf("The aggregates have no 'advantage' flag, but two columns describe beating a defender: SkillCorner's blow-by rate on drives (league %s) and the ball handler's points per direct pick (league %.2f). ",
-                pct(lg_bb), lg_ppp),
-        "Rates are shrunk toward the league with 40 events of prior weight so small samples do not top the list."),
+      BUL("The aggregates have no advantage flag, but two columns describe beating a defender",
+          sprintf("SkillCorner's blow-by rate on drives (league %s)", pct(lg_bb)),
+          sprintf("The ball handler's points per direct pick (league %.2f)", lg_ppp),
+          "Rates are shrunk toward the league with 40 events of prior weight, so small samples do not top the list"),
       GRID(
         TABLE("Drivers with 100+ season drives, by shrunk blow-by rate", limit = 25, rows = s_drv, cols = list(
           col("name", "Player"), col("drives", "Drives", "int"), col("drives100", "Drives/100 poss", "num1"),
-          col("blowby_rate", "Blow-by", "pct", ref = lg_bb, scale = 0.1), col("bb_shrunk", "Shrunk", "pct"), col("pts_drive", "Pts/drive", "num2"))),
+          col("blowby_rate", "Blow-by", "pct", ref = lg_bb, scale = 0.1), col("bb_shrunk", "Blow-by (shrunk)", "pct"), col("pts_drive", "Pts/drive", "num2"))),
         TABLE("Pick ball handlers with 100+ direct picks, by shrunk points per pick", limit = 25, rows = s_pk, cols = list(
           col("name", "Player"), col("picks", "Direct picks", "int"), col("ppp", "Pts/pick", "num2", ref = lg_ppp, scale = 0.25),
-          col("ppp_shrunk", "Shrunk", "num2"), col("succ", "Successful", "pct"), col("switch_picks", "vs switch", "int")))),
+          col("ppp_shrunk", "Pts/pick (shrunk)", "num2"), col("succ", "Successful picks", "pct"), col("switch_picks", "vs switch", "int")))),
       P(if (is.na(rr)) "Too few players to compare the tracked advantage rate with the season blow-by rate." else
         sprintf("For the %d players with 15+ tracked actions and 50+ season drives, the tracked advantage rate and the shrunk season blow-by rate correlate at %.2f.", nrow(cmp), rr)),
       SCAT("Tracked advantage rate against season blow-by rate", points = cmp[, .(x = r2(bb_shrunk), y = r2(adv), g = 0L, tip = sprintf("%s\n%.0f%% advantage over %d actions\nseason blow-by %.0f%% over %d drives", name, 100 * adv, n, 100 * bb_shrunk, drives))],
            xlabel = "season blow-by rate (shrunk)", ylabel = "tracked advantage rate", xfmt = "pct", yfmt = "pct", radius = 4)),
     SECTION("ad-limits", "What this shows and does not",
-      P("It shows which actions and players knock the defense out of balance by a simple, checkable rule. It does not account for who is guarding the creator, the shot clock, or whether the advantage was used."),
-      P("If this becomes the topic: define the advantage against the defense's expected position (where it usually stands given the ball and the attackers), and credit the player whose action caused it; then follow the advantage through passes to the shot."))
+      BUL("It shows which actions and players knock the defense out of balance by a simple, checkable rule",
+          "It does not account for who is guarding the creator, the shot clock, or whether the advantage was used"),
+      H("If this becomes the topic"),
+      BUL("Define the advantage against the defense's expected position (where it usually stands given the ball and the attackers)",
+          "Credit the player whose action caused it",
+          "Follow the advantage through passes to the shot"))
   )
   DOC("advantage", "Advantage creation", "Which actions and players knock the defense out of balance (defender beaten, help drawn, switch), and what that is worth.", sections)
 }
