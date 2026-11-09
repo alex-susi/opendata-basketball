@@ -56,6 +56,12 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tabs {
   display: flex; align-items: stretch; gap: 4px; height: var(--bar); padding: 0 12px;
   background: var(--panel); border-bottom: 1px solid var(--line);
+  overflow-x: auto; scrollbar-width: thin; scrollbar-color: #3A4866 transparent;
+}
+/* Divider before the exploration tabs. */
+.tabs .tab-sep {
+  display: flex; align-items: center; margin: 0 2px 0 10px; padding-left: 12px; border-left: 1px solid var(--line);
+  color: var(--muted); font-size: 11px; font-weight: 600; white-space: nowrap;
 }
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .tabs button {

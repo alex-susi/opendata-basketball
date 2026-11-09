@@ -2,13 +2,13 @@
   // Where rebounds were secured, as a smoothed density on the half court around the hoop (offense attacking right;
   // positions relative to the hoop in feet). One sequential blue ramp: darker is a larger share of rebounds per
   // square foot. Points may carry weights (the click-a-shot map weights each miss by how alike its shot is).
-  // Hovering reads the share of rebounds within 3 ft of the pointer; with `onpick`, a click picks a court spot.
+  // Hovering reads the share of the points (rebounds by default; `noun` names them) within 3 ft of the pointer; with `onpick`, a click picks a court spot.
   import { gridOf, heatImage, kde, peak, type Pt } from "./kde";
 
-  let { points, title = "", caption = null, bw = 1.5, vmax = null, x0 = -30, marks = [], target = null, onpick = null }:
+  let { points, title = "", caption = null, bw = 1.5, vmax = null, x0 = -30, marks = [], target = null, onpick = null, noun = "rebounds" }:
     { points: Pt[]; title?: string; caption?: string | null; bw?: number; vmax?: number | null; x0?: number;
       marks?: { x: number; y: number; o: number }[]; target?: { x: number; y: number } | null;
-      onpick?: ((x: number, y: number) => void) | null } = $props();
+      onpick?: ((x: number, y: number) => void) | null; noun?: string } = $props();
 
   const M = 3.28084, NEAR = 3;
   const X1 = 5.6, Y0 = -24.6, Y1 = 24.6, S = 7;   // feet relative to the hoop; pixels per foot
@@ -41,7 +41,7 @@
   <!-- The pointer readout is an extra; with `onpick` the arrow keys move the picked spot 1 ft at a time. -->
   <!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_no_noninteractive_tabindex -->
   <svg viewBox={`0 0 ${W} ${H}`} role={onpick ? "application" : "img"} tabindex={onpick ? 0 : -1}
-       aria-label={onpick ? `${title}: click or use the arrow keys to move the shot` : `${title}: smoothed density of ${points.length} rebound spots`}
+       aria-label={onpick ? `${title}: click or use the arrow keys to move the shot` : `${title}: smoothed density of ${points.length} ${noun}`}
        onmousemove={(e) => { hover = feet(e); }} onmouseleave={() => { hover = null; }}
        onclick={(e) => { if (onpick) { const q = feet(e); onpick(q.x, q.y); } }}
        onkeydown={(e) => {
@@ -72,7 +72,7 @@
     {/if}
     {#if hover && near}
       <circle cx={px(hover.x)} cy={py(hover.y)} r={NEAR * S} class="probe" />
-      <text x="8" y={H - 10} class="readout">{`${Math.round(100 * near.share)}% of rebounds within ${NEAR} ft of here${points.some((p) => p.w != null) ? "" : ` (${near.count})`}`}</text>
+      <text x="8" y={H - 10} class="readout">{`${Math.round(100 * near.share)}% of ${noun} within ${NEAR} ft of here${points.some((p) => p.w != null) ? "" : ` (${near.count})`}`}</text>
     {/if}
   </svg>
   {#if title}<figcaption>{title} <span>({caption ?? points.length})</span></figcaption>{/if}

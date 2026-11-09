@@ -104,3 +104,19 @@ export function loadReboundEda<T>(): Promise<T> {
   reboundEda.catch(() => { reboundEda = null; });
   return reboundEda as Promise<T>;
 }
+
+const explore = new Map<string, Promise<unknown>>();
+/** One exploration tab's document (explore_<topic>.json, written by web/scripts/explore/build.R): sections of text,
+ * charts and tables. Fetched the first time the tab is shown. */
+export function loadExplore<T>(topic: string): Promise<T> {
+  let p = explore.get(topic);
+  if (!p) {
+    p = fetch(`${base}explore_${topic}.json`, { cache: "no-cache" }).then((r) => {
+      if (!r.ok) throw new Error(`Could not load explore_${topic}.json (${r.status}). Run Rscript web/scripts/explore/build.R.`);
+      return r.json();
+    });
+    p.catch(() => explore.delete(topic));
+    explore.set(topic, p);
+  }
+  return p as Promise<T>;
+}

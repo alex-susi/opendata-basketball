@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Three tabs. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
+  // Ten tabs: the three below, then seven exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
@@ -8,6 +8,7 @@
   import Archetypes from "./components/Archetypes.svelte";
   import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
+  import Explore from "./components/explore/Explore.svelte";
   import Filters from "./components/Filters.svelte";
   import PlayList from "./components/PlayList.svelte";
   import SidePanel from "./components/SidePanel.svelte";
@@ -25,8 +26,20 @@
   const ROUTE = "#/play/";
   const ARCHETYPES = "#/archetypes";
   const REBOUNDING = "#/rebounding";
-  type Tab = "viewer" | "archetypes" | "rebounding";
-  const tabOfHash = (h: string): Tab => (h === ARCHETYPES ? "archetypes" : h === REBOUNDING ? "rebounding" : "viewer");
+  const EXPLORE = "#/explore/";
+  // The exploration tabs, one per candidate topic (web/scripts/explore/<id>.R writes explore_<id>.json).
+  const TOPICS = [
+    { id: "paint", label: "Paint touches" }, { id: "chains", label: "Pre-shot actions" }, { id: "closeouts", label: "Closeouts" },
+    { id: "crash", label: "Crashing" }, { id: "lanes", label: "Driving lanes" }, { id: "advantage", label: "Advantage" },
+    { id: "gravity", label: "Gravity" },
+  ];
+  type Tab = string;   // "viewer", "archetypes", "rebounding" or "x-<topic>"
+  const tabOfHash = (h: string): Tab => {
+    if (h === ARCHETYPES) return "archetypes";
+    if (h === REBOUNDING) return "rebounding";
+    if (h.startsWith(EXPLORE) && TOPICS.some((t) => t.id === h.slice(EXPLORE.length))) return `x-${h.slice(EXPLORE.length)}`;
+    return "viewer";
+  };
 
   let meta = $state.raw<Meta | null>(null);
   let plays = $state.raw<PlayRow[]>([]);
@@ -37,7 +50,7 @@
   const first = tabOfHash(location.hash);
   let tab = $state<Tab>(first);
   // Each document tab is fetched the first time it is shown.
-  let opened = $state({ archetypes: first === "archetypes", rebounding: first === "rebounding" });
+  let opened = $state<Record<string, boolean>>({ [first]: true });
   viewer.hidden = first !== "viewer";
 
   // Width of the left column (filters and play list), in px. Remembered in this browser only.
@@ -94,6 +107,7 @@
   function address(): string {
     if (tab === "archetypes") return ARCHETYPES;
     if (tab === "rebounding") return REBOUNDING;
+    if (tab.startsWith("x-")) return EXPLORE + tab.slice(2);
     return selectedId ? ROUTE + selectedId : location.pathname + location.search;
   }
 
@@ -182,6 +196,10 @@
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
   <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
+  <span class="tab-sep" aria-hidden="true">Explore</span>
+  {#each TOPICS as t (t.id)}
+    <button type="button" class:on={tab === `x-${t.id}`} onclick={() => show(`x-${t.id}`)}>{t.label}</button>
+  {/each}
   <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
 
@@ -263,3 +281,9 @@
 <main class="doc" hidden={tab !== "rebounding"}>
   {#if opened.rebounding}<Rebounding />{/if}
 </main>
+
+{#each TOPICS as t (t.id)}
+  <main class="doc" hidden={tab !== `x-${t.id}`}>
+    {#if opened[`x-${t.id}`]}<Explore topic={t.id} />{/if}
+  </main>
+{/each}

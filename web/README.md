@@ -55,6 +55,24 @@ its numbers all come from that file.
 The EPV, court control and rebounding models, their panels and their data files are archived in `zz_Archive/`
 (same paths as before).
 
+### Exploration tabs
+
+Seven tabs (Paint touches, Pre-shot actions, Closeouts, Crashing, Driving lanes, Advantage, Gravity), one per
+candidate competition topic, address `#/explore/<topic>`. Each reads `public/data/explore_<topic>.json`, written by
+`web/scripts/explore/<topic>.R`; text, charts and tables all come from that script, and
+`src/components/explore/` only lays them out (`Explore.svelte`, `Block.svelte`, `DataTable.svelte`). Descriptive
+only: counts, means, 90% intervals and simple tracking geometry, no fitted model.
+
+```bash
+Rscript web/scripts/explore/build.R                # every topic, about a minute
+Rscript web/scripts/explore/build.R paint gravity  # some topics
+Rscript web/scripts/explore/build.R --rebuild      # rebuild the per-game bundles first
+```
+
+`common.R` builds one cached bundle per game (`outputs/cache/explore/`, git-ignored): event tables, chance
+outcomes, the export's cuts, screens and rebounding roles (`cuts.R`, `glass.R`, `annotations.R`, reused unchanged)
+and the tracking in the viewer's frame. Rerun with `--rebuild` after changing those scripts.
+
 To change only the wording of the Archetypes tab, edit `src/play_viewer/R/archetype_page.R` and rewrite the page
 alone. This leaves the play data and its stamp untouched, so the parity reference stays valid.
 
@@ -74,7 +92,7 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 ## Differences from the Shiny app
 
 - Multi-select filters are a custom dropdown with checkboxes and a search box instead of selectize.
-- The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes` and the Rebounding tab `#/rebounding`.
+- The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes`, the Rebounding tab `#/rebounding` and the exploration tabs `#/explore/<topic>`.
 - The Rebounding tab, the trace panel under the court and the resizable left column exist only on the site.
 - The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
   `src/play_viewer/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.

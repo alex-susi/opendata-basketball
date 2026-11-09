@@ -2048,3 +2048,37 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
   21%% (54/253) vs 27%% (54/199). Boxed crashers get the ball less when it comes their way, as expected, but samples
   are small (about 1.8 binomial SE at 4 ft, less at 6-8 ft; shots not clustered by game), so this is a sanity check
   on the flag, not a finding. Caveat: the box-out window starts 12 frames before the rim, so rd is not fully before it.
+
+## 2026-11-08 — Seven exploration tabs for choosing the competition topic (site)
+
+- **Why (owner):** explore seven candidate topics before choosing one for the entry: paint touches, pre-shot action
+  chains and spacing, closeouts, crash rate, driving lanes, advantage creation, off-ball gravity. Each has its own tab
+  (`#/explore/<topic>`) of descriptive EDA; no model is fitted (see the 2026-11-06 entry).
+- **Build:** `web/scripts/explore/build.R` → `web/public/data/explore_<topic>.json`, one script per topic; text and
+  numbers are written together in R. `common.R` caches one bundle per game (`outputs/cache/explore/`) reusing the
+  export's cuts, screens (y-sign fixed) and rebounding roles unchanged. Unit: the **chance** (an offensive rebound
+  starts a new one). Outcomes per chance: points, xPts per FGA (SkillCorner shotQuality / 100 × value; a reference,
+  not a validated probability), turnover, free-throw trip, offensive rebound on live misses (fouled misses are not
+  live). Population: chances not ending the period or in a jump ball (2,035; 1,511 half court). Intervals: 90%
+  Wilson or ±1.645 SE, treating chances (or frames) as independent, which flatters them; the tabs say so.
+- **Definitions chosen here (not validated against video):** paint touch = touch with key/ra in regionsIn (holder
+  tracked in the key on 98% of them); lane = straight line ball handler → hoop, a defender "in" it within 6 ft;
+  advantage = creator > 1 ft nearer the hoop than his defender, or two defenders within 6 ft, each for ~0.3 s, or a
+  switch, within 2 s of the action; spot-up gravity = mean room off the ball for the same zone and ball-distance
+  band minus his room, on perimeter frames 15+ ft from the ball and not just after his own screen; help pulled =
+  a defender other than his matchup within 8 ft at the end of a roll or cut.
+- **Found while building:** (1) a rebound frame can fall in the next possession, whose bundle positions are stored
+  attacking the other way; the crash tab mirrors those spots (without it the offense looked nearest to 75% of
+  rebounds; after, 26%). (2) SkillCorner starts every closeout before the catch (median 0.4 s), so "start before the
+  catch" replaces a reaction time. (3) data.table non-equi joins with `mult = "first"` failed inside a helper;
+  `marker_of()` uses an update join instead. (4) The first advantage rule had its sign reversed (96% "beaten").
+- **Headline descriptions (ten games, associations only):** paint touch 1.02 vs 0.65 pts/chance; threes after a
+  paint touch had the closest defender 6.8 vs 6.2 ft away. Tight closeouts (≤ 4 ft) → shot 29%, drive 37%; loose
+  (> 6 ft) → 66%, 7%. Offense kept 19% of live misses with no crasher, 31-35% with one or more; the opponent's next
+  chance after a defensive rebound did not get worse with more crashers in this sample. Drives with the defender
+  > 90° off the lane were blow-bys 81% of the time, < 30° 7%; on pick drives that angle rises from 19° to 37° in the
+  2 s before. Half-court actions created an advantage 51% of the time (drives 74%, isolations 23%); the tracked rate
+  barely correlates with the season blow-by rate (0.07). High-volume shooters were guarded 0.40 ft tighter than
+  typical, others ~0.25 ft looser, but player-level gravity barely tracks season shooting (r −0.02 volume, 0.11 %).
+- **Not done:** the interactive crash app (needs the archived rebound and court-control models); any adjustment for
+  team, opponent or lineup; game-clustered intervals.
