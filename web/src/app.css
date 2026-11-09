@@ -600,16 +600,20 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- Annotations (Display panel's Annotations toggles) ---- */
 .display .sub-head { margin: 10px 0 6px; color: var(--muted); font-size: 11.5px; font-weight: 600; }
-/* Cards over the backcourt (Annotations.svelte): shot details on top, possession and tracking quality at the bottom. */
-/* A column over the court's box: the shot card at its top, possession and tracking quality at its bottom, on the
-   backcourt side. Cards are as wide as their longest line (nothing wraps). */
-.ann-cards {
-  position: absolute; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 6px;
-  padding: 10px; box-sizing: border-box; pointer-events: none;
-}
-.ann-cards.on-right { align-items: flex-end; }
-.ann-cards.on-left { align-items: flex-start; }
-.ann-stack { display: flex; flex-direction: column; gap: 6px; align-items: inherit; }
+/* Cards over the court's box (Annotations.svelte), on the backcourt side: the shot card in the top corner, possession
+   and tracking quality in the bottom corner. When they would overlap, the bottom stack moves toward center court by
+   the shot card's width (--shift). The court never grows to hold them. Cards are as wide as their longest line. */
+.ann-cards { position: absolute; z-index: 1; box-sizing: border-box; pointer-events: none; }
+.ann-stack { position: absolute; display: flex; flex-direction: column; gap: 6px; }
+/* A shot card taller than the court scrolls inside it (the court keeps its size). */
+.ann-stack.top { top: var(--pad); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #3A4866 transparent; pointer-events: auto; }
+.ann-stack.bottom { bottom: var(--pad); }
+.ann-cards.on-right .ann-stack { align-items: flex-end; }
+.ann-cards.on-right .ann-stack.top { right: var(--pad); }
+.ann-cards.on-right .ann-stack.bottom { right: calc(var(--pad) + var(--shift, 0px)); }
+.ann-cards.on-left .ann-stack { align-items: flex-start; }
+.ann-cards.on-left .ann-stack.top { left: var(--pad); }
+.ann-cards.on-left .ann-stack.bottom { left: calc(var(--pad) + var(--shift, 0px)); }
 .ann-card { width: max-content; min-width: 190px; }
 .ann-card, .season-card {
   display: grid; gap: 1px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px;

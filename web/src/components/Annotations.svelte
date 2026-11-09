@@ -34,28 +34,24 @@
   });
 
   const box = $derived(live.box);
-  // The two stacks' natural heights. When they need more room than the court's box, the column is taller than the box
-  // (centred on it) and the court window grows to hold it (live.annNeed, read by App.svelte).
-  let topH = $state(0), botH = $state(0);
-  const need = $derived(topH + botH + (topH && botH ? 8 : 0) + 20);
-  const span = $derived(box ? (box.h >= need ? { top: box.top, h: box.h } : { top: Math.max(4, box.top - (need - box.h) / 2), h: need }) : null);
-  // Room kept for the cards from the start of a play, before its shot card appears, so the court does not shrink
-  // mid-play: about the height of a full shot card, possession card and tracking card (px).
-  const RESERVE = { shot: 470, possession: 150, quality: 90 };
-  const reserve = $derived((viewer.ann.shot ? RESERVE.shot : 0) + (viewer.ann.possession ? RESERVE.possession : 0)
-    + (viewer.ann.quality ? RESERVE.quality : 0));
-  $effect(() => {
-    const n = play && box && box.w >= 480 && reserve ? Math.round(Math.max(need, reserve + 28)) : 0;
-    if (n !== live.annNeed) live.annNeed = n;
-  });
+  // The cards never resize the court. The shot card sits in the top corner on the backcourt side, the possession and
+  // tracking cards in the bottom corner. When the two would overlap (a tall shot card on a short court), the bottom
+  // stack slides toward center court, beside the shot card, instead of the court growing.
+  const PAD = 10, GAP = 8;
+  let topH = $state(0), topW = $state(0), botH = $state(0);
+  const shift = $derived(box && topH && botH && topH + botH + GAP + 2 * PAD > box.h ? topW + GAP : 0);
+  // Earlier versions grew the court window to fit both cards in one column (live.annNeed); nothing asks for that now.
+  $effect(() => { if (live.annNeed) live.annNeed = 0; });
 </script>
 
 {#if play && box && box.w >= 480 && (shotInfo || poss || quality)}
   <!-- Cards sit against the backcourt's sideline end; each is as wide as its longest line. -->
-  <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{span?.top}px"
-       style:width="{box.w}px" style:height="{span?.h}px">
-    <div class="ann-stack" bind:clientHeight={topH}>{#if shotInfo}{@render card(shotInfo)}{/if}</div>
-    <div class="ann-stack" bind:clientHeight={botH}>
+  <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
+       style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
+    <div class="ann-stack top" bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
+      {#if shotInfo}{@render card(shotInfo)}{/if}
+    </div>
+    <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">
       {#if poss}{@render card(poss)}{/if}
       {#if quality}{@render card(quality)}{/if}
     </div>

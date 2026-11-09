@@ -2119,3 +2119,7 @@ one understood step at a time. Nothing was deleted; everything moved to `zz_Arch
 - **Tables on the reading tabs** (`web/src/lib/fitwide.ts`): names never wrap; a table wider than the text column
   grows into the page margins instead of scrolling; numeric headers may take two lines; grids holding a table stack.
   At a 1500 px window no table scrolls.
+- **Court cards no longer resize the court:** the shot card sits in the top corner on the backcourt side and the
+  possession/tracking cards in the bottom corner. When they would overlap, the bottom stack slides toward center court
+  beside the shot card; a shot card taller than the court scrolls inside it. The court window no longer grows
+  (live.annNeed stays 0), so the trace panel keeps its room.
