@@ -51,7 +51,8 @@ label_game <- function(g) {
            .(pass_id = i.id, game_id = g, poss_id = i.possessionId, chance_id = i.chanceId, period = i.period,
              pass_start = i.startFrame, catch = i.endFrame, passer = i.passerId, receiver = i.receiverId,
              passer_region = i.passerRegion, receiver_region = i.receiverRegion, pass_touch = i.touchId,
-             shot_clock = i.shotClock, t_id = x.t_id, t_start = x.t_start, t_outs = x.t_outs)]
+             shot_clock = i.shotClock, game_clock = i.endGameClock, t_id = x.t_id, t_start = x.t_start,
+             t_outs = x.t_outs)]
   m[, react := t_start - catch]
   m[, kickout := pass_touch %in% dr[endType == "kickout"]$touchId]
   m[, from_paint := passer_region %in% c("key", "ra")]
@@ -164,6 +165,11 @@ catches[, `:=`(
   def2_dist = freeze[, 7, "rel_dist"],
   defs_in_paint = rowSums(freeze[, 6:10, "is_offense"] == 0 & freeze[, 6:10, "hoop_dist"] < 16)
 )]
+# Time to act: whichever runs out first, the shot clock or the game clock (seconds). At the end of a period the shot
+# clock is often off (NA); the game clock then sets the limit. Filling a missing shot clock with 24 made a buzzer-beater
+# look like a fresh possession, so shot_clock_raw keeps the supplied value and time_to_act is the input that matters.
+catches[, shot_clock_raw := shot_clock]
+catches[, time_to_act := pmin(shot_clock_raw, game_clock, 24, na.rm = TRUE)]   # a missing mid-period shot clock counts as 24
 catches[, shot_clock := fifelse(is.na(shot_clock), 24, shot_clock)]
 roster <- app$roster[, .(game_id, pid, canon)]
 catches[roster, canon := i.canon, on = .(game_id, receiver = pid)]

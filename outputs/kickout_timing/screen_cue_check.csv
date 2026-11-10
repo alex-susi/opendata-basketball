@@ -1,0 +1,9 @@
+check,value,n
+screen within 1.5 s: AUC of -scr_proj (0.5 = no signal),0.679,142
+screen within 3 s: AUC of -scr_proj,0.623,305
+screen within 3 s: AUC of -scr_dist,0.606,305
+screen within 3 s: tagged screener is the cue's top candidate,0.551,305
+  ... chance if picked at random from 4 teammates,0.25,305
+share of catches with a screen tag within 3 s,0.175,1738
+scr_proj < 3 ft: share with a screen tag within 3 s,0.234,606
+scr_proj >= 3 ft: share with a screen tag within 3 s,0.144,1132

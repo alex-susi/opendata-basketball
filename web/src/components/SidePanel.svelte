@@ -26,6 +26,7 @@
     { key: "tracking", label: "Tracking Readouts", title: "Openness of each offensive player (feet to the nearest defender), the followed player's speed, the ball's path and the shot's ball peak" },
     { key: "possession", label: "Possession Context", title: "How the possession began, chances, touches, passes and dribbles so far, who has had the ball, game state, free throws" },
     { key: "glass", label: "Rebounding Roles", title: "While a shot is in the air: which attackers crash the glass, retreat, stay back as the safety or hold their spot, and which defenders box out (? = mostly off camera)" },
+    { key: "coverage", label: "Coverage Read", title: "Around each on-ball screen (2 s before to 1 s after): the model's live probability of each coverage call, held out from this game. The actual call is shown once the screen is set" },
     { key: "quality", label: "Data Quality", title: "Extrapolated players drawn faint, tracking's expected error round each player, the chance's quality index" },
   ];
 

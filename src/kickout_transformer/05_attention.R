@@ -13,7 +13,7 @@
 source(file.path(dirname(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))), "R", "common.R"))
 root <- kt_root()
 paths <- kt_paths(root)
-suppressPackageStartupMessages({ library(ggplot2); library(patchwork) })
+
 hit <- grep("^--model=", commandArgs(TRUE), value = TRUE)
 MODEL <- if (length(hit)) sub("^--model=", "", hit) else "hist"
 
@@ -68,66 +68,29 @@ k <- pred[, c("row", PROB_COLS), with = FALSE][k, on = "row"]
 k <- k[!is.na(p_shot)]
 pair <- c(k[which.max(p_shot), row], k[which.min(p_shot), row])
 
-court_layer <- function() {
-  arc <- seq(-pi / 2 - 0.3, pi / 2 + 0.3, length.out = 120)
-  three <- data.table(x = HOOP_X - 6.75 * FT_PER_M * cos(arc), y = 6.75 * FT_PER_M * sin(arc))
-  three <- three[abs(y) <= 6.6 * FT_PER_M]
-  base_x <- 14 * FT_PER_M; side <- 7.5 * FT_PER_M; lane <- 4.9 / 2 * FT_PER_M; ft <- base_x - 5.8 * FT_PER_M
-  list(annotate("rect", xmin = 0, xmax = base_x, ymin = -side, ymax = side, fill = "#f6e7d3", colour = "grey40"),
-       annotate("rect", xmin = ft, xmax = base_x, ymin = -lane, ymax = lane, fill = NA, colour = "grey40"),
-       geom_path(data = three, aes(x, y), colour = "grey40", inherit.aes = FALSE),
-       annotate("segment", x = max(three$x), xend = base_x, y = c(-1, 1) * 6.6 * FT_PER_M,
-                yend = c(-1, 1) * 6.6 * FT_PER_M, colour = "grey40"),
-       annotate("point", x = HOOP_X, y = 0, shape = 21, size = 3, colour = "orange3", stroke = 1.2),
-       coord_equal(xlim = c(0, base_x), ylim = c(-side, side), expand = FALSE))
-}
-
-#' Game clock (m:ss left in the period) when the pass was caught, from the supplied passes table.
-catch_clock <- function(game, pass_id) {
-  ev <- jsonlite::fromJSON(file.path(root, "data", "matches", game, sprintf("%s_dynamic_events.json", game)))$passes
-  s <- ev$endGameClock[ev$id == pass_id]
-  if (!length(s) || is.na(s[1])) return("clock n/a")
-  sprintf("%d:%02d", floor(s[1] / 60), floor(s[1] %% 60))
-}
-
-draw_play <- function(r) {
-  i <- match(r, rows)
-  tok <- as.data.table(d$freeze[r, , c("hoop_dx", "y", "vx", "vy", "is_offense", "is_passer")])
-  tok[, `:=`(X = HOOP_X - hoop_dx, token = .I)]
-  tok[, w := colMeans(matrix(att[i, n_layers, , ], nrow = n_heads))]   # last layer, heads averaged
-  rx <- tok$X[1]; ry <- tok$y[1]
-  tok[, side := fifelse(is_offense == 1, "offense", "defense")]
-  links <- tok[token > 1]
-  links[, label_y := y + fifelse(y > 7.5 * FT_PER_M - 3, -2.4, 2.4)]   # labels near the top edge go below the dot
-  pr <- pred[row == r]; lg <- base[row == r]; meta <- m[row == r]
-  fmt <- function(p) paste(sprintf("%s %.0f%%", CLASSES, 100 * unlist(p[, ..PROB_COLS])), collapse = "  ")
-  clk <- catch_clock(meta$game_id, meta$pass_id)
-  ggplot() + court_layer() +
-    geom_segment(data = links, aes(x = rx, y = ry, xend = X, yend = y, linewidth = w), colour = "#7b2cbf", alpha = 0.55) +
-    geom_segment(data = tok, aes(x = X, y = y, xend = X + 0.5 * vx, yend = y + 0.5 * vy),
-                 arrow = arrow(length = unit(0.12, "cm")), colour = "grey25") +
-    geom_point(data = tok, aes(X, y, fill = side), shape = 21, size = 4.5) +
-    geom_point(data = tok[1], aes(X, y), shape = 21, size = 7, stroke = 1.4, colour = "black", fill = NA) +
-    geom_text(data = links, aes(X, label_y, label = sprintf("%.0f%%", 100 * w)), size = 3, colour = "#5a189a") +
-    geom_text(data = tok[is_passer == 1], aes(X, y, label = "passer"), nudge_y = -2.6, size = 2.8) +
-    scale_fill_manual(values = c(offense = "#2a6f97", defense = "#d1495b"), name = NULL) +
-    scale_linewidth(range = c(0.2, 3), guide = "none") +
-    labs(title = sprintf("Game %s, Q%d %s. Nearest defender %.1f ft, closing %.1f ft/s. Actual: %s",
-                         meta$game_id, meta$period, clk, meta$def1_dist, meta$def1_closing, toupper(meta$label)),
-         subtitle = paste0("Dashboard: #/play/", meta$poss_id, "   (", meta$pass_id, ", catch frame ", meta$catch, ")",
-                           "\nTransformer: ", fmt(pr), "\nLogistic:      ", fmt(lg)),
-         x = NULL, y = NULL) +
-    theme_void(base_size = 10) + theme(legend.position = "bottom", plot.title = element_text(face = "bold", size = 10))
+source(file.path(root, "src", "kickout_transformer", "R", "draw_play.R"))
+roster <- load_rosters(root, unique(m[row %in% pair, game_id]))
+tf_label <- if (MODEL == "hist") "Transformer (+ last 1 s)" else "Transformer (freeze frame)"
+card_for <- function(r) {
+  i <- match(r, rows); meta <- m[row == r]
+  w <- colMeans(matrix(att[i, n_layers, , ], nrow = n_heads))       # last layer, heads averaged
+  probs <- setNames(list(setNames(unlist(pred[row == r, ..PROB_COLS]), CLASSES),
+                         setNames(unlist(base[row == r, ..PROB_COLS]), CLASSES)),
+                    c(tf_label, "Logistic (10 hand features)"))
+  p_tf <- probs[[1]][["shot"]]
+  headline <- sprintf("Actually a %s. Transformer gave a shot %.0f%%, closest defender %.1f ft away.",
+                      toupper(meta$label), 100 * p_tf, meta$def1_dist)
+  play_card(root, meta, d$freeze[r, , ], d$token_pid[r, ], roster, w, probs, headline)
 }
 
 fig_dir <- file.path(paths$out, "figures")
 dir.create(fig_dir, showWarnings = FALSE)
-g <- draw_play(pair[1]) / draw_play(pair[2]) +
-  plot_annotation(title = sprintf("Two kickouts, similar defender gap, different predictions\n%s transformer, %s",
-                                  if (MODEL == "hist") "History" else "Freeze-frame", CLASS_TAG),
-                  caption = paste("Receiver ringed. Arrows: where each player is heading over the next 0.5 s.",
-                                  "Purple lines: the receiver's last-layer attention to each player (heads averaged).",
-                                  "Attention is a mixing weight, not a causal effect.", sep = "\n"))
-ggsave(file.path(fig_dir, sprintf("attention_two_kickouts_%s.png", MODEL)), g, width = 7.5, height = 10, dpi = 150, bg = "white")
+g <- wrap_elements(full = card_for(pair[1])) / wrap_elements(full = card_for(pair[2])) +
+  plot_annotation(title = sprintf("Two kickouts with a similar defender gap (5-8 ft): the transformer's most and least likely shots\n%s, %s",
+                                  tf_label, CLASS_TAG),
+                  caption = CARD_CAPTION,
+                  theme = theme(plot.title = element_text(face = "bold", size = 14),
+                                plot.caption = element_text(hjust = 0, size = 8.5, colour = "grey35")))
+ggsave(file.path(fig_dir, sprintf("attention_two_kickouts_%s.png", MODEL)), g, width = 11, height = 14.5, dpi = 150, bg = "white")
 cat("\nExample plays (rows):", pair, "\n")
 print(m[row %in% pair, .(row, poss_id, pass_id, period, catch, label, def1_dist, def1_closing, defs_in_paint, recv_hoop_dist)])

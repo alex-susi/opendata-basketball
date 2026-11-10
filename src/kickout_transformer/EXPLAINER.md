@@ -21,7 +21,12 @@ Rscript src/kickout_transformer/03_train_transformer.R --model=freeze   # ~2 min
 Rscript src/kickout_transformer/03_train_transformer.R --model=hist
 Rscript src/kickout_transformer/04_evaluate.R           # scores, intervals, figures
 Rscript src/kickout_transformer/05_attention.R --model=freeze           # attention by role, example plays
+Rscript src/kickout_transformer/08_timing_audit.R       # when the receiver acts; the 1.25 s horizon target
+Rscript src/kickout_transformer/09_cue_features.R       # space, pass-context and screen-setup cues at the catch
+Rscript src/kickout_transformer/10_cue_comparison.R     # logistic: base vs base + each cue, both targets
 ```
+
+Steps 8-10 need the explore bundles (`outputs/cache/explore/`, built by `web/scripts/explore/build.R --bundles`).
 
 Step 3 caches one file per held-out game and accepts `--fold=<gameId>`, so the 20 fits can run as separate
 processes in parallel. Results are written to `outputs/kickout_transformer/`.
@@ -79,7 +84,7 @@ gives one honest held-out prediction per catch.
 | League | the outcome shares in the nine training games |
 | Archetype | the shares for receivers of the same offensive archetype, shrunk toward the league shares (as if 20 extra league-average catches had been seen) |
 | Player | the receiver's own shares, shrunk toward his archetype (10 extra catches) |
-| Logistic | multinomial logistic regression on 10 hand-built features: receiver's distance to the hoop, corner flag, receiver speed, nearest and second-nearest defender distance, nearest defender's closing speed, defenders in the paint, shot clock, kickout flag, pass from the paint |
+| Logistic | multinomial logistic regression on 10 hand-built features: receiver's distance to the hoop, corner flag, receiver speed, nearest and second-nearest defender distance, nearest defender's closing speed, defenders in the paint, time to act (shot clock or game clock, whichever runs out first; the four-class results below used the shot clock), kickout flag, pass from the paint |
 
 The archetypes were partly built from these same ten games, so the archetype baseline is slightly optimistic.
 
@@ -101,7 +106,7 @@ Follow one catch through the model:
    Rows are rescaled before each step (layer norm). One attention step plus one feed-forward step is a **layer**;
    there are 2 layers.
 5. **Read the receiver's row.** After two layers, row 1 (the receiver) has mixed in what it needed from the other
-   nine. A small output head reads that row, plus the shot clock, kickout and paint flags, and produces 4 scores.
+   nine. A small output head reads that row, plus the context numbers (time to act, kickout and paint flags; the shot clock in the four-class results), and produces 4 scores.
    A softmax turns the scores into probabilities.
 
 There are **no positional encodings**. Without them attention cannot tell row 3 from row 7, which is right for a
@@ -218,7 +223,8 @@ ball are removed, leaving 1,662 catches (106 strict kickouts), and every model p
     Rscript src/kickout_transformer/04_evaluate.R --drop-other
     Rscript src/kickout_transformer/05_attention.R --model=freeze --drop-other
 
-Held-out log loss (uniform guessing now scores log(3) = 1.099):
+Held-out log loss with the shot clock as the clock input (uniform guessing now scores log(3) = 1.099; see the next
+section for the run with time to act):
 
 | Model | All 1,662 catches | 106 strict kickouts |
 |---|---|---|
@@ -233,3 +239,103 @@ The picture is the same as with four classes. The freeze-frame transformer ties 
 player or archetype tendencies add nothing beyond league shares. On kickouts the tendency baselines are worse than an
 even guess because kickouts end in a shot far more often (43%) than perimeter catches in general (25%). The receiver's
 attention concentrates even more on the nearest defender (0.22 per player in layer 2, versus 0.12 for the passer).
+
+## Film study: confident misses (step 6)
+
+    Rscript src/kickout_transformer/06_film_study.R --drop-other
+
+Picks plays where a model put at least 60% on an outcome that did not happen, by category (both models expected a
+pass and the receiver drove; both expected a pass and he shot; both expected a shot; only the transformer was wrong;
+only the logistic model was wrong; the most confident miss on a strict kickout), and draws one card per play in
+`figures/film_study/`. Each card has the court at the catch (jerseys, names, where everyone is moving, the
+transformer's attention), both models' probabilities, the numbers the logistic model sees, and the dashboard link.
+`film_study_plays.csv` lists the plays; `film_study_miss_counts.csv` counts every confident miss by kind.
+
+Catches drawn more than 40 ft from the hoop are broken positions, not model mistakes; they are listed in
+`film_study_data_issues.csv` and left out of the set (two in the three-class run, including the opening possession of
+game 179612).
+
+Two things the cards made obvious that the models never see: the **game clock** (3 of the 8 plays are in the last
+6 seconds of a quarter, when receivers shoot far more often) and a missing shot clock, which step 1 fills with 24 s.
+
+## Time to act (three-class run, current)
+
+Step 1 used to fill a missing shot clock with 24 s, so a catch with 0:06 left in the quarter and the shot clock off
+looked like a fresh possession. `time_to_act` is now the clock input for both models: the shot clock or the game
+clock, whichever runs out first, capped at 24 s. For the logistic model it replaces `shot_clock` in its ten features.
+For the transformer it replaces `shot_clock` in the **context vector**: the play-level numbers that are joined to the
+receiver's row after the attention layers, just before the output head. So the clock changes the final call, not
+where the receiver looks.
+
+It changes the input on only 5 of 1,662 catches; elsewhere the shot clock already runs down with the game clock.
+`07_compare_runs.R` scores the old and new predictions on the same catches (the old run is saved in
+`outputs/*/kickout_transformer_3class_before_time_to_act/`):
+
+| Subset | Logistic | Transformer, freeze | Transformer, + last 1 s |
+|---|---|---|---|
+| All 1,662 catches | 0.833 → 0.829 | 0.838 → 0.840 | 0.861 → 0.855 |
+| 5 catches whose clock input changed | 3.13 → 2.03 | 2.52 → 1.65 | 2.47 → 1.78 |
+| 37 catches with under 24 s left | 1.16 → 1.01 | 1.17 → 1.03 | 1.23 → 1.07 |
+
+The fix does what it should on the plays it touches (on the old film-study card 03, with 0:01 left, both models went
+from 4% to 23-33% on the shot), and nothing else moves beyond retraining noise. The freeze-frame transformer is now
+slightly behind the logistic model on all catches (+0.011, interval 0.001 to 0.021). Because the end-of-period plays
+are now predicted better, the film-study set (step 6) picks different plays than before.
+
+## When does the receiver act? (step 8)
+
+The film cards showed that the current label is about the receiver's **whole touch**, not the catch. Marcos's
+"drive" (game 188630) started 3.68 s after the catch, behind a Fall ball screen at +2.40 s. Howard's "shot" came at
++4.80 s, after a screen at +3.20 s. `08_timing_audit.R` records for every catch (all 1,738) when the receiver's
+drive started, when he released a shot or pass, any turnover or foul, the touch end, and the first ball screen on
+the same touch. It reproduces the event times quoted for all eight film cards and for Marcos.
+
+| Same-touch label | Catches | Median time to the action | Share after 1.25 s | Share after 2.5 s | A ball screen came first |
+|---|---|---|---|---|---|
+| shot | 410 | 0.88 s | 32% | 17% | 11% |
+| drive | 278 | 0.80 s | 37% | 15% | 18% |
+| pass | 974 | 1.60 s | 58% | 30% | 22% |
+| other | 76 | 2.24 s | 71% | 49% | 15% |
+
+So about a third of shots and drives, and more than half of passes, happen well after the catch, and 18% of all
+labelled actions follow a ball screen the catch could not see. That is a ceiling on any model of "what the catch set
+up".
+
+**A second target at a fixed horizon.** At 1.25 s after the catch each receiver is in one of five states: shot
+released (16%), drive started (10%), pass thrown (23%), turnover/foul/whistle (1%), or **still holding with nothing
+tagged** (49%). Every catch gets a state, so a forecast at 1.25 s covers all eligible catches, including the "other"
+ones. Aranitović (game 191313) is a shot at 1.25 s, Nogues a drive, and Marcos and Howard are "hold". The 0.75 s and
+2.0 s horizons are in `horizon_shares.csv`; `figures/acted_by_time.png` shows the whole curve.
+
+## Three cues from the film (steps 9 and 10)
+
+Each cue is computed from positions and velocities at or before the catch (the same token arrays the transformer
+uses). The later screen tag is used only to check the screen cue:
+
+- **Directional space:** the gap to the nearest defender projected 0.5 s ahead, and the room in the better and worse
+  of two driving lanes (segments toward the hoop on either side of the receiver; room = distance from the nearest
+  defender to the segment).
+- **Pass context:** a quick return (A passes to B, B sends it straight back within 2 s; 9% of catches), how long the
+  passer held the ball, and seconds since the change of possession. Aranitović's catch is a return after Mavra held
+  it 0.4 s, 4.8 s into the possession.
+- **Screen setup:** for each teammate, his distance to the nearer "shoulder" of the on-ball defender (2.5 ft either
+  side) and how fast it is shrinking; the logistic model gets the smallest distance now and the smallest projected
+  distance in 1 s. **Check against the later tags:** the top candidate is the actual screener on 55% of catches that
+  get a screen within 3 s (25% by chance), and it ranks "screen within 1.5 s" above "no screen" 68% of the time.
+  On Marcos's catch, Fall is the top candidate but only closing at 2.5 ft/s, so most of the setup came after the
+  catch.
+
+`10_cue_comparison.R` adds each group to the step-2 logistic model on its own, with the same held-out games. Change
+in log loss vs base (negative = helped, 95% game-bootstrap interval):
+
+| Added | Same-touch target (1,662) | 1.25 s target (1,738) |
+|---|---|---|
+| space | −0.001 (−0.005 to 0.003) | −0.002 (−0.006 to 0.003) |
+| pass context | −0.001 (−0.003 to 0.002) | +0.001 (−0.003 to 0.007) |
+| screen setup | −0.001 (−0.004 to 0.002) | **−0.007 (−0.011 to −0.001)** |
+| all three | −0.003 (−0.010 to 0.004) | −0.007 (−0.015 to 0.005) |
+
+Only the screen cue on the 1.25 s target clears zero, and it is small. On strict kickouts (106-115 catches) every
+interval spans zero. Confident calls (≥60%) are close to calibrated with and without the cues
+(`figures/cue_calibration.png`). The cues barely move the film plays (Aranitović's shot: 9% → 14%), so these misses
+are not explained by these summaries. The transformer versions of the cues (per-player tokens) are not built yet.

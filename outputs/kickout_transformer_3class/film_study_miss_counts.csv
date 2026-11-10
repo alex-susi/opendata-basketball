@@ -1,0 +1,8 @@
+kind,N
+"one confident, other also wrong (under 60%)",127
+"both expected pass, was drive",117
+"both expected pass, was shot",69
+transformer only,18
+logistic only,14
+"both expected shot, was pass",11
+"both expected shot, was drive",9

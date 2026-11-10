@@ -1,0 +1,13 @@
+id,poss,game_id,period,call,h_name,s_name,bd_name,sd_name,forecast_call,forecast_p,four_player_call,four_player_p,right,dashboard,bd_lvl_at_minus0.4,sd_lvl_at_minus0.4
+pick-179612-4-130,possession-179612-4-123,179612,4,over + show,Chris Duarte,Augustine Rubit,Omari Moore,Nathan Reuvers,over + show,0.65,over + show,0.67,TRUE,#/play/possession-179612-4-123,0.5,-4.7
+pick-178442-1-15,possession-178442-1-18,178442,1,over + show,Justin Jaworski,Martin Krampelj,Kyle Kuric,Yves Pons,over + show,0.69,over + show,0.63,TRUE,#/play/possession-178442-1-18,0,-6.1
+pick-114234-3-85,possession-114234-3-96,114234,3,over + show,Marco Spissu,Santiago Yusta,Dominik Mavra,Arturs Kurucs,over + show,0.85,over + show,0.88,TRUE,#/play/possession-114234-3-96,6.2,-1.1
+pick-114099-1-27,possession-114099-1-26,114099,1,over + show,Otis Livingston II,Nikola Maric,Raul Neto,Luke Fischer,over + show,0.8,over + show,0.72,TRUE,#/play/possession-114099-1-26,3,-0.5
+pick-191313-4-146,possession-191313-4-144,191313,4,over + soft,Trae Bell-Haynes,Devin Robinson,Mihajlo Andric,Danko Brankovic,over + soft,0.65,over + soft,0.83,TRUE,#/play/possession-191313-4-144,3.9,-8.1
+pick-184439-1-18,possession-184439-1-17,184439,1,over + show,Patty Mills,Giorgi Shermadini,Alberto Abalde,Walter Tavares,over + show,0.64,over + show,0.46,TRUE,#/play/possession-184439-1-17,0.5,-4.6
+pick-178442-2-51,possession-178442-2-60,178442,2,under + soft,Yves Pons,Konstantin Iroslavov Kostadinov,Martin Krampelj,Bassala Bagayoko,over + soft,0.63,over + soft,0.49,FALSE,#/play/possession-178442-2-60,0.2,-6.4
+pick-114234-2-52,possession-114234-2-59,114234,2,under + soft,Joaquin Nazar Rodriguez Olivera,Devin Robinson,DeWayne Russell,Mihajlo Andric,under + show,0.7,under + soft,0.35,FALSE,#/play/possession-114234-2-59,4.9,-4.2
+pick-179612-3-105,possession-179612-3-98,179612,3,over + soft,Kameron Taylor,Nathan Reuvers,Alberto Diaz,Aleksander Balcerowski,over + show,0.6,over + show,0.65,FALSE,#/play/possession-179612-3-98,4.5,-2
+pick-184439-4-169,possession-184439-4-145,184439,4,under + soft,Patty Mills,Giorgi Shermadini,Theo Maledon,Walter Tavares,over + soft,0.63,over + soft,0.55,FALSE,#/play/possession-184439-4-145,6,-6.9
+pick-114169-2-61,possession-114169-2-52,114169,2,switch,Dylan Ennis,David Dejulius,Cameron Hunt,Ludvig Hakanson,over + soft,0.66,over + soft,0.68,FALSE,#/play/possession-114169-2-52,4.2,-2.5
+pick-191313-1-26,possession-191313-1-30,191313,1,under + soft,Justin Wright-Foreman,Bojan Dubljevic,Francisco Alonso,Danko Brankovic,over + soft,0.68,over + soft,0.71,FALSE,#/play/possession-191313-1-30,1.8,-7.5

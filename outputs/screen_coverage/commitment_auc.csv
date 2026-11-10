@@ -1,0 +1,13 @@
+cut,question,auc,n
+-0.8,"over vs under, from BD's level (bd_lvl)",0.57,1274
+-0.4,"over vs under, from BD's level (bd_lvl)",0.652,1274
+0,"over vs under, from BD's level (bd_lvl)",0.881,1274
+0.4,"over vs under, from BD's level (bd_lvl)",0.969,1274
+-0.8,"show vs soft, from SD's level (sd_lvl)",0.672,1274
+-0.4,"show vs soft, from SD's level (sd_lvl)",0.737,1274
+0,"show vs soft, from SD's level (sd_lvl)",0.84,1274
+0.4,"show vs soft, from SD's level (sd_lvl)",0.897,1274
+-0.8,"switch vs not, from BD-SD distance (closer = switch)",0.565,1491
+-0.4,"switch vs not, from BD-SD distance (closer = switch)",0.571,1491
+0,"switch vs not, from BD-SD distance (closer = switch)",0.544,1491
+0.4,"switch vs not, from BD-SD distance (closer = switch)",0.491,1491

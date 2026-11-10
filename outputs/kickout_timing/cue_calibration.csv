@@ -1,0 +1,57 @@
+target,model,group,calls,mean_predicted,came_true
+at 1.25 s,+ all,60-70%,307,0.651,0.632
+at 1.25 s,+ all,70-80%,262,0.75,0.744
+at 1.25 s,+ all,80%+,172,0.857,0.82
+at 1.25 s,+ pass,60-70%,317,0.651,0.656
+at 1.25 s,+ pass,70-80%,256,0.749,0.727
+at 1.25 s,+ pass,80%+,153,0.849,0.837
+at 1.25 s,+ screen,60-70%,311,0.649,0.653
+at 1.25 s,+ screen,70-80%,269,0.751,0.725
+at 1.25 s,+ screen,80%+,132,0.853,0.848
+at 1.25 s,+ space,60-70%,304,0.646,0.638
+at 1.25 s,+ space,70-80%,263,0.75,0.753
+at 1.25 s,+ space,80%+,152,0.854,0.822
+at 1.25 s,base,60-70%,308,0.648,0.666
+at 1.25 s,base,70-80%,279,0.751,0.738
+at 1.25 s,base,80%+,121,0.852,0.826
+same touch,+ all,60-70%,372,0.652,0.651
+same touch,+ all,70-80%,373,0.75,0.721
+same touch,+ all,80%+,347,0.856,0.859
+same touch,+ pass,60-70%,370,0.651,0.651
+same touch,+ pass,70-80%,411,0.748,0.72
+same touch,+ pass,80%+,312,0.849,0.862
+same touch,+ screen,60-70%,365,0.651,0.633
+same touch,+ screen,70-80%,420,0.748,0.748
+same touch,+ screen,80%+,307,0.854,0.85
+same touch,+ space,60-70%,416,0.653,0.644
+same touch,+ space,70-80%,412,0.752,0.75
+same touch,+ space,80%+,283,0.854,0.852
+same touch,base,60-70%,391,0.653,0.634
+same touch,base,70-80%,422,0.749,0.77
+same touch,base,80%+,283,0.849,0.834
+same touch,base,call: pass,949,0.737,0.728
+same touch,base,call: shot,147,0.761,0.803
+same touch,+ space,call: pass,954,0.737,0.726
+same touch,+ space,call: shot,157,0.762,0.796
+same touch,+ pass,call: pass,950,0.74,0.727
+same touch,+ pass,call: shot,143,0.774,0.804
+same touch,+ screen,call: pass,942,0.742,0.729
+same touch,+ screen,call: shot,150,0.767,0.793
+same touch,+ all,call: pass,934,0.747,0.73
+same touch,+ all,call: shot,158,0.772,0.804
+at 1.25 s,base,call: hold,610,0.714,0.72
+at 1.25 s,base,call: shot,98,0.783,0.735
+at 1.25 s,+ space,call: hold,613,0.719,0.718
+at 1.25 s,+ space,call: shot,104,0.786,0.74
+at 1.25 s,+ space,call: pass,1,0.637,0
+at 1.25 s,+ space,call: drive,1,0.604,0
+at 1.25 s,+ pass,call: hold,617,0.72,0.721
+at 1.25 s,+ pass,call: shot,103,0.776,0.738
+at 1.25 s,+ pass,call: pass,5,0.63,0.2
+at 1.25 s,+ pass,call: drive,1,0.605,0
+at 1.25 s,+ screen,call: hold,607,0.715,0.72
+at 1.25 s,+ screen,call: shot,104,0.787,0.702
+at 1.25 s,+ screen,call: pass,1,0.622,0
+at 1.25 s,+ all,call: hold,627,0.724,0.721
+at 1.25 s,+ all,call: shot,108,0.793,0.713
+at 1.25 s,+ all,call: pass,6,0.653,0.167

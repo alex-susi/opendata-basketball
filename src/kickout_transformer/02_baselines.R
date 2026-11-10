@@ -23,7 +23,7 @@ suppressPackageStartupMessages(library(nnet))
 ARCH_PRIOR <- 20
 PLAYER_PRIOR <- 10
 LOGIT_FEATS <- c("recv_hoop_dist", "recv_corner", "recv_speed", "def1_dist", "def1_closing", "def2_dist",
-                 "defs_in_paint", "shot_clock", "kickout", "from_paint")
+                 "defs_in_paint", "time_to_act", "kickout", "from_paint")
 LOGIT_DECAY <- 1       # weight decay (ridge penalty) for multinom
 
 d <- kt_load_catches(paths)

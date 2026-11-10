@@ -1,0 +1,9 @@
+file,category,dashboard,pass_id,game_id,period,clock,catch_frame,actual,kickout,transformer,logistic
+01_both_pass_was_drive.png,both_pass_was_drive,#/play/possession-114099-2-79,pass-114099-2-241,114099,2,0:06,69689,drive,FALSE,"shot 4%, drive 8%, pass 87%","shot 3%, drive 9%, pass 88%"
+02_both_pass_was_drive.png,both_pass_was_drive,#/play/possession-178442-1-6,pass-178442-1-21,178442,1,8:21,3372,drive,FALSE,"shot 6%, drive 9%, pass 86%","shot 3%, drive 12%, pass 86%"
+03_both_pass_was_shot.png,both_pass_was_shot,#/play/possession-188630-3-105,pass-188630-3-349,188630,3,0:01,90780,shot,FALSE,"shot 4%, drive 7%, pass 89%","shot 4%, drive 8%, pass 88%"
+04_both_pass_was_shot.png,both_pass_was_shot,#/play/possession-114169-4-150,pass-114169-4-459,114169,4,0:05,175977,shot,FALSE,"shot 4%, drive 10%, pass 86%","shot 1%, drive 5%, pass 94%"
+05_both_shot_was_other.png,both_shot_was_other,#/play/possession-114086-3-99,pass-114086-3-352,114086,3,2:59,89565,drive,TRUE,"shot 82%, drive 5%, pass 13%","shot 96%, drive 1%, pass 2%"
+06_transformer_only.png,transformer_only,#/play/possession-184439-2-49,pass-184439-2-166,184439,2,6:34,35817,pass,FALSE,"shot 73%, drive 7%, pass 20%","shot 25%, drive 23%, pass 53%"
+07_logistic_only.png,logistic_only,#/play/possession-114243-3-97,pass-114243-3-321,114243,3,5:44,87488,pass,FALSE,"shot 40%, drive 14%, pass 47%","shot 77%, drive 5%, pass 18%"
+08_kickout.png,kickout,#/play/possession-191313-4-148,pass-191313-4-428,191313,4,0:21,131180,shot,TRUE,"shot 15%, drive 11%, pass 74%","shot 4%, drive 14%, pass 82%"

@@ -36,7 +36,7 @@ PATIENCE <- 25L
 BATCH <- 64L
 LR <- 1e-3
 WD <- 1e-2
-CTX_FEATS <- c("shot_clock", "kickout", "from_paint")
+CTX_FEATS <- c("time_to_act", "kickout", "from_paint")   # play-level facts, joined to the receiver row before the head
 
 d <- kt_load_catches(paths)
 m <- d$meta

@@ -1,0 +1,161 @@
+feature,weight,cut,group
+bd_lvl,0.605,-0.8,four players
+bd_lvl_v,0.472,-0.8,four players
+d_sd,0.398,-0.8,four players
+sd_lvl,0.381,-0.8,four players
+lsf_2,0.37,-0.8,defense so far
+s_hoop,0.352,-0.8,four players
+lsf_1,0.339,-0.8,defense so far
+d_def,0.32,-0.8,four players
+d_hs,0.315,-0.8,four players
+sd_lvl_v,0.296,-0.8,four players
+sc,0.259,-0.8,four players
+x3_vx,0.248,-0.8,other six players
+h_lvl,0.246,-0.8,four players
+lsf_5,0.207,-0.8,defense so far
+d_bd,0.195,-0.8,four players
+x2_vx,0.191,-0.8,other six players
+lsf_3,0.181,-0.8,defense so far
+x3_x,0.177,-0.8,other six players
+x2_x,0.158,-0.8,other six players
+o3_x,0.153,-0.8,other six players
+x2_y,0.149,-0.8,other six players
+x1_x,0.135,-0.8,other six players
+lsf_4,0.134,-0.8,defense so far
+o1_y,0.131,-0.8,other six players
+x1_y,0.128,-0.8,other six players
+o1_vx,0.127,-0.8,other six players
+o2_y,0.12,-0.8,other six players
+o2_vy,0.11,-0.8,other six players
+o2_x,0.091,-0.8,other six players
+o3_vx,0.09,-0.8,other six players
+o1_vy,0.087,-0.8,other six players
+o3_y,0.084,-0.8,other six players
+x3_y,0.078,-0.8,other six players
+x1_vy,0.077,-0.8,other six players
+o1_x,0.074,-0.8,other six players
+x2_vy,0.073,-0.8,other six players
+x1_vx,0.072,-0.8,other six players
+o3_vy,0.072,-0.8,other six players
+o2_vx,0.069,-0.8,other six players
+x3_vy,0.051,-0.8,other six players
+bd_lvl,1.009,-0.4,four players
+bd_lvl_v,0.873,-0.4,four players
+sd_lvl,0.747,-0.4,four players
+sd_lvl_v,0.525,-0.4,four players
+d_sd,0.5,-0.4,four players
+lsf_2,0.358,-0.4,defense so far
+lsf_1,0.34,-0.4,defense so far
+x3_vx,0.304,-0.4,other six players
+sc,0.294,-0.4,four players
+d_hs,0.278,-0.4,four players
+x2_vx,0.267,-0.4,other six players
+s_hoop,0.245,-0.4,four players
+d_bd,0.245,-0.4,four players
+o2_y,0.223,-0.4,other six players
+d_def,0.211,-0.4,four players
+h_lvl,0.208,-0.4,four players
+lsf_5,0.199,-0.4,defense so far
+o3_x,0.183,-0.4,other six players
+x3_x,0.16,-0.4,other six players
+x3_vy,0.157,-0.4,other six players
+x2_x,0.156,-0.4,other six players
+lsf_3,0.152,-0.4,defense so far
+lsf_4,0.142,-0.4,defense so far
+x1_y,0.141,-0.4,other six players
+x1_vy,0.127,-0.4,other six players
+o1_y,0.127,-0.4,other six players
+o1_vy,0.126,-0.4,other six players
+o1_x,0.121,-0.4,other six players
+o2_vy,0.115,-0.4,other six players
+o3_vy,0.112,-0.4,other six players
+o1_vx,0.111,-0.4,other six players
+x1_vx,0.109,-0.4,other six players
+o3_vx,0.101,-0.4,other six players
+x2_y,0.1,-0.4,other six players
+o2_vx,0.092,-0.4,other six players
+o2_x,0.088,-0.4,other six players
+o3_y,0.087,-0.4,other six players
+x1_x,0.084,-0.4,other six players
+x2_vy,0.067,-0.4,other six players
+x3_y,0.066,-0.4,other six players
+bd_lvl,1.393,0,four players
+sd_lvl,1.199,0,four players
+bd_lvl_v,0.925,0,four players
+sd_lvl_v,0.656,0,four players
+d_bd,0.609,0,four players
+h_lvl,0.56,0,four players
+d_hs,0.462,0,four players
+d_def,0.4,0,four players
+lsf_2,0.331,0,defense so far
+lsf_1,0.319,0,defense so far
+x1_y,0.262,0,other six players
+sc,0.252,0,four players
+d_sd,0.241,0,four players
+x3_y,0.208,0,other six players
+o1_y,0.204,0,other six players
+x1_vx,0.203,0,other six players
+lsf_5,0.202,0,defense so far
+o1_vx,0.188,0,other six players
+s_hoop,0.173,0,four players
+lsf_3,0.169,0,defense so far
+lsf_4,0.169,0,defense so far
+x2_y,0.166,0,other six players
+o1_x,0.156,0,other six players
+x2_vx,0.138,0,other six players
+x2_x,0.137,0,other six players
+x3_x,0.137,0,other six players
+o3_vx,0.124,0,other six players
+x2_vy,0.117,0,other six players
+x3_vy,0.116,0,other six players
+o1_vy,0.116,0,other six players
+o3_y,0.11,0,other six players
+x3_vx,0.104,0,other six players
+o2_x,0.102,0,other six players
+o2_y,0.087,0,other six players
+o3_x,0.084,0,other six players
+x1_x,0.068,0,other six players
+o2_vx,0.067,0,other six players
+x1_vy,0.063,0,other six players
+o2_vy,0.062,0,other six players
+o3_vy,0.061,0,other six players
+sd_lvl,2.059,0.4,four players
+bd_lvl,1.444,0.4,four players
+d_bd,1.052,0.4,four players
+d_def,0.841,0.4,four players
+d_hs,0.828,0.4,four players
+h_lvl,0.743,0.4,four players
+sd_lvl_v,0.552,0.4,four players
+d_sd,0.438,0.4,four players
+bd_lvl_v,0.381,0.4,four players
+s_hoop,0.342,0.4,four players
+lsf_2,0.283,0.4,defense so far
+x1_y,0.253,0.4,other six players
+o1_vx,0.234,0.4,other six players
+o1_y,0.223,0.4,other six players
+lsf_1,0.222,0.4,defense so far
+lsf_5,0.218,0.4,defense so far
+sc,0.218,0.4,four players
+o2_x,0.201,0.4,other six players
+x3_y,0.188,0.4,other six players
+lsf_4,0.167,0.4,defense so far
+x2_x,0.163,0.4,other six players
+o1_x,0.144,0.4,other six players
+lsf_3,0.143,0.4,defense so far
+x3_vy,0.132,0.4,other six players
+o3_x,0.128,0.4,other six players
+o2_vx,0.12,0.4,other six players
+x1_vx,0.118,0.4,other six players
+x2_y,0.112,0.4,other six players
+x1_x,0.111,0.4,other six players
+x3_x,0.109,0.4,other six players
+o2_vy,0.105,0.4,other six players
+o3_vx,0.093,0.4,other six players
+x2_vy,0.082,0.4,other six players
+o1_vy,0.082,0.4,other six players
+x2_vx,0.081,0.4,other six players
+x3_vx,0.081,0.4,other six players
+o2_y,0.074,0.4,other six players
+o3_vy,0.07,0.4,other six players
+x1_vy,0.064,0.4,other six players
+o3_y,0.058,0.4,other six players

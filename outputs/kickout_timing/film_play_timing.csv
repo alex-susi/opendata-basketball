@@ -1,0 +1,9 @@
+file,pass_id,poss_id,label,horizon,first_action,t_first,t_screen,screen_cov,t_drive,t_shot,t_pass,t_touch_end
+01_both_pass_was_drive.png,pass-178442-1-21,possession-178442-1-6,drive,hold,drive,1.8,,,1.8,3.6,,3.6
+02_both_pass_was_drive.png,pass-179612-2-175,possession-179612-2-52,drive,drive,drive,0.8,,,0.8,,2.68,2.68
+03_both_pass_was_shot.png,pass-191313-1-59,possession-191313-1-21,shot,shot,shot,1.08,,,,1.08,,1.08
+04_both_pass_was_shot.png,pass-114086-1-38,possession-114086-1-12,shot,hold,shot,4.8,3.2,over + show,,4.8,,4.8
+05_both_shot_was_other.png,pass-114234-2-183,possession-114234-2-67,pass,pass,pass,0.52,,,,,0.52,0.52
+06_transformer_only.png,pass-184439-2-166,possession-184439-2-49,pass,pass,pass,0.8,,,,,0.8,0.8
+07_logistic_only.png,pass-114243-3-321,possession-114243-3-97,pass,hold,pass,3.2,,,,,3.2,3.2
+08_kickout.png,pass-114099-1-34,possession-114099-1-10,drive,drive,drive,0.68,,,0.68,1.88,,1.88

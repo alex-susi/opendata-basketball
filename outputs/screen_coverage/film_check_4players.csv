@@ -1,0 +1,13 @@
+id,poss,game_id,period,call,h_name,s_name,bd_name,sd_name,forecast_call,forecast_p,right,dashboard,bd_lvl_at_minus0.4,sd_lvl_at_minus0.4
+pick-184439-1-35,possession-184439-1-35,184439,1,over + soft,Marcelinho Huertas,Giorgi Shermadini,Theo Maledon,Alex Len,over + soft,0.67,TRUE,#/play/possession-184439-1-35,2.9,-4.1
+pick-178442-2-48,possession-178442-2-57,178442,2,over + show,Justin Jaworski,Martin Krampelj,Aaron Best,Yves Pons,over + show,0.61,TRUE,#/play/possession-178442-2-57,4.5,-2.9
+pick-114234-3-95,possession-114234-3-106,114234,3,over + show,Marco Spissu,Joel Soriano,Dominik Mavra,Dragan Apic,over + show,0.69,TRUE,#/play/possession-114234-3-106,2.8,-2.2
+pick-114099-1-22,possession-114099-1-22,114099,1,over + soft,Otis Livingston II,Nikola Maric,Raul Neto,Luke Fischer,over + soft,0.6,TRUE,#/play/possession-114099-1-22,1.3,-5.4
+pick-191313-4-146,possession-191313-4-144,191313,4,over + soft,Trae Bell-Haynes,Devin Robinson,Mihajlo Andric,Danko Brankovic,over + soft,0.83,TRUE,#/play/possession-191313-4-144,3.9,-8.1
+pick-184439-2-82,possession-184439-2-72,184439,2,over + soft,Patty Mills,Giorgi Shermadini,Alberto Abalde,Walter Tavares,over + soft,0.68,TRUE,#/play/possession-184439-2-72,3.7,-7.9
+pick-178442-5-166,possession-178442-5-172,178442,5,over + show,Sir'Jabari Rice,Yves Pons,Margiris Normantas,Luke Petrasek,over + soft,0.72,FALSE,#/play/possession-178442-5-172,4.4,-9.7
+pick-114234-3-99,possession-114234-3-110,114234,3,over + soft,Marco Spissu,Joel Soriano,Dominik Mavra,Dragan Apic,over + show,0.68,FALSE,#/play/possession-114234-3-110,0.3,-1.5
+pick-184439-3-101,possession-184439-3-86,184439,3,over + show,Facundo Campazzo,Walter Tavares,Giorgi Shermadini,Marcelinho Huertas,over + soft,0.75,FALSE,#/play/possession-184439-3-86,5,-4.1
+pick-114169-4-144,possession-114169-4-118,114169,4,switch,Ludvig Hakanson,Ante Tomic,Jonah Radebaugh,Emanuel Ion Cate,over + soft,0.73,FALSE,#/play/possession-114169-4-118,3.4,-3.4
+pick-184439-3-134,possession-184439-3-111,184439,3,over + show,Bruno Fitipaldo,Giorgi Shermadini,Andres Feliz Sarita,Usman Garuba Alari,over + soft,0.62,FALSE,#/play/possession-184439-3-111,3.5,-6.2
+pick-114086-1-32,possession-114086-1-29,114086,1,over + soft,Carlos Alocen,Pierre Pelos,Matteo Spagnolo,Mamadi Diakite,over + show,0.63,FALSE,#/play/possession-114086-1-29,7.4,-1.1
