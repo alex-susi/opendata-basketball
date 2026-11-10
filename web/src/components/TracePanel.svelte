@@ -99,6 +99,11 @@
   });
 
   const hovered = $derived<TraceSample | null>(hoverK == null ? null : samples.find((s) => s.k === hoverK) ?? null);
+  // The moment the readout names, on every tab: the hovered sample while the pointer is over the chart, otherwise the
+  // playback position. Seconds are the timeline's (playback seconds); the frame is the tracking frame (25 per second,
+  // the frame column of exported tables such as outputs/screen_coverage/per_frame/strips.csv).
+  const frameAt = (k: number) => (play && seq.length ? play.frames[seq[clamp(Math.round(k), 0, seq.length - 1)]] : null);
+  const moment = $derived(hovered ? { t: hovered.t, f: frameAt(hovered.k) } : { t: tNow, f: frameAt(viewer.pos) });
   const name = (p: PlayerTrack | null | undefined) => (p ? `#${p.jersey} ${p.name}` : "–");
   const teamOf = (p: PlayerTrack) => (play ? (p.role === "off" ? play.off : play.def) : "");
   const kitText = (p: PlayerTrack | null | undefined) => (p && play ? play.colors[p.role].text : undefined);
@@ -154,6 +159,7 @@
                   onclick={() => (viewer.trackCols = g.key)}>{g.label}</button>
         {/each}
       </div>
+      {#if play}<span class="trace-read">{@render at()}</span>{/if}
     {:else if viewer.trace === "nearest"}
       <label class="trace-pick">
         <span>Player</span>
@@ -169,20 +175,24 @@
           {/each}
         </select>
       </label>
-      {#if focus}
+      {#if play}
         <span class="trace-read">
-          {#if hovered}
-            {@const opp = play?.players.find((p) => p.id === hovered.opp)}
-            at {hovered.t.toFixed(1)} s: <b>{fmt(hovered.v)}</b> to <b style:color={kitText(opp)}>{name(opp)}</b>
-          {:else}
-            nearest: <b style:color={kitText(now?.opp)}>{name(now?.opp)}</b>{#if now?.opp}&nbsp;<span>({teamOf(now.opp)})</span>{/if} · <b>{fmt(now?.v)}</b>
+          {@render at()}{#if focus}:
+            {#if hovered}
+              {@const opp = play?.players.find((p) => p.id === hovered.opp)}
+              <b>{fmt(hovered.v)}</b> to <b style:color={kitText(opp)}>{name(opp)}</b>
+            {:else}
+              nearest <b style:color={kitText(now?.opp)}>{name(now?.opp)}</b>{#if now?.opp}&nbsp;<span>({teamOf(now.opp)})</span>{/if} · <b>{fmt(now?.v)}</b>
+            {/if}
           {/if}
         </span>
       {/if}
     {:else if viewer.trace === "ball"}
-      <span class="trace-read">
-        {#if hovered}at {hovered.t.toFixed(1)} s: <b>{fmt(hovered.v)}</b>{:else}ball height <b>{fmt(now?.v)}</b>{/if}
-      </span>
+      {#if play}
+        <span class="trace-read">
+          {@render at()}: {#if hovered}<b>{fmt(hovered.v)}</b>{:else}ball height <b>{fmt(now?.v)}</b>{/if}
+        </span>
+      {/if}
     {/if}
     </div>
   </div>
@@ -265,3 +275,7 @@
     {/if}
   </div>
 </div>
+
+{#snippet at()}
+  <span class="trace-at" title="Where the readout is: seconds of playback on the timeline below, and the tracking frame (25 frames a second). Shows the hovered moment while the pointer is over the chart, otherwise the current one.">at <b>{moment.t.toFixed(2)} s</b><span class="trace-frame"> · frame {moment.f ?? "–"}</span></span>
+{/snippet}

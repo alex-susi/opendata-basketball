@@ -1,10 +1,11 @@
 // Live screen-coverage probabilities for the Coverage Read card (Annotations.svelte).
 //
-// coverage_frames.json is written by src/screen_coverage/02_per_frame.R: for every on-ball screen it scored, the
+// coverage_frames.json is written by src/screen_coverage/07_export_live.R: for every on-ball screen it scored, the
 // held-out probability of each joint call (over + show, over + soft, under + soft, under + show, switch) at every
-// frame from 2 s before the screen tag to 1 s after it. Each frame's numbers come from a logistic model that sees only
-// the four players of the screen at that frame and 0.24 s earlier, the shot clock, and the defense's earlier calls in
-// the game; it was fitted on the other nine games. The card smooths them over the last few frames (never a later one).
+// frame from 2 s before the screen tag to 1 s after it. The live model (named in the file's `model`) is the transformer
+// that is never told when the screen comes: all ten players at that frame and 0.24 s earlier, the shot clock, the
+// defense's earlier calls in the game and the handler-screener closeness; each game's screens come from the network
+// trained without that game. The card smooths them over the last few frames (never a later one).
 
 export interface CoverageScreen {
   id: string;

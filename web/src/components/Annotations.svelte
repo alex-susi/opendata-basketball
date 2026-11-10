@@ -61,7 +61,7 @@
   <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
        style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
     <div class="ann-stack top" class:low={shift > 0} bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
-      {#if covRead && cov}{@render coverage(covRead, cov.calls)}{/if}
+      {#if covRead && cov}{@render coverage(covRead, cov.calls, cov.model)}{/if}
       {#if shotInfo}{@render card(shotInfo)}{/if}
     </div>
     <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">
@@ -80,7 +80,7 @@
   </div>
 {/snippet}
 
-{#snippet coverage(r: NonNullable<typeof covRead>, calls: string[])}
+{#snippet coverage(r: NonNullable<typeof covRead>, calls: string[], model: string)}
   {@const top = r.pct.indexOf(Math.max(...r.pct))}
   <div class="ann-card cov-card">
     <b>Coverage Read<i class="event-flag">{fmtT(r.t)}</i></b>
@@ -97,7 +97,8 @@
     {:else}
       <span class="card-line cov-note"><span>Actual call shown at the screen</span><span></span></span>
     {/if}
-    <span class="cov-note">{lastName(r.screen.bd)} on the ball, {lastName(r.screen.sd)} on the screener · held out, last 0.2 s</span>
+    <span class="cov-note">{lastName(r.screen.bd)} on the ball, {lastName(r.screen.sd)} on the screener · last 0.2 s</span>
+    <span class="cov-note">{model.replace(":", ",")} · held out from this game</span>
   </div>
 {/snippet}
 

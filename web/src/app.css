@@ -784,3 +784,6 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .cov-pct { text-align: right; }
 .cov-called { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--line); }
 .cov-note { color: var(--muted); font-size: 10.5px; }
+/* The trace panel's moment readout (TracePanel.svelte): always shown, hovered or current. */
+.trace-at { white-space: nowrap; }
+.trace-frame { color: var(--muted); }

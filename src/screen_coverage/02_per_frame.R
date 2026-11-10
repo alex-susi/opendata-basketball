@@ -236,6 +236,13 @@ for (g in unique(P$game_id)) {
 }
 sf_ll <- -log(as.matrix(P[, ..SOFAR])[cbind(seq_len(nrow(P)), match(y, CALLS))])
 
+# Saved for the transformer comparison (05_compare.R): the scored screens, the frame rows and every logistic
+# prediction, in X's row order.
+saveRDS(list(P = P, X = X, prob = list(`4 players + so far` = PA, `+ archetypes` = PB, `pooled, no timing` = PP,
+                                       `pooled, no timing, + closeness` = PP2),
+             lg_ll = lg_ll, sf_ll = sf_ll, calls = CALLS, offs = OFFS),
+        file.path(cache_dir, "logistic_per_frame.rds"))
+
 # ---- scores -----------------------------------------------------------------------------------------
 
 boot_ci <- function(score, game, reps = 2000L) {
@@ -325,78 +332,14 @@ ggsave(file.path(out_dir, "figures", "scores_by_frame.png"), p1 / p2 + plot_layo
 
 # ---- probability strips for the film-check screens ----------------------------------------------------
 
+source(file.path(root, "src", "screen_coverage", "R", "strips.R"))
 STRIP_MODEL <- if (win[window %like% "forecast", `+ archetypes` < `4 players + so far`]) M_B else M_A
 PS <- if (STRIP_MODEL == M_B) PB else PA
 film <- fread(file.path(root, "outputs", "screen_coverage", "film_check_4players.csv"))
 strip_ids <- unique(c("pick-188630-1-12", film$id))
 strip_ids <- strip_ids[strip_ids %in% P$id]
-S <- X[id %in% strip_ids, .(id, off, t = off / FPS, frame, gc_now, sc_now, bd_lvl, sd_lvl)]
-S <- cbind(S, as.data.table(PS[X$id %in% strip_ids, , drop = FALSE]))
-setnames(S, paste0("V", seq_along(CALLS)), CALLS)
-setorder(S, id, off)
-for (cl_ in CALLS) S[, (paste0(cl_, " (smoothed)")) := frollmean(get(cl_), SMOOTH, align = "right", adaptive = FALSE), by = id]
-S[P, on = "id", `:=`(call = i.call, poss = i.poss, h_name = i.h_name, s_name = i.s_name, bd_name = i.bd_name,
-                     sd_name = i.sd_name, period = i.period, h_arch = i.h_arch, s_arch = i.s_arch)]
-fwrite(S[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 3) else v)], file.path(out_dir, "strips.csv"))
-
-clock <- function(gc, per) ifelse(is.na(gc), "?", sprintf("Q%d %d:%02d", per, floor(gc / 60), floor(gc %% 60)))
-unlink(list.files(file.path(out_dir, "figures", "strips"), full.names = TRUE))
-last <- function(s) sub(".* ", "", s)
-for (k in seq_along(strip_ids)) {
-  s <- S[id == strip_ids[k]]
-  info <- s[off == 0]
-  lab_film <- if (strip_ids[k] %in% film$id) {
-    f <- film[id == strip_ids[k]]
-    sprintf("Film check: the step-1 model's -0.4 s call was %s (%.0f%%), %s.", f$forecast_call, 100 * f$forecast_p,
-            if (f$right) "right" else "wrong")
-  } else "Worked example."
-  stack <- function(cols, ttl) {
-    d <- melt(s[, c("t", cols), with = FALSE], id.vars = "t", variable.name = "call", value.name = "p")
-    d[, call := factor(sub(" \\(smoothed\\)", "", call), levels = rev(CALLS))]
-    ggplot(d[!is.na(p)], aes(t, p, fill = call)) + geom_area(colour = "white", linewidth = 0.25) +
-      geom_vline(xintercept = 0, colour = "grey15", linetype = "dashed") +
-      scale_fill_manual(values = CALL_COLS, breaks = CALLS, name = NULL) +
-      scale_y_continuous(labels = function(v) paste0(100 * v, "%"), expand = c(0, 0)) +
-      scale_x_continuous(limits = range(OFFS) / FPS, breaks = seq(-2, 1, 0.4), labels = function(v) sprintf("%+.1f s", v), expand = c(0, 0)) +
-      labs(subtitle = ttl, x = NULL, y = NULL) + theme_minimal(base_size = 10.5) +
-      theme(panel.grid.minor = element_blank(), legend.position = "top", plot.subtitle = element_text(size = 9.5))
-  }
-  a <- stack(paste0(CALLS, " (smoothed)"), "Probability of each call, smoothed (average of the last 0.2 s; never uses a later frame)")
-  b <- stack(CALLS, "Raw, frame by frame") + theme(legend.position = "none")
-  lv <- melt(s[, .(t, `ball defender's level (bd_lvl)` = bd_lvl, `big's level (sd_lvl)` = sd_lvl)], id.vars = "t")
-  c3 <- ggplot(lv, aes(t, value, colour = variable)) + geom_hline(yintercept = 0, colour = "grey40") +
-    geom_vline(xintercept = 0, colour = "grey15", linetype = "dashed") + geom_line(linewidth = 0.8) +
-    scale_colour_manual(values = c("#e34948", "#6250d6"), name = NULL) +
-    scale_x_continuous(limits = range(OFFS) / FPS, breaks = seq(-2, 1, 0.4), labels = function(v) sprintf("%+.1f s", v), expand = c(0, 0)) +
-    labs(subtitle = "The raw positions: feet above (+) or below (-) the screener's distance from the hoop",
-         x = "Seconds relative to the screen tag (dashed line)", y = "ft") +
-    theme_minimal(base_size = 10.5) + theme(legend.position = "top", panel.grid.minor = element_blank(), plot.subtitle = element_text(size = 9.5))
-  g <- a / b / c3 + plot_layout(heights = c(2, 1, 1.2)) +
-    plot_annotation(title = sprintf("Called %s: %s (%s) screens for %s (%s)", toupper(info$call), last(info$s_name), info$s_arch,
-                                    last(info$h_name), info$h_arch),
-                    subtitle = sprintf("%s guards the ball, %s guards the screener. Tag at %s, shot clock %.0f. Dashboard: #/play/%s\n%s Model: %s.",
-                                       last(info$bd_name), last(info$sd_name), clock(info$gc_now, info$period),
-                                       info$sc_now, info$poss, lab_film, STRIP_MODEL),
-                    theme = theme(plot.title = element_text(face = "bold", size = 13), plot.subtitle = element_text(size = 9.5)))
-  ggsave(file.path(out_dir, "figures", "strips", sprintf("%02d_%s.png", k - 1, strip_ids[k])), g,
-         width = 11, height = 8, dpi = 140, bg = "white")
-}
+draw_strips(X, PS, P, strip_ids, film, STRIP_MODEL, file.path(out_dir, "strips.csv"),
+            file.path(out_dir, "figures", "strips"), OFFS, FPS, SMOOTH)
 cat("\nStrips drawn with:", STRIP_MODEL, "for", length(strip_ids), "screens\n")
 
-# ---- export for the play viewer: live coverage probabilities -------------------------------------------
-# web/public/data/coverage_frames.json, read by the viewer's Coverage Read card (web/src/components/Annotations.svelte).
-# Per possession, every scored screen with its tag frame, the four players, the call, and the held-out probability of
-# each call (whole percent) at every frame from -2 s to +1 s, raw (the card smooths them itself over the last 0.2 s).
-web_model <- M_A
-PW <- if (web_model == M_B) PB else PA
-ex <- lapply(split(seq_len(nrow(X)), X$idx), function(r) r[order(X$off[r])])
-screens <- lapply(seq_len(nrow(P)), function(k) {
-  r <- ex[[as.character(k)]]
-  list(id = P$id[k], f0 = P$f0[k], h = P$H[k], s = P$S[k], bd = P$BD[k], sd = P$SD[k], call = P$call[k],
-       p = lapply(seq_along(CALLS), function(j) as.integer(round(100 * PW[r, j]))))
-})
-by_poss <- split(screens, P$poss)
-jsonlite::write_json(list(model = web_model, smooth_frames = SMOOTH, offsets = range(OFFS), calls = CALLS,
-                          generated = format(Sys.time(), "%Y-%m-%d %H:%M"), possessions = by_poss),
-                     file.path(root, "web", "public", "data", "coverage_frames.json"), auto_unbox = TRUE)
-cat("Wrote web/public/data/coverage_frames.json:", length(screens), "screens in", length(by_poss), "possessions\n")
+# The play viewer's live probabilities (web/public/data/coverage_frames.json) are written by 07_export_live.R.
