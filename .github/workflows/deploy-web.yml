@@ -52,3 +52,6 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # GitHub's file sync can stall past the 10-minute default (seen 2026-11-09); allow 30 minutes.
+          timeout: 1800000
