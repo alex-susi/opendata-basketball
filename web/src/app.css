@@ -775,7 +775,14 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* Coverage Read card (Annotations.svelte, lib/coverage.ts): one bar per screen-coverage call, the leading call in
    full ink; the bar colours are the strips' call colours stepped for the dark card. */
-.cov-card { min-width: 250px; }
+/* Fixed width, so the card keeps its size for a screen whatever the numbers; long names are cut with an ellipsis. */
+.cov-card { width: 280px; min-width: 0; box-sizing: border-box; }
+.cov-card .cov-row { grid-template-columns: 70px 1fr 34px; }
+.cov-card .card-head, .cov-who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cov-who { color: var(--muted); }
+.cov-when { align-items: center; }
+.cov-flag { margin-left: 0; }
+.cov-flag.set { background: #2f7de1; }
 .cov-row { display: grid; grid-template-columns: 92px 1fr 34px; align-items: center; gap: 8px; color: var(--muted);
   font-variant-numeric: tabular-nums; }
 .cov-row.top { color: var(--ink); font-weight: 600; }

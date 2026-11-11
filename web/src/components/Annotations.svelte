@@ -88,8 +88,9 @@
   {@const shown = r.t >= 0}
   {@const right = calls[top] === r.screen.call}
   <div class="ann-card cov-card">
-    <b>Screen Coverage Read<i class="event-flag">{fmtT(r.t)}</i></b>
-    <span class="card-line"><span>{who(r.screen.s)} screens for {who(r.screen.h)}</span><span>{shown ? "screen set" : "before the screen"}</span></span>
+    <b>Screen Coverage Read</b>
+    <span class="card-line cov-when"><span><i class="event-flag cov-flag" class:set={shown}>{fmtT(r.t)}</i></span><span>{shown ? "screen set" : "before the screen"}</span></span>
+    <span class="cov-who">{who(r.screen.s)} screens for {who(r.screen.h)}</span>
     {@render bars(`On the ball · ${who(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
     {@render bars(`On the screener · ${who(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
     <!-- The model's most likely joint call and, from the screen on, the tagged call under it, the two call names in
