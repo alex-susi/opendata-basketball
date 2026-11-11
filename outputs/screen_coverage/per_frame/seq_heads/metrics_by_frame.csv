@@ -1,0 +1,381 @@
+model,off,t,accuracy,macro_recall,macro_f1,ball_defender_accuracy,big_accuracy,ball_defender_logloss,big_logloss
+"time-aware transformer, two heads",-50,-2,0.4064,0.276,0.268,0.6469,0.5307,0.8485,0.9654
+"time-aware transformer, two heads",-49,-1.96,0.4105,0.2776,0.2687,0.6455,0.5348,0.8486,0.964
+"time-aware transformer, two heads",-48,-1.92,0.4085,0.276,0.2663,0.6482,0.5355,0.8491,0.9651
+"time-aware transformer, two heads",-47,-1.88,0.3989,0.269,0.2595,0.6496,0.528,0.8481,0.9663
+"time-aware transformer, two heads",-46,-1.84,0.3969,0.2684,0.2595,0.6475,0.5253,0.8493,0.9653
+"time-aware transformer, two heads",-45,-1.8,0.3996,0.2681,0.2571,0.6455,0.5294,0.8507,0.9665
+"time-aware transformer, two heads",-44,-1.76,0.3996,0.2667,0.2556,0.6448,0.5321,0.8494,0.9661
+"time-aware transformer, two heads",-43,-1.72,0.401,0.2681,0.257,0.6455,0.5321,0.85,0.9667
+"time-aware transformer, two heads",-42,-1.68,0.4003,0.2705,0.2619,0.6448,0.5273,0.8501,0.9661
+"time-aware transformer, two heads",-41,-1.64,0.4051,0.2751,0.268,0.6475,0.5321,0.849,0.9652
+"time-aware transformer, two heads",-40,-1.6,0.4037,0.2751,0.2684,0.6455,0.5273,0.8472,0.9648
+"time-aware transformer, two heads",-39,-1.56,0.4098,0.2788,0.2717,0.6469,0.5348,0.8453,0.9628
+"time-aware transformer, two heads",-38,-1.52,0.4139,0.2821,0.2753,0.6448,0.5383,0.843,0.9587
+"time-aware transformer, two heads",-37,-1.48,0.4187,0.2863,0.2799,0.6462,0.543,0.8427,0.9569
+"time-aware transformer, two heads",-36,-1.44,0.4221,0.2867,0.2789,0.6482,0.5499,0.842,0.9546
+"time-aware transformer, two heads",-35,-1.4,0.4208,0.2859,0.2783,0.6482,0.5505,0.8399,0.9512
+"time-aware transformer, two heads",-34,-1.36,0.4194,0.285,0.2771,0.6475,0.5478,0.8381,0.9474
+"time-aware transformer, two heads",-33,-1.32,0.4194,0.2839,0.2757,0.6462,0.5451,0.8382,0.944
+"time-aware transformer, two heads",-32,-1.28,0.4228,0.287,0.2787,0.6503,0.5403,0.8364,0.941
+"time-aware transformer, two heads",-31,-1.24,0.4249,0.2899,0.2825,0.651,0.5444,0.834,0.9365
+"time-aware transformer, two heads",-30,-1.2,0.4344,0.2974,0.2905,0.6578,0.5478,0.8313,0.9327
+"time-aware transformer, two heads",-29,-1.16,0.4392,0.2999,0.2919,0.6598,0.5512,0.8298,0.9295
+"time-aware transformer, two heads",-28,-1.12,0.4454,0.306,0.2997,0.6612,0.5594,0.8284,0.9245
+"time-aware transformer, two heads",-27,-1.08,0.4481,0.3093,0.3034,0.6598,0.5594,0.8266,0.9192
+"time-aware transformer, two heads",-26,-1.04,0.4508,0.3167,0.3148,0.6646,0.5608,0.8255,0.9168
+"time-aware transformer, two heads",-25,-1,0.4549,0.3227,0.3231,0.6605,0.5642,0.825,0.9142
+"time-aware transformer, two heads",-24,-0.96,0.4563,0.3215,0.3202,0.6653,0.5724,0.8229,0.9117
+"time-aware transformer, two heads",-23,-0.92,0.4583,0.32,0.3165,0.6619,0.5772,0.819,0.9067
+"time-aware transformer, two heads",-22,-0.88,0.4638,0.3239,0.3208,0.6633,0.5806,0.8159,0.9028
+"time-aware transformer, two heads",-21,-0.84,0.4686,0.3289,0.3259,0.6646,0.5833,0.8115,0.8969
+"time-aware transformer, two heads",-20,-0.8,0.472,0.3334,0.3317,0.6633,0.5874,0.8081,0.8919
+"time-aware transformer, two heads",-19,-0.76,0.4747,0.3372,0.3364,0.6687,0.5902,0.8041,0.8844
+"time-aware transformer, two heads",-18,-0.72,0.4768,0.3367,0.3343,0.6694,0.5902,0.8011,0.877
+"time-aware transformer, two heads",-17,-0.68,0.4768,0.3371,0.3352,0.6728,0.5936,0.7966,0.8675
+"time-aware transformer, two heads",-16,-0.64,0.4843,0.346,0.3461,0.6721,0.6031,0.7901,0.8572
+"time-aware transformer, two heads",-15,-0.6,0.4986,0.3646,0.3695,0.6776,0.6113,0.7812,0.8459
+"time-aware transformer, two heads",-14,-0.56,0.5055,0.3717,0.3767,0.6831,0.6134,0.7683,0.8325
+"time-aware transformer, two heads",-13,-0.52,0.5157,0.3837,0.3899,0.6913,0.6257,0.7578,0.8223
+"time-aware transformer, two heads",-12,-0.48,0.5287,0.3964,0.4035,0.696,0.6318,0.7469,0.8126
+"time-aware transformer, two heads",-11,-0.44,0.5376,0.4047,0.4116,0.6988,0.6482,0.7339,0.8014
+"time-aware transformer, two heads",-10,-0.4,0.5485,0.4219,0.4322,0.7036,0.6516,0.7189,0.789
+"time-aware transformer, two heads",-9,-0.36,0.5553,0.4321,0.4429,0.707,0.6585,0.7003,0.7753
+"time-aware transformer, two heads",-8,-0.32,0.5697,0.4552,0.4686,0.7206,0.6612,0.6814,0.7621
+"time-aware transformer, two heads",-7,-0.28,0.5799,0.4645,0.4784,0.7275,0.6639,0.6668,0.7498
+"time-aware transformer, two heads",-6,-0.24,0.5943,0.4802,0.4933,0.7384,0.6721,0.6473,0.7331
+"time-aware transformer, two heads",-5,-0.2,0.6079,0.4976,0.5104,0.75,0.6824,0.6266,0.7206
+"time-aware transformer, two heads",-4,-0.16,0.6236,0.5127,0.5243,0.7596,0.6913,0.6077,0.7068
+"time-aware transformer, two heads",-3,-0.12,0.6346,0.5242,0.535,0.7691,0.7049,0.59,0.6937
+"time-aware transformer, two heads",-2,-0.08,0.6421,0.5346,0.5436,0.7725,0.7131,0.5756,0.6785
+"time-aware transformer, two heads",-1,-0.04,0.6557,0.5539,0.5644,0.7835,0.7186,0.5556,0.6644
+"time-aware transformer, two heads",0,0,0.6721,0.574,0.5851,0.7903,0.7268,0.5385,0.6492
+"time-aware transformer, two heads",1,0.04,0.6803,0.5864,0.5988,0.7985,0.7322,0.5232,0.6372
+"time-aware transformer, two heads",2,0.08,0.6919,0.5998,0.6115,0.8005,0.7398,0.5096,0.6249
+"time-aware transformer, two heads",3,0.12,0.7022,0.6134,0.626,0.8067,0.7425,0.4997,0.6148
+"time-aware transformer, two heads",4,0.16,0.7104,0.6274,0.639,0.8156,0.7486,0.4907,0.6056
+"time-aware transformer, two heads",5,0.2,0.7138,0.6318,0.6454,0.8135,0.7589,0.4846,0.5968
+"time-aware transformer, two heads",6,0.24,0.7227,0.6406,0.6542,0.8149,0.7643,0.4783,0.5877
+"time-aware transformer, two heads",7,0.28,0.7254,0.6435,0.6569,0.8224,0.7623,0.4748,0.5811
+"time-aware transformer, two heads",8,0.32,0.722,0.6379,0.6492,0.8163,0.7637,0.4732,0.5761
+"time-aware transformer, two heads",9,0.36,0.7206,0.6398,0.6515,0.819,0.763,0.4691,0.5717
+"time-aware transformer, two heads",10,0.4,0.7213,0.6414,0.6528,0.8183,0.7691,0.4677,0.5672
+"time-aware transformer, two heads",11,0.44,0.7193,0.6366,0.6494,0.8176,0.7691,0.4649,0.5618
+"time-aware transformer, two heads",12,0.48,0.7172,0.6301,0.6441,0.8183,0.7643,0.4622,0.559
+"time-aware transformer, two heads",13,0.52,0.7077,0.6218,0.636,0.8156,0.7568,0.4646,0.5596
+"time-aware transformer, two heads",14,0.56,0.7152,0.6253,0.6393,0.8169,0.7705,0.4656,0.5583
+"time-aware transformer, two heads",15,0.6,0.7145,0.6233,0.6382,0.8156,0.7725,0.4686,0.5596
+"time-aware transformer, two heads",16,0.64,0.7083,0.6136,0.6308,0.8128,0.7678,0.4712,0.5597
+"time-aware transformer, two heads",17,0.68,0.707,0.6062,0.6226,0.8122,0.7678,0.4763,0.5586
+"time-aware transformer, two heads",18,0.72,0.6988,0.5932,0.6104,0.804,0.7657,0.4831,0.5622
+"time-aware transformer, two heads",19,0.76,0.694,0.5824,0.5993,0.8046,0.7637,0.4911,0.5641
+"time-aware transformer, two heads",20,0.8,0.6878,0.5735,0.5914,0.7978,0.7616,0.5003,0.5673
+"time-aware transformer, two heads",21,0.84,0.6851,0.5651,0.5825,0.7999,0.7616,0.5088,0.5702
+"time-aware transformer, two heads",22,0.88,0.6858,0.5681,0.5879,0.7958,0.7616,0.5165,0.5717
+"time-aware transformer, two heads",23,0.92,0.6837,0.5604,0.5795,0.7958,0.765,0.5263,0.5735
+"time-aware transformer, two heads",24,0.96,0.6824,0.5599,0.5798,0.7951,0.7609,0.5352,0.5774
+"time-aware transformer, two heads",25,1,0.6824,0.5549,0.5753,0.7923,0.7575,0.5481,0.5828
+"transformer: pooled, no timing, + closeness",-50,-2,0.3914,0.2695,0.2597,0.6298,0.5157,0.8831,1.0047
+"transformer: pooled, no timing, + closeness",-49,-1.96,0.3934,0.2712,0.2619,0.6277,0.5219,0.882,1.0029
+"transformer: pooled, no timing, + closeness",-48,-1.92,0.3934,0.2699,0.2596,0.6264,0.5253,0.8813,1.0026
+"transformer: pooled, no timing, + closeness",-47,-1.88,0.3887,0.2667,0.2558,0.6257,0.5212,0.88,1.0027
+"transformer: pooled, no timing, + closeness",-46,-1.84,0.3893,0.2653,0.2527,0.6277,0.5171,0.88,1.0018
+"transformer: pooled, no timing, + closeness",-45,-1.8,0.3873,0.2638,0.2519,0.6332,0.5178,0.8793,1.0017
+"transformer: pooled, no timing, + closeness",-44,-1.76,0.388,0.2631,0.2499,0.6332,0.5184,0.878,1.0001
+"transformer: pooled, no timing, + closeness",-43,-1.72,0.3852,0.2606,0.2473,0.6318,0.5178,0.8772,0.9993
+"transformer: pooled, no timing, + closeness",-42,-1.68,0.388,0.2636,0.251,0.6352,0.5184,0.8764,0.9986
+"transformer: pooled, no timing, + closeness",-41,-1.64,0.3873,0.2618,0.2486,0.6359,0.5191,0.8744,0.9968
+"transformer: pooled, no timing, + closeness",-40,-1.6,0.3866,0.262,0.2494,0.6352,0.5205,0.8728,0.9966
+"transformer: pooled, no timing, + closeness",-39,-1.56,0.3859,0.2615,0.2491,0.6387,0.5205,0.8713,0.9942
+"transformer: pooled, no timing, + closeness",-38,-1.52,0.388,0.2613,0.2478,0.6373,0.5253,0.8692,0.9913
+"transformer: pooled, no timing, + closeness",-37,-1.48,0.3934,0.2631,0.2484,0.6373,0.5219,0.8686,0.9887
+"transformer: pooled, no timing, + closeness",-36,-1.44,0.4023,0.2723,0.2599,0.6366,0.5321,0.8667,0.9851
+"transformer: pooled, no timing, + closeness",-35,-1.4,0.4071,0.2752,0.2625,0.64,0.5335,0.8647,0.9828
+"transformer: pooled, no timing, + closeness",-34,-1.36,0.4085,0.2765,0.2647,0.64,0.5376,0.8635,0.9791
+"transformer: pooled, no timing, + closeness",-33,-1.32,0.4105,0.2769,0.2646,0.6393,0.5383,0.862,0.9751
+"transformer: pooled, no timing, + closeness",-32,-1.28,0.4173,0.281,0.2681,0.6373,0.543,0.8589,0.972
+"transformer: pooled, no timing, + closeness",-31,-1.24,0.4214,0.2834,0.2701,0.64,0.5437,0.8562,0.9663
+"transformer: pooled, no timing, + closeness",-30,-1.2,0.4214,0.2825,0.2689,0.64,0.5423,0.8537,0.9624
+"transformer: pooled, no timing, + closeness",-29,-1.16,0.4262,0.2867,0.2737,0.6414,0.5478,0.8504,0.9575
+"transformer: pooled, no timing, + closeness",-28,-1.12,0.4296,0.2906,0.279,0.6421,0.5512,0.8491,0.9527
+"transformer: pooled, no timing, + closeness",-27,-1.08,0.4296,0.2922,0.281,0.6428,0.5492,0.846,0.9473
+"transformer: pooled, no timing, + closeness",-26,-1.04,0.431,0.293,0.2817,0.6489,0.5505,0.8423,0.9418
+"transformer: pooled, no timing, + closeness",-25,-1,0.4317,0.2939,0.2833,0.6462,0.5553,0.8389,0.9373
+"transformer: pooled, no timing, + closeness",-24,-0.96,0.4324,0.2965,0.2867,0.6475,0.5615,0.8349,0.931
+"transformer: pooled, no timing, + closeness",-23,-0.92,0.4372,0.3012,0.2927,0.651,0.5628,0.831,0.9257
+"transformer: pooled, no timing, + closeness",-22,-0.88,0.4406,0.3032,0.2945,0.653,0.569,0.8268,0.9214
+"transformer: pooled, no timing, + closeness",-21,-0.84,0.4474,0.3084,0.3006,0.6544,0.5738,0.8217,0.914
+"transformer: pooled, no timing, + closeness",-20,-0.8,0.4481,0.3105,0.3044,0.6605,0.5772,0.8179,0.9079
+"transformer: pooled, no timing, + closeness",-19,-0.76,0.4563,0.3213,0.319,0.6626,0.5806,0.8124,0.9008
+"transformer: pooled, no timing, + closeness",-18,-0.72,0.4549,0.3224,0.3214,0.6619,0.582,0.8075,0.8958
+"transformer: pooled, no timing, + closeness",-17,-0.68,0.4577,0.3254,0.3245,0.6612,0.5874,0.8021,0.8885
+"transformer: pooled, no timing, + closeness",-16,-0.64,0.4672,0.3332,0.3317,0.6633,0.5895,0.7957,0.8806
+"transformer: pooled, no timing, + closeness",-15,-0.6,0.4747,0.3425,0.342,0.6667,0.5963,0.7899,0.8728
+"transformer: pooled, no timing, + closeness",-14,-0.56,0.4857,0.3548,0.3572,0.6708,0.6038,0.7808,0.8631
+"transformer: pooled, no timing, + closeness",-13,-0.52,0.4918,0.3604,0.3635,0.6708,0.6107,0.7716,0.8545
+"transformer: pooled, no timing, + closeness",-12,-0.48,0.4925,0.3615,0.3651,0.6783,0.6189,0.7609,0.8459
+"transformer: pooled, no timing, + closeness",-11,-0.44,0.5034,0.3747,0.3806,0.6885,0.623,0.748,0.835
+"transformer: pooled, no timing, + closeness",-10,-0.4,0.5116,0.3848,0.3923,0.6885,0.6291,0.7366,0.8251
+"transformer: pooled, no timing, + closeness",-9,-0.36,0.5178,0.397,0.4072,0.696,0.6305,0.7215,0.813
+"transformer: pooled, no timing, + closeness",-8,-0.32,0.5342,0.4167,0.4283,0.7029,0.638,0.7054,0.8032
+"transformer: pooled, no timing, + closeness",-7,-0.28,0.5478,0.4332,0.4468,0.709,0.6489,0.6919,0.7914
+"transformer: pooled, no timing, + closeness",-6,-0.24,0.5622,0.4486,0.463,0.724,0.6592,0.6721,0.7757
+"transformer: pooled, no timing, + closeness",-5,-0.2,0.5792,0.4698,0.4841,0.7316,0.668,0.6562,0.7645
+"transformer: pooled, no timing, + closeness",-4,-0.16,0.5929,0.4851,0.499,0.7439,0.6783,0.6371,0.7493
+"transformer: pooled, no timing, + closeness",-3,-0.12,0.6059,0.4999,0.5148,0.7541,0.6844,0.6207,0.7369
+"transformer: pooled, no timing, + closeness",-2,-0.08,0.6223,0.5247,0.5387,0.7657,0.696,0.6055,0.724
+"transformer: pooled, no timing, + closeness",-1,-0.04,0.6339,0.5422,0.5566,0.7753,0.7022,0.5863,0.7072
+"transformer: pooled, no timing, + closeness",0,0,0.6455,0.5575,0.571,0.7835,0.707,0.5717,0.6945
+"transformer: pooled, no timing, + closeness",1,0.04,0.666,0.576,0.5889,0.7903,0.7199,0.5554,0.6779
+"transformer: pooled, no timing, + closeness",2,0.08,0.679,0.5875,0.6,0.7985,0.7288,0.5421,0.6647
+"transformer: pooled, no timing, + closeness",3,0.12,0.6865,0.5951,0.6073,0.7999,0.7329,0.5302,0.6511
+"transformer: pooled, no timing, + closeness",4,0.16,0.6872,0.6024,0.6134,0.8108,0.7384,0.5189,0.6377
+"transformer: pooled, no timing, + closeness",5,0.2,0.6954,0.6149,0.6255,0.8163,0.7411,0.5117,0.6263
+"transformer: pooled, no timing, + closeness",6,0.24,0.7022,0.6201,0.6315,0.8163,0.7493,0.5041,0.6154
+"transformer: pooled, no timing, + closeness",7,0.28,0.7111,0.6298,0.6408,0.8217,0.7582,0.4982,0.6066
+"transformer: pooled, no timing, + closeness",8,0.32,0.7152,0.6346,0.6457,0.8231,0.7596,0.4929,0.5995
+"transformer: pooled, no timing, + closeness",9,0.36,0.7165,0.6332,0.6443,0.8231,0.7602,0.4886,0.5941
+"transformer: pooled, no timing, + closeness",10,0.4,0.7179,0.6324,0.644,0.821,0.7678,0.4856,0.5887
+"transformer: pooled, no timing, + closeness",11,0.44,0.7206,0.6333,0.6449,0.8245,0.7705,0.4814,0.583
+"transformer: pooled, no timing, + closeness",12,0.48,0.7227,0.6303,0.6423,0.8292,0.7719,0.4789,0.5792
+"transformer: pooled, no timing, + closeness",13,0.52,0.7247,0.6321,0.6448,0.8279,0.776,0.4791,0.5763
+"transformer: pooled, no timing, + closeness",14,0.56,0.7295,0.6373,0.6516,0.8265,0.7766,0.4787,0.5726
+"transformer: pooled, no timing, + closeness",15,0.6,0.7261,0.6315,0.6463,0.8238,0.7739,0.48,0.5705
+"transformer: pooled, no timing, + closeness",16,0.64,0.7206,0.623,0.6376,0.8224,0.7746,0.4834,0.5697
+"transformer: pooled, no timing, + closeness",17,0.68,0.7165,0.6098,0.6245,0.8204,0.7766,0.4875,0.5692
+"transformer: pooled, no timing, + closeness",18,0.72,0.7172,0.6112,0.6267,0.8197,0.7746,0.4928,0.5697
+"transformer: pooled, no timing, + closeness",19,0.76,0.7152,0.6062,0.625,0.8163,0.7739,0.4993,0.5702
+"transformer: pooled, no timing, + closeness",20,0.8,0.7083,0.5966,0.6163,0.8135,0.7698,0.5077,0.5722
+"transformer: pooled, no timing, + closeness",21,0.84,0.7083,0.5944,0.615,0.8115,0.7691,0.5163,0.5748
+"transformer: pooled, no timing, + closeness",22,0.88,0.6981,0.5844,0.6061,0.8053,0.7609,0.5252,0.577
+"transformer: pooled, no timing, + closeness",23,0.92,0.6899,0.5699,0.5914,0.8012,0.7623,0.5352,0.5805
+"transformer: pooled, no timing, + closeness",24,0.96,0.6817,0.5584,0.5792,0.7971,0.7609,0.5467,0.5849
+"transformer: pooled, no timing, + closeness",25,1,0.6776,0.5514,0.5726,0.7985,0.7534,0.5572,0.5884
+logistic: 4 players + so far,-50,-2,0.4262,0.2666,0.2385,0.6598,0.5505,0.8202,0.9362
+logistic: 4 players + so far,-49,-1.96,0.4249,0.2669,0.2401,0.6612,0.5485,0.819,0.9357
+logistic: 4 players + so far,-48,-1.92,0.4249,0.2677,0.2418,0.6612,0.5464,0.8186,0.9357
+logistic: 4 players + so far,-47,-1.88,0.429,0.2718,0.2471,0.6612,0.5478,0.8181,0.9358
+logistic: 4 players + so far,-46,-1.84,0.4324,0.2752,0.252,0.6619,0.5478,0.8175,0.9359
+logistic: 4 players + so far,-45,-1.8,0.4344,0.2759,0.2517,0.6612,0.5458,0.8174,0.9363
+logistic: 4 players + so far,-44,-1.76,0.4344,0.2782,0.2565,0.6619,0.5444,0.8164,0.9359
+logistic: 4 players + so far,-43,-1.72,0.4303,0.2757,0.2544,0.6626,0.5471,0.8159,0.9359
+logistic: 4 players + so far,-42,-1.68,0.4331,0.2773,0.2557,0.6612,0.543,0.8153,0.9359
+logistic: 4 players + so far,-41,-1.64,0.4324,0.2769,0.2553,0.6633,0.541,0.8148,0.9357
+logistic: 4 players + so far,-40,-1.6,0.4317,0.2762,0.2543,0.6633,0.5417,0.8134,0.9349
+logistic: 4 players + so far,-39,-1.56,0.4331,0.2756,0.2518,0.6626,0.5403,0.8129,0.9347
+logistic: 4 players + so far,-38,-1.52,0.4344,0.2772,0.2541,0.6646,0.5437,0.8124,0.9343
+logistic: 4 players + so far,-37,-1.48,0.4324,0.2754,0.2519,0.6673,0.543,0.8119,0.9339
+logistic: 4 players + so far,-36,-1.44,0.4372,0.2782,0.2542,0.6694,0.5451,0.8112,0.9332
+logistic: 4 players + so far,-35,-1.4,0.4358,0.2774,0.2535,0.6694,0.5485,0.8105,0.9329
+logistic: 4 players + so far,-34,-1.36,0.4317,0.2753,0.2518,0.6721,0.554,0.8101,0.9319
+logistic: 4 players + so far,-33,-1.32,0.4344,0.2788,0.2576,0.6728,0.5533,0.8093,0.9311
+logistic: 4 players + so far,-32,-1.28,0.4392,0.2839,0.2642,0.6728,0.5505,0.8085,0.9307
+logistic: 4 players + so far,-31,-1.24,0.4392,0.2855,0.2676,0.6721,0.5512,0.8074,0.9296
+logistic: 4 players + so far,-30,-1.2,0.4413,0.2868,0.2685,0.6735,0.5512,0.8064,0.9287
+logistic: 4 players + so far,-29,-1.16,0.4467,0.2898,0.271,0.6728,0.554,0.8051,0.9273
+logistic: 4 players + so far,-28,-1.12,0.446,0.2883,0.2681,0.6735,0.556,0.8042,0.9265
+logistic: 4 players + so far,-27,-1.08,0.4426,0.2868,0.2678,0.6742,0.5533,0.8024,0.925
+logistic: 4 players + so far,-26,-1.04,0.4419,0.2864,0.2675,0.6742,0.5505,0.8007,0.9234
+logistic: 4 players + so far,-25,-1,0.4419,0.2858,0.2662,0.6735,0.554,0.7993,0.9223
+logistic: 4 players + so far,-24,-0.96,0.4419,0.2858,0.2661,0.6742,0.5574,0.797,0.9202
+logistic: 4 players + so far,-23,-0.92,0.4447,0.2885,0.2692,0.6755,0.5594,0.7951,0.9185
+logistic: 4 players + so far,-22,-0.88,0.4447,0.2923,0.2763,0.6755,0.5601,0.793,0.9166
+logistic: 4 players + so far,-21,-0.84,0.4488,0.2962,0.2813,0.6776,0.5567,0.79,0.9137
+logistic: 4 players + so far,-20,-0.8,0.4542,0.3017,0.288,0.679,0.5642,0.7878,0.9115
+logistic: 4 players + so far,-19,-0.76,0.4597,0.3096,0.2982,0.681,0.5731,0.784,0.9078
+logistic: 4 players + so far,-18,-0.72,0.4617,0.3153,0.3069,0.6837,0.5745,0.7805,0.9047
+logistic: 4 players + so far,-17,-0.68,0.4624,0.321,0.3164,0.6817,0.5786,0.7766,0.9008
+logistic: 4 players + so far,-16,-0.64,0.4679,0.3276,0.3244,0.6837,0.5827,0.7711,0.8954
+logistic: 4 players + so far,-15,-0.6,0.4775,0.3432,0.344,0.6851,0.582,0.7668,0.8913
+logistic: 4 players + so far,-14,-0.56,0.4781,0.3486,0.3521,0.6919,0.584,0.7598,0.8843
+logistic: 4 players + so far,-13,-0.52,0.4829,0.3564,0.3604,0.694,0.5902,0.7534,0.8774
+logistic: 4 players + so far,-12,-0.48,0.4939,0.3754,0.3824,0.6947,0.5956,0.7463,0.87
+logistic: 4 players + so far,-11,-0.44,0.5116,0.3921,0.4011,0.7015,0.6052,0.7355,0.86
+logistic: 4 players + so far,-10,-0.4,0.5157,0.3961,0.4038,0.7056,0.612,0.7264,0.8518
+logistic: 4 players + so far,-9,-0.36,0.5307,0.4125,0.4212,0.7104,0.6257,0.7126,0.8398
+logistic: 4 players + so far,-8,-0.32,0.5485,0.4328,0.4438,0.7111,0.6346,0.6986,0.8289
+logistic: 4 players + so far,-7,-0.28,0.5601,0.4486,0.4597,0.7179,0.6441,0.6844,0.8174
+logistic: 4 players + so far,-6,-0.24,0.571,0.4641,0.474,0.7309,0.6551,0.6644,0.8024
+logistic: 4 players + so far,-5,-0.2,0.5833,0.4828,0.4926,0.7384,0.6667,0.6486,0.7904
+logistic: 4 players + so far,-4,-0.16,0.5949,0.4966,0.505,0.7473,0.6762,0.627,0.7734
+logistic: 4 players + so far,-3,-0.12,0.6107,0.523,0.5286,0.7582,0.679,0.6075,0.7575
+logistic: 4 players + so far,-2,-0.08,0.623,0.5409,0.5465,0.7725,0.6858,0.589,0.7413
+logistic: 4 players + so far,-1,-0.04,0.6387,0.561,0.5656,0.7842,0.696,0.5668,0.7215
+logistic: 4 players + so far,0,0,0.6462,0.5717,0.5748,0.7944,0.6995,0.5498,0.7045
+logistic: 4 players + so far,1,0.04,0.6598,0.5859,0.5907,0.8005,0.7104,0.5293,0.6843
+logistic: 4 players + so far,2,0.08,0.6687,0.5965,0.5999,0.8074,0.7145,0.5118,0.6666
+logistic: 4 players + so far,3,0.12,0.6776,0.6048,0.6094,0.8149,0.7193,0.4951,0.6497
+logistic: 4 players + so far,4,0.16,0.6906,0.6221,0.6252,0.8169,0.7302,0.4788,0.6323
+logistic: 4 players + so far,5,0.2,0.7063,0.6373,0.6393,0.8272,0.7404,0.4657,0.6182
+logistic: 4 players + so far,6,0.24,0.7179,0.6516,0.6551,0.8313,0.748,0.4523,0.603
+logistic: 4 players + so far,7,0.28,0.7227,0.6607,0.6643,0.8361,0.7527,0.4414,0.5901
+logistic: 4 players + so far,8,0.32,0.7316,0.6684,0.6726,0.8422,0.7602,0.4317,0.5787
+logistic: 4 players + so far,9,0.36,0.7357,0.6721,0.6769,0.8456,0.7664,0.4226,0.5683
+logistic: 4 players + so far,10,0.4,0.7384,0.6765,0.6827,0.8504,0.7643,0.4158,0.5601
+logistic: 4 players + so far,11,0.44,0.7432,0.6798,0.6856,0.8504,0.7705,0.4091,0.5524
+logistic: 4 players + so far,12,0.48,0.7445,0.682,0.6881,0.8525,0.7678,0.4037,0.5466
+logistic: 4 players + so far,13,0.52,0.7432,0.6784,0.6848,0.8545,0.7698,0.3994,0.5416
+logistic: 4 players + so far,14,0.56,0.7445,0.6806,0.6859,0.8518,0.7705,0.3944,0.5366
+logistic: 4 players + so far,15,0.6,0.7439,0.6818,0.6871,0.8525,0.7719,0.3909,0.5325
+logistic: 4 players + so far,16,0.64,0.7452,0.6811,0.6858,0.8531,0.776,0.3863,0.5276
+logistic: 4 players + so far,17,0.68,0.7486,0.6911,0.6952,0.8538,0.7732,0.3824,0.5228
+logistic: 4 players + so far,18,0.72,0.7459,0.6886,0.6929,0.8607,0.7698,0.379,0.5179
+logistic: 4 players + so far,19,0.76,0.7439,0.6849,0.6902,0.8593,0.7725,0.3742,0.511
+logistic: 4 players + so far,20,0.8,0.748,0.6928,0.6991,0.8613,0.7766,0.371,0.5054
+logistic: 4 players + so far,21,0.84,0.7486,0.6941,0.7,0.8648,0.7773,0.3666,0.4983
+logistic: 4 players + so far,22,0.88,0.7466,0.6909,0.6969,0.8668,0.7801,0.3628,0.4916
+logistic: 4 players + so far,23,0.92,0.7486,0.695,0.701,0.8689,0.7821,0.3596,0.4854
+logistic: 4 players + so far,24,0.96,0.75,0.6973,0.703,0.8689,0.7883,0.356,0.4787
+logistic: 4 players + so far,25,1,0.7507,0.7014,0.7065,0.8695,0.7869,0.3536,0.4734
+baseline: always over + show,-50,-2,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-49,-1.96,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-48,-1.92,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-47,-1.88,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-46,-1.84,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-45,-1.8,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-44,-1.76,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-43,-1.72,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-42,-1.68,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-41,-1.64,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-40,-1.6,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-39,-1.56,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-38,-1.52,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-37,-1.48,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-36,-1.44,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-35,-1.4,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-34,-1.36,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-33,-1.32,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-32,-1.28,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-31,-1.24,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-30,-1.2,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-29,-1.16,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-28,-1.12,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-27,-1.08,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-26,-1.04,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-25,-1,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-24,-0.96,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-23,-0.92,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-22,-0.88,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-21,-0.84,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-20,-0.8,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-19,-0.76,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-18,-0.72,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-17,-0.68,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-16,-0.64,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-15,-0.6,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-14,-0.56,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-13,-0.52,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-12,-0.48,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-11,-0.44,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-10,-0.4,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-9,-0.36,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-8,-0.32,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-7,-0.28,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-6,-0.24,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-5,-0.2,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-4,-0.16,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-3,-0.12,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-2,-0.08,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,-1,-0.04,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,0,0,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,1,0.04,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,2,0.08,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,3,0.12,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,4,0.16,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,5,0.2,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,6,0.24,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,7,0.28,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,8,0.32,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,9,0.36,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,10,0.4,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,11,0.44,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,12,0.48,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,13,0.52,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,14,0.56,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,15,0.6,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,16,0.64,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,17,0.68,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,18,0.72,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,19,0.76,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,20,0.8,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,21,0.84,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,22,0.88,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,23,0.92,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,24,0.96,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,25,1,0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: defense's most frequent call so far,-50,-2,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-49,-1.96,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-48,-1.92,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-47,-1.88,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-46,-1.84,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-45,-1.8,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-44,-1.76,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-43,-1.72,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-42,-1.68,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-41,-1.64,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-40,-1.6,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-39,-1.56,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-38,-1.52,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-37,-1.48,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-36,-1.44,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-35,-1.4,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-34,-1.36,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-33,-1.32,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-32,-1.28,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-31,-1.24,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-30,-1.2,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-29,-1.16,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-28,-1.12,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-27,-1.08,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-26,-1.04,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-25,-1,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-24,-0.96,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-23,-0.92,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-22,-0.88,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-21,-0.84,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-20,-0.8,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-19,-0.76,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-18,-0.72,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-17,-0.68,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-16,-0.64,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-15,-0.6,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-14,-0.56,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-13,-0.52,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-12,-0.48,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-11,-0.44,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-10,-0.4,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-9,-0.36,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-8,-0.32,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-7,-0.28,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-6,-0.24,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-5,-0.2,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-4,-0.16,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-3,-0.12,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-2,-0.08,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,-1,-0.04,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,0,0,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,1,0.04,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,2,0.08,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,3,0.12,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,4,0.16,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,5,0.2,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,6,0.24,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,7,0.28,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,8,0.32,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,9,0.36,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,10,0.4,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,11,0.44,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,12,0.48,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,13,0.52,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,14,0.56,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,15,0.6,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,16,0.64,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,17,0.68,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,18,0.72,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,19,0.76,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,20,0.8,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,21,0.84,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,22,0.88,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,23,0.92,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,24,0.96,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,25,1,0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799

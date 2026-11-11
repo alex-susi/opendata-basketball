@@ -21,6 +21,24 @@ load_tf_attention <- function(root, variant) {
   A
 }
 
+SEQ_MODEL <- "time-aware transformer, two heads"
+
+#' The time-aware, two-head transformer (10_train_seq_transformer.R), in X's row order: joint-call probabilities
+#' [rows x 5], head probabilities [rows x 3] (switch, under | not switch, show | not switch) and attention [rows x 10]
+#' over the fixed roster of 09_build_sequences.R (handler, screener, their defenders, three attackers, three defenders).
+load_seqheads <- function(root) {
+  cache_dir <- file.path(root, "outputs", "cache", "screen_coverage")
+  X <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))$X
+  out <- list(prob = matrix(NA_real_, nrow(X), 5), heads = matrix(NA_real_, nrow(X), 3), att = matrix(NA_real_, nrow(X), 10))
+  for (g in sort(unique(X$game_id))) {
+    f <- file.path(cache_dir, "tf", sprintf("seqheads_%d.rds", g))
+    if (!file.exists(f)) stop("Missing ", f, ": run 10_train_seq_transformer.R --fold=", g)
+    o <- readRDS(f)
+    out$prob[o$rows, ] <- o$prob; out$heads[o$rows, ] <- o$heads; out$att[o$rows, ] <- o$att
+  }
+  out
+}
+
 #' list(P = screens, X = frame rows, calls, offs, lg_ll, sf_ll, prob = named list of [rows x calls] matrices named
 #' "logistic: <model>" and "transformer: <model>").
 load_coverage_predictions <- function(root) {

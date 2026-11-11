@@ -1,0 +1,11 @@
+model,window,accuracy,macro_recall,macro_f1,ball_defender_accuracy,big_accuracy,ball_defender_logloss,big_logloss
+"time-aware transformer, two heads",before the screen (-2.0 to -0.04 s),0.4741,0.3438,0.3465,0.6757,0.586,0.7859,0.8819
+"time-aware transformer, two heads",at and after the screen (0 to +1.0 s),0.7028,0.6058,0.6219,0.8081,0.7591,0.492,0.5807
+"transformer: pooled, no timing, + closeness",before the screen (-2.0 to -0.04 s),0.4536,0.3265,0.3253,0.6626,0.5735,0.8072,0.9134
+"transformer: pooled, no timing, + closeness",at and after the screen (0 to +1.0 s),0.7031,0.6059,0.6216,0.8132,0.758,0.5096,0.5998
+logistic: 4 players + so far,before the screen (-2.0 to -0.04 s),0.4724,0.331,0.3301,0.686,0.5778,0.7692,0.8947
+logistic: 4 players + so far,at and after the screen (0 to +1.0 s),0.7266,0.6641,0.6704,0.8444,0.7592,0.4186,0.5607
+baseline: always over + show,before the screen (-2.0 to -0.04 s),0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: always over + show,at and after the screen (0 to +1.0 s),0.3395,0.2,0.1014,0.6694,0.4139,9.1348,16.1936
+baseline: defense's most frequent call so far,before the screen (-2.0 to -0.04 s),0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799
+baseline: defense's most frequent call so far,at and after the screen (0 to +1.0 s),0.3996,0.2422,0.2023,0.666,0.5178,0.8619,0.9799

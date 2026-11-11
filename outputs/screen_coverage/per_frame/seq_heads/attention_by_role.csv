@@ -1,0 +1,7 @@
+role,share_per_player
+ball handler,0.089
+screener,0.074
+handler's defender,0.107
+screener's defender,0.098
+other attacker,0.133
+other defender,0.077

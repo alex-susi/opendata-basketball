@@ -1,11 +1,12 @@
 // Live screen-coverage probabilities for the Coverage Read card (Annotations.svelte).
 //
-// coverage_frames.json is written by src/screen_coverage/07_export_live.R: for every on-ball screen it scored, the
+// coverage_frames.json is written by src/screen_coverage/07_export_live.R (live model: the time-aware transformer with
+// two linked heads, 10_train_seq_transformer.R, unless another is exported): for every on-ball screen it scored, the
 // held-out probability of each joint call (over + show, over + soft, under + soft, under + show, switch) at every
-// frame from 2 s before the screen tag to 1 s after it. The live model (named in the file's `model`) is the transformer
-// that is never told when the screen comes: all ten players at that frame and 0.24 s earlier, the shot clock, the
-// defense's earlier calls in the game and the handler-screener closeness; each game's screens come from the network
-// trained without that game. The card smooths them over the last few frames (never a later one).
+// frame from 2 s before the screen tag to 1 s after it. The live model (named in the file's `model`) is never told when
+// the screen comes: it reads each of the ten players' last 1.6 s, time to act, the defense's earlier calls in the game
+// and how close the handler has come to the screener; each game's screens come from the network trained without that
+// game. The card smooths them over the last few frames (never a later one) and sums them to each defender's call.
 
 export interface CoverageScreen {
   id: string;
@@ -109,3 +110,24 @@ export function attentionAt(att: AttentionFile, possession: string, frame: numbe
   pids.forEach((pid, j) => out.set(pid, (out.get(pid) ?? 0) + w[j] / 100));
   return out;
 }
+
+// ---- each defender's part of the call -----------------------------------------------------------------------
+// The joint calls split into the ball handler's defender (over, under, switch) and the screener's defender (show,
+// soft, switch); a defender's probability is the sum of the joint calls with his part, e.g. over = over + show +
+// over + soft. Switch is one call for both.
+
+export interface PartRow { label: string; pct: number; top: boolean }
+export const PART_COLORS: Record<string, string> = { over: "#3987e5", under: "#199e70", switch: "#d55181", show: "#c98500", soft: "#d95926" };
+
+function parts(calls: string[], pct: number[], labels: string[]): PartRow[] {
+  const rows = labels.map((label) => ({ label, pct: calls.reduce((s, c, j) => s + (c.split(" + ").includes(label) ? pct[j] : 0), 0), top: false }));
+  const best = rows.reduce((a, b) => (b.pct > a.pct ? b : a), rows[0]);
+  best.top = true;
+  return rows;
+}
+/** The ball handler's defender's and the screener's defender's probabilities from the joint-call percentages. */
+export function defenderParts(calls: string[], pct: number[]): { ball: PartRow[]; big: PartRow[] } {
+  return { ball: parts(calls, pct, ["over", "under", "switch"]), big: parts(calls, pct, ["show", "soft", "switch"]) };
+}
+/** A tagged joint call's part for one defender ("under + soft" -> "under" / "soft"; "switch" -> "switch"). */
+export const partOf = (call: string, which: "ball" | "big"): string => (call === "switch" ? "switch" : call.split(" + ")[which === "ball" ? 0 : 1]);

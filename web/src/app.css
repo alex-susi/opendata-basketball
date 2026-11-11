@@ -787,3 +787,6 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* The trace panel's moment readout (TracePanel.svelte): always shown, hovered or current. */
 .trace-at { white-space: nowrap; }
 .trace-frame { color: var(--muted); }
+/* The Coverage Read card's tick on the defender's tagged call (shown from the screen on). */
+.cov-tick { margin-left: 5px; font-style: normal; color: var(--ink); font-weight: 700; }
+.cov-card .card-head { margin-top: 5px; }

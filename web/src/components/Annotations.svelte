@@ -7,11 +7,12 @@
   //   Possession Context  how the possession began, chances and offensive rebounds, passes, dribbles and touches so
   //                       far, who has had the ball, the game state, free throws.
   //   Data Quality        the chance's tracking quality index and how many players are extrapolated now.
-  //   Coverage Read       from 2 s before an on-ball screen to 1 s after it: the screen-coverage model's probability of
-  //                       each call at this frame (lib/coverage.ts); the actual call appears once the screen is set.
+  //   Coverage Read       from 2 s before an on-ball screen to 1 s after it: the live screen-coverage model's probability for
+  //                       each defender (ball: over/under/switch; screener: show/soft/switch) and the most likely joint
+  //                       call at this frame (lib/coverage.ts); the tagged call is ticked once the screen is set.
   // The court's drawing is in lib/annotate.ts; the text in lib/context.ts.
   import { chanceAt, lastShot, possessionCard, shotCard, type Card } from "../lib/context";
-  import { coverageAt, loadCoverage, type CoverageFile } from "../lib/coverage";
+  import { coverageAt, defenderParts, loadCoverage, partOf, PART_COLORS, type CoverageFile, type PartRow } from "../lib/coverage";
   import type { Play } from "../lib/types";
   import { live, season, viewer } from "../lib/viewer.svelte";
 
@@ -82,23 +83,31 @@
 
 {#snippet coverage(r: NonNullable<typeof covRead>, calls: string[], model: string)}
   {@const top = r.pct.indexOf(Math.max(...r.pct))}
+  {@const dp = defenderParts(calls, r.pct)}
+  {@const shown = r.t >= 0}
   <div class="ann-card cov-card">
     <b>Coverage Read<i class="event-flag">{fmtT(r.t)}</i></b>
-    <span class="card-line"><span>{lastName(r.screen.s)} screens for {lastName(r.screen.h)}</span><span>{r.t < 0 ? "before the screen" : "screen set"}</span></span>
-    {#each calls as c, j}
-      <span class="cov-row" class:top={j === top}>
-        <span class="cov-label">{c}</span>
-        <span class="cov-bar"><span style:width="{r.pct[j]}%" style:background={COV_COL[c]}></span></span>
-        <span class="cov-pct">{Math.round(r.pct[j])}%</span>
-      </span>
-    {/each}
-    {#if r.t >= 0}
-      <span class="card-line cov-called"><span>Called</span><span style:color={COV_COL[r.screen.call]}>{r.screen.call}</span></span>
+    <span class="card-line"><span>{lastName(r.screen.s)} screens for {lastName(r.screen.h)}</span><span>{shown ? "screen set" : "before the screen"}</span></span>
+    {@render bars(`On the ball · ${lastName(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
+    {@render bars(`On the screener · ${lastName(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
+    <span class="card-line cov-called"><span>Most likely together</span><span style:color={COV_COL[calls[top]]}>{calls[top]} · {Math.round(r.pct[top])}%</span></span>
+    {#if shown}
+      <span class="card-line"><span>Called</span><span style:color={COV_COL[r.screen.call]}>{r.screen.call}</span></span>
     {:else}
       <span class="card-line cov-note"><span>Actual call shown at the screen</span><span></span></span>
     {/if}
-    <span class="cov-note">{lastName(r.screen.bd)} on the ball, {lastName(r.screen.sd)} on the screener · last 0.2 s</span>
-    <span class="cov-note">{model.replace(":", ",")} · held out from this game</span>
+    <span class="cov-note">{model.replace(":", ",")} · held out from this game · last 0.2 s</span>
   </div>
+{/snippet}
+
+{#snippet bars(title: string, rows: PartRow[], called: string | null)}
+  <span class="card-head">{title}</span>
+  {#each rows as row}
+    <span class="cov-row" class:top={row.top}>
+      <span class="cov-label">{row.label}{#if called === row.label}<i class="cov-tick" title="The call SkillCorner tagged">✓</i>{/if}</span>
+      <span class="cov-bar"><span style:width="{row.pct}%" style:background={PART_COLORS[row.label]}></span></span>
+      <span class="cov-pct">{Math.round(row.pct)}%</span>
+    </span>
+  {/each}
 {/snippet}
 
