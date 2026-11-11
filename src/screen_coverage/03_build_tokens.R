@@ -14,7 +14,7 @@
 #   vx, vy, speed   velocity over the last 0.24 s (ft/s; vy mirrored with y)
 #   present         1 if the player is tracked at the frame; a missing other player gets 0 and zeros elsewhere
 #   role_*          ball handler, screener, handler's defender, screener's defender, other attacker, other defender
-# Context columns per row (each variant picks some): sc_now, lsf_1..5 (defense so far), t (seconds to the tag),
+# Context columns per row (each variant picks some): tta_now (time to act), lsf_1..5 (defense so far), t (seconds to the tag),
 # closeness (1 / (1 + handler-screener distance / 5)), and the archetype indicators.
 #
 # Writes outputs/cache/screen_coverage/tokens.rds.
@@ -95,7 +95,7 @@ cat(sprintf("Other six players: %.2f%% of slots missing (rows with any missing: 
             100 * mean(miss), 100 * mean(rowSums(miss) > 0)))
 
 ARCH <- grep("^[hs]_([A-Z]|other$)", names(X), value = TRUE)      # archetype indicators only (not h_lvl, s_hoop, ...)
-ctx <- cbind(as.matrix(X[, c("sc_now", paste0("lsf_", 1:5)), with = FALSE]),
+ctx <- cbind(as.matrix(X[, c("tta_now", paste0("lsf_", 1:5)), with = FALSE]),
              t = X$off / FPS, closeness = 1 / (1 + X$d_hs / 5), as.matrix(X[, ..ARCH]))
 stopifnot(!anyNA(ctx), !anyNA(tok))
 saveRDS(list(tok = tok, ctx = ctx, arch_cols = ARCH, token_feats = TOKEN_FEATS, ids = ids),

@@ -4,9 +4,9 @@
 # The four variants mirror the logistic models. All see the same ten player tokens (03_build_tokens.R: the four of the
 # screen in rows 1-4, the other six in rows 5-10; the logistic models saw only the four) and the same
 # context columns as their logistic counterpart:
-#   timed    "4 players + so far"     context: shot clock, defense so far, AND the seconds to the screen tag
+#   timed    "4 players + so far"     context: time to act, defense so far, AND the seconds to the screen tag
 #   arch     "+ archetypes"           as timed, plus the ball handler's and screener's archetype indicators
-#   pooled   "pooled, no timing"      context: shot clock, defense so far; never told when the screen comes
+#   pooled   "pooled, no timing"      context: time to act, defense so far; never told when the screen comes
 #   close    "pooled, no timing, + closeness"   as pooled, plus the closeness weight 1 / (1 + handler-screener ft / 5)
 # The logistic "4 players + so far" and "+ archetypes" are 76 separate models, one per frame. A transformer per frame
 # would have only ~1,300 screens to learn ~25,000 weights from, so the timed transformers are one network each that is
@@ -20,7 +20,8 @@
 # screens are then predicted at every frame. Standardisation uses the training rows only.
 #
 # Writes outputs/cache/screen_coverage/tf/<variant>_<gameId>.rds (probabilities for the test game's rows, in the
-# row order of logistic_per_frame.rds, plus training curves).
+# row order of logistic_per_frame.rds, plus training curves), and `att`: for each of those rows, the share of the four
+# screen players' attention (last layer, heads and seeds averaged) going to each of the ten token rows.
 
 source_root <- function() {
   args <- commandArgs(FALSE)
@@ -58,7 +59,7 @@ EVERY <- 3L
 L <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))
 TK <- readRDS(file.path(cache_dir, "tokens.rds"))
 X <- L$X; CALLS <- L$calls
-base_ctx <- c("sc_now", paste0("lsf_", 1:5))
+base_ctx <- c("tta_now", paste0("lsf_", 1:5))
 CTX <- switch(VARIANT,
               timed = c(base_ctx, "t"),
               arch = c(base_ctx, "t", TK$arch_cols),
@@ -117,12 +118,16 @@ fit_seed <- function(seed) {
   }
   net$load_state_dict(best_state)
   net$eval()
-  prob <- as_array(with_no_grad(nnf_softmax(net(Xte, Cte), dim = 2)))
-  list(prob = prob, curve = rbindlist(curve), best_ep = best_ep, best_val = best)
+  o <- with_no_grad(net(Xte, Cte, return_attention = TRUE))
+  prob <- as_array(nnf_softmax(o$logits, dim = 2))
+  w <- as_array(o$attention[[length(o$attention)]])                       # [rows, heads, 10, 10]
+  att <- apply(w[, , 1:4, , drop = FALSE], c(1, 4), mean)                 # [rows, 10]: where the four screen rows look
+  list(prob = prob, att = att, curve = rbindlist(curve), best_ep = best_ep, best_val = best)
 }
 fits <- lapply(seq_len(N_SEEDS), fit_seed)
 prob <- Reduce(`+`, lapply(fits, `[[`, "prob")) / N_SEEDS
-saveRDS(list(variant = VARIANT, test_game = FOLD, val_game = val_g, rows = te, prob = prob, ctx = CTX,
+att <- Reduce(`+`, lapply(fits, `[[`, "att")) / N_SEEDS
+saveRDS(list(variant = VARIANT, test_game = FOLD, val_game = val_g, rows = te, prob = prob, att = att, ctx = CTX,
              curves = rbindlist(lapply(fits, `[[`, "curve")),
              best = data.table(seed = seq_len(N_SEEDS), epoch = vapply(fits, `[[`, 0L, "best_ep"),
                                val_logloss = vapply(fits, `[[`, 0, "best_val")),

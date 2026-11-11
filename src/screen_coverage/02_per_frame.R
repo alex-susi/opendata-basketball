@@ -9,7 +9,8 @@
 #
 # Inputs at each frame (the step-1 four-player model, which beat the ten-player one):
 #   d_hs, d_bd, d_sd, d_def, bd_lvl, sd_lvl, h_lvl, s_hoop, bd_lvl_v, sd_lvl_v   (as in step 1)
-#   sc_now        the shot clock AT THAT FRAME, from the tracking (step 1 used the value at the tag, which an early
+#   tta_now       time to act AT THAT FRAME: the shot clock or the game clock, whichever runs out first, capped at
+#                 24 s (the shot clock is off in the last seconds of a period). Step 1 used the shot clock at the tag, which an early
 #                 prediction would not know yet). Missing = 24.
 #   defense so far   logs of this defense's earlier-call shares in the game (online, league mix worth 5 picks)
 #   archetypes    the ball handler's and the screener's offensive archetype (outputs/archetypes/offense_membership.csv),
@@ -172,20 +173,21 @@ AR <- cbind(ind(P$h_grp, "h_"), ind(P$s_grp, "s_"))
 P <- cbind(P, AR)
 ARCH <- colnames(AR)
 
-GEOM <- c("d_hs", "d_bd", "d_sd", "d_def", "bd_lvl", "sd_lvl", "h_lvl", "s_hoop", "bd_lvl_v", "sd_lvl_v", "sc_now")
+GEOM <- c("d_hs", "d_bd", "d_sd", "d_def", "bd_lvl", "sd_lvl", "h_lvl", "s_hoop", "bd_lvl_v", "sd_lvl_v", "tta_now")
 FEATS_A <- c(GEOM, LSF)
 FEATS_B <- c(GEOM, LSF, ARCH)
 # Hindsight test, fairer version: the pooled model may also learn that the positions matter more as the screen gets
 # close, but only from what is visible at that frame (d_hs, the handler-screener distance): every four-player measure
 # times a "closeness" weight 1 / (1 + d_hs / 5), which is about 1 at the screen and 0.25 at 15 ft.
-CLOSE <- paste0(setdiff(GEOM, c("d_hs", "sc_now")), "_close")
+CLOSE <- paste0(setdiff(GEOM, c("d_hs", "tta_now")), "_close")
 FEATS_P2 <- c(FEATS_A, "closeness", CLOSE)
 
 X <- merge(Fe[id %in% P$id], P[, c("id", "game_id", "call", LSF, ARCH), with = FALSE], by = "id")
+X[, tta_now := pmin(sc_now, gc_now, 24, na.rm = TRUE)]
 X[is.na(sc_now), sc_now := 24]
 X[, idx := match(id, P$id)]
 X[, closeness := 1 / (1 + d_hs / 5)]
-for (v in setdiff(GEOM, c("d_hs", "sc_now"))) set(X, j = paste0(v, "_close"), value = X[[v]] * X$closeness)
+for (v in setdiff(GEOM, c("d_hs", "tta_now"))) set(X, j = paste0(v, "_close"), value = X[[v]] * X$closeness)
 setorder(X, off, idx)
 y <- P$call
 

@@ -360,6 +360,166 @@ topic_coverage <- function(BL) {
   ho <- rbindlist(lapply(BL, function(B) B$handoffs[, .(cov)]))
   ho_tab <- sort(table(ho$cov), decreasing = TRUE)
 
+  # ---- rare calls and screen geometry: features from src/screen_coverage/08_geometry_context.R ----
+  feat_path <- file.path(a$root, "outputs", "screen_coverage", "context", "screen_features.csv")
+  test_path <- file.path(a$root, "outputs", "screen_coverage", "context", "predictive_test.csv")
+  rare_sec <- SECTION("cv-rare", "Ice and blitz: when do the rare calls happen?",
+    CAVEAT("Run Rscript src/screen_coverage/08_geometry_context.R to build the screen features this section uses"))
+  geo_sec <- NULL
+  if (file.exists(feat_path)) {
+    FT <- fread(feat_path)
+    G <- FT[off == 0 & call != "over + none"]
+    G[, joint7 := sub(" + ", " · ", call, fixed = TRUE)]
+    G[, `:=`(sx = 14 * M_FT - dist_baseline, sy = (7.5 * M_FT - dist_sideline) * fifelse(side_left == 1L, 1, -1),
+             spot_lab = c(middle = "middle", stepUp = "step-up", wing = "wing")[spot],
+             side_lab = fifelse(side_left == 1L, "offense's left", "offense's right"),
+             sideline_band = cut(dist_sideline, c(-Inf, 10, 15, 20, Inf), labels = c("under 10 ft", "10-15 ft", "15-20 ft", "20+ ft")),
+             shoulder = cut(lateral_mid, c(-Inf, -2, 2, 5, Inf), labels = c("sideline side, 2+ ft", "on the line (±2 ft)", "middle side, 2-5 ft", "middle side, 5+ ft")),
+             tta_band = cut(time_to_act, c(-Inf, 6, 10, 14, 18, Inf), labels = c("0-6 s", "6-10 s", "10-14 s", "14-18 s", "18-24 s")),
+             approach_lab = fifelse(s_still == 1L, "one of them nearly still", as.character(cut(approach, c(-1, 60, 120, 181),
+                                    labels = c("same direction (under 60°)", "across (60-120°)", "head-on (120°+)")))),
+             screen_lab = fifelse(rescreen == 0L, "first screen of the possession", fifelse(same_pair == 1L, "re-screen, same pair", "re-screen, new pair")))]
+    n_g <- nrow(G); n_ice <- G[call == "ice", .N]; n_blz <- G[call == "blitz", .N]
+    ice_all <- n_ice / n_g
+    rate_rows <- function(by, lev, what = "ice") {
+      d <- G[!is.na(get(by)), .(k = sum(call == what), n = .N), by = c(by)]
+      setnames(d, by, "g")
+      d <- d[order(match(as.character(g), lev))]
+      lapply(seq_len(nrow(d)), function(i) rrow(as.character(d$g[i]), d$k[i], d$n[i]))
+    }
+    teams_ice <- G[, .(ice = sum(call == "ice"), blitz = sum(call == "blitz"), n = .N), by = def_name][order(-ice, -blitz, def_name)]
+    rare <- G[call %in% c("ice", "blitz")][order(call, game_id, f0)]
+    rare[, `:=`(rescreen_lab = fifelse(rescreen == 1L, "yes", "no"), link = paste0("#/play/", poss))]
+    flag <- G[lateral_mid >= 3 & dist_sideline <= 15]
+    flag_t <- G[lateral_mid >= 3 & dist_sideline <= 15 & def_name %in% teams_ice[ice >= 2]$def_name]
+    feats_lbl <- c(lateral_mid = "Shoulder: screener toward the middle of the handler's line (ft)",
+                   dist_sideline = "Distance to the nearer sideline (ft)", spot_angle = "Angle around the hoop (degrees)",
+                   dist_baseline = "Distance to the baseline (ft)", approach = "Approach angle (degrees)",
+                   time_to_act = "Time to act (s)", since_prev = "Seconds since the previous screen")
+    ice_auc <- rbindlist(lapply(names(feats_lbl), function(f) {
+      a1 <- auc(G[[f]], G$call == "ice")
+      data.table(feature = feats_lbl[[f]], ice_med = G[call == "ice", median(get(f))], other_med = G[!call %in% c("ice", "blitz"), median(get(f))],
+                 blitz_med = G[call == "blitz", median(get(f))], sep = max(a1, 1 - a1))
+    }))[order(-sep)]
+    SH2 <- S[h_tot >= 150, .(name, picks = h_tot, ice = h_ice / h_tot, blitz = h_blitz / h_tot)]
+    sea_ice <- sum(S$h_ice) / sum(S$h_tot); sea_blz <- sum(S$h_blitz) / sum(S$h_tot)
+    left_all <- G[!call %in% c("ice", "blitz"), mean(side_left)]
+
+    rare_sec <- SECTION("cv-rare", "Ice and blitz: when do the rare calls happen?",
+      P("Ice and blitz were left out of the models because there are only a handful. This section asks whether they come in recognisable situations: where the screen is set, how it is angled, the clock, the defense and the attacker. Screen position and angle are measured at the screen tag from the tracking (src/screen_coverage/08_geometry_context.R)."),
+      KPIS(KPI("Ice", sprintf("%d screens", n_ice), sprintf("%s of the ten games' screens", pct(ice_all, 1))),
+           KPI("Blitz", sprintf("%d screens", n_blz), sprintf("%s of the ten games' screens", pct(n_blz / n_g, 1))),
+           KPI("Season, direct picks", sprintf("%s ice · %s blitz", pct(sea_ice, 1), pct(sea_blz, 1)), sprintf("of %s direct picks in 293 games", int(sum(S$h_tot)))),
+           KPI("Icing defenses", sprintf("%d of 18", teams_ice[ice > 0, .N]), sprintf("%d teams account for %d of %d", teams_ice[ice >= 2, .N], teams_ice[ice >= 2, sum(ice)], n_ice))),
+      TABLE("Every ice and blitz in the ten games", limit = 20, rows = rare, cols = list(
+        col("call", "Call", title = "The joint call"), col("def_name", "Defense", title = "The defending team"),
+        col("h_name", "Ball handler", title = "The ball handler"), col("s_name", "Screener", title = "The screener"),
+        col("spot_lab", "Location type", title = "SkillCorner's locationType"),
+        col("dist_sideline", "To sideline (ft)", "num1", title = "Screener's distance to the nearer sideline at the tag"),
+        col("lateral_mid", "Shoulder (ft)", "num1", title = "Feet the screener stands toward the middle of the floor (+) or the sideline (−) of the handler's straight line to the hoop"),
+        col("time_to_act", "Time to act (s)", "num1", title = "Shot clock or game clock, whichever runs out first"),
+        col("period", "Period", "int", title = "Quarter"), col("rescreen_lab", "Re-screen", title = "An earlier screen was tagged in the same possession"),
+        col("link", "Dashboard", title = "Paste after the site address to open the possession in the play viewer"))),
+      GRID(
+        RATES("Ice rate by which shoulder the screen is on", rate_rows("shoulder", levels(G$shoulder)), ref = ice_all, fmt = "pct1", unit = "of screens iced", label_width = 150),
+        RATES("Ice rate by distance to the sideline", rate_rows("sideline_band", levels(G$sideline_band)), ref = ice_all, fmt = "pct1", unit = "of screens iced", label_width = 110),
+        RATES("Ice rate by location type", rate_rows("spot_lab", c("middle", "step-up", "wing")), ref = ice_all, fmt = "pct1", unit = "of screens iced", label_width = 90),
+        RATES("Ice rate by side of the floor", rate_rows("side_lab", c("offense's left", "offense's right")), ref = ice_all, fmt = "pct1", unit = "of screens iced", label_width = 110),
+        RATES("Ice rate by defense (teams that iced)", lapply(seq_len(teams_ice[ice > 0, .N]), function(i) { r <- teams_ice[ice > 0][i]; rrow(r$def_name, r$ice, r$n) }),
+              ref = ice_all, fmt = "pct1", unit = "of the defense's screens iced", label_width = 160),
+        RATES("Blitz rate by time to act", rate_rows("tta_band", levels(G$tta_band), "blitz"), ref = n_blz / n_g, fmt = "pct1", unit = "of screens blitzed", label_width = 90)),
+      GRID(COURT("Where ices were set", G[call == "ice"]$sx, G[call == "ice"]$sy),
+           COURT("Where all other screens were set", G[!call %in% c("ice", "blitz")]$sx, G[!call %in% c("ice", "blitz")]$sy)),
+      TABLE("How each measure differs for ice (screens at the tag)", limit = 8, rows = ice_auc, cols = list(
+        col("feature", "Measure", title = "Measured at the screen tag"),
+        col("ice_med", "Ice", "num1", title = "Median for the iced screens"),
+        col("other_med", "Other five calls", "num1", title = "Median for over/under/switch screens"),
+        col("blitz_med", "Blitz", "num1", title = "Median for the four blitzes"),
+        col("sep", "Separation (AUC)", "num2", title = "How often the measure ranks a random ice and a random other screen the right way round, either direction: 0.5 = none, 1 = perfect"))),
+      H("Season: who gets iced or blitzed?"),
+      GRID(
+        TABLE("Handlers most often iced (150+ direct picks, season)", limit = 8, rows = SH2[order(-ice)][1:8], cols = list(
+          col("name", "Ball handler", title = "Season, all teams"), col("picks", "Direct picks", "int", title = "Season direct picks as ball handler"),
+          col("ice", "Iced", "pct1", title = "Share of his direct picks defended with ice"), col("blitz", "Blitzed", "pct1", title = "Share blitzed"))),
+        TABLE("Handlers most often blitzed (150+ direct picks, season)", limit = 8, rows = SH2[order(-blitz)][1:8], cols = list(
+          col("name", "Ball handler", title = "Season, all teams"), col("picks", "Direct picks", "int", title = "Season direct picks as ball handler"),
+          col("ice", "Iced", "pct1", title = "Share of his direct picks defended with ice"), col("blitz", "Blitzed", "pct1", title = "Share blitzed")))),
+      TAKE(sprintf("**Ice has a clear geometric signature.** The screener stands a median %.1f ft toward the middle of the handler's line to the hoop (other screens %.1f ft), and the screen is set nearer the sideline (%.1f ft vs %.1f ft). The shoulder alone separates ice from the rest %.2f of the time",
+                   ice_auc[feature == feats_lbl[["lateral_mid"]]]$ice_med, ice_auc[feature == feats_lbl[["lateral_mid"]]]$other_med,
+                   ice_auc[feature == feats_lbl[["dist_sideline"]]]$ice_med, ice_auc[feature == feats_lbl[["dist_sideline"]]]$other_med,
+                   ice_auc[feature == feats_lbl[["lateral_mid"]]]$sep),
+           sprintf("**Ice is a team choice.** %d of %d ices came from %d defenses (%s); %d of the 18 defenses never iced. None came in transition",
+                   teams_ice[ice >= 2, sum(ice)], n_ice, teams_ice[ice >= 2, .N], paste(teams_ice[ice >= 2]$def_name, collapse = ", "), teams_ice[ice == 0, .N]),
+           sprintf("%d of %d ices were on the offense's left half of the floor, against %s of other screens. With 14 cases that may be chance or the icing teams' habit",
+                   G[call == "ice", sum(side_left)], n_ice, pct(left_all)),
+           sprintf("**Even so, a rule would mostly be wrong.** Screens on the middle shoulder (3+ ft) within 15 ft of a sideline: %d screens, %d of them iced (precision %s, catching %d of %d). Limited to the icing defenses: %d screens, %d iced (%s)",
+                   nrow(flag), flag[call == "ice", .N], pct(flag[call == "ice", .N] / nrow(flag)), flag[call == "ice", .N], n_ice,
+                   nrow(flag_t), flag_t[call == "ice", .N], pct(flag_t[call == "ice", .N] / max(1, nrow(flag_t)))),
+           sprintf("**Blitz has no clear signature.** The %d blitzes came from %d defenses with a median %.1f s to act (other screens %.1f s). Season-wide no handler with 150+ direct picks is blitzed on more than %s of them, so the attacker does not predict it either",
+                   n_blz, uniqueN(G[call == "blitz"]$def_name), G[call == "blitz", median(time_to_act)], G[!call %in% c("ice", "blitz"), median(time_to_act)], pct(max(SH2$blitz), 1))),
+      CAVEAT("14 ices and 4 blitzes: every rate here has a wide interval, and the season files cannot cross coverage with location",
+             "A separate ice detector (shoulder, sideline distance and the defense's scheme) is plausible; blitz needs more games")
+    )
+
+    # geometry and context against the five main calls
+    G5 <- G[!call %in% c("ice", "blitz")]
+    gmix <- function(by, label, title, lev, key_title) {
+      w <- mix_by(G5, by, lv = setdiff(JOINT_LV, c("ice", "blitz")))
+      setnames(w, by, "grp")
+      w <- w[!is.na(grp)][order(match(as.character(grp), lev))]
+      for (l in c("ice", "blitz")) w[, (l) := NA_real_]
+      TABLE(title, limit = 10, rows = mix_rows(w),
+            cols = c(list(col("grp", label, title = key_title), col("n", "Picks", "int", title = "Screens in the group")),
+                     mix_cols(base)[1:5]))
+    }
+    FTm <- FT[off %in% c(-10L, 0L) & !call %in% c("ice", "blitz", "over + none")]
+    gfe <- c(lateral_mid = "shoulder (toward the middle)", dist_sideline = "distance to the sideline", dist_baseline = "distance to the baseline",
+             spot_angle = "angle around the hoop", approach = "approach angle", time_to_act = "time to act", since_prev = "seconds since the previous screen")
+    gsep <- rbindlist(lapply(names(gfe), function(f) FTm[, {
+      ou <- cov %in% c("over", "under"); ss <- ou & scov %in% c("show", "soft")
+      a_uo <- auc(get(f)[ou], cov[ou] == "under"); a_ss <- auc(get(f)[ss], scov[ss] == "show"); a_sw <- auc(get(f), call == "switch")
+      .(measure = gfe[[f]], uo = max(a_uo, 1 - a_uo), ss = max(a_ss, 1 - a_ss), sw = max(a_sw, 1 - a_sw))
+    }, by = t]))
+    gsep_w <- dcast(gsep, measure ~ t, value.var = c("uo", "ss", "sw"))
+    setnames(gsep_w, names(gsep_w), sub("_-0.4$", "_m04", names(gsep_w)))
+    gsep_w <- gsep_w[order(match(measure, unname(gfe)))]
+    PT <- if (file.exists(test_path)) fread(test_path) else NULL
+    n_tta_diff <- G[abs(time_to_act - shot_clock) > 0.01, .N]
+
+    geo_sec <- SECTION("cv-geometry", "Screen geometry, re-screens and time to act: do they add anything?",
+      P("Where and how a screen is set, and its place in the possession, measured from the tracking at each moment (positions then and 0.48 s before). The tables use the screen tag; the separation and model test also use 0.4 s before it."),
+      BUL("**Shoulder.** Feet the screener stands toward the middle of the floor (+) or the sideline (−) of the ball handler's straight line to the hoop",
+          "**Distance to the sideline and baseline**, **angle around the hoop** (0° = straight out, 90° = along the baseline) and **side of the floor** (from the offense's view)",
+          "**Approach angle.** Between the screener's and the handler's movement over the last 0.48 s: 0° = moving the same way, 180° = head-on",
+          "**Re-screen.** An earlier screen was tagged in the same possession, by the same pair or a new one",
+          sprintf("**Time to act.** The shot clock or the game clock, whichever runs out first, capped at 24 s. It differs from the shot clock on %d of %s screens (end of a period, shot clock off)", n_tta_diff, int(n_g))),
+      gmix("shoulder", "Shoulder", "By shoulder", levels(G$shoulder), "Which side of the handler's line to the hoop the screener stands on"),
+      gmix("sideline_band", "To sideline", "By distance to the sideline", levels(G$sideline_band), "Screener's distance to the nearer sideline"),
+      gmix("side_lab", "Side", "By side of the floor", c("offense's left", "offense's right"), "Half of the floor, from the offense's view"),
+      gmix("approach_lab", "Approach", "By approach angle", c("same direction (under 60°)", "across (60-120°)", "head-on (120°+)", "one of them nearly still"), "Angle between the screener's and the handler's movement"),
+      gmix("screen_lab", "Screen", "First screen or re-screen", c("first screen of the possession", "re-screen, same pair", "re-screen, new pair"), "An earlier screen in the same possession"),
+      gmix("tta_band", "Time to act", "By time to act", levels(G$tta_band), "Shot clock or game clock, whichever runs out first"),
+      TABLE("How well each new measure separates the calls on its own (AUC, either direction)", limit = 10, rows = gsep_w, cols = list(
+        col("measure", "Measure", title = "Measured at that moment"),
+        col("uo_m04", "−0.4 s", "num2", group = "Under or over", title = "0.4 s before the tag"), col("uo_0", "Tag", "num2", group = "Under or over", title = "At the tag"),
+        col("ss_m04", "−0.4 s", "num2", group = "Show or soft", title = "0.4 s before the tag"), col("ss_0", "Tag", "num2", group = "Show or soft", title = "At the tag"),
+        col("sw_m04", "−0.4 s", "num2", group = "Switch or not", title = "0.4 s before the tag"), col("sw_0", "Tag", "num2", group = "Switch or not", title = "At the tag"))),
+      if (!is.null(PT)) TABLE("Adding them to the four-player logistic model (held-out log loss, lower is better)", limit = 40,
+        rows = PT[model != "base (shot clock)"], cols = list(
+          col("t", "Seconds", "num1", title = "Seconds from the screen tag"), col("model", "Model", title = "What the base model gets added"),
+          col("logloss", "Log loss", "num2", title = "Held-out log loss on the 1,464 scored screens"),
+          col("change_vs_tta", "Change", "num2", title = "Paired change against the base with time to act (below zero = helped)"),
+          col("lo", "Low", "num2", title = "95% interval from resampling whole games"), col("hi", "High", "num2", title = "95% interval from resampling whole games"),
+          col("games_better", "Games better", "int", title = "Held-out games (of 10) where the added inputs helped"))),
+      TAKE("**They add nothing measurable to the five main calls.** At every moment from −1 s to +0.4 s the change in log loss is between −0.003 and +0.010, and every interval that excludes zero is a small loss (geometry at −1 s)",
+           sprintf("The single-measure separations stay near 0.5-0.6: the best is %.2f. The defenders' own positions (levels, distances) already carry what the geometry implies",
+                   max(unlist(gsep_w[, -1]), na.rm = TRUE)),
+           "Time to act and the shot clock score the same (differences of 0.0002): they only differ in the last seconds of a period. The models now use time to act anyway, since it is the right clock",
+           "Geometry matters for ice (section above), the one call it describes well"),
+      CAVEAT("These measures enter a linear model here; a transformer sees the same positions directly")
+    )
+  }
+
   sections <- list(
     SECTION("cv-question", "The question and the label",
       P("Before training a model to predict how two defenders play an on-ball screen, this tab checks what the label is, how often each call happens, what each call looks like in the tracking, when it becomes visible, what it depends on and whether there is enough data. No model is fitted."),
@@ -463,6 +623,9 @@ topic_coverage <- function(BL) {
            sprintf("Going under follows how high the handler starts: %s when he is 13+ ft above the screen 1 s before, %s when under 3 ft", pct(un_band("13+ ft")), pct(un_band("under 3 ft"))),
            sprintf("Location type moves the under rate only from %s to %s", pct(min(un_spot$k / un_spot$n)), pct(max(un_spot$k / un_spot$n))))),
 
+    rare_sec,
+    geo_sec,
+
     SECTION("cv-who", "Who decides: the defense, the defenders and the attackers",
       P("Coverage is a team plan adjusted for matchups. With ten games, each defense is seen once (Zaragoza, Breogan and Gran Canaria twice), so the tracked games alone cannot teach a model a team's scheme."),
       TABLE("Each defense, game by game", limit = 20, rows = mix_rows(copy(team_g)), cols = c(list(
@@ -557,5 +720,5 @@ topic_coverage <- function(BL) {
   )
   DOC("coverage", "Pick coverage",
       "Groundwork for predicting how two defenders play an on-ball screen: the label, what each call looks like in the tracking, when it becomes visible, what drives it, and the bar a model must beat.",
-      sections)
+      Filter(Negate(is.null), sections))
 }

@@ -1,51 +1,51 @@
 actual,called,N,share,t
-over + show,over + show,346,0.696177062374246,-0.4
-over + show,over + soft,100,0.201207243460765,-0.4
+over + show,over + show,339,0.682092555331992,-0.4
+over + show,over + soft,102,0.20523138832998,-0.4
 over + show,under + soft,9,0.0181086519114688,-0.4
-over + show,under + show,5,0.0100603621730382,-0.4
-over + show,switch,37,0.0744466800804829,-0.4
-over + soft,over + show,133,0.27536231884058,-0.4
-over + soft,over + soft,308,0.63768115942029,-0.4
-over + soft,under + soft,26,0.0538302277432712,-0.4
-over + soft,under + show,3,0.0062111801242236,-0.4
-over + soft,switch,13,0.0269151138716356,-0.4
-under + soft,over + show,27,0.164634146341463,-0.4
+over + show,under + show,9,0.0181086519114688,-0.4
+over + show,switch,38,0.0764587525150906,-0.4
+over + soft,over + show,126,0.260869565217391,-0.4
+over + soft,over + soft,310,0.641821946169772,-0.4
+over + soft,under + soft,28,0.0579710144927536,-0.4
+over + soft,under + show,4,0.0082815734989648,-0.4
+over + soft,switch,15,0.031055900621118,-0.4
+under + soft,over + show,23,0.140243902439024,-0.4
 under + soft,over + soft,74,0.451219512195122,-0.4
-under + soft,under + soft,45,0.274390243902439,-0.4
-under + soft,under + show,8,0.0487804878048781,-0.4
-under + soft,switch,10,0.0609756097560976,-0.4
+under + soft,under + soft,47,0.286585365853659,-0.4
+under + soft,under + show,9,0.0548780487804878,-0.4
+under + soft,switch,11,0.0670731707317073,-0.4
 under + show,over + show,48,0.440366972477064,-0.4
-under + show,over + soft,18,0.165137614678899,-0.4
+under + show,over + soft,19,0.174311926605505,-0.4
 under + show,under + soft,14,0.128440366972477,-0.4
-under + show,under + show,15,0.137614678899083,-0.4
+under + show,under + show,14,0.128440366972477,-0.4
 under + show,switch,14,0.128440366972477,-0.4
-switch,over + show,100,0.4739336492891,-0.4
-switch,over + soft,62,0.293838862559242,-0.4
-switch,under + soft,10,0.04739336492891,-0.4
+switch,over + show,93,0.440758293838863,-0.4
+switch,over + soft,64,0.303317535545024,-0.4
+switch,under + soft,12,0.0568720379146919,-0.4
 switch,under + show,3,0.014218009478673,-0.4
-switch,switch,36,0.170616113744076,-0.4
-over + show,over + show,371,0.746478873239437,0
-over + show,over + soft,75,0.150905432595573,0
-over + show,under + soft,2,0.00402414486921529,0
+switch,switch,39,0.184834123222749,-0.4
+over + show,over + show,359,0.722334004024145,0
+over + show,over + soft,84,0.169014084507042,0
+over + show,under + soft,3,0.00603621730382294,0
 over + show,under + show,10,0.0201207243460765,0
-over + show,switch,39,0.0784708249496982,0
-over + soft,over + show,82,0.169772256728778,0
-over + soft,over + soft,378,0.782608695652174,0
-over + soft,under + soft,10,0.020703933747412,0
+over + show,switch,41,0.0824949698189135,0
+over + soft,over + show,79,0.163561076604555,0
+over + soft,over + soft,379,0.784679089026915,0
+over + soft,under + soft,13,0.0269151138716356,0
 over + soft,under + show,0,0,0
-over + soft,switch,13,0.0269151138716356,0
-under + soft,over + show,6,0.0365853658536585,0
+over + soft,switch,12,0.0248447204968944,0
+under + soft,over + show,5,0.0304878048780488,0
 under + soft,over + soft,38,0.231707317073171,0
 under + soft,under + soft,93,0.567073170731707,0
-under + soft,under + show,14,0.0853658536585366,0
-under + soft,switch,13,0.0792682926829268,0
+under + soft,under + show,13,0.0792682926829268,0
+under + soft,switch,15,0.0914634146341463,0
 under + show,over + show,19,0.174311926605505,0
-under + show,over + soft,9,0.0825688073394496,0
-under + show,under + soft,19,0.174311926605505,0
-under + show,under + show,36,0.330275229357798,0
-under + show,switch,26,0.238532110091743,0
-switch,over + show,67,0.317535545023697,0
-switch,over + soft,42,0.199052132701422,0
-switch,under + soft,13,0.0616113744075829,0
-switch,under + show,14,0.0663507109004739,0
+under + show,over + soft,8,0.073394495412844,0
+under + show,under + soft,20,0.18348623853211,0
+under + show,under + show,39,0.357798165137615,0
+under + show,switch,23,0.211009174311927,0
+switch,over + show,62,0.293838862559242,0
+switch,over + soft,44,0.208530805687204,0
+switch,under + soft,11,0.052132701421801,0
+switch,under + show,19,0.0900473933649289,0
 switch,switch,75,0.355450236966825,0

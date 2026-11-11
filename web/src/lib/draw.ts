@@ -31,6 +31,23 @@ export interface DrawOptions {
   /** The player whose nearest opponent is shown: both ringed and joined by a line. Null shows no pair. */
   focusPid: number | null;
   hoverPid: number | null;
+  /** The live coverage model's attention share (0-1) per player id at this frame, or null (coverage.ts). */
+  attention?: Map<number, number> | null;
+}
+
+const ATT_COLOR = "#9b5de5";
+// The coverage model's attention: a purple ring on each player, thicker the more of the four screen players'
+// attention he gets, and the top three shares labelled above their dots.
+function drawAttention(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: number, att: Map<number, number>): void {
+  const shares = dots.map((d) => ({ d, s: att.get(d.p.id) ?? 0 })).filter((x) => x.s > 0);
+  const top = Math.max(...shares.map((x) => x.s), 0.01);
+  for (const { d, s } of shares) {
+    if (s < 0.03) continue;
+    drawRing(ctx, px(L, d.x), py(L, d.y), r + 2, ATT_COLOR, 1 + 6 * (s / top));
+  }
+  for (const { d, s } of [...shares].sort((a, b) => b.s - a.s).slice(0, 3)) {
+    drawTag(ctx, px(L, d.x), py(L, d.y) - r - 14, `${Math.round(100 * s)}%`, ATT_COLOR, 10);
+  }
 }
 
 /** What the page shows beside the canvas about the frame just drawn: rosters and clocks. */
@@ -389,6 +406,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     }
   }
   for (const d of all) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o, o.ann.quality && d.p.d[c.i0] === 0);
+  if (o.attention) drawAttention(ctx, L, all, r, o.attention);
   if (pair) {
     for (const [d, width] of [[pair.a, 3], [pair.b, 2]] as const) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
   }

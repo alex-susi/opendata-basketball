@@ -2,6 +2,7 @@
   // The court canvas: runs the animation clock, draws each frame and records video on request. Clicking a player
   // makes the trace panel follow his distance to the nearest opponent; clicking him again lets him go.
   import { onMount } from "svelte";
+  import { attentionAt, loadCoverageAttention, type AttentionFile } from "../lib/coverage";
   import { drawScene } from "../lib/draw";
   import Annotations from "./Annotations.svelte";
   import { FPS } from "../lib/sequence";
@@ -20,6 +21,9 @@
   let framed = false;   // the canvas carries its own header: from the start of a recording until its last frame is flushed
   let pointer = $state(false);   // the pointer is over a player
   let hits: { id: number; x: number; y: number; r: number }[] = [];   // player dots last drawn, for clicks
+  // The live coverage model's attention, fetched the first time the Model Attention toggle is on.
+  let att: AttentionFile | null = null;
+  $effect(() => { if (viewer.ann.attention && !att) loadCoverageAttention().then((a) => { att = a; }); });
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -46,8 +50,10 @@
 
   function render(ctx: CanvasRenderingContext2D): void {
     const focusPid = viewer.showTrace && viewer.trace === "nearest" ? viewer.focusPid : null;
+    const k = Math.min(Math.max(Math.floor(viewer.pos), 0), seq.length - 1);
+    const attention = viewer.ann.attention && att && play && seq.length ? attentionAt(att, play.id, play.frames[seq[k]]) : null;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos,
-                           { ...viewer, focusPid, sample: season.sample }, framed);
+                           { ...viewer, focusPid, sample: season.sample, attention }, framed);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;

@@ -7,6 +7,20 @@ suppressPackageStartupMessages(library(data.table))
 COVERAGE_MODELS <- c("4 players + so far", "+ archetypes", "pooled, no timing", "pooled, no timing, + closeness")
 TF_VARIANT <- setNames(c("timed", "arch", "pooled", "close"), COVERAGE_MODELS)
 
+#' A transformer variant's attention, [rows x 10] in X's row order: the share of the four screen players' attention
+#' (last layer, heads and seeds averaged) going to each token row (04_train_transformer.R).
+load_tf_attention <- function(root, variant) {
+  cache_dir <- file.path(root, "outputs", "cache", "screen_coverage")
+  X <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))$X
+  A <- matrix(NA_real_, nrow(X), 10L)
+  for (g in sort(unique(X$game_id))) {
+    o <- readRDS(file.path(cache_dir, "tf", sprintf("%s_%d.rds", variant, g)))
+    if (is.null(o$att)) stop("No attention saved for ", variant, " fold ", g, ": rerun 04_train_transformer.R --force")
+    A[o$rows, ] <- o$att
+  }
+  A
+}
+
 #' list(P = screens, X = frame rows, calls, offs, lg_ll, sf_ll, prob = named list of [rows x calls] matrices named
 #' "logistic: <model>" and "transformer: <model>").
 load_coverage_predictions <- function(root) {

@@ -36,3 +36,23 @@ jsonlite::write_json(list(model = LIVE, smooth_frames = SMOOTH, offsets = range(
                           generated = format(Sys.time(), "%Y-%m-%d %H:%M"), possessions = by_poss),
                      file.path(root, "web", "public", "data", "coverage_frames.json"), auto_unbox = TRUE)
 cat("Wrote web/public/data/coverage_frames.json with", LIVE, ":", length(screens), "screens in", length(by_poss), "possessions\n")
+
+# ---- attention, for the viewer's Model Attention toggle (transformer live models only) ----------------------
+# web/public/data/coverage_attention.json: per screen, its players (roster: the four of the screen first) and, at
+# every frame, which roster player sits in token rows 5-10 (k, 0-based) and the whole-percent share of the four screen
+# players' attention going to each of the ten rows (w). Loaded by the site only when the toggle is on.
+if (startsWith(LIVE, "transformer: ")) {
+  A <- load_tf_attention(root, TF_VARIANT[[sub("^transformer: ", "", LIVE)]])
+  ids <- readRDS(file.path(root, "outputs", "cache", "screen_coverage", "tokens.rds"))$ids
+  att_screens <- lapply(seq_len(nrow(P)), function(k) {
+    r <- rows[[as.character(k)]]
+    roster <- unique(c(ids[r[1], 1:4], as.vector(ids[r, 5:10])))
+    list(id = P$id[k], f0 = P$f0[k], r = roster,
+         k = lapply(r, function(i) match(ids[i, 5:10], roster) - 1L),
+         w = lapply(r, function(i) as.integer(round(100 * A[i, ]))))
+  })
+  jsonlite::write_json(list(model = LIVE, offsets = range(L$offs), generated = format(Sys.time(), "%Y-%m-%d %H:%M"),
+                            possessions = split(att_screens, P$poss)),
+                       file.path(root, "web", "public", "data", "coverage_attention.json"), auto_unbox = TRUE)
+  cat("Wrote web/public/data/coverage_attention.json\n")
+}

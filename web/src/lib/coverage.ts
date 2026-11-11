@@ -70,3 +70,42 @@ export function coverageAt(cov: CoverageFile, possession: string, frame: number)
   });
   return { screen: best, t: (frame - best.f0) / 25, pct };
 }
+
+// ---- the live model's attention (the Display panel's Model Attention toggle) -----------------------------------
+// coverage_attention.json (07_export_live.R): for each screen, its players (r, the four of the screen first) and, at
+// every frame of the window, which roster player sits in token rows 5-10 (k, indices into r) and the whole-percent
+// share of the four screen players' attention going to each of the ten rows (w). Attention says which players' rows
+// the model mixed in, not which players caused the call.
+
+export interface AttentionScreen { id: string; f0: number; r: number[]; k: number[][]; w: number[][] }
+export interface AttentionFile { model: string; offsets: [number, number]; generated: string; possessions: Record<string, AttentionScreen[]> }
+
+let attFile: Promise<AttentionFile | null> | null = null;
+/** Fetched once, the first time the toggle is on; null when the file has not been exported. */
+export function loadCoverageAttention(): Promise<AttentionFile | null> {
+  attFile ??= fetch(`${base}coverage_attention.json`, { cache: "no-cache" })
+    .then((r) => (r.ok ? (r.json() as Promise<AttentionFile>) : null))
+    .catch(() => null);
+  return attFile;
+}
+
+/** Attention share (0-1) per player id at a frame, from the screen whose window holds it; null outside every window. */
+export function attentionAt(att: AttentionFile, possession: string, frame: number): Map<number, number> | null {
+  const list = att.possessions[possession];
+  if (!list?.length) return null;
+  const [lo, hi] = att.offsets;
+  let best: AttentionScreen | null = null;
+  for (const s of list) {
+    const o = frame - s.f0;
+    if (o < lo || o > hi) continue;
+    if (!best || Math.abs(o) < Math.abs(frame - best.f0)) best = s;
+  }
+  if (!best) return null;
+  const i = Math.round(frame - best.f0) - lo;
+  const w = best.w[i], k = best.k[i];
+  if (!w || !k) return null;
+  const pids = [best.r[0], best.r[1], best.r[2], best.r[3], ...k.map((j) => best!.r[j])];
+  const out = new Map<number, number>();
+  pids.forEach((pid, j) => out.set(pid, (out.get(pid) ?? 0) + w[j] / 100));
+  return out;
+}
