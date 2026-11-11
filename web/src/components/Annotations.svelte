@@ -40,7 +40,8 @@
   let cov = $state<CoverageFile | null>(null);
   $effect(() => { if (viewer.ann.coverage && !cov) loadCoverage().then((c) => { cov = c; }); });
   const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame) : null);
-  const lastName = (id: number) => play?.players.find((p) => p.id === id)?.last ?? "?";
+  // A player as the card names him: jersey number, then last name ("#12 Steinbergs").
+  const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
   // Calls coloured as in the strips (src/screen_coverage/02_per_frame.R), stepped for the dark card.
   const COV_COL: Record<string, string> = { "over + show": "#3987e5", "over + soft": "#d95926", "under + soft": "#199e70",
                                             "under + show": "#c98500", switch: "#d55181" };
@@ -62,7 +63,7 @@
   <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
        style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
     <div class="ann-stack top" class:low={shift > 0} bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
-      {#if covRead && cov}{@render coverage(covRead, cov.calls, cov.model)}{/if}
+      {#if covRead && cov}{@render coverage(covRead, cov.calls)}{/if}
       {#if shotInfo}{@render card(shotInfo)}{/if}
     </div>
     <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">
@@ -81,22 +82,29 @@
   </div>
 {/snippet}
 
-{#snippet coverage(r: NonNullable<typeof covRead>, calls: string[], model: string)}
+{#snippet coverage(r: NonNullable<typeof covRead>, calls: string[])}
   {@const top = r.pct.indexOf(Math.max(...r.pct))}
   {@const dp = defenderParts(calls, r.pct)}
   {@const shown = r.t >= 0}
+  {@const right = calls[top] === r.screen.call}
   <div class="ann-card cov-card">
-    <b>Coverage Read<i class="event-flag">{fmtT(r.t)}</i></b>
-    <span class="card-line"><span>{lastName(r.screen.s)} screens for {lastName(r.screen.h)}</span><span>{shown ? "screen set" : "before the screen"}</span></span>
-    {@render bars(`On the ball · ${lastName(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
-    {@render bars(`On the screener · ${lastName(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
-    <span class="card-line cov-called"><span>Most likely together</span><span style:color={COV_COL[calls[top]]}>{calls[top]} · {Math.round(r.pct[top])}%</span></span>
-    {#if shown}
-      <span class="card-line"><span>Called</span><span style:color={COV_COL[r.screen.call]}>{r.screen.call}</span></span>
-    {:else}
-      <span class="card-line cov-note"><span>Actual call shown at the screen</span><span></span></span>
-    {/if}
-    <span class="cov-note">{model.replace(":", ",")} · held out from this game · last 0.2 s</span>
+    <b>Screen Coverage Read<i class="event-flag">{fmtT(r.t)}</i></b>
+    <span class="card-line"><span>{who(r.screen.s)} screens for {who(r.screen.h)}</span><span>{shown ? "screen set" : "before the screen"}</span></span>
+    {@render bars(`On the ball · ${who(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
+    {@render bars(`On the screener · ${who(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
+    <!-- The model's most likely joint call and, from the screen on, the tagged call under it, the two call names in
+         one column; the mark says whether the model's call at this frame was the tagged one. -->
+    <span class="cov-joint">
+      <span class="cov-k">Most likely together</span>
+      <span style:color={COV_COL[calls[top]]}>{calls[top]}</span>
+      <span class="cov-pct">{Math.round(r.pct[top])}%</span>
+      {#if shown}
+        <span class="cov-k">Called</span>
+        <span style:color={COV_COL[r.screen.call]}>{r.screen.call}</span>
+        <span class="cov-mark" class:right class:wrong={!right} title={right ? "The model's most likely call is the tagged call" : "The model's most likely call is not the tagged call"}>{right ? "✓" : "✗"}</span>
+      {/if}
+    </span>
+    {#if !shown}<span class="cov-note">Actual call shown at the screen</span>{/if}
   </div>
 {/snippet}
 
