@@ -36,6 +36,7 @@
 # Seen: the share of the window's frames in which the player was detected on camera (not extrapolated). The camera
 # follows the ball, so players getting back are often off screen; every role carries it so it can be filtered.
 
+# Thresholds in ft and frames (see the definitions above); court geometry in feet.
 GLASS <- list(crash_near = 8, crash_gain = 4, back_gain = 3, safety_far = 28,
               box_near = 5, box_lane = 3, box_before = 12L, box_after = 25L, box_frames = 3L, box_beat = 1, box_slow = 3, box_drop = 0.7, box_touch = 3, slow_half = 3L,
               max_flight = 75L, reach = 2L)
@@ -58,6 +59,8 @@ inside_three <- function(x, y) {
 game_glass <- function(game_id, ev) {
   G <- GLASS
   gid <- game_id
+  # The game's tracking, attack directions, shots (flight capped at max_flight frames), chance rosters, rebounds and
+  # matchups.
   trk <- a$get_tracking(a$app_data, gid)$players[, .(frame, pid, x, y, det)]
   setkey(trk, frame, pid)
   left <- setNames(ann_lgl(ev$possessions, "leftHoop"), ann_chr(ev$possessions, "id"))
@@ -67,7 +70,8 @@ game_glass <- function(game_id, ev) {
   sh[, f1 := pmin(pmax(f1, f + 1L), f + G$max_flight)]
   cpa <- data.table(chance = ann_chr(ev$chance_players, "chanceId"), pid = ann_int(ev$chance_players, "playerId"),
                     off = ann_lgl(ev$chance_players, "offense"))
-  cp <- cpa[off == TRUE]; cpd <- cpa[off == FALSE]
+  cp <- cpa[off == TRUE]
+  cpd <- cpa[off == FALSE]
   rb <- data.table(shot = ann_chr(ev$rebounds, "shotId"), f = ann_int(ev$rebounds, "frame"),
                    reb = ann_int(ev$rebounds, "rebounderId"), got = ann_lgl(ev$rebounds, "rebounded"))[!is.na(shot) & !is.na(f)]
   reb_f <- setNames(rb$f, rb$shot)
@@ -85,22 +89,29 @@ game_glass <- function(game_id, ev) {
     out
   }
   rows <- vector("list", nrow(sh))
+  # One shot at a time: every attacker's spot at release and at the end of the flight.
   for (i in seq_len(nrow(sh))) {
     s <- sh[i]
     sgn <- if (isTRUE(left[s$poss])) -1 else 1
     ids <- unique(cp[chance == s$chance, pid])
     if (!length(ids)) next
-    p0 <- spot(s$f, ids, sgn); p1 <- spot(s$f1, ids, sgn)
+    p0 <- spot(s$f, ids, sgn)
+    p1 <- spot(s$f1, ids, sgn)
     ok <- !is.na(p0[, 1]) & !is.na(p1[, 1])
     if (!any(ok)) next
-    ids <- ids[ok]; p0 <- p0[ok, , drop = FALSE]; p1 <- p1[ok, , drop = FALSE]
-    d0 <- sqrt((GLASS_HOOP_X - p0[, 1])^2 + p0[, 2]^2); d1 <- sqrt((GLASS_HOOP_X - p1[, 1])^2 + p1[, 2]^2)
+    ids <- ids[ok]
+    p0 <- p0[ok, , drop = FALSE]
+    p1 <- p1[ok, , drop = FALSE]
+    d0 <- sqrt((GLASS_HOOP_X - p0[, 1])^2 + p0[, 2]^2)
+    d1 <- sqrt((GLASS_HOOP_X - p1[, 1])^2 + p1[, 2]^2)
+    # Distance from his end-of-flight spot to where the rebound was secured.
     rd <- rep(NA_real_, length(ids))
     rr <- rb[shot == s$id & got %in% TRUE & !is.na(reb)]
     if (nrow(rr)) {
       q <- spot(rr$f[1], rr$reb[1], sgn)
       if (!is.na(q[1, 1])) rd <- round(sqrt((p1[, 1] - q[1, 1])^2 + (p1[, 2] - q[1, 2])^2), 1)
     }
+    # Role from where he started and where he went.
     crash <- d1 <= G$crash_near | (d0 - d1 >= G$crash_gain & inside_three(p1[, 1], p1[, 2]))
     back <- (p0[, 1] - p1[, 1] >= G$back_gain) | p1[, 1] < 0
     deepest <- d0 == max(d0[ids != s$shooter])
@@ -108,8 +119,10 @@ game_glass <- function(game_id, ev) {
     role[ids == s$shooter] <- ifelse(crash[ids == s$shooter] & d0[ids == s$shooter] - d1[ids == s$shooter] >= G$crash_gain, "follow", "shooter")
     # Box-outs, frame by frame from BOX_BEFORE frames before the ball reaches the rim until the rebound (at most
     # BOX_AFTER frames on): the attacker's matchup at release first, then the defender who held the spot longest.
-    boxed <- rep(NA, length(ids)); boxer <- rep(NA_integer_, length(ids))
-    bf <- rep(NA_integer_, length(ids)); b1 <- rep(NA_integer_, length(ids))
+    boxed <- rep(NA, length(ids))
+    boxer <- rep(NA_integer_, length(ids))
+    bf <- rep(NA_integer_, length(ids))
+    b1 <- rep(NA_integer_, length(ids))
     defs <- unique(cpd[chance == s$chance, pid])
     cand <- ids[role %in% c("crash", "follow") | (role != "shooter" & d0 <= G$crash_near)]
     if (length(defs) && length(cand)) {
@@ -124,6 +137,7 @@ game_glass <- function(game_id, ev) {
                      ((shift(frame, G$slow_half, type = "lead") - shift(frame, G$slow_half)) / 25), by = apid]
       A <- A[frame >= w0 & frame <= w1]
       A[, peak := cummax(fifelse(is.na(closing), 0, pmax(closing, 0))), by = apid]
+      # Every attacker-defender pair at every frame of the window: is the defender in the spot between him and the hoop?
       J <- merge(A,
                  W[pid %in% defs & frame >= w0 & frame <= w1, .(frame, dpid = pid, dx = x, dy = y)],
                  by = "frame", allow.cartesian = TRUE)
@@ -150,11 +164,16 @@ game_glass <- function(game_id, ev) {
           k <- K[apid == ids[j] & n >= G$box_frames][order(-n, gap)]
           m <- mu[off == ids[j] & f0 <= s$f & f1 >= s$f]$def
           pick <- if (length(m) && m[1] %in% k$dpid) m[1] else if (nrow(k)) k$dpid[1] else NA_integer_
-          boxed[j] <- !is.na(pick); boxer[j] <- pick
-          if (!is.na(pick)) { bf[j] <- k[dpid == pick, start]; b1[j] <- w1 }
+          boxed[j] <- !is.na(pick)
+          boxer[j] <- pick
+          if (!is.na(pick)) {
+            bf[j] <- k[dpid == pick, start]
+            b1[j] <- w1
+          }
         }
       }
     }
+    # Share of the flight's frames in which each attacker was detected on camera.
     seen <- vapply(ids, function(p) {
       w <- trk[.(s$f:s$f1, p), det]
       if (all(is.na(w))) NA_real_ else round(mean(w == 1L, na.rm = TRUE), 2)

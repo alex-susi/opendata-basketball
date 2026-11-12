@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Annotations for the static site's play viewer: event locations, defensive context, shot details, possession
 # context and season figures. Sourced by export_data.R after the app is loaded (`a`).
 #
@@ -14,6 +15,15 @@
 #
 # Ids are the raw player ids of that game, as in the tracking. Nothing here is a model output: it is the delivered
 # event fields, reshaped, plus the season aggregates summed per person and team.
+## ═════════════════════════════════════════════════════════════════════════════
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - FIELD HELPERS ----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 ann_num <- function(recs, f) a$num_field(recs, f)
 ann_int <- function(recs, f) a$int_field(recs, f)
@@ -32,12 +42,22 @@ ann_loc <- function(recs, f) {
 #' A table of records, or an empty table with the same columns when the family has none.
 ann_table <- function(recs, build) if (length(recs)) build(recs) else NULL
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - GAME ANNOTATIONS -------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 #' Everything the annotations need from one game's event file, one table per kind, keyed by frame.
 game_annotations <- function(game_id) {
+  # The event file, each possession's attack direction, and every tracked position of the game.
   ev <- a$read_json_file(a$match_file(a$root, game_id, "_dynamic_events.json"))
   left_hoop <- setNames(ann_lgl(ev$possessions, "leftHoop"), ann_chr(ev$possessions, "id"))
   trk <- a$get_tracking(a$app_data, game_id)$players[, .(frame, pid, tx = x, ty = y)]
 
+  # Free throws in order, so that each shot or foul can carry its makes and misses.
   ft <- ev$free_throws
   ft_rows <- data.table(shot = ann_chr(ft, "shotId"), foul = ann_chr(ft, "foulId"), made = ann_lgl(ft, "outcome"),
                         f = ann_int(ft, "frame"))[order(f)]
@@ -61,6 +81,7 @@ game_annotations <- function(game_id) {
                       type = ann_chr(s, "complexShotType"), sc = round(ann_num(s, "shotClock"), 1),
                       passer = ann_int(s, "passerId"), assisted = ann_lgl(s, "assisted"), ao = ann_lgl(s, "assistOpp"),
                       region = ann_chr(s, "region"), chance = ann_chr(s, "chanceId"))
+    # Each shot's free throws, and every player's spot at its release.
     out[, ft := ft_of("shot", ann_chr(s, "id"))]
     out[, ghosts := lapply(chance, function(ch) if (is.null(ghost_list[[ch]])) list() else ghost_list[[ch]])]
     out[, chance := NULL]
@@ -90,20 +111,19 @@ game_annotations <- function(game_id) {
   })
 
   # Post-ups and isolations: who, when, his defender (for the trace panel's points-per-action lines).
-  solos <- rbind(
-    ann_table(ev$posts, function(p) data.table(kind = "post", f = ann_int(p, "startFrame"), pid = ann_int(p, "ballhandlerId"),
-                                              def = ann_int(p, "ballhandlerDefId"), section = ann_chr(p, "section"))),
-    ann_table(ev$isolations, function(p) data.table(kind = "isolation", f = ann_int(p, "startFrame"),
-                                                    pid = ann_int(p, "ballhandlerId"), def = ann_int(p, "ballhandlerDefId"),
-                                                    section = NA_character_)))
+  solos <- rbind(ann_table(ev$posts, function(p) data.table(kind = "post", f = ann_int(p, "startFrame"), pid = ann_int(p, "ballhandlerId"),
+                                                            def = ann_int(p, "ballhandlerDefId"), section = ann_chr(p, "section"))),
+                 ann_table(ev$isolations, function(p) data.table(kind = "isolation", f = ann_int(p, "startFrame"),
+                                                                 pid = ann_int(p, "ballhandlerId"), def = ann_int(p, "ballhandlerDefId"),
+                                                                 section = NA_character_)))
 
   # Picks, handoffs and off-ball screens: the screener's (setter's) spot, who used the screen and both coverages.
   screen_rows <- function(recs, kind, scr, use, cov_use, cov_scr) {
     ann_table(recs, function(r) {
       l <- ann_loc(r, "location")
       out <- data.table(f = ann_int(r, "frame"), kind = kind, x = l[[1]], y = l[[2]], scr = ann_int(r, scr),
-                 use = ann_int(r, use), covUse = ann_chr(r, cov_use), covScr = ann_chr(r, cov_scr),
-                 spot = if (kind == "off_ball_screen") NA_character_ else ann_chr(r, "locationType"))
+                        use = ann_int(r, use), covUse = ann_chr(r, cov_use), covScr = ann_chr(r, cov_scr),
+                        spot = if (kind == "off_ball_screen") NA_character_ else ann_chr(r, "locationType"))
       # The screener's tracked position in the viewer's frame, and which sign of y lands nearer it.
       lh <- left_hoop[ann_chr(r, "possessionId")]
       at <- trk[out[, .(frame = f, pid = scr)], on = .(frame, pid), mult = "first"]
@@ -161,13 +181,16 @@ game_annotations <- function(game_id) {
     l <- ann_loc(t, "location")
     out <- data.table(f = ann_int(t, "frame"), x = l[[1]], y = l[[2]], pid = ann_int(t, "turnedOverId"),
                       stealer = ann_int(t, "stealerId"), team = ann_lgl(t, "teamTo"), touch = ann_chr(t, "touchId"))
+    # Offensive fouls, turned-over passes and touches ending in an offensive foul, plus the ball's tracked position.
     fo <- data.table(f = ann_int(ev$fouls, "frame"), by = ann_int(ev$fouls, "foulerId"), type = ann_chr(ev$fouls, "foulType"))[type == "offensive"]
     pa <- data.table(f = ann_int(ev$passes, "startFrame"), by = ann_int(ev$passes, "passerId"), to = ann_lgl(ev$passes, "turnover"))[to == TRUE]
     tc <- data.table(id = ann_chr(ev$touches, "id"), off_foul = vapply(ev$touches, function(r) "FOU_O" %in% unlist(r$outcomes), NA))
     fr <- a$get_tracking(a$app_data, game_id)$frames[, .(frame, bx, by)]
-    half_l <- 14 * 3.28084 - 0.5; half_w <- 7.5 * 3.28084 - 0.5
+    half_l <- 14 * 3.28084 - 0.5
+    half_w <- 7.5 * 3.28084 - 0.5
     out[, kind := vapply(seq_len(.N), function(i) {
-      fi <- f[i]; p <- pid[i]
+      fi <- f[i]
+      p <- pid[i]
       if (isTRUE(team[i])) return("team")
       if (any(fo$by == p & abs(fo$f - fi) <= 25) || isTRUE(tc$off_foul[match(touch[i], tc$id)])) return("off_foul")
       threw <- any(pa$by == p & pa$f <= fi + 5 & pa$f >= fi - 75)
@@ -205,8 +228,17 @@ game_annotations <- function(game_id) {
        solos = solos, cuts = cuts, glass = glass, fouls = fouls, rebounds = rebounds, turnovers = turnovers, matchups = matchups, chances = chances)
 }
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - ONE PLAY'S ANNOTATIONS -------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 #' The annotations inside one play's viewing window, as lists of records ready for JSON.
 play_annotations <- function(g, lo, hi) {
+  # Rows of a table whose span overlaps the window, in time order, without NA fields.
   rows <- function(dt, a_col = "f", b_col = a_col) {
     if (is.null(dt)) return(list())
     sel <- dt[get(b_col) >= lo & get(a_col) <= hi]
@@ -227,12 +259,19 @@ play_annotations <- function(g, lo, hi) {
        matchups = rows(g$matchups, "f", "f1"), chances = rows(ch, "f", "f1"))
 }
 
-# ---- season figures from the aggregates ------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - SEASON FIGURES FROM THE AGGREGATES -------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Season figures per person and team from the three aggregate tables: counts only, summed over a person's alias
 #' ids, so the viewer can form rates and show their sample sizes. Season-total rows (empty team_id) are left out:
 #' a play shows a player with one team. Keyed "<canonical id>:<team id>".
 season_figures <- function() {
+  # Per-team rows only (no season totals), with canonical ids.
   agg <- function(name) {
     dt <- fread(file.path(a$root, "data", "aggregates", sprintf("acb_%saggregates_20252026.csv", name)))
     dt <- dt[!is.na(team_id)]
@@ -241,6 +280,7 @@ season_figures <- function() {
     dt
   }
   sum_by <- function(dt, cols) dt[, lapply(.SD, function(v) sum(v, na.rm = TRUE)), by = .(canon, team_id), .SDcols = cols]
+  # Counts to keep: shot totals and zones, drive totals, and picks by coverage for both roles.
   zones <- c(ra = "zone_restricted_area", paint = "zone_paint_non_ra", mid = "zone_mid_range",
              c3 = "zone_corner_3", ab3 = "zone_above_break_3")
   shot_cols <- c("games_played", "possessions_played", "attempts", "mades", "three_attempts", "three_mades", "total_points",
@@ -254,6 +294,7 @@ season_figures <- function() {
                  paste0("handler_picks_vs_", h_cov), paste0("handler_points_vs_", h_cov),
                  paste0("screener_picks_vs_", s_cov), paste0("screener_points_vs_", s_cov))
   picks <- sum_by(agg("picks"), pick_cols)
+  # One record per person and team, leaving out families he has no row in.
   keys <- unique(rbind(shots[, .(canon, team_id)], drives[, .(canon, team_id)], picks[, .(canon, team_id)]))
   out <- list()
   for (i in seq_len(nrow(keys))) {

@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 02 of the rebounding manual: contact-state labels (rim or board contact, first player contact, tips, control,
 # ball height at touch and at control) for every eligible missed shot, a stratified review with an untouched
 # held-aside subset, and the agreement that decides which label types may be used later.
@@ -13,6 +14,7 @@
 #              example cases (reads the reviewer sheets in step02/review/)
 #   gate       unit and gate tests and the status record                          -> gate_results/02_*
 # Needs outputs/cache/rebounding/raw_*.rds and episodes.rds, and the Step 01 episode table.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -58,7 +60,16 @@ hoop_of <- function(s) {
 threshold_path <- file.path(out, "detector_threshold.csv")
 break_ft <- if (file.exists(threshold_path)) fread(threshold_path)$break_ft else NA_real_
 
-# ---- calibrate: one-step residuals on free flight, every eligible episode, no labels -------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - CALIBRATE --------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# One-step residuals on free flight, every eligible episode, no labels.
+
 if (phase == "calibrate") {
   # free flight of made shots (config: break_population; the first rule, misses before the contact proxy, is kept in
   # the deviation note): release + 3 frames to endFrame - 3 frames
@@ -86,7 +97,14 @@ if (phase == "calibrate") {
               q[[4]], nrow(res), uniqueN(res$shot_id)))
 }
 
-# ---- sample: two disjoint stratified subsets ------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - SAMPLE: TWO DISJOINT STRATIFIED SUBSETS --------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 if (phase == "sample") {
   sm <- cfg$step02$sample
   if (file.exists(file.path(rev_dir, "sample.csv"))) stop("sample.csv exists; the sample is drawn once")
@@ -114,7 +132,14 @@ if (phase == "sample") {
   print(picked[, .N, by = .(subset, stratum)])
 }
 
-# ---- label: every eligible episode ------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - LABEL: EVERY ELIGIBLE EPISODE ------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 if (phase == "label") {
   if (is.na(break_ft)) stop("run --phase=calibrate first")
   res <- lapply(seq_len(nrow(el)), function(k) {
@@ -127,8 +152,11 @@ if (phase == "label") {
   evts <- rbindlist(lapply(res, `[[`, "events"), fill = TRUE)
   fwrite(summ, file.path(out, "auto_summary.csv"))
   fwrite(evts, file.path(out, "auto_events.csv"))
-  print(summ[, .N, by = contact_kind]); print(summ[, .N, by = first_contact_type]); print(summ[, .N, by = terminal])
-  print(summ[, .N, by = label_confidence]); print(summ[nzchar(sequence_problems), .N, by = sequence_problems])
+  print(summ[, .N, by = contact_kind])
+  print(summ[, .N, by = first_contact_type])
+  print(summ[, .N, by = terminal])
+  print(summ[, .N, by = label_confidence])
+  print(summ[nzchar(sequence_problems), .N, by = sequence_problems])
   if (!is.null(opt("freeze")) || "--freeze" %in% args) {
     rec <- list(frozen_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), break_ft = break_ft,
                 contact_states_sha256 = sha256_file(file.path(here, "R", "contact_states.R")),
@@ -140,7 +168,14 @@ if (phase == "label") {
   }
 }
 
-# ---- pages ------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - PAGES ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 draw_review <- function(raw, s, hoop, item, blind, auto, tag = if (blind) "HELD-ASIDE" else "DEV") {
   last <- s$rf + th$window_after_rebound
   tr <- contact_track(raw, s, s$f0 - 5L, last, hoop, th$keyframe_tol_ft)
@@ -151,6 +186,7 @@ draw_review <- function(raw, s, hoop, item, blind, auto, tag = if (blind) "HELD-
   top <- nb[, .(dmin = min(d)), by = pid][order(dmin)][seq_len(min(5L, .N))]
   lab <- function(pid, off) sprintf("%s%d", ifelse(off, "O", "D"), pid %% 10000L)
   xr <- c(-5, rel(last))
+  # Ball height and hoop distance over time, with the five nearest players' distances to the ball.
   par(mar = c(4, 4, 3, 1))
   plot(NA, xlim = xr, ylim = c(0, 16), xlab = "frames from release (25 per second)", ylab = "ft", xaxs = "i",
        main = sprintf("%s item %d   %s   game %d  release frame %d   %s", tag, item,
@@ -159,7 +195,8 @@ draw_review <- function(raw, s, hoop, item, blind, auto, tag = if (blind) "HELD-
   abline(v = seq(ceiling(xr[1]), floor(xr[2])), col = "grey93")
   abline(v = seq(0, floor(xr[2]), 5), col = "grey80")
   axis(1, at = seq(0, floor(xr[2]), 5), cex.axis = 0.7)
-  abline(h = RIM_Z, col = "orange", lty = 3); abline(h = th$floor_z_ft, col = "tan", lty = 3)
+  abline(h = RIM_Z, col = "orange", lty = 3)
+  abline(h = th$floor_z_ft, col = "tan", lty = 3)
   abline(h = th$touch_ft, col = "grey60", lty = 3)
   lines(rel(tr$frame), sqrt((tr$x - hoop$hx)^2 + (tr$y - hoop$hy)^2), col = "grey50", lty = 2)
   cols <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e")
@@ -171,9 +208,11 @@ draw_review <- function(raw, s, hoop, item, blind, auto, tag = if (blind) "HELD-
   }
   lines(rel(tr$frame), tr$z, lwd = 1.8)
   points(rel(tr$frame[tr$key]), tr$z[tr$key], pch = 16, cex = 0.45)
-  abline(v = rel(s$f1), col = "blue", lty = 2); mtext("endFrame", 3, 0, at = rel(s$f1), col = "blue", cex = 0.65)
+  abline(v = rel(s$f1), col = "blue", lty = 2)
+  mtext("endFrame", 3, 0, at = rel(s$f1), col = "blue", cex = 0.65)
   if (!blind) {
-    abline(v = rel(s$rf), col = "red"); mtext("REB", 3, 0, at = rel(s$rf), col = "red", cex = 0.65)
+    abline(v = rel(s$rf), col = "red")
+    mtext("REB", 3, 0, at = rel(s$rf), col = "red", cex = 0.65)
     a <- auto[episode_id == s$shot_id & !kind %in% c("released", "credited_rebound")]
     # a tip or block repeats its player_touch row: draw the more specific one
     a <- a[!(kind == "player_touch" & paste(frame) %in% paste(a[kind %in% c("tip", "block")]$frame))]
@@ -207,6 +246,7 @@ draw_review <- function(raw, s, hoop, item, blind, auto, tag = if (blind) "HELD-
   }
 }
 
+# Review pages for one subset; the held-aside pages hide the automated labels.
 if (phase == "pages") {
   subset_name <- opt("subset", "dev")
   smp <- fread(file.path(rev_dir, "sample.csv"))[subset == subset_name]
@@ -235,7 +275,14 @@ if (phase == "pages") {
   cat(nrow(smp), "episodes on", max(smp$page), "pages\n")
 }
 
-# ---- score ------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - SCORE ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 #' One labeler's held-aside labels in a common form: contact (contact / none / NA), the specific kind, frames, the
 #' first touch's player and type, tips, control and terminal. Reviewer sheets use frames relative to release and the
 #' page labels of players (O or D plus the id's last four digits); auto labels use frames and ids.
@@ -276,7 +323,8 @@ normalize_auto <- function(a) {
 #' Cohen's kappa for two raters on the rows both resolved.
 kappa2 <- function(a, b) {
   ok <- !is.na(a) & !is.na(b)
-  a <- a[ok]; b <- b[ok]
+  a <- a[ok]
+  b <- b[ok]
   if (length(a) < 2L) return(NA_real_)
   lv <- union(a, b)
   po <- mean(a == b)
@@ -354,6 +402,7 @@ type_decisions <- function(tab, ag) {
              unmet = paste(measure[!met], collapse = "; ")), by = type]
 }
 
+# Agreement of the frozen automated labels with each reviewer, and the contract file.
 if (phase == "score") {
   ag <- cfg$step02$agreement
   freeze <- jsonlite::fromJSON(file.path(out, "detector_freeze.json"))
@@ -407,16 +456,15 @@ if (phase == "score") {
   el_auto <- merge(auto, el[, .(episode_id = shot_id, f0, f1)], by = "episode_id")
   qz <- function(z) as.list(setNames(round(quantile(z, c(0.05, 0.25, 0.5, 0.75, 0.95), na.rm = TRUE), 2),
                                      c("p05", "p25", "median", "p75", "p95")))
-  heights <- rbind(
-    el_auto[first_contact_type %in% c("tip", "catch", "block"),
-            c(.(moment = "first touch", n = .N, above_rim = mean(ball_center_z_at_first_touch > RIM_Z, na.rm = TRUE)),
-              qz(ball_center_z_at_first_touch)),
-            by = .(type = first_contact_type, actor_detected = fifelse(first_touch_actor_detected %in% 1L, "detected", "extrapolated or unknown"))],
-    el_auto[!is.na(first_control_frame),
-            c(.(moment = "control", type = "control", n = .N, above_rim = mean(ball_center_z_at_control > RIM_Z, na.rm = TRUE)),
-              qz(ball_center_z_at_control)),
-            by = .(actor_detected = fifelse(controller_detected %in% 1L, "detected", "extrapolated or unknown"))],
-    fill = TRUE)
+  heights <- rbind(el_auto[first_contact_type %in% c("tip", "catch", "block"),
+                           c(.(moment = "first touch", n = .N, above_rim = mean(ball_center_z_at_first_touch > RIM_Z, na.rm = TRUE)),
+                             qz(ball_center_z_at_first_touch)),
+                           by = .(type = first_contact_type, actor_detected = fifelse(first_touch_actor_detected %in% 1L, "detected", "extrapolated or unknown"))],
+                   el_auto[!is.na(first_control_frame),
+                           c(.(moment = "control", type = "control", n = .N, above_rim = mean(ball_center_z_at_control > RIM_Z, na.rm = TRUE)),
+                             qz(ball_center_z_at_control)),
+                           by = .(actor_detected = fifelse(controller_detected %in% 1L, "detected", "extrapolated or unknown"))],
+                   fill = TRUE)
   setcolorder(heights, c("moment", "type", "actor_detected", "n"))
   fwrite(heights[order(moment, type, actor_detected)], file.path(out, "ball_height_by_touch_type.csv"))
   # the same heights read at the reviewer's frames on the held-aside subset
@@ -436,9 +484,10 @@ if (phase == "score") {
   kind_type <- c(rim = "contact", board = "contact", rim_or_board = "contact", block = "first touch", tip = "tip chain",
                  player_touch = "first touch", controlled = "control")
   ce <- ev[!kind %in% c("released"), .(episode_id, frame_idx = frame, kind, actor_id, confidence, ball_z_ft = round(ball_z_ft, 3),
-                                        review_status = fifelse(kind == "credited_rebound", "official", "automated"),
-                                        labeler = fifelse(kind == "credited_rebound", "event data", "auto_v1"))]
+                                       review_status = fifelse(kind == "credited_rebound", "official", "automated"),
+                                       labeler = fifelse(kind == "credited_rebound", "event data", "auto_v1"))]
   ce[, gate_status := fifelse(kind %in% names(kind_type), status_of[kind_type[kind]], NA_character_)]
+  # Reviewer 1's labels in the contract's row form, with each tip as its own row.
   r1_rows <- rbindlist(lapply(seq_len(nrow(n1)), function(i) {
     r <- n1[i]
     tips <- r1[episode_id == r$episode_id]$tips_rel
@@ -449,12 +498,12 @@ if (phase == "score") {
                  actor_id = normalize_reviewer(copy(r1[episode_id == r$episode_id])[, first_contact_player_id := p[2]], smp)$touch_player)
     })) else NULL
     rows <- rbindlist(list(if (!is.na(r$rim_frame)) data.table(frame_idx = r$rim_frame, kind = r1[episode_id == r$episode_id]$contact_kind,
-                                                      actor_id = NA_integer_),
-                  if (!is.na(r$touch_frame)) data.table(frame_idx = r$touch_frame, actor_id = r$touch_player,
-                                                        kind = fifelse(r$touch_type %in% "block", "block", "player_touch")),
-                  tip_rows,
-                  if (!is.na(r$control_frame)) data.table(frame_idx = r$control_frame, kind = "controlled", actor_id = r$controller)),
-                  use.names = TRUE, fill = TRUE)
+                                                               actor_id = NA_integer_),
+                           if (!is.na(r$touch_frame)) data.table(frame_idx = r$touch_frame, actor_id = r$touch_player,
+                                                                 kind = fifelse(r$touch_type %in% "block", "block", "player_touch")),
+                           tip_rows,
+                           if (!is.na(r$control_frame)) data.table(frame_idx = r$control_frame, kind = "controlled", actor_id = r$controller)),
+                      use.names = TRUE, fill = TRUE)
     if (!nrow(rows)) return(NULL)
     rows[, `:=`(episode_id = r$episode_id, confidence = r1[episode_id == r$episode_id]$label_confidence)]
   }), fill = TRUE)
@@ -502,12 +551,11 @@ if (phase == "score") {
   }, ""))]
   fwrite(order_auto, file.path(out, "order_checks_auto.csv"))
   fwrite(r1_order, file.path(out, "order_checks_reviewer1.csv"))
-  counts <- list(
-    episodes = nrow(auto),
-    contact_kind = as.list(auto[, .N, by = contact_kind][, setNames(N, contact_kind)]),
-    first_contact_type = as.list(auto[, .N, by = first_contact_type][, setNames(N, first_contact_type)]),
-    terminal = as.list(auto[, .N, by = terminal][, setNames(N, terminal)]),
-    label_confidence = as.list(auto[, .N, by = label_confidence][, setNames(N, label_confidence)]))
+  counts <- list(episodes = nrow(auto),
+                 contact_kind = as.list(auto[, .N, by = contact_kind][, setNames(N, contact_kind)]),
+                 first_contact_type = as.list(auto[, .N, by = first_contact_type][, setNames(N, first_contact_type)]),
+                 terminal = as.list(auto[, .N, by = terminal][, setNames(N, terminal)]),
+                 label_confidence = as.list(auto[, .N, by = label_confidence][, setNames(N, label_confidence)]))
   saveRDS(list(tabs = tabs, dec = dec, dis = dis, heights = heights, rz = rz, counts = counts, order_auto = order_auto,
                r1_order = r1_order, r2_done = r2_done, fp = fp, amb = amb, freeze = freeze), file.path(cache, "step02.rds"))
   print(tabs[, .(pair, type, measure, agree, n, value = round(value, 3), target)])
@@ -515,7 +563,14 @@ if (phase == "score") {
   print(dis[disagree == TRUE])
 }
 
-# ---- gate: tests and the status record --------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - GATE: TESTS AND THE STATUS RECORD --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 if (phase == "gate") {
   sc <- readRDS(file.path(cache, "step02.rds"))
   gr <- file.path(root, "outputs", "rebounding", "gate_results")
@@ -534,59 +589,58 @@ if (phase == "gate") {
   auto_pairs <- intersect(c("auto_vs_reviewer1", "auto_vs_reviewer2"), unique(sc$dec$pair))
   auto_dec <- sc$dec[pair %in% auto_pairs, .(status = if (all(status == "PASS")) "PASS" else "BLOCKED",
                                              against = paste(sprintf("%s %s", sub("auto_vs_", "", pair), status), collapse = ", ")), by = type]
-  rec <- list(
-    step = "02", status = status,
-    scope = if (length(passed)) sprintf("contact-state labels for: %s (%s; automated labels for every episode: %s)",
-                                        paste(passed, collapse = ", "),
-                                        if (sc$r2_done) "reliability between two reviewers, so usable where reviewed" else "automated labeler vs reviewer 1",
-                                        paste(sprintf("%s %s", auto_dec$type, auto_dec$status), collapse = ", ")) else
-      "none: no contact-state label type met its reliability target; final credited rebounder only for Steps 03-09",
-    labels_by_type = lapply(split(dec, dec$type), function(d) list(status = d$status, usable = d$usable,
-                                                                   unmet = if (nzchar(d$unmet)) d$unmet else NULL)),
-    automated_labels_by_type = lapply(split(auto_dec, auto_dec$type), function(d) list(status = d$status, against = d$against)),
-    source_commits = list(skillcorner = cfg$dataset$upstream_commit),
-    data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums),
-    model_revision = list(labeler = "auto_v1", contact_states_sha256 = sc$freeze$contact_states_sha256,
-                          break_ft = sc$freeze$break_ft, frozen_at = sc$freeze$frozen_at),
-    repository_head = git_out(root, "rev-parse", "HEAD")[1],
-    test_command = "Rscript src/rebounding/run_tests.R unit contact_states; Rscript src/rebounding/run_tests.R gates step_02",
-    unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
-    data_audit_passed = all(sc$order_auto$sequence_problems == "none"),
-    heldout_metrics_file = "outputs/rebounding/step02/agreement.csv",
-    acceptance_criteria_version = sprintf("manual %s, config v%d (step02, fixed 2026-10-29 before the held-aside subset was opened)",
-                                          cfg$manual_revision, cfg$config_version),
-    agreement = lapply(split(tab, seq_len(nrow(tab))), function(r)
-      list(type = r$type, measure = r$measure, agree = r$agree, n = r$n, value = round(r$value, 3), target = r$target)),
-    labelers = list(a = "automated labeler auto_v1, frozen before the held-aside pages were drawn",
-                    b = "reviewer 1 (Claude), tracking plots only, blind to the labeler and to the credited rebounder",
-                    second_human_reviewer = if (sc$r2_done) "done (reviewer 2, the owner): the gate is judged on reviewer 1 vs reviewer 2" else "not done: outputs/rebounding/step02/review/reviewer2_heldout.csv is blank"),
-    deviations = list(
-      list(check = "break threshold: 99.5th percentile of one-step residuals on misses before the contact proxy (prespecified)",
-           result = "2.20 ft (median residual 0.15 ft): 11% of those segments are not free flight",
-           decision = "Replaced before any label was reviewed: made shots, release + 3 to endFrame - 3, flights with a residual above 1 ft excluded (35 of 346), 99th percentile: 0.65 ft. Owner to confirm."),
-      list(check = "second reviewer on the held-aside subset (manual: where practical)",
-           result = if (sc$r2_done) "added 2026-11-05: the owner labelled the held-aside subset (reviewer2_heldout.csv)" else "no second person available in this session",
-           decision = if (sc$r2_done) "Gate judged on reviewer 1 vs reviewer 2, as written before scoring. Both read the same tracking plots (no video), so agreement is consistency of tracking-based judgements, not accuracy. Automated-label status is reported separately (automated_labels_by_type)." else "Reliability measured between two independent labelers: the frozen automated labeler and a blind reviewer. Both read the same tracking and the reviewer wrote the labeler, so agreement is consistency of tracking-based judgements, not accuracy. A second human review can be added in reviewer2_heldout.csv and rescored."),
-      list(check = "contact kind kappa over rim / board / none (prespecified)",
-           result = "the widened rim zone overlaps the board zone",
-           decision = "Changed before freezing to contact vs none; rim vs board reported, not gated.")),
-    counts = sc$counts,
-    evidence = c("docs/project/ANNOTATION_RUBRIC.md", "outputs/rebounding/annotations/contact_events.csv",
-                 "outputs/rebounding/reports/02_annotation_reliability.md", "src/rebounding/R/contact_states.R",
-                 "outputs/rebounding/step02/agreement.csv", "outputs/rebounding/step02/agreement_decisions.csv",
-                 "outputs/rebounding/step02/heldout_comparison.csv", "outputs/rebounding/step02/ball_height_by_touch_type.csv",
-                 "outputs/rebounding/step02/ball_height_heldout_reviewer1.csv", "outputs/rebounding/step02/review/",
-                 "outputs/rebounding/step02/figures/", "outputs/rebounding/step02/detector_freeze.json",
-                 "outputs/rebounding/step02/detector_threshold.csv"),
-    reviewer = if (sc$r2_done) "Claude (labeler author and blind reviewer 1); the owner (reviewer 2)" else "Claude (labeler author and blind reviewer 1); owner review pending",
-    date = format(Sys.Date()),
-    open_risks = list("No video: every label, the reviewer's included, comes from the same tracking",
-                      "The reviewer wrote the labeler; the two labelers are not independent in method",
-                      "30 held-aside episodes: wide intervals on every agreement measure",
-                      "Ball heights near the rim read 1-2 ft high, and the control rule caps ball height at 9 ft, so control heights are truncated"),
-    decision_note = if (status == "PASS") paste0("Usable label types: ", paste(passed, collapse = ", "),
-                                                 if (any(auto_dec[type %in% passed]$status != "PASS")) ". Reviewed labels only: the automated labels of these types do not meet the targets against the reviewers, so models that need them on every episode stay blocked." else "") else
-      "BLOCKED: continue with the final credited rebounder only for Steps 03-09; tip physics, controlled-catch and securing models stay blocked. Labels remain in the contract file for description, flagged by gate_status.")
+  # The gate record.
+  rec <- list(step = "02", status = status,
+              scope = if (length(passed)) sprintf("contact-state labels for: %s (%s; automated labels for every episode: %s)",
+                                                  paste(passed, collapse = ", "),
+                                                  if (sc$r2_done) "reliability between two reviewers, so usable where reviewed" else "automated labeler vs reviewer 1",
+                                                  paste(sprintf("%s %s", auto_dec$type, auto_dec$status), collapse = ", ")) else
+                "none: no contact-state label type met its reliability target; final credited rebounder only for Steps 03-09",
+              labels_by_type = lapply(split(dec, dec$type), function(d) list(status = d$status, usable = d$usable,
+                                                                             unmet = if (nzchar(d$unmet)) d$unmet else NULL)),
+              automated_labels_by_type = lapply(split(auto_dec, auto_dec$type), function(d) list(status = d$status, against = d$against)),
+              source_commits = list(skillcorner = cfg$dataset$upstream_commit),
+              data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums),
+              model_revision = list(labeler = "auto_v1", contact_states_sha256 = sc$freeze$contact_states_sha256,
+                                    break_ft = sc$freeze$break_ft, frozen_at = sc$freeze$frozen_at),
+              repository_head = git_out(root, "rev-parse", "HEAD")[1],
+              test_command = "Rscript src/rebounding/run_tests.R unit contact_states; Rscript src/rebounding/run_tests.R gates step_02",
+              unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
+              data_audit_passed = all(sc$order_auto$sequence_problems == "none"),
+              heldout_metrics_file = "outputs/rebounding/step02/agreement.csv",
+              acceptance_criteria_version = sprintf("manual %s, config v%d (step02, fixed 2026-10-29 before the held-aside subset was opened)",
+                                                    cfg$manual_revision, cfg$config_version),
+              agreement = lapply(split(tab, seq_len(nrow(tab))), function(r)
+                list(type = r$type, measure = r$measure, agree = r$agree, n = r$n, value = round(r$value, 3), target = r$target)),
+              labelers = list(a = "automated labeler auto_v1, frozen before the held-aside pages were drawn",
+                              b = "reviewer 1 (Claude), tracking plots only, blind to the labeler and to the credited rebounder",
+                              second_human_reviewer = if (sc$r2_done) "done (reviewer 2, the owner): the gate is judged on reviewer 1 vs reviewer 2" else "not done: outputs/rebounding/step02/review/reviewer2_heldout.csv is blank"),
+              deviations = list(list(check = "break threshold: 99.5th percentile of one-step residuals on misses before the contact proxy (prespecified)",
+                                     result = "2.20 ft (median residual 0.15 ft): 11% of those segments are not free flight",
+                                     decision = "Replaced before any label was reviewed: made shots, release + 3 to endFrame - 3, flights with a residual above 1 ft excluded (35 of 346), 99th percentile: 0.65 ft. Owner to confirm."),
+                                list(check = "second reviewer on the held-aside subset (manual: where practical)",
+                                     result = if (sc$r2_done) "added 2026-11-05: the owner labelled the held-aside subset (reviewer2_heldout.csv)" else "no second person available in this session",
+                                     decision = if (sc$r2_done) "Gate judged on reviewer 1 vs reviewer 2, as written before scoring. Both read the same tracking plots (no video), so agreement is consistency of tracking-based judgements, not accuracy. Automated-label status is reported separately (automated_labels_by_type)." else "Reliability measured between two independent labelers: the frozen automated labeler and a blind reviewer. Both read the same tracking and the reviewer wrote the labeler, so agreement is consistency of tracking-based judgements, not accuracy. A second human review can be added in reviewer2_heldout.csv and rescored."),
+                                list(check = "contact kind kappa over rim / board / none (prespecified)",
+                                     result = "the widened rim zone overlaps the board zone",
+                                     decision = "Changed before freezing to contact vs none; rim vs board reported, not gated.")),
+              counts = sc$counts,
+              evidence = c("docs/project/ANNOTATION_RUBRIC.md", "outputs/rebounding/annotations/contact_events.csv",
+                           "outputs/rebounding/reports/02_annotation_reliability.md", "src/rebounding/R/contact_states.R",
+                           "outputs/rebounding/step02/agreement.csv", "outputs/rebounding/step02/agreement_decisions.csv",
+                           "outputs/rebounding/step02/heldout_comparison.csv", "outputs/rebounding/step02/ball_height_by_touch_type.csv",
+                           "outputs/rebounding/step02/ball_height_heldout_reviewer1.csv", "outputs/rebounding/step02/review/",
+                           "outputs/rebounding/step02/figures/", "outputs/rebounding/step02/detector_freeze.json",
+                           "outputs/rebounding/step02/detector_threshold.csv"),
+              reviewer = if (sc$r2_done) "Claude (labeler author and blind reviewer 1); the owner (reviewer 2)" else "Claude (labeler author and blind reviewer 1); owner review pending",
+              date = format(Sys.Date()),
+              open_risks = list("No video: every label, the reviewer's included, comes from the same tracking",
+                                "The reviewer wrote the labeler; the two labelers are not independent in method",
+                                "30 held-aside episodes: wide intervals on every agreement measure",
+                                "Ball heights near the rim read 1-2 ft high, and the control rule caps ball height at 9 ft, so control heights are truncated"),
+              decision_note = if (status == "PASS") paste0("Usable label types: ", paste(passed, collapse = ", "),
+                                                           if (any(auto_dec[type %in% passed]$status != "PASS")) ". Reviewed labels only: the automated labels of these types do not meet the targets against the reviewers, so models that need them on every episode stay blocked." else "") else
+                "BLOCKED: continue with the final credited rebounder only for Steps 03-09; tip physics, controlled-catch and securing models stay blocked. Labels remain in the contract file for description, flagged by gate_status.")
   write_gate(file.path(gr, "02_contact_states.json"), rec)
   print(tests[, .(dir, file, test = substr(test, 1, 60), expectations, failed, error)])
   print(dec)

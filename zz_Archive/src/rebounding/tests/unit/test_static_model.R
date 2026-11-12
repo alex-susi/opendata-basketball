@@ -13,16 +13,17 @@ synthetic_static <- function(n_games = 4L, per_game = 60L, beta = c(dist_hoop = 
   set.seed(seed)
   n <- n_games * per_game
   ids <- sprintf("shot-%05d", seq_len(n))
-  pl <- rbindlist(lapply(seq_len(n), function(e) data.table(
-    episode_id = ids[e], pid = 1000L * e + 1:10, off = rep(c(TRUE, FALSE), each = 5),
-    x = RIM_X - runif(10, 1, 24), y = runif(10, -18, 18), source_frame = 1L)))
+  pl <- rbindlist(lapply(seq_len(n), function(e) data.table(episode_id = ids[e], pid = 1000L * e + 1:10, off = rep(c(TRUE, FALSE), each = 5),
+                                                            x = RIM_X - runif(10, 1, 24), y = runif(10, -18, 18), source_frame = 1L)))
   shooter <- pl[off == TRUE, .SD[sample(.N, 1)], by = episode_id]
   shot <- shooter[, .(episode_id, shooter_id = pid, sx = x, sy = y)]
   shot[, shot_dist := sqrt((sx - RIM_X)^2 + sy^2)][, `:=`(rim = shot_dist < 5, three = shot_dist > 22)]
   sf <- static_features(pl, shot)
   sc <- fit_scaler(sf, shot, ids)
   des <- choice_design(sf, shot, ids, sc)
-  b <- setNames(rep(0, ncol(des$M)), colnames(des$M)); b[names(beta)] <- beta; b[c("team_off", "team_def")] <- c(-2.2, -2.0)
+  b <- setNames(rep(0, ncol(des$M)), colnames(des$M))
+  b[names(beta)] <- beta
+  b[c("team_off", "team_def")] <- c(-2.2, -2.0)
   P <- matrix(predict_clogit(list(beta = b), des)$probability, 12L)
   pick <- apply(P, 2, function(p) sample.int(12L, 1L, prob = p))
   rows <- des$rows[(seq_len(n) - 1L) * 12L + pick]
@@ -31,8 +32,8 @@ synthetic_static <- function(n_games = 4L, per_game = 60L, beta = c(dist_hoop = 
                        outcome_id = rows$outcome_id, y_off = side == "off")
   fa <- data.table(episode_id = ids, game_id = labels$game_id, outer_fold = labels$game_id - 100L, game_date = "")
   choice <- rbindlist(lapply(ids, function(e) data.table(episode_id = e,
-    outcome_id = c(as.character(pl[episode_id == e]$pid), "team_off", "team_def"),
-    kind = c(rep("player", 10L), "team", "team"), side = c(rep("off", 5L), rep("def", 5L), "off", "def"))))
+                                                         outcome_id = c(as.character(pl[episode_id == e]$pid), "team_off", "team_def"),
+                                                         kind = c(rep("player", 10L), "team", "team"), side = c(rep("off", 5L), rep("def", 5L), "off", "def"))))
   list(pl = pl, shot = shot, sf = sf, labels = labels, fa = fa, choice = choice, beta = b)
 }
 
@@ -45,9 +46,11 @@ test_that("player features match hand calculations", {
   expect_equal(p1$dist_hoop, 3)
   expect_equal(p1$opp_inside, 1)                 # defender 6 at 2 ft
   expect_equal(p1$mates_inside, 0)
-  expect_equal(p1$nearest_opp_dist, 1); expect_equal(p1$inside_gap, -1)
+  expect_equal(p1$nearest_opp_dist, 1)
+  expect_equal(p1$inside_gap, -1)
   expect_equal(p1$abs_rel_bearing, 0)            # on the shooter's line
-  expect_equal(f[pid == 3]$is_shooter, 1); expect_equal(sum(f$is_shooter), 1)
+  expect_equal(f[pid == 3]$is_shooter, 1)
+  expect_equal(sum(f$is_shooter), 1)
   expect_equal(f[pid == 2]$abs_rel_bearing, abs(atan2(5, -10) - pi))
   expect_equal(sum(f$closeness_share), 1)
   near <- sqrt((pl$x - pl$x[1])^2 + (pl$y - pl$y[1])^2)
@@ -60,9 +63,13 @@ test_that("features are unchanged by rotating or mirroring the court about the h
   s <- synthetic_static(1L, 20L)
   base <- static_features(s$pl, s$shot)
   turn <- function(d, th, mirror = 1) {
-    d <- copy(d); for (pr in list(c("x", "y"), c("sx", "sy"))) if (all(pr %in% names(d))) {
-      dx <- d[[pr[1]]] - RIM_X; dy <- mirror * d[[pr[2]]]
-      set(d, j = pr[1], value = RIM_X + cos(th) * dx - sin(th) * dy); set(d, j = pr[2], value = sin(th) * dx + cos(th) * dy) }
+    d <- copy(d)
+    for (pr in list(c("x", "y"), c("sx", "sy"))) if (all(pr %in% names(d))) {
+      dx <- d[[pr[1]]] - RIM_X
+      dy <- mirror * d[[pr[2]]]
+      set(d, j = pr[1], value = RIM_X + cos(th) * dx - sin(th) * dy)
+      set(d, j = pr[2], value = sin(th) * dx + cos(th) * dy)
+    }
     d
   }
   for (th in c(0.7, pi)) for (mi in c(1, -1)) {
@@ -90,12 +97,19 @@ test_that("the conditional logit gradient is exact, its probabilities sum to one
   # numerical gradient of the objective at a random point
   b0 <- rnorm(ncol(des$M), 0, 0.3)
   obj <- function(b) {
-    U <- matrix(des$M %*% b, 12L); n <- ncol(U)
+    U <- matrix(des$M %*% b, 12L)
+    n <- ncol(U)
     -sum(U[cbind(y, 1:n)] - apply(U, 2, function(u) max(u) + log(sum(exp(u - max(u)))))) + 0.5 / 2 * sum((!colnames(des$M) %in% UNPENALISED) * b^2)
   }
-  num <- vapply(seq_along(b0), function(i) { h <- 1e-5; e <- replace(numeric(length(b0)), i, h); (obj(b0 + e) - obj(b0 - e)) / (2 * h) }, 0)
-  U <- matrix(des$M %*% b0, 12L); P <- apply(U, 2, function(u) exp(u - max(u)) / sum(exp(u - max(u))))
-  Y <- matrix(0, 12L, ncol(U)); Y[cbind(y, seq_len(ncol(U)))] <- 1
+  num <- vapply(seq_along(b0), function(i) {
+    h <- 1e-5
+    e <- replace(numeric(length(b0)), i, h)
+    (obj(b0 + e) - obj(b0 - e)) / (2 * h)
+  }, 0)
+  U <- matrix(des$M %*% b0, 12L)
+  P <- apply(U, 2, function(u) exp(u - max(u)) / sum(exp(u - max(u))))
+  Y <- matrix(0, 12L, ncol(U))
+  Y[cbind(y, seq_len(ncol(U)))] <- 1
   ana <- as.vector(crossprod(des$M, as.vector(P - Y))) + 0.5 * (!colnames(des$M) %in% UNPENALISED) * b0
   expect_equal(ana, num, tolerance = 1e-5)
   pr <- predict_clogit(fit, des)
@@ -115,7 +129,8 @@ test_that("the conditional logit gradient is exact, its probabilities sum to one
 
 test_that("reordering players changes no player's probability; scalers and fits use training games only", {
   s <- synthetic_static(3L, 40L)
-  tr <- s$fa[outer_fold != 1]$episode_id; te <- s$fa[outer_fold == 1]$episode_id
+  tr <- s$fa[outer_fold != 1]$episode_id
+  te <- s$fa[outer_fold == 1]$episode_id
   a <- clogit_fit_predict(s$sf, s$shot, s$labels, tr, te, 3, 500L)
   b <- clogit_fit_predict(s$sf[sample(.N)], s$shot[sample(.N)], s$labels, tr, te, 3, 500L)
   key <- c("episode_id", "outcome_id")
@@ -141,10 +156,13 @@ test_that("nested lambda selection uses only the training games and every fold p
 })
 
 test_that("box-out matchups minimise total distance and the OREB model is fitted correctly", {
-  ax <- c(0, 10, 20, 30, 40); ay <- rep(0, 5)
-  dx <- c(41, 31, 1, 21, 11); dy <- rep(1, 5)
+  ax <- c(0, 10, 20, 30, 40)
+  ay <- rep(0, 5)
+  dx <- c(41, 31, 1, 21, 11)
+  dy <- rep(1, 5)
   expect_equal(matchup_assignment(ax, ay, dx, dy), c(3L, 5L, 4L, 2L, 1L))
-  expect_equal(nrow(PERM5), 120L); expect_equal(nrow(unique(PERM5)), 120L)
+  expect_equal(nrow(PERM5), 120L)
+  expect_equal(nrow(unique(PERM5)), 120L)
   s <- synthetic_static(4L, 100L)
   ef <- episode_features(s$pl, s$shot)
   expect_equal(nrow(ef), 400L)

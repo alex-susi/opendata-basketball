@@ -47,6 +47,7 @@ stage_quality <- function(raw, s) {
                  contact_to_rebound = c(contact, s$rf), after_rebound = c(s$rf + 1L, s$rf + 25L))
   w <- ball_track(raw$frames, s, s$f0 - 26L, s$rf + 26L)
   w[, strict_mid := abs(x - (shift(x) + shift(x, -1L)) / 2) < 0.001 & abs(z - (shift(z) + shift(z, -1L)) / 2) < 0.001]
+  # Per stage window: ball presence, interpolated frames and player coverage.
   rbindlist(lapply(names(bounds), function(k) {
     b <- bounds[[k]]
     if (is.na(b[1]) || is.na(b[2]) || b[2] < b[1]) return(NULL)
@@ -109,6 +110,7 @@ draw_orientation <- function(raw, s, hoop, reason) {
     rect(-COURT_HALF_L, -COURT_HALF_W, COURT_HALF_L, COURT_HALF_W, border = "grey40")
     lines(c(0, 0), c(-COURT_HALF_W, COURT_HALF_W), col = "grey60")
   }
+  # Draw the episode twice: in camera coordinates and in attack-normalised coordinates.
   for (view in c("camera", "attack")) {
     f <- if (view == "camera") 1 else s$flip
     par(mar = c(1.5, 1, 3, 1))

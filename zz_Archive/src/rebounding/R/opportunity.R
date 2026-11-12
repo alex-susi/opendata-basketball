@@ -38,14 +38,17 @@ players_at <- function(b, at) {
 obstruction_matrix <- function(px, py, off, tx, ty) {
   n <- length(px)
   O <- matrix(0, n, n)
+  # Every attacker-defender pair within 8 ft: how much the blocker stands between the runner and the target.
   for (o in seq_len(n)) for (bb in seq_len(n)) {
     if (off[o] == off[bb]) next
     gap <- sqrt((px[bb] - px[o])^2 + (py[bb] - py[o])^2)
     if (gap > 8) next
-    ux <- tx - px[o]; uy <- ty - py[o]
+    ux <- tx - px[o]
+    uy <- ty - py[o]
     L <- sqrt(ux^2 + uy^2)
     ok <- L > 1
-    ux <- ux / pmax(L, 1e-9); uy <- uy / pmax(L, 1e-9)
+    ux <- ux / pmax(L, 1e-9)
+    uy <- uy / pmax(L, 1e-9)
     lam <- (px[bb] - px[o]) * ux + (py[bb] - py[o]) * uy
     perp <- abs(-(px[bb] - px[o]) * uy + (py[bb] - py[o]) * ux)
     inside <- ok & lam > 0 & lam < L
@@ -69,9 +72,12 @@ build_scene <- function(b, t_chk, fit, lib, seed, landing = FALSE) {
   st <- pf_at(b, t_chk, fit$phys, fit$sig, lib, seed = seed)
   fp <- forecast_paths(st$S, STEP * seq_len(N_STEPS), fit$phys, seed = seed + 17L)
   keep <- seq_len(P_SCENE)
-  bx <- fp$x[keep, , drop = FALSE]; by <- fp$y[keep, , drop = FALSE]; bz <- fp$z[keep, , drop = FALSE]
+  bx <- fp$x[keep, , drop = FALSE]
+  by <- fp$y[keep, , drop = FALSE]
+  bz <- fp$z[keep, , drop = FALSE]
   m <- to_player_frame(bx, by, bz, b$hoop)
-  bx[] <- m$x; by[] <- m$y
+  bx[] <- m$x
+  by[] <- m$y
   t_out <- fp$t_out[keep]
   out_step <- ifelse(is.na(t_out), -1L, pmin(N_STEPS, ceiling(t_out / STEP)) - 1L)
   tc <- fp$t_contact[keep]
@@ -144,7 +150,12 @@ fit_cr <- function(st, use = seq_len(st$dims[1]) - 1L, free_theta = rep(TRUE, 7)
     cr_objective(p, st$A, st$out_step, st$Z, st$pidx, st$y, st$dims, as.integer(use), free, sd_u, ridge)
   }
   cache <- new.env()
-  val <- function(p) { r <- f(p); cache$g <- r$gradient; cache$p <- p; r$value }
+  val <- function(p) {
+    r <- f(p)
+    cache$g <- r$gradient
+    cache$p <- p
+    r$value
+  }
   grd <- function(p) { if (!identical(cache$p, p)) f(p)$gradient else cache$g }
   o <- optim(par0, val, grd, method = "BFGS", control = list(maxit = 500, reltol = 1e-10))
   p <- o$par
@@ -201,7 +212,8 @@ fit_softmax <- function(scenes, feats, y_train) {
 predict_softmax <- function(fit, scenes) {
   t(vapply(scenes, function(sc) {
     s <- fit$feats(sc) %*% fit$beta
-    p <- exp(s - max(s)); p <- p / sum(p)
+    p <- exp(s - max(s))
+    p <- p / sum(p)
     c(p * (1 - sum(fit$team)), fit$team, 0)
   }, numeric(13)))
 }

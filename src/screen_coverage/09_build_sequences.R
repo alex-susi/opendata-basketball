@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Screen coverage, step 9: movement histories for the time-aware transformer.
 #   Rscript src/screen_coverage/09_build_sequences.R
 #
@@ -29,6 +30,7 @@
 #   plus time to act, the defense's earlier calls (logs) and closeness, as for the other transformers
 #
 # Writes outputs/cache/screen_coverage/sequences.rds.
+## ═════════════════════════════════════════════════════════════════════════════
 
 suppressPackageStartupMessages(library(data.table))
 args <- commandArgs(FALSE)
@@ -36,6 +38,15 @@ script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 root <- normalizePath(file.path(dirname(normalizePath(script)), "..", ".."), winslash = "/")
 cache_dir <- file.path(root, "outputs", "cache", "screen_coverage")
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Frame offsets are counted at 25 fps relative to the screen tag; distances are in feet.
 FPS <- 25
 STEP <- 5L                       # 0.2 s between history steps (and the velocity lag)
 BASE_OFFS <- -90:25              # frames relative to the tag at which features are stored
@@ -47,9 +58,19 @@ FEATS <- c("x", "y", "rel_x", "rel_y", "rel_h_x", "rel_h_y", "hoop_dist", "lvl",
            "turn", "lvl_v", "lvl_hold", "present")
 FLIP <- c("y", "rel_y", "rel_h_y", "vy")
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - SCREENS AND THEIR TEN PLAYERS ------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Step-2 rows (one per screen and frame) and step-3 tokens; the tokens' player ids fix each screen's ten-man roster.
 L <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))
 TK <- readRDS(file.path(cache_dir, "tokens.rds"))
-P <- L$P; X <- L$X
+P <- L$P
+X <- L$X
 NS <- nrow(P)
 # roster per screen: the four of the screen, then the other attackers and defenders on the floor at the tag
 r0 <- which(X$off == 0L)
@@ -57,6 +78,8 @@ roster <- matrix(NA_integer_, NS, 10L)
 roster[X$idx[r0], ] <- TK$ids[r0, ]
 stopifnot(!anyNA(roster))
 
+# Position of each (frame, player) pair, falling back to the nearest frame within two either side when the exact one is
+# missing.
 pos_at <- function(B, frames, ids) {
   out <- data.table(x = rep(NA_real_, length(frames)), y = NA_real_, poss = NA_character_)
   for (d in c(0L, -1L, 1L, -2L, 2L)) {
@@ -68,8 +91,18 @@ pos_at <- function(B, frames, ids) {
   out
 }
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - PLAYER POSITIONS AT EVERY STORED FRAME ---------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# PX and PY are [screens, frames, players]. A position only counts while the player is in the screen's possession.
 NP <- length(POS_OFFS)
 PX <- PY <- array(NA_real_, c(NS, NP, 10L))
+# One game at a time: every screen x offset x player lookup in one batch.
 for (g in unique(P$game_id)) {
   B <- readRDS(file.path(root, "outputs", "cache", "explore", sprintf("bundle_%d.rds", g)))
   s <- which(P$game_id == g)
@@ -80,40 +113,82 @@ for (g in unique(P$game_id)) {
   PY[cbind(s[q$k], q$o, q$j)] <- fifelse(ok, hit$y, NA_real_)
 }
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - PER-FRAME PLAYER FEATURES ----------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 hoop <- function(x, y) sqrt((HOOP_X - x)^2 + y^2)
 NB <- length(BASE_OFFS)
 base <- array(0, c(NS, NB, 10L, length(FEATS)), dimnames = list(NULL, NULL, NULL, FEATS))
 at <- function(A, o) A[, match(o, POS_OFFS), , drop = TRUE]          # [screens, 10] at offset o
 sgn_prev <- hold <- matrix(0, NS, 10L)
+# Walk forward through the stored frames, building each feature from the positions at o, o - 0.2 s and o - 0.4 s.
+# lvl_hold carries over from one frame to the next, so the frames must be visited in order.
 for (b in seq_len(NB)) {
   o <- BASE_OFFS[b]
-  x <- at(PX, o); y <- at(PY, o); x1 <- at(PX, o - STEP); y1 <- at(PY, o - STEP); x2 <- at(PX, o - 2L * STEP); y2 <- at(PY, o - 2L * STEP)
-  sx <- x[, 2]; sy <- y[, 2]; hx <- x[, 1]; hy <- y[, 1]
-  vx <- (x - x1) / (STEP / FPS); vy <- (y - y1) / (STEP / FPS); sp <- sqrt(vx^2 + vy^2)
-  vx1 <- (x1 - x2) / (STEP / FPS); vy1 <- (y1 - y2) / (STEP / FPS); sp1 <- sqrt(vx1^2 + vy1^2)
+  x <- at(PX, o)
+  y <- at(PY, o)
+  x1 <- at(PX, o - STEP)
+  y1 <- at(PY, o - STEP)
+  x2 <- at(PX, o - 2L * STEP)
+  y2 <- at(PY, o - 2L * STEP)
+  # Reference points: the screener (row 2) and the ball handler (row 1).
+  sx <- x[, 2]
+  sy <- y[, 2]
+  hx <- x[, 1]
+  hy <- y[, 1]
+  # Velocity over the last 0.2 s and the 0.2 s before it, for the speed change and the turning angle.
+  vx <- (x - x1) / (STEP / FPS)
+  vy <- (y - y1) / (STEP / FPS)
+  sp <- sqrt(vx^2 + vy^2)
+  vx1 <- (x1 - x2) / (STEP / FPS)
+  vy1 <- (y1 - y2) / (STEP / FPS)
+  sp1 <- sqrt(vx1^2 + vy1^2)
   turn <- acos(pmin(1, pmax(-1, (vx * vx1 + vy * vy1) / pmax(sp * sp1, 1e-6)))) * 180 / pi
   turn[is.na(sp) | is.na(sp1) | sp < 1 | sp1 < 1] <- 0
-  lvl <- hoop(x, y) - hoop(sx, sy); lvl1 <- hoop(x1, y1) - hoop(x1[, 2], y1[, 2])
+  # Level relative to the screener; hold counts how long each player has stayed on one side of it.
+  lvl <- hoop(x, y) - hoop(sx, sy)
+  lvl1 <- hoop(x1, y1) - hoop(x1[, 2], y1[, 2])
   sg <- ifelse(lvl > DEAD, 1, ifelse(lvl < -DEAD, -1, 0))
   hold <- ifelse(!is.na(sg) & sg == sgn_prev, pmin(HOLD_CAP, hold + 1 / FPS), 0)
   sgn_prev <- ifelse(is.na(sg), 99, sg)
+  # A player is present only when all three positions exist; values for absent players are stored as zero.
   present <- !is.na(x) & !is.na(x1) & !is.na(x2)
   vals <- list(x = x, y = y, rel_x = x - sx, rel_y = y - sy, rel_h_x = x - hx, rel_h_y = y - hy, hoop_dist = hoop(x, y),
                lvl = lvl, vx = vx, vy = vy, speed = sp, accel = (sp - sp1) / (STEP / FPS), turn = turn,
                lvl_v = (lvl - lvl1) / (STEP / FPS), lvl_hold = hold)
-  for (f in names(vals)) { v <- vals[[f]]; v[!present | is.na(v)] <- 0; base[, b, , f] <- v }
+  for (f in names(vals)) {
+    v <- vals[[f]]
+    v[!present | is.na(v)] <- 0
+    base[, b, , f] <- v
+  }
   base[, b, , "present"] <- as.numeric(present)
 }
 cat(sprintf("Players present over the stored frames: screen four %.1f%%, other six %.1f%%\n",
             100 * mean(base[, , 1:4, "present"]), 100 * mean(base[, , 5:10, "present"])))
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - SCREEN-LEVEL CONTEXT AND SAVE ------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 # memory of contact, per prediction row: closest handler-screener distance over the last 2 s, and how long ago
 dhs <- sqrt((PX[, , 1] - PX[, , 2])^2 + (PY[, , 1] - PY[, , 2])^2)        # [screens, NP]
 mem <- t(vapply(seq_len(nrow(X)), function(r) {
-  k <- match(X$off[r], POS_OFFS); w <- dhs[X$idx[r], (k - 50L):k]
+  k <- match(X$off[r], POS_OFFS)
+  w <- dhs[X$idx[r], (k - 50L):k]
   if (all(is.na(w))) return(c(NA_real_, NA_real_))
-  m <- which.min(w); c(w[m], (length(w) - m) / FPS)
+  m <- which.min(w)
+  c(w[m], (length(w) - m) / FPS)
 }, numeric(2)))
+# The step-3 context plus the two contact-memory measures; a missing memory falls back to the current distance.
 ctx <- cbind(TK$ctx[, c("tta_now", paste0("lsf_", 1:5), "closeness")], hs_min = mem[, 1], since_hs_min = mem[, 2])
 ctx[is.na(ctx[, "hs_min"]), "hs_min"] <- X$d_hs[is.na(ctx[, "hs_min"])]
 ctx[is.na(ctx[, "since_hs_min"]), "since_hs_min"] <- 0

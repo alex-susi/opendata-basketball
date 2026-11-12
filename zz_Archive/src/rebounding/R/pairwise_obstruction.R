@@ -21,8 +21,10 @@ obstruction_targets <- function(tg, hoop = c(RIM_X, 0)) {
 #' vectorised over equal-length inputs. `p` = config step11$score.
 obstruction_score <- function(bx, by, rx, ry, tx, ty, p) {
   L <- sqrt((tx - rx)^2 + (ty - ry)^2)
-  ux <- (tx - rx) / pmax(L, 1e-9); uy <- (ty - ry) / pmax(L, 1e-9)
-  dx <- bx - rx; dy <- by - ry
+  ux <- (tx - rx) / pmax(L, 1e-9)
+  uy <- (ty - ry) / pmax(L, 1e-9)
+  dx <- bx - rx
+  dy <- by - ry
   s <- dx * ux + dy * uy
   e <- abs(dx * uy - dy * ux)
   cl <- function(v) pmin(1, pmax(0, v))
@@ -35,8 +37,10 @@ obstruction_score <- function(bx, by, rx, ry, tx, ty, p) {
 pair_obstruction <- function(pid, off, x, y, targets, p) {
   n <- length(x)
   O <- matrix(0, n, n, dimnames = list(pid, pid))
-  bx <- matrix(x, n, n); by <- matrix(y, n, n)                       # [i, j]: blocker i
-  rx <- matrix(x, n, n, byrow = TRUE); ry <- matrix(y, n, n, byrow = TRUE)  # [i, j]: runner j
+  bx <- matrix(x, n, n)
+  by <- matrix(y, n, n)                       # [i, j]: blocker i
+  rx <- matrix(x, n, n, byrow = TRUE)
+  ry <- matrix(y, n, n, byrow = TRUE)  # [i, j]: runner j
   for (k in seq_len(nrow(targets))) O <- O + obstruction_score(bx, by, rx, ry, targets$tx[k], targets$ty[k], p)
   O <- O / nrow(targets)
   O[!outer(off, off, `!=`)] <- 0
@@ -54,8 +58,10 @@ obstruction_features <- function(O) {
 pairing_of <- function(O, pc) {
   pid <- as.integer(rownames(O))
   rbindlist(lapply(seq_along(pid), function(i) {
-    o <- O[i, ]; ord <- order(-o, as.integer(names(o)))
-    best <- o[ord[1]]; second <- o[ord[2]]
+    o <- O[i, ]
+    ord <- order(-o, as.integer(names(o)))
+    best <- o[ord[1]]
+    second <- o[ord[2]]
     cls <- if (best < pc$pair_min) "none" else if (second >= pc$pair_min && best - second <= pc$ambiguity_margin) "ambiguous" else "pair"
     data.table(pid = pid[i], runner = as.integer(names(o)[ord[1]]), o_best = unname(best), o_second = unname(second),
                runner_second = as.integer(names(o)[ord[2]]), pairing = cls)
@@ -76,7 +82,8 @@ episode_obstruction <- function(pl, targets, p, pc) {
 #' player's last row within `carry` frames, frames <= t only) at which b's obstruction of r is at least pair_min.
 #' Frames without all ten players are skipped; NA when none is left.
 pair_persistence <- function(players, t, n, b, r, targets, p, pc, carry = 5L) {
-  hits <- numeric(length(b)); seen <- 0L
+  hits <- numeric(length(b))
+  seen <- 0L
   for (f in (t - n):t) {
     q <- players[frame <= f & frame >= f - carry]
     q <- q[q[, .I[which.max(frame)], by = pid]$V1]
@@ -90,6 +97,7 @@ pair_persistence <- function(players, t, n, b, r, targets, p, pc, carry = 5L) {
 
 #' Rate of change of the distance between two players (ft/s; negative = closing), from positions and velocities.
 closing_speed <- function(x1, y1, vx1, vy1, x2, y2, vx2, vy2) {
-  dx <- x1 - x2; dy <- y1 - y2
+  dx <- x1 - x2
+  dy <- y1 - y2
   (dx * (vx1 - vx2) + dy * (vy1 - vy2)) / pmax(sqrt(dx^2 + dy^2), 1e-6)
 }

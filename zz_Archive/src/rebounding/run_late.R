@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Late forecasts: the collection model for the moments after the ball reaches the rim, leave one game out.
 #   Rscript src/rebounding/run_late.R [--game=<id>] [--refit]
 # Needs run_flight.R and run_opportunity.R (the held-out rim model each fold is compared with). Late scenes are
@@ -5,6 +6,7 @@
 # late_fold_{gameId}.rds; --game=<id> runs one fold (folds can run as parallel processes). A fold made before a
 # model was added keeps what it has and adds the rest; --refit redoes everything. Without --game it summarises the
 # folds, fits the all-games model the site uses (late_final.rds) and writes outputs/rebounding/late/.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -25,7 +27,8 @@ run_fold <- function(g, prev = NULL) {
   fl <- readRDS(file.path(cache, sprintf("flight_fold_%s.rds", g)))$fit
   sc <- build_late_scenes(bundles, fl, launch_rows_all[game_id != g], file.path(cache, sprintf("late_scenes_%s.rds", g)), refit)
   gid <- vapply(sc, `[[`, 0L, "game_id")
-  tr <- sc[gid != g]; te <- sc[gid == g]
+  tr <- sc[gid != g]
+  te <- sc[gid == g]
   rim <- readRDS(file.path(cache, sprintf("opp_fold_%s.rds", g)))$rim
   players <- sort(unique(unlist(lapply(tr, function(s) as.character(s$pl$canon)))))
   ch <- if (!is.null(prev$acc)) list(acc = prev$acc, grid = prev$grid) else choose_late_access(tr, rim$acc, seed = g %% 1000L)
@@ -41,13 +44,16 @@ run_fold <- function(g, prev = NULL) {
   acc_flat <- modifyList(hc$acc, list(gate = FALSE))
   st_tr <- stack_late(tr, acc_flat)
   height_flat <- fit_late(st_tr, start = ladder$late_full$theta)
-  rm(st_tr); gc()
+  rm(st_tr)
+  gc()
   st_tr <- stack_late(tr, hc$acc, players)
   height <- fit_late(st_tr, start = ladder$late_full$theta)
   effects <- fit_late_effects(st_tr, height)
-  rm(st_tr); gc()
+  rm(st_tr)
+  gc()
   st_te_h <- stack_late(te, hc$acc, players)
-  y_tr <- vapply(tr, `[[`, 0L, "y"); y_te <- vapply(te, `[[`, 0L, "y")
+  y_tr <- vapply(tr, `[[`, 0L, "y")
+  y_te <- vapply(te, `[[`, 0L, "y")
   near <- fit_softmax(tr, feats_nearest, y_tr)
   geo <- fit_softmax(tr, feats_geometry, y_tr)
   preds <- c(list(team_prior = prior_probs(y_tr, length(te)),
@@ -56,7 +62,8 @@ run_fold <- function(g, prev = NULL) {
              lapply(ladder, function(f) predict_late(st_te, f)),
              list(late_height_flat = predict_late(stack_late(te, acc_flat), height_flat),
                   late_height = predict_late(st_te_h, height), late_effects = predict_late(st_te_h, effects)))
-  ids <- vapply(te, `[[`, "", "id"); tau <- vapply(te, `[[`, 0, "tau")
+  ids <- vapply(te, `[[`, "", "id")
+  tau <- vapply(te, `[[`, 0, "tau")
   seen <- vapply(te, function(s) s$y <= 10 && as.character(s$pl$canon[s$y]) %in% players, NA)
   scores <- rbindlist(lapply(names(preds), function(m) {
     colnames(preds[[m]]) <- OUTCOMES
@@ -80,7 +87,13 @@ for (g in if (length(only)) as.integer(only) else games) {
 }
 if (length(only)) quit(save = "no")
 
-# ---- held-out summaries -----------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - HELD-OUT SUMMARIES -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 folds <- lapply(games, function(g) readRDS(file.path(cache, sprintf("late_fold_%s.rds", g))))
 scores <- rbindlist(lapply(folds, `[[`, "scores"))
@@ -107,16 +120,15 @@ h <- summ[model == "late_height"]
 site_model <- if (passes_rule(h$gain_late, h$better_than_late)) "late_height" else "late_full"
 chosen <- summ[model == site_model]
 used <- passes_rule(chosen$gain_current, chosen$better_than_current)
-fwrite(data.table(
-  comparison = c("late_full vs reused rim model", "late_height vs late_full", "site model vs reused rim model"),
-  model = c("late_full", "late_height", site_model),
-  gain = c(summ[model == "late_full", gain_current], h$gain_late, chosen$gain_current),
-  se = c(summ[model == "late_full", gain_current_se], h$gain_late_se, chosen$gain_current_se),
-  games_better = c(summ[model == "late_full", better_than_current], h$better_than_late, chosen$better_than_current),
-  adopted = c(passes_rule(summ[model == "late_full", gain_current], summ[model == "late_full", better_than_current]),
-              site_model == "late_height", used),
-  rule = "adopted when its held-out log loss is better on average and in at least 6 of 10 games"),
-  file.path(out_dir, "decision.csv"))
+fwrite(data.table(comparison = c("late_full vs reused rim model", "late_height vs late_full", "site model vs reused rim model"),
+                  model = c("late_full", "late_height", site_model),
+                  gain = c(summ[model == "late_full", gain_current], h$gain_late, chosen$gain_current),
+                  se = c(summ[model == "late_full", gain_current_se], h$gain_late_se, chosen$gain_current_se),
+                  games_better = c(summ[model == "late_full", better_than_current], h$better_than_late, chosen$better_than_current),
+                  adopted = c(passes_rule(summ[model == "late_full", gain_current], summ[model == "late_full", better_than_current]),
+                              site_model == "late_height", used),
+                  rule = "adopted when its held-out log loss is better on average and in at least 6 of 10 games"),
+       file.path(out_dir, "decision.csv"))
 
 by_tau <- scores[, .(n = .N, log_loss = mean(ll), team_log_loss = mean(ll_team), collector_chance = mean(p_collector, na.rm = TRUE),
                      top_median = median(p_top), top_q90 = quantile(p_top, 0.9)), by = .(model, tau)]
@@ -141,12 +153,19 @@ fwrite(rbindlist(lapply(seq_along(folds), function(k) {
 fwrite(rbindlist(lapply(folds, `[[`, "grid")), file.path(out_dir, "access_grid.csv"))
 fwrite(rbindlist(lapply(folds, `[[`, "height_grid")), file.path(out_dir, "height_grid.csv"))
 
-# ---- the all-games fit the site uses, and the collection-effects test --------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - THE ALL-GAMES FIT THE SITE USES, AND THE COLLECTION-EFFECTS TEST -------
+## ═════════════════════════════════════════════════════════════════════════════
 
 final <- readRDS(file.path(cache, "final_fits.rds"))
 flight_all <- readRDS(file.path(cache, "flight_params_all.rds"))
 final_path <- file.path(cache, "late_final.rds")
 late_final <- if (file.exists(final_path) && !refit) readRDS(final_path) else list()
+# The all-games late model: access, the ladder, the height margin, then the collection effects (cached step by step).
 if (is.null(late_final$effects)) {
   sc_all <- build_late_scenes(bundles, flight_all, launch_rows_all, file.path(cache, "late_scenes_all.rds"), refit)
   if (is.null(late_final$fits$late_full)) {
@@ -164,7 +183,8 @@ if (is.null(late_final$effects)) {
   first <- !duplicated(st$ids)
   late_final$misses_on <- table(unlist(lapply(which(first), function(e) players[st$pidx[(e - 1) * 10 + 1:10] + 1L])))
   late_final$won <- table(unlist(lapply(sc_all[first], function(s) if (s$y <= 10) as.character(s$pl$canon[s$y]))))
-  rm(st); gc()
+  rm(st)
+  gc()
 }
 late_final$site_model <- site_model
 late_final$acc_site <- late_final$accs[[site_model]]
@@ -198,7 +218,15 @@ fwrite(data.table(term = c("policy", "react", "z_reach", "z_scale", "gated_margi
                             late_final$fit$theta)),
        file.path(out_dir, "final_parameters.csv"))
 
-# ---- one worked example: the Girona-Burgos miss Samuels rebounded (shot-114099-1-19) ----------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - ONE WORKED EXAMPLE -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# The Girona-Burgos miss Samuels rebounded (shot-114099-1-19)
 
 ex_id <- "shot-114099-1-19"
 i <- which(vapply(bundles, `[[`, "", "id") == ex_id)
@@ -208,10 +236,14 @@ cs <- contact_seen(b)
 fold <- folds[[match(b$game_id, games)]]
 rim_fold <- readRDS(file.path(cache, sprintf("opp_fold_%s.rds", b$game_id)))$rim
 base_p <- function(sc, f) predict_cr(stack_scenes(list(sc), f$acc, character(0), TRUE), f$access_obstruction)[1, ]
+# The worked example: the late model's forecast every 0.2 s until the rebound.
 example <- rbindlist(lapply(seq(0, tm$rebound - 0.04, by = 0.2), function(t) {
   sc <- build_scene(b, t, flight_all, launch_rows_all, seed = i)
   if (!length(sc)) return(NULL)
-  who <- function(P) { k <- which.max(P[1:10]); list(p_rebounder = P[sc$y], top_pid = sc$pl$pid[k], top_p = P[k]) }
+  who <- function(P) {
+    k <- which.max(P[1:10])
+    list(p_rebounder = P[sc$y], top_pid = sc$pl$pid[k], top_p = P[k])
+  }
   late_now <- !is.na(cs[[1]]) && t >= cs[[2]] - 1e-9
   sc$tau <- late_tau(t, cs[[1]])
   # before: the release model, then the rim model from the recorded rim time on; now: the release model until the
@@ -220,10 +252,9 @@ example <- rbindlist(lapply(seq(0, tm$rebound - 0.04, by = 0.2), function(t) {
   new <- if (late_now) predict_late(stack_late(list(sc), late_final$acc_site), late_final$fit)[1, ] else base_p(sc, final$release)
   rows <- list(data.table(model = "before", source = "all games", t = t, as.data.table(who(old))),
                data.table(model = "now", source = "all games", t = t, as.data.table(who(new))))
-  if (late_now) rows <- c(rows, list(
-    data.table(model = "late_full", source = "held out", t = t,
-               as.data.table(who(predict_late(stack_late(list(sc), fold$accs[[site_model]]), fold$fits[[site_model]])[1, ]))),
-    data.table(model = "current_site", source = "held out", t = t, as.data.table(who(base_p(sc, list(acc = rim_fold$acc, access_obstruction = rim_fold$fits$access_obstruction)))))))
+  if (late_now) rows <- c(rows, list(data.table(model = "late_full", source = "held out", t = t,
+                                                as.data.table(who(predict_late(stack_late(list(sc), fold$accs[[site_model]]), fold$fits[[site_model]])[1, ]))),
+                                     data.table(model = "current_site", source = "held out", t = t, as.data.table(who(base_p(sc, list(acc = rim_fold$acc, access_obstruction = rim_fold$fits$access_obstruction)))))))
   rbindlist(rows)
 }))
 example[, `:=`(shot_id = ex_id, contact = cs[[1]], rebound = tm$rebound, tau = pmax(0, t - cs[[1]]))]

@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Screen coverage, step 7: the play viewer's live probabilities.
 #   Rscript src/screen_coverage/07_export_live.R [--model="time-aware transformer, two heads"]
 #
@@ -10,6 +11,7 @@
 # 1.6 s, never told when the screen comes. It is the best of the models a live system could run. Each game's screens
 # come from the network trained without that game. --model= picks another (any name from load_coverage_predictions(),
 # e.g. "transformer: pooled, no timing, + closeness").
+## ═════════════════════════════════════════════════════════════════════════════
 
 source_root <- function() {
   args <- commandArgs(FALSE)
@@ -22,11 +24,21 @@ hit <- grep("^--model=", commandArgs(TRUE), value = TRUE)
 LIVE <- if (length(hit)) sub("^--model=", "", hit) else SEQ_MODEL
 SMOOTH <- 5L
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - LIVE PROBABILITIES -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 L <- load_coverage_predictions(root)
 SQH <- if (LIVE == SEQ_MODEL) load_seqheads(root) else NULL
 if (LIVE != SEQ_MODEL && !LIVE %in% names(L$prob)) stop("Unknown model: ", LIVE, ". One of: ", paste(c(SEQ_MODEL, names(L$prob)), collapse = "; "))
-P <- L$P; X <- L$X
+P <- L$P
+X <- L$X
 PW <- if (LIVE == SEQ_MODEL) SQH$prob else L$prob[[LIVE]]
+# Each screen's frame rows in time order, and its record with whole-percent probabilities per call.
 rows <- lapply(split(seq_len(nrow(X)), X$idx), function(r) r[order(X$off[r])])
 screens <- lapply(seq_len(nrow(P)), function(k) {
   r <- rows[[as.character(k)]]
@@ -39,7 +51,15 @@ jsonlite::write_json(list(model = LIVE, smooth_frames = SMOOTH, offsets = range(
                      file.path(root, "web", "public", "data", "coverage_frames.json"), auto_unbox = TRUE)
 cat("Wrote web/public/data/coverage_frames.json with", LIVE, ":", length(screens), "screens in", length(by_poss), "possessions\n")
 
-# ---- attention, for the viewer's Model Attention toggle (transformer live models only) ----------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - ATTENTION FOR THE MODEL ATTENTION TOGGLE -------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Transformer live models only.
 # web/public/data/coverage_attention.json: per screen, its players (roster: the four of the screen first) and, at
 # every frame, which roster player sits in token rows 5-10 (k, 0-based) and the whole-percent share of the four screen
 # players' attention going to each of the ten rows (w). Loaded by the site only when the toggle is on.
@@ -54,6 +74,7 @@ write_attention <- function(A, roster_at) {
                        file.path(root, "web", "public", "data", "coverage_attention.json"), auto_unbox = TRUE)
   cat("Wrote web/public/data/coverage_attention.json\n")
 }
+# The sequence model's roster is fixed per screen; the token model's other six can change from frame to frame.
 if (LIVE == SEQ_MODEL) {
   roster <- readRDS(file.path(root, "outputs", "cache", "screen_coverage", "sequences.rds"))$roster   # fixed per screen
   write_attention(SQH$att, function(k, r) list(roster = roster[k, ], k = rep(list(4:9), length(r))))

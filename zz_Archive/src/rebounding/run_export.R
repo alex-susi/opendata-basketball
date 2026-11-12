@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 5 of the rebounding framework: what the site shows.
 #   Rscript src/rebounding/run_export.R [--refit]
 # Needs run_flight.R, run_opportunity.R, run_skills.R and run_late.R. Writes:
@@ -5,6 +6,7 @@
 #                                             until the rebound from the observed prefix only (replay mode)
 #   web/public/data/rebounding.json           every table the Rebounding tab reads
 # Per-game forecasts are cached in outputs/cache/rebounding/site_{gameId}.rds.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -14,10 +16,26 @@ load_opportunity_cpp(here, cache)
 web <- file.path(root, "web", "public", "data")
 dir.create(file.path(web, "rebounding"), recursive = TRUE, showWarnings = FALSE)
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 SITE_STEP <- 0.2      # s between forecasts
 SITE_MAX <- 4         # s after release at most
 LAND_SHOWN <- 40L     # landing points kept per forecast for the dot view
 HEAT <- list(x0 = RIM_X - 36, y0 = -COURT_HALF_W - 4, cell = 1.5, nx = 32L, ny = 39L, bw = 2)   # landing density grid
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - HELPERS AND FITTED MODELS ----------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Landing density of a forecast on the HEAT grid: a Gaussian kernel (bandwidth HEAT$bw ft) over every simulated
 #' landing, scaled so its peak is 100. Returned as flat (column, row, weight) integer triplets for cells of 3+.
@@ -43,6 +61,15 @@ box_pairs <- fread(file.path(report, "skills", "boxout_pairs.csv"))
 ant_rows <- fread(file.path(report, "skills", "anticipation_rows.csv"))
 r3 <- function(v) round(v, 3)
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - PER-GAME FORECASTS -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+
 #' Every forecast of one episode in replay mode, with the population model (and the talent-aware one when
 #' collection effects passed their identification test).
 episode_forecasts <- function(i) {
@@ -52,6 +79,7 @@ episode_forecasts <- function(i) {
   t_end <- min(c(tm$rebound, SITE_MAX), na.rm = TRUE)
   t_rim <- rim_time(b) - 0.04
   cs <- contact_seen(b)
+  # The episode's forecast at every site step until the end of the window.
   steps <- lapply(seq(0, max(0, t_end - 0.04), by = SITE_STEP), function(t) {
     sc <- build_scene(b, t, flight_all, launch_rows_all, seed = i, landing = TRUE)
     if (!length(sc)) return(NULL)
@@ -93,6 +121,7 @@ episode_forecasts <- function(i) {
 }
 
 only <- sub("^--game=", "", grep("^--game=", args, value = TRUE))
+# One game at a time (or only --game): every episode's forecasts, cached.
 for (g in if (length(only)) as.integer(only) else games) {
   path <- file.path(cache, sprintf("site_%s.rds", g))
   if (!file.exists(path) || "--refit" %in% args) {
@@ -113,8 +142,15 @@ for (g in if (length(only)) as.integer(only) else games) {
 
 if (length(only)) quit(save = "no")
 
-# ---- the Rebounding tab's tables ----------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - THE REBOUNDING TAB'S TABLES --------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Player names for the tables, and a reader for report tables that may not exist.
 app <- load_app_data(root)
 names_of <- unique(app$roster[, .(canon, name, team_name)], by = "canon")
 named <- function(dt) {
@@ -129,32 +165,35 @@ tab <- function(dir, file) {
 coll <- named(tab("skills", "collection_player.csv"))
 antp <- named(tab("skills", "anticipation_player.csv"))
 boxp <- named(tab("skills", "boxout_player.csv"))
-doc <- list(
-  built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), talent = talent || isTRUE(late$talent),
-  episodes = length(bundles), checks = tab("checks", "scenario_checks.csv"),
-  eda = { fs <- list.files(file.path(report, "eda"), "[.]csv$"); setNames(lapply(fs, function(f) fread(file.path(report, "eda", f))), sub("[.]csv$", "", fs)) },
-  audit = list(counts = tab("audit", "counts.csv"), population = tab("audit", "population.csv"), by_game = tab("audit", "by_game.csv"),
-               quality = tab("audit", "tracking_quality.csv"), hoops = tab("audit", "hoop_calibration.csv"),
-               gaps = tab("audit", "frame_index_gaps.csv"), timeline = tab("audit", "timeline_by_kind.csv"),
-               held = tab("audit", "held_ball_offset.csv")),
-  flight = list(params = jsonlite::fromJSON(file.path(report, "flight", "params.json")), summary = tab("flight", "validation_summary.csv"),
-                landing = tab("flight", "landing_validation.csv"), folds = tab("flight", "fold_parameters.csv"),
-                grid = tab("flight", "contact_grid.csv")),
-  collection = list(summary = tab("collection", "validation_summary.csv"), calibration = tab("collection", "calibration_team.csv"),
-                    contested = tab("collection", "contested_subsets.csv"), folds = tab("collection", "fold_parameters.csv"),
-                    access_grid = tab("collection", "access_grid.csv"), sensitivity = tab("skills", "collection_sensitivity.csv"),
-                    recovery = tab("skills", "collection_recovery.csv"),
-                    theta = lapply(final, function(f) as.list(f$access_obstruction$theta)),
-                    acc = lapply(final, function(f) f$acc),
-                    players = coll[checkpoint == "rim" & scenes >= 20][order(-effect)]),
-  skills = list(identification = ident, movement = tab("skills", "movement_validation.csv"),
-                movement_roles = tab("skills", "movement_by_role.csv"), boxout_labels = tab("skills", "boxout_labels.csv"),
-                boxout_validation = tab("skills", "boxout_validation.csv"), variance = tab("skills", "variance_components.csv"),
-                anticipation_players = antp[episodes >= 15][order(-effect)],
-                boxout_players = boxp[obstructing_scenes >= 15][order(-team_value)]),
-  late = if (dir.exists(file.path(report, "late"))) {
-    fs <- list.files(file.path(report, "late"), "[.]csv$")
-    setNames(lapply(fs, function(f) fread(file.path(report, "late", f))), sub("[.]csv$", "", fs))
-  } else NULL)
+# The site's rebounding document: every report table the page shows.
+doc <- list(built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"), talent = talent || isTRUE(late$talent),
+            episodes = length(bundles), checks = tab("checks", "scenario_checks.csv"),
+            eda = {
+              fs <- list.files(file.path(report, "eda"), "[.]csv$")
+              setNames(lapply(fs, function(f) fread(file.path(report, "eda", f))), sub("[.]csv$", "", fs))
+            },
+            audit = list(counts = tab("audit", "counts.csv"), population = tab("audit", "population.csv"), by_game = tab("audit", "by_game.csv"),
+                         quality = tab("audit", "tracking_quality.csv"), hoops = tab("audit", "hoop_calibration.csv"),
+                         gaps = tab("audit", "frame_index_gaps.csv"), timeline = tab("audit", "timeline_by_kind.csv"),
+                         held = tab("audit", "held_ball_offset.csv")),
+            flight = list(params = jsonlite::fromJSON(file.path(report, "flight", "params.json")), summary = tab("flight", "validation_summary.csv"),
+                          landing = tab("flight", "landing_validation.csv"), folds = tab("flight", "fold_parameters.csv"),
+                          grid = tab("flight", "contact_grid.csv")),
+            collection = list(summary = tab("collection", "validation_summary.csv"), calibration = tab("collection", "calibration_team.csv"),
+                              contested = tab("collection", "contested_subsets.csv"), folds = tab("collection", "fold_parameters.csv"),
+                              access_grid = tab("collection", "access_grid.csv"), sensitivity = tab("skills", "collection_sensitivity.csv"),
+                              recovery = tab("skills", "collection_recovery.csv"),
+                              theta = lapply(final, function(f) as.list(f$access_obstruction$theta)),
+                              acc = lapply(final, function(f) f$acc),
+                              players = coll[checkpoint == "rim" & scenes >= 20][order(-effect)]),
+            skills = list(identification = ident, movement = tab("skills", "movement_validation.csv"),
+                          movement_roles = tab("skills", "movement_by_role.csv"), boxout_labels = tab("skills", "boxout_labels.csv"),
+                          boxout_validation = tab("skills", "boxout_validation.csv"), variance = tab("skills", "variance_components.csv"),
+                          anticipation_players = antp[episodes >= 15][order(-effect)],
+                          boxout_players = boxp[obstructing_scenes >= 15][order(-team_value)]),
+            late = if (dir.exists(file.path(report, "late"))) {
+              fs <- list.files(file.path(report, "late"), "[.]csv$")
+              setNames(lapply(fs, function(f) fread(file.path(report, "late", f))), sub("[.]csv$", "", fs))
+            } else NULL)
 jsonlite::write_json(doc, file.path(web, "rebounding.json"), auto_unbox = TRUE, digits = 4, dataframe = "rows", null = "null", na = "null")
 message("Wrote ", file.path(web, "rebounding.json"))

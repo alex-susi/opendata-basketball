@@ -16,7 +16,9 @@ flight_fit <- function(raw, s, stop_frame) {
   if (nrow(k) < FLIGHT_MIN_KEYS || anyNA(w[frame >= s$f0 + FLIGHT_SKIP & frame <= stop_frame]$x)) return(NULL)
   t <- (k$frame - mean(k$frame)) / FPS
   fit <- function(v) lm.fit(cbind(1, t, t^2), v)
-  fx <- fit(k$x); fy <- fit(k$y); fz <- fit(k$z)
+  fx <- fit(k$x)
+  fy <- fit(k$y)
+  fz <- fit(k$z)
   n <- nrow(k)
   sdr <- function(f) sqrt(sum(f$residuals^2) / (n - 3))
   # the same height curve with gravity fixed: how much worse is it than the free fit?

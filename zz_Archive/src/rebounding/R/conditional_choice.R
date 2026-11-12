@@ -35,9 +35,12 @@ choice_design <- function(sf, shot, ids, scaler) {
               dimnames = list(NULL, c(pf, TEAM_COLS)))
   player_row <- rep((0:(n - 1L)) * 12L, each = 10L) + rep(1:10, n)
   M[player_row, pf] <- Xp
-  off_row <- (0:(n - 1L)) * 12L + 11L; def_row <- off_row + 1L
-  M[off_row, "team_off"] <- 1; M[def_row, "team_def"] <- 1
-  M[off_row, "team_off_x_shot_dist"] <- z; M[def_row, "team_def_x_shot_dist"] <- z
+  off_row <- (0:(n - 1L)) * 12L + 11L
+  def_row <- off_row + 1L
+  M[off_row, "team_off"] <- 1
+  M[def_row, "team_def"] <- 1
+  M[off_row, "team_off_x_shot_dist"] <- z
+  M[def_row, "team_def_x_shot_dist"] <- z
   rows <- data.table(episode_id = rep(ids, each = 12L), outcome_id = "")
   rows[player_row, outcome_id := as.character(p$pid)]
   rows[off_row, outcome_id := "team_off"][def_row, outcome_id := "team_def"]
@@ -48,17 +51,23 @@ choice_design <- function(sf, shot, ids, scaler) {
 fit_clogit <- function(M, y, lambda, maxit = 1000L) {
   n <- nrow(M) / 12L
   pen <- as.numeric(!colnames(M) %in% UNPENALISED)
-  Y <- matrix(0, 12L, n); Y[cbind(y, seq_len(n))] <- 1
+  Y <- matrix(0, 12L, n)
+  Y[cbind(y, seq_len(n))] <- 1
   value_grad <- function(b) {
     U <- matrix(M %*% b, 12L)
     mx <- apply(U, 2, max)
-    E <- exp(sweep(U, 2, mx)); s <- colSums(E)
+    E <- exp(sweep(U, 2, mx))
+    s <- colSums(E)
     P <- sweep(E, 2, s, `/`)
     list(f = -sum(U[cbind(y, seq_len(n))] - mx - log(s)) + lambda / 2 * sum(pen * b^2),
          g = as.vector(crossprod(M, as.vector(P - Y))) + lambda * pen * b)
   }
   cache <- new.env()
-  fn <- function(b) { cache$vg <- value_grad(b); cache$b <- b; cache$vg$f }
+  fn <- function(b) {
+    cache$vg <- value_grad(b)
+    cache$b <- b
+    cache$vg$f
+  }
   gr <- function(b) { if (!identical(cache$b, b)) value_grad(b)$g else cache$vg$g }
   o <- optim(rep(0, ncol(M)), fn, gr, method = "BFGS", control = list(maxit = maxit, reltol = 1e-12))
   list(beta = setNames(o$par, colnames(M)), lambda = lambda, converged = o$convergence == 0L, iterations = o$counts[["gradient"]],
@@ -94,7 +103,11 @@ clogit_fit_predict <- function(sf, shot, labels, train, test, lambda, maxit, fea
 #' @return list(pred (long, with outer_fold), lambda (inner log loss per lambda and fold), coef (per fold), fits).
 clogit_fold_predictions <- function(sf, shot, labels, fa, choice, grid, maxit, floor, features = PLAYER_FEATURES) {
   fa <- fa[episode_id %in% unique(sf$episode_id)]
-  out <- list(); lam <- list(); coefs <- list()
+  out <- list()
+  lam <- list()
+  coefs <- list()
+  # Per outer fold: choose the ridge penalty on the inner folds, then fit on the training games and predict the test
+  # game.
   for (k in sort(unique(fa$outer_fold))) {
     s <- fold_split(fa, k)
     inner <- rbindlist(lapply(grid, function(l) {

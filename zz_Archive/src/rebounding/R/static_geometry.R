@@ -28,10 +28,12 @@ static_features <- function(pl, shot, hoop = c(RIM_X, 0), ft = 1) {
   d[, c("nearest_opp_dist", "inside_gap", "opp_inside", "mates_inside", "n_within_6") := {
     dm <- as.matrix(dist(cbind(x, y)))
     opp <- outer(off, off, `!=`)
-    do <- dm; do[!opp] <- Inf
+    do <- dm
+    do[!opp] <- Inf
     j <- max.col(-do, ties.method = "first")
     nearer <- outer(dist_hoop, dist_hoop, `>`)            # [i, k]: k is nearer the hoop than i
-    mate <- !opp; diag(mate) <- FALSE
+    mate <- !opp
+    diag(mate) <- FALSE
     .(do[cbind(seq_len(.N), j)], dist_hoop[j] - dist_hoop, rowSums(nearer & opp), rowSums(nearer & mate),
       rowSums(dm < CROWD_RADIUS_FT * ft) - 1)
   }, by = episode_id]
@@ -68,9 +70,11 @@ episode_features <- function(pl, shot, hoop = c(RIM_X, 0)) {
   d <- merge(pl, shot, by = "episode_id")
   d[, dist_hoop := sqrt((x - hoop[1])^2 + (y - hoop[2])^2)]
   d[, {
-    o <- which(off); df <- which(!off)
+    o <- which(off)
+    df <- which(!off)
     if (length(o) != 5L || length(df) != 5L) stop("episode ", episode_id[1], " is not five against five")
-    so <- sort(dist_hoop[o]); sd <- sort(dist_hoop[df])
+    so <- sort(dist_hoop[o])
+    sd <- sort(dist_hoop[df])
     m <- matchup_assignment(x[o], y[o], x[df], y[df])
     .(shot_dist = shot_dist[1], three = as.numeric(three[1]), off_d1 = so[1], off_d2 = so[2], def_d1 = sd[1], def_d2 = sd[2],
       off_minus_def_mean = mean(dist_hoop[o]) - mean(dist_hoop[df]),

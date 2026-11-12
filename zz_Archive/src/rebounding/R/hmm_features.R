@@ -10,7 +10,9 @@ HMM_FEATURES <- c("z", "vz", "log_resid", "log_hspeed", "log_hoop", "log_near", 
 #' Velocity at time t0 from measured points (x, y linear; z ballistic with fixed g). Needs at least two points.
 fit_velocity <- function(t, x, y, z, t0, g) {
   X <- cbind(1, t - t0)
-  bx <- qr.solve(X, x); by <- qr.solve(X, y); bz <- qr.solve(X, z + 0.5 * g * (t - t0)^2)
+  bx <- qr.solve(X, x)
+  by <- qr.solve(X, y)
+  bz <- qr.solve(X, z + 0.5 * g * (t - t0)^2)
   c(bx[2], by[2], bz[2])
 }
 
@@ -25,6 +27,7 @@ episode_features <- function(raw, s, hoop, th, fv) {
   k <- tr[key == TRUE]
   n <- nrow(k)
   feat <- data.table(frame = k$frame)
+  # Velocities from local arc fits, and each keyframe's residual against the arc through its neighbours.
   if (n >= 2L * fv$dv_keys + 1L) {
     vel <- t(vapply(seq_len(n), function(i) {
       idx <- max(1L, i - fv$smooth_keys):min(n, i + fv$smooth_keys)
@@ -38,15 +41,19 @@ episode_features <- function(raw, s, hoop, th, fv) {
       sqrt((p[1] - k$x[i])^2 + (p[2] - k$y[i])^2 + (p[3] - k$z[i])^2)
     }, 0)
     dvm <- t(vapply(seq_len(n), function(i) {
-      b <- (i - fv$dv_keys):i; a <- i:(i + fv$dv_keys)
+      b <- (i - fv$dv_keys):i
+      a <- i:(i + fv$dv_keys)
       if (b[1] < 1L || a[length(a)] > n) return(rep(NA_real_, 3))
       vb <- fit_velocity(k$t[b], k$x[b], k$y[b], k$z[b], k$t[i], g)
       va <- fit_velocity(k$t[a], k$x[a], k$y[a], k$z[a], k$t[i], g)
-      sb <- sqrt(sum(vb^2)); sa <- sqrt(sum(va^2))
+      sb <- sqrt(sum(vb^2))
+      sa <- sqrt(sum(va^2))
       c(sqrt(sum((va - vb)^2)), acos(pmin(1, pmax(-1, sum(va * vb) / max(1e-9, sa * sb)))) * 180 / pi,
         log(sa + off$hspeed) - log(sb + off$hspeed))
     }, numeric(3)))
-    dx <- k$x - hoop$hx; dy <- k$y - hoop$hy; dh <- sqrt(dx^2 + dy^2)
+    dx <- k$x - hoop$hx
+    dy <- k$y - hoop$hy
+    dh <- sqrt(dx^2 + dy^2)
     feat[, `:=`(z = k$z, vz = vel[, 3], log_resid = log(resid + off$resid),
                 log_hspeed = log(sqrt(vel[, 1]^2 + vel[, 2]^2) + off$hspeed), log_hoop = log(dh + off$hoop),
                 log_dv = log(dvm[, 1] + off$dv), turn_deg = dvm[, 2], speed_ratio = dvm[, 3],

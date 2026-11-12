@@ -38,16 +38,23 @@ MOVE_MODELS <- c("stationary", "constant_velocity", "damped", "bounded")
 #' Forecast positions tau seconds ahead under one movement model (vectors over players).
 forecast_position <- function(x, y, vx, vy, tau, model, lambda = 2, vmax = Inf) {
   switch(model,
-    stationary = list(x = x, y = y),
-    constant_velocity = list(x = x + vx * tau, y = y + vy * tau),
-    damped = { k <- (1 - exp(-lambda * tau)) / lambda; list(x = x + vx * k, y = y + vy * k) },
-    bounded = {
-      sp <- sqrt(vx^2 + vy^2); s <- pmin(1, vmax / pmax(sp, 1e-9))
-      k <- (1 - exp(-lambda * tau)) / lambda
-      dx <- vx * s * k; dy <- vy * s * k; dd <- sqrt(dx^2 + dy^2); c2 <- pmin(1, vmax * tau / pmax(dd, 1e-9))
-      list(x = x + dx * c2, y = y + dy * c2)
-    },
-    stop("unknown movement model ", model))
+         stationary = list(x = x, y = y),
+         constant_velocity = list(x = x + vx * tau, y = y + vy * tau),
+         damped = {
+           k <- (1 - exp(-lambda * tau)) / lambda
+           list(x = x + vx * k, y = y + vy * k)
+         },
+         bounded = {
+           sp <- sqrt(vx^2 + vy^2)
+           s <- pmin(1, vmax / pmax(sp, 1e-9))
+           k <- (1 - exp(-lambda * tau)) / lambda
+           dx <- vx * s * k
+           dy <- vy * s * k
+           dd <- sqrt(dx^2 + dy^2)
+           c2 <- pmin(1, vmax * tau / pmax(dd, 1e-9))
+           list(x = x + dx * c2, y = y + dy * c2)
+         },
+         stop("unknown movement model ", model))
 }
 
 #' Speed and acceleration limits: high quantiles over detected frames with a valid causal velocity.
@@ -59,7 +66,9 @@ estimate_limits <- function(v, q = 0.995) {
 #' Damping rate with the smallest mean forecast error over training rows (origin states and targets).
 #' @param rows x, y, vx, vy, tau, tx, ty.
 select_damping <- function(rows, grid) {
-  e <- vapply(grid, function(l) { f <- forecast_position(rows$x, rows$y, rows$vx, rows$vy, rows$tau, "damped", l)
-    mean(sqrt((f$x - rows$tx)^2 + (f$y - rows$ty)^2)) }, 0)
+  e <- vapply(grid, function(l) {
+    f <- forecast_position(rows$x, rows$y, rows$vx, rows$vy, rows$tau, "damped", l)
+    mean(sqrt((f$x - rows$tx)^2 + (f$y - rows$ty)^2))
+  }, 0)
   list(lambda = grid[which(e == min(e))[1]], errors = data.table(lambda = grid, mean_error = e))
 }

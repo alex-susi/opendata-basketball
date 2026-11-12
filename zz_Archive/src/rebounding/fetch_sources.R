@@ -19,6 +19,7 @@ run <- function(dir, ...) {
   status <- system2("git", c("-c", "core.longpaths=true", "-C", shQuote(dir), ...))
   if (status != 0) stop("git ", paste(c(...), collapse = " "), " failed in ", dir)
 }
+# Clone each source at its pinned commit, unless it is already there.
 for (s in sources) {
   dir <- file.path(root, "external", s$name)
   if (identical(git_out(dir, "rev-parse", "HEAD")[1], s$commit)) {

@@ -5,10 +5,12 @@ source(file.path(here, "R", "folds.R"))
 source(file.path(here, "R", "metrics.R"))
 source(file.path(here, "R", "reference_baselines.R"))
 cfg <- yaml::read_yaml(file.path(here, "config", "experiment.yaml"))
-th3 <- cfg$step03; th <- cfg$step04
+th3 <- cfg$step03
+th <- cfg$step04
 s4 <- file.path(root, "outputs", "rebounding", "step04")
 el <- fread(file.path(root, "outputs", "rebounding", "step01", "rebound_episodes.csv"), na.strings = c("", "NA"))[eligible == TRUE]
-choice <- choice_sets(el); labels <- episode_labels(el)
+choice <- choice_sets(el)
+labels <- episode_labels(el)
 pred <- fread(file.path(s4, "static_oof.csv.gz"), colClasses = list(character = "outcome_id"))
 checks <- fread(file.path(s4, "checks.csv"))
 

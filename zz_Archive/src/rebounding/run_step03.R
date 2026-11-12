@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 03 of the rebounding manual: frozen evaluation design, reference baselines and the scoring harness.
 #   Rscript src/rebounding/run_step03.R
 # Needs outputs/cache/rebounding/raw_*.rds (extract_windows.R) and the Step 01 episode table. Settings are
@@ -6,6 +7,7 @@
 # Writes outputs/rebounding/step03/ (folds, prediction points, baseline predictions, scores, comparisons,
 # calibration, leakage checks, design freeze), outputs/rebounding/reports/03_evaluation_design.md and
 # gate_results/03_evaluation.json, 03_tests.csv. About five minutes.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -29,7 +31,16 @@ el <- ep[eligible == TRUE]
 gate02 <- jsonlite::fromJSON(file.path(gr, "02_contact_states.json"))
 if (gate02$status != "BLOCKED") message("Step 02 is ", gate02$status, ": this run still uses the credited outcome only")
 
-# ---- design freeze: the settings, the harness code and the inputs, hashed before anything is scored --------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - DESIGN FREEZE ----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# The settings, the harness code and the inputs, hashed before anything is scored.
+
 cfg_text <- yaml::as.yaml(th)
 freeze <- list(frozen_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), config_version = cfg$config_version,
                step03_config_sha256 = paste(openssl::sha256(cfg_text)),
@@ -51,7 +62,14 @@ if (!is.null(frozen)) {
   freeze$frozen_at <- frozen$frozen_at
 }
 
-# ---- folds ----------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FOLDS ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 games <- data.table(game_id = matches$id, date = matches$date_time)
 fa <- fold_assignment(el, games)
 fold_chk <- check_folds(fa)
@@ -61,10 +79,22 @@ labels <- episode_labels(el)
 if (nrow(merge(labels, choice, by = c("episode_id", "outcome_id"))) != nrow(labels))
   stop("a credited outcome is outside its episode's choice set")
 
-# ---- prediction points and causal features, game by game ---------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - PREDICTION POINTS AND CAUSAL FEATURES ----------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Game by game.
+
 set.seed(th$uncertainty$seed)
 poison_ids <- el[, .(episode_id = sample(episode_id, min(.N, 5L))), by = game_id]$episode_id
-pts <- list(); feats <- list(); poison <- list()
+pts <- list()
+feats <- list()
+poison <- list()
+# One game at a time: every eligible episode's tracking, prediction points and causal features.
 for (g in matches$id) {
   message("Step 03: ", g)
   raw <- readRDS(file.path(cache, sprintf("raw_%s.rds", g)))
@@ -95,7 +125,16 @@ fwrite(merge(pts, fa[, .(episode_id, game_id, outer_fold)], by = "episode_id")[o
        file.path(out, "prediction_points.csv"))
 saveRDS(list(points = pts, features = feat), file.path(cache, "step03_features.rds"))
 
-# ---- reference baselines: outer-fold predictions at every time point ------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - REFERENCE BASELINES ----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Outer-fold predictions at every time point.
+
 run_baselines <- function() {
   res <- lapply(time_points, function(tp) {
     f <- feat[time_point == tp]
@@ -134,7 +173,14 @@ const <- rbindlist(lapply(time_points, function(tp) {
   }))
 }))
 
-# ---- scores ------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - SCORES -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 sc <- score_episodes(pred[, .(model, time_point, episode_id, outcome_id, probability)], choice, labels, th$metrics$prob_floor)
 const <- merge(const, labels[, .(episode_id, game_id, y_off)], by = "episode_id")
 const[, `:=`(team_ll = -(y_off * log(p_off) + (1 - y_off) * log(1 - p_off)), team_brier = (p_off - y_off)^2)]
@@ -162,9 +208,19 @@ tcal <- calibration_team(rbind(sc[, .(model, time_point, p_off, y_off)], const[,
 fwrite(tcal$bins, file.path(out, "calibration_team.csv"))
 fwrite(tcal$large, file.path(out, "calibration_team_large.csv"))
 
-# ---- paired comparisons (all exploratory: baselines only) -----------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - PAIRED COMPARISONS -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# All exploratory: baselines only.
+
 u <- th$uncertainty
-cmp <- list(); cmp_game <- list()
+cmp <- list()
+cmp_game <- list()
 add_cmp <- function(scores, a, b, tp, metric) {
   r <- paired_comparison(scores, a, b, tp, metric, u$bootstrap_reps, u$seed, u$level)
   cmp[[length(cmp) + 1L]] <<- r$summary
@@ -182,11 +238,20 @@ cmp[, `:=`(superiority = hi < 0 & drop_one_max < 0, non_inferior = hi < th$decis
 fwrite(cmp, file.path(out, "paired_comparisons.csv"))
 fwrite(rbindlist(cmp_game), file.path(out, "paired_by_game.csv"))
 
-# ---- leakage, invariance and reproducibility checks ---------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - LEAKAGE ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Invariance and reproducibility checks.
+
 lk <- list()
 addl <- function(check, value, expected, pass, note = "")
   lk[[length(lk) + 1L]] <<- data.table(check = check, value = as.character(value), expected = as.character(expected),
-                                        pass = pass, note = note)
+                                       pass = pass, note = note)
 for (i in seq_len(nrow(fold_chk))) addl(fold_chk$check[i], fold_chk$value[i], fold_chk$expected[i], fold_chk$pass[i])
 prov <- unique(pred[, .(time_point, outer_fold, test_game, n_train)])
 prov_ok <- all(vapply(seq_len(nrow(prov)), function(i) {
@@ -241,7 +306,16 @@ if (!is.null(frozen)) {
 leak <- rbindlist(lk)
 fwrite(leak, file.path(out, "leakage_checks.csv"))
 
-# ---- population by game and time point (tracking-study: exclusions that bias a clean-looking test set) -------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 08 - POPULATION BY GAME AND TIME POINT --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Tracking-study: exclusions that bias a clean-looking test set.
+
 popg <- pts[, .(defined = sum(defined), no_rim_arrival = sum(reason == "no rim arrival"),
                 resolved_before_t = sum(reason == "rebound at or before t"), too_few_players = sum(reason == "fewer than ten players")),
             by = .(game_id = el$game_id[match(episode_id, el$episode_id)], time_point)]
@@ -260,13 +334,21 @@ rim_desc <- rim_vs_proxy[, .(fired = .N, of = nrow(el),
 fwrite(rim_desc, file.path(out, "rim_arrival_vs_contact_proxy.csv"))
 if (is.null(frozen)) write_gate(freeze_path, c(freeze, list(predictions_sha256 = sha256_file(pred_path))))
 
-# ---- report -------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 09 - REPORT -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 md_table <- function(d, digits = 3) {
   d <- copy(d)
   for (c in names(d)) if (is.numeric(d[[c]]) && !is.integer(d[[c]])) set(d, j = c, value = formatC(d[[c]], digits = digits, format = "f"))
   c(paste("|", paste(names(d), collapse = " | "), "|"), paste("|", paste(rep("---", ncol(d)), collapse = " | "), "|"),
     apply(d, 1, function(r) paste("|", paste(r, collapse = " | "), "|")))
 }
+# Tables for the report.
 no_rim <- el[episode_id %in% pts[time_point == "release" & is.na(rim_arrival_frame)]$episode_id]
 oreb_gap <- tcal$large[time_point == "release"]
 pt_tab <- pts[, .(defined = sum(defined), no_rim_arrival = sum(reason == "no rim arrival"),
@@ -277,136 +359,142 @@ key_cols <- summ[time_point %in% unlist(th$confirmatory_times),
 sel_tab <- selection[selected == TRUE, .N, by = .(time_point, model)][order(match(time_point, time_points), -N)]
 cmp_tab <- cmp[time_point %in% unlist(th$confirmatory_times) & metric == "ll" & reference == "uniform",
                .(time_point, candidate, mean_diff, lo, hi, games_better, worst_game)]
-lines <- c(
-  "# Step 03: evaluation design, reference baselines and scoring harness",
-  "",
-  sprintf("Run %s by `src/rebounding/run_step03.R`; settings `config/experiment.yaml` (`step03`, config v%d), frozen in",
-          format(Sys.Date()), cfg$config_version),
-  "`outputs/rebounding/step03/design_freeze.json` before any baseline was scored. Step 02 is BLOCKED, so every model",
-  "is scored on the credited outcome only: the ten players tracked at release, or a team award to either side.",
-  "",
-  "## Design",
-  "",
-  sprintf("- **Population**: the %d Step 01 eligible episodes; the %d excluded episodes stay out of every model.", nrow(el), sum(!ep$eligible)),
-  "- **Folds**: leave one game out, fold k holds out the k-th game by date; inner folds leave one game out within the",
-  "  nine training games and are used only for tuning and for choosing the reference baseline.",
-  "- **Information time**: a forecast at frame t reads tracking frames up to t. Ball frames count once the next",
-  "  frame shows they are measured (not the vendor's midpoint fill), so the ball lags one frame. The hoop is the",
-  "  nominal one; the calibrated hoops come from the test game's own made shots and are not used.",
-  "- **Time points**: release (shots.startFrame), and a causal rim-arrival trigger (first measured ball frame at least",
-  "  6 frames after release, within 4.5 ft of the hoop horizontally, between 7 and 14 ft high, below an earlier high",
-  "  point) plus 0 to 1.4 s. Pre-contact is not used: its only definitions are after-the-fact proxies. A point exists",
-  "  only while the ball is loose (t before the credited rebound frame), the same rule for every model.",
-  "- **Baselines** (fitted on the nine training games per fold and time point): uniform over players; side prior",
-  "  (constant OREB rate split over the five of each side); role prior (side x hoop-distance rank within side);",
-  "  nearest to hoop (rank among all ten); inside rule (rank of the hoop-distance gap to the nearest opponent). All",
-  "  give the two team awards the training games' rates. Config v2 adds role prior and nearest to hoop fitted",
-  "  separately for each shot range (rim under 5 ft, other twos, threes), each with smoothed per-range team-award",
-  "  rates; they were added after the v1 scores were seen, as candidates only. The selected reference is the baseline with the lowest",
-  "  inner leave-one-game-out log loss on the training games. Binary OREB reference: the training OREB share.",
-  "- **Scores**: per episode, never per player row: 12-class log loss (primary), Brier, top-1/top-3 with ties",
-  "  counted against the model; binary OREB log loss and Brier; class-wise and team calibration.",
-  "- **Uncertainty and decisions** (for later steps): paired per-episode differences; game bootstrap and a t interval",
-  "  on per-game means, the wider one used; mean with each game dropped. Superiority needs the upper bound below 0",
-  sprintf("  and every drop-one mean below 0; non-inferiority needs the upper bound below %.2f nats. Ten games are too", th$decision$non_inferiority_margin_nats),
-  "  few for precise inference.",
-  "- **Confirmatory comparisons** (later steps): C1 static conditional logit superior to every baseline and to the",
-  "  selected reference at release, each tested on its own (config v3); C2",
-  "  binary OREB model vs constant rate at release; C3a/C3b dynamic vs same-time static at release (non-inferiority)",
-  "  and at rim + 0.2 s (superiority). Everything else is exploratory.",
-  "",
-  "## Prediction points",
-  "", md_table(pt_tab), "",
-  sprintf("The rim-arrival trigger fired in %d of %d episodes, a median %.2f s after release; it is at or before the",
-          rim_desc$fired, nrow(el), rim_desc$median_after_release_s),
-  sprintf("Step 01 contact proxy in %.0f%% of them (median %+g frames) and within 3 frames of it in %.0f%%.",
-          100 * rim_desc$before_contact_proxy_share, rim_desc$minus_contact_proxy_frames_median, 100 * rim_desc$within_3_frames_of_proxy),
-  sprintf(paste("Of the %d episodes it misses, %d are blocked shots, %d have no rim or board contact by the Step 01 proxy",
-                "(airballs) and %d other; their rim-anchored points are undefined for every model."),
-          nrow(no_rim), sum(no_rim$blocked), sum(!no_rim$blocked & no_rim$contact_kind == "none"),
-          sum(!no_rim$blocked & no_rim$contact_kind != "none")),
-  "",
-  "## Reference baselines at the confirmatory time points (held-out games)",
-  "", md_table(key_cols), "",
-  "Baseline chosen as the selected reference (folds):", "", md_table(sel_tab), "",
-  "Paired log-loss differences against uniform (negative is better; interval is the conservative one):", "",
-  md_table(cmp_tab), "",
-  sprintf(paste("The rank-only baselines (nearest to hoop, inside rule) ignore side, so their P(OREB) at release averages",
-                "%.3f and %.3f against an OREB rate of %.3f; side and role priors are calibrated for it (%.3f, %.3f)."),
-          oreb_gap[model == "nearest_hoop"]$mean_p_off, oreb_gap[model == "inside_rule"]$mean_p_off, oreb_gap$oreb_rate[1],
-          oreb_gap[model == "side_prior"]$mean_p_off, oreb_gap[model == "role_prior"]$mean_p_off),
-  "Top-1 counts ties against the model, so baselines that tie whole sides (uniform, side prior) score 0 unless a team",
-  "award is the single most likely outcome.",
-  "",
-  "All time points, by-game scores, calibration and every comparison are in `outputs/rebounding/step03/`.",
-  "",
-  "## Leakage, invariance and reproducibility checks",
-  "", md_table(leak[, .(check, value, expected, pass)]), "",
-  "## Limits",
-  "",
-  "- Leave one game out trains on games played after the test game (October to May); season drift is not tested.",
-  "- Teams recur across games (Gran Canaria, Breogan and Zaragoza twice), so folds share players.",
-  "- Delivered player positions may already be smoothed or extrapolated by the vendor using later frames; the",
-  "  information rule is causal with respect to the delivered frames only.",
-  "- The loose-ball rule uses the credited rebound frame to decide whether a point exists. Every model shares it, but",
-  "  scores at late points are conditional on the ball still being loose.",
-  sprintf("- %d of %d credited player rebounds are `identity_suspect`; scores without them are in", length(susp), sum(el$rebounded)),
-  "  `scores_without_identity_suspect.csv`.")
+# The step's markdown report.
+lines <- c("# Step 03: evaluation design, reference baselines and scoring harness",
+           "",
+           sprintf("Run %s by `src/rebounding/run_step03.R`; settings `config/experiment.yaml` (`step03`, config v%d), frozen in",
+                   format(Sys.Date()), cfg$config_version),
+           "`outputs/rebounding/step03/design_freeze.json` before any baseline was scored. Step 02 is BLOCKED, so every model",
+           "is scored on the credited outcome only: the ten players tracked at release, or a team award to either side.",
+           "",
+           "## Design",
+           "",
+           sprintf("- **Population**: the %d Step 01 eligible episodes; the %d excluded episodes stay out of every model.", nrow(el), sum(!ep$eligible)),
+           "- **Folds**: leave one game out, fold k holds out the k-th game by date; inner folds leave one game out within the",
+           "  nine training games and are used only for tuning and for choosing the reference baseline.",
+           "- **Information time**: a forecast at frame t reads tracking frames up to t. Ball frames count once the next",
+           "  frame shows they are measured (not the vendor's midpoint fill), so the ball lags one frame. The hoop is the",
+           "  nominal one; the calibrated hoops come from the test game's own made shots and are not used.",
+           "- **Time points**: release (shots.startFrame), and a causal rim-arrival trigger (first measured ball frame at least",
+           "  6 frames after release, within 4.5 ft of the hoop horizontally, between 7 and 14 ft high, below an earlier high",
+           "  point) plus 0 to 1.4 s. Pre-contact is not used: its only definitions are after-the-fact proxies. A point exists",
+           "  only while the ball is loose (t before the credited rebound frame), the same rule for every model.",
+           "- **Baselines** (fitted on the nine training games per fold and time point): uniform over players; side prior",
+           "  (constant OREB rate split over the five of each side); role prior (side x hoop-distance rank within side);",
+           "  nearest to hoop (rank among all ten); inside rule (rank of the hoop-distance gap to the nearest opponent). All",
+           "  give the two team awards the training games' rates. Config v2 adds role prior and nearest to hoop fitted",
+           "  separately for each shot range (rim under 5 ft, other twos, threes), each with smoothed per-range team-award",
+           "  rates; they were added after the v1 scores were seen, as candidates only. The selected reference is the baseline with the lowest",
+           "  inner leave-one-game-out log loss on the training games. Binary OREB reference: the training OREB share.",
+           "- **Scores**: per episode, never per player row: 12-class log loss (primary), Brier, top-1/top-3 with ties",
+           "  counted against the model; binary OREB log loss and Brier; class-wise and team calibration.",
+           "- **Uncertainty and decisions** (for later steps): paired per-episode differences; game bootstrap and a t interval",
+           "  on per-game means, the wider one used; mean with each game dropped. Superiority needs the upper bound below 0",
+           sprintf("  and every drop-one mean below 0; non-inferiority needs the upper bound below %.2f nats. Ten games are too", th$decision$non_inferiority_margin_nats),
+           "  few for precise inference.",
+           "- **Confirmatory comparisons** (later steps): C1 static conditional logit superior to every baseline and to the",
+           "  selected reference at release, each tested on its own (config v3); C2",
+           "  binary OREB model vs constant rate at release; C3a/C3b dynamic vs same-time static at release (non-inferiority)",
+           "  and at rim + 0.2 s (superiority). Everything else is exploratory.",
+           "",
+           "## Prediction points",
+           "", md_table(pt_tab), "",
+           sprintf("The rim-arrival trigger fired in %d of %d episodes, a median %.2f s after release; it is at or before the",
+                   rim_desc$fired, nrow(el), rim_desc$median_after_release_s),
+           sprintf("Step 01 contact proxy in %.0f%% of them (median %+g frames) and within 3 frames of it in %.0f%%.",
+                   100 * rim_desc$before_contact_proxy_share, rim_desc$minus_contact_proxy_frames_median, 100 * rim_desc$within_3_frames_of_proxy),
+           sprintf(paste("Of the %d episodes it misses, %d are blocked shots, %d have no rim or board contact by the Step 01 proxy",
+                         "(airballs) and %d other; their rim-anchored points are undefined for every model."),
+                   nrow(no_rim), sum(no_rim$blocked), sum(!no_rim$blocked & no_rim$contact_kind == "none"),
+                   sum(!no_rim$blocked & no_rim$contact_kind != "none")),
+           "",
+           "## Reference baselines at the confirmatory time points (held-out games)",
+           "", md_table(key_cols), "",
+           "Baseline chosen as the selected reference (folds):", "", md_table(sel_tab), "",
+           "Paired log-loss differences against uniform (negative is better; interval is the conservative one):", "",
+           md_table(cmp_tab), "",
+           sprintf(paste("The rank-only baselines (nearest to hoop, inside rule) ignore side, so their P(OREB) at release averages",
+                         "%.3f and %.3f against an OREB rate of %.3f; side and role priors are calibrated for it (%.3f, %.3f)."),
+                   oreb_gap[model == "nearest_hoop"]$mean_p_off, oreb_gap[model == "inside_rule"]$mean_p_off, oreb_gap$oreb_rate[1],
+                   oreb_gap[model == "side_prior"]$mean_p_off, oreb_gap[model == "role_prior"]$mean_p_off),
+           "Top-1 counts ties against the model, so baselines that tie whole sides (uniform, side prior) score 0 unless a team",
+           "award is the single most likely outcome.",
+           "",
+           "All time points, by-game scores, calibration and every comparison are in `outputs/rebounding/step03/`.",
+           "",
+           "## Leakage, invariance and reproducibility checks",
+           "", md_table(leak[, .(check, value, expected, pass)]), "",
+           "## Limits",
+           "",
+           "- Leave one game out trains on games played after the test game (October to May); season drift is not tested.",
+           "- Teams recur across games (Gran Canaria, Breogan and Zaragoza twice), so folds share players.",
+           "- Delivered player positions may already be smoothed or extrapolated by the vendor using later frames; the",
+           "  information rule is causal with respect to the delivered frames only.",
+           "- The loose-ball rule uses the credited rebound frame to decide whether a point exists. Every model shares it, but",
+           "  scores at late points are conditional on the ball still being loose.",
+           sprintf("- %d of %d credited player rebounds are `identity_suspect`; scores without them are in", length(susp), sum(el$rebounded)),
+           "  `scores_without_identity_suspect.csv`.")
 writeLines(lines, file.path(reports, "03_evaluation_design.md"))
 
-# ---- gate record -------------------------------------------------------------------------------------------------
-crit <- list(
-  folds_by_game = all(fold_chk$pass),
-  predictions_valid = all(valid$ok),
-  baselines_training_only = prov_ok && all(inv),
-  leakage_checks_fire = leaky && caught,
-  causal_points_and_features = all(poison$unchanged) && nrow(feat[source_frame > frame_idx]) == 0,
-  reproducible = same && same_boot && (is.null(frozen) || same_frozen),
-  identical_definitions = all(same_eps$V1 == 1L) && all(unique(pred$episode_id) %in% el$episode_id),
-  harness_outputs = all(file.exists(file.path(out, c("fold_assignment.csv", "reference_baselines.csv.gz", "scores_summary.csv",
-                                                     "paired_comparisons.csv", "calibration_classwise.csv", "leakage_checks.csv")))))
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 10 - GATE RECORD ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+crit <- list(folds_by_game = all(fold_chk$pass),
+             predictions_valid = all(valid$ok),
+             baselines_training_only = prov_ok && all(inv),
+             leakage_checks_fire = leaky && caught,
+             causal_points_and_features = all(poison$unchanged) && nrow(feat[source_frame > frame_idx]) == 0,
+             reproducible = same && same_boot && (is.null(frozen) || same_frozen),
+             identical_definitions = all(same_eps$V1 == 1L) && all(unique(pred$episode_id) %in% el$episode_id),
+             harness_outputs = all(file.exists(file.path(out, c("fold_assignment.csv", "reference_baselines.csv.gz", "scores_summary.csv",
+                                                                "paired_comparisons.csv", "calibration_classwise.csv", "leakage_checks.csv")))))
+# Unit and gate tests, then the gate record.
 tests <- rbind(run_tests(here, root, "unit", "evaluation"), run_tests(here, root, "gates", "step_03"), fill = TRUE)
 fwrite(tests, file.path(gr, "03_tests.csv"))
 crit$tests_pass <- nrow(tests) > 0 && !any(tests$failed > 0 | tests$error)
 unmet <- names(crit)[!vapply(crit, isTRUE, NA)]
 status <- if (!length(unmet)) "PASS" else "BLOCKED"
-rec <- list(
-  step = "03", status = status,
-  scope = sprintf(paste("leave-one-game-out harness, reference baselines and scoring for the credited outcome (12 classes) of",
-                        "%d eligible misses at %d time points; Step 02 BLOCKED, so no contact-state target"), nrow(el), length(time_points)),
-  source_commits = list(skillcorner = cfg$dataset$upstream_commit),
-  data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums,
-                       episodes_sha256 = freeze$episodes_sha256),
-  model_revision = list(model_version = th$model_version, step03_config_sha256 = freeze$step03_config_sha256,
-                        code_sha256 = freeze$code_sha256, predictions_sha256 = sha256_file(pred_path)),
-  repository_head = git_out(root, "rev-parse", "HEAD")[1],
-  test_command = "Rscript src/rebounding/run_tests.R unit evaluation; Rscript src/rebounding/run_tests.R gates step_03",
-  unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
-  data_audit_passed = all(leak$pass),
-  heldout_metrics_file = "outputs/rebounding/step03/scores_summary.csv",
-  acceptance_criteria_version = sprintf(paste("manual %s, config v%d (step03 first fixed %s before any baseline was scored;",
-                                              "v2 added two shot-range baselines and v3 made C1 stricter after the v1/v2",
-                                              "baseline scores were seen; decision log)"),
-                                        cfg$manual_revision, cfg$config_version, "2026-10-30"),
-  criteria = crit, unmet = unmet,
-  baselines_at_release = summ[time_point == "release", .(model, log_loss = round(log_loss, 4), top1 = round(top1, 4),
-                                                         team_log_loss = round(team_log_loss, 4))],
-  confirmatory = th$confirmatory,
-  deviations = list(
-    list(item = "pre-contact prediction point",
-         decision = paste("Not used: no causal definition exists (contact frames are after-the-fact proxies; Step 02 labels BLOCKED).",
-                          "Replaced by a causal rim-arrival trigger, fixed in config before scoring.")),
-    list(item = "file formats and paths",
-         decision = "CSV / gzip CSV instead of parquet, R instead of Python, as in Steps 00-02 (config `paths`).")),
-  evidence = c("outputs/rebounding/step03/", "outputs/rebounding/reports/03_evaluation_design.md",
-               "outputs/rebounding/step03/design_freeze.json", "outputs/rebounding/step03/leakage_checks.csv"),
-  reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
-  open_risks = list("Ten game clusters: intervals are indicative only",
-                    "Leave one game out trains on later games; season drift untested",
-                    "The rim-arrival trigger is not validated against labelled contacts (Step 02 BLOCKED)",
-                    "Vendor smoothing of player tracks may use later frames"),
-  decision_note = if (status == "PASS") "Folds, information rule, baselines, scoring and decision rules frozen; harness checks pass." else
-    paste("Unmet:", paste(unmet, collapse = ", ")))
+# The gate record.
+rec <- list(step = "03", status = status,
+            scope = sprintf(paste("leave-one-game-out harness, reference baselines and scoring for the credited outcome (12 classes) of",
+                                  "%d eligible misses at %d time points; Step 02 BLOCKED, so no contact-state target"), nrow(el), length(time_points)),
+            source_commits = list(skillcorner = cfg$dataset$upstream_commit),
+            data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums,
+                                 episodes_sha256 = freeze$episodes_sha256),
+            model_revision = list(model_version = th$model_version, step03_config_sha256 = freeze$step03_config_sha256,
+                                  code_sha256 = freeze$code_sha256, predictions_sha256 = sha256_file(pred_path)),
+            repository_head = git_out(root, "rev-parse", "HEAD")[1],
+            test_command = "Rscript src/rebounding/run_tests.R unit evaluation; Rscript src/rebounding/run_tests.R gates step_03",
+            unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
+            data_audit_passed = all(leak$pass),
+            heldout_metrics_file = "outputs/rebounding/step03/scores_summary.csv",
+            acceptance_criteria_version = sprintf(paste("manual %s, config v%d (step03 first fixed %s before any baseline was scored;",
+                                                        "v2 added two shot-range baselines and v3 made C1 stricter after the v1/v2",
+                                                        "baseline scores were seen; decision log)"),
+                                                  cfg$manual_revision, cfg$config_version, "2026-10-30"),
+            criteria = crit, unmet = unmet,
+            baselines_at_release = summ[time_point == "release", .(model, log_loss = round(log_loss, 4), top1 = round(top1, 4),
+                                                                   team_log_loss = round(team_log_loss, 4))],
+            confirmatory = th$confirmatory,
+            deviations = list(list(item = "pre-contact prediction point",
+                                   decision = paste("Not used: no causal definition exists (contact frames are after-the-fact proxies; Step 02 labels BLOCKED).",
+                                                    "Replaced by a causal rim-arrival trigger, fixed in config before scoring.")),
+                              list(item = "file formats and paths",
+                                   decision = "CSV / gzip CSV instead of parquet, R instead of Python, as in Steps 00-02 (config `paths`).")),
+            evidence = c("outputs/rebounding/step03/", "outputs/rebounding/reports/03_evaluation_design.md",
+                         "outputs/rebounding/step03/design_freeze.json", "outputs/rebounding/step03/leakage_checks.csv"),
+            reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
+            open_risks = list("Ten game clusters: intervals are indicative only",
+                              "Leave one game out trains on later games; season drift untested",
+                              "The rim-arrival trigger is not validated against labelled contacts (Step 02 BLOCKED)",
+                              "Vendor smoothing of player tracks may use later frames"),
+            decision_note = if (status == "PASS") "Folds, information rule, baselines, scoring and decision rules frozen; harness checks pass." else
+              paste("Unmet:", paste(unmet, collapse = ", ")))
 write_gate(file.path(gr, "03_evaluation.json"), rec)
 
 print(pt_tab)

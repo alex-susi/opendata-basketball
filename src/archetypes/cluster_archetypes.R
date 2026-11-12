@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Cluster players into offensive and defensive playstyle archetypes, with a probability of each for every player.
 #   Rscript src/archetypes/cluster_archetypes.R [--offense-k=10] [--offense-model=EII] [--offense-pcs=4]
 #                                               [--defense-k=4] [--defense-model=EEI] [--defense-pcs=2] [--bic] [--tag=alt]
@@ -13,12 +14,21 @@
 # Writes to outputs/archetypes/: {side}_membership, {side}_cluster_profiles, {side}_components (variance per
 # component), {side}_component_loadings, {side}_cluster_components (each cluster's centre on the components) and
 # cluster_selection (BIC and bootstrap stability of the candidates).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 here <- if (length(script)) dirname(script) else "src/archetypes"
 source(file.path(here, "..", "play_viewer", "R", "data.R"))
 source(file.path(here, "R", "cluster.R"))
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 CANDIDATES <- 2:12
 # Chosen by the owner. Offense (2026-10-12): the ten-cluster fit that best balanced resemblance to BBall Index's
@@ -69,6 +79,15 @@ ANCHORS <- list(offense = list("3" = c("Ball handler" = "Facundo Campazzo", "Flo
                                "4" = c("Point of Attack" = "Trae Bell-Haynes", "Chaser" = "Kassius Robertson",
                                        "Helper" = "Jermaine Samuels", "Anchor Big" = "Walter Tavares")))
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - SETUP ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Features built by build_features.R, the command-line options, and output naming (--tag adds a suffix).
 set.seed(20261010)
 root <- find_repo_root()
 report <- file.path(root, "outputs", "archetypes")
@@ -90,12 +109,23 @@ cluster_names <- function(P, players, anchors) {
   }, "")
 }
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - CLUSTER EACH SIDE ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 selection <- list()
+# One side at a time: features and players, principal components, the mixture fit, then every player's probabilities.
 for (side_name in c("offense", "defense")) {
+  # Features that passed the reliability bar, or those above --offense-bar when it is given.
   bar <- if (side_name == "offense") option("offense-bar")
   dict <- if (is.null(bar)) built$dictionary[side == side_name & clustering == "cluster"] else {
     built$dictionary[side == side_name & use == "cluster" & reliability >= as.numeric(bar)]
   }
+  # Players: everyone in the season files on offense, the tracked defenders on defense. F keeps the fit players only.
   pool <- if (side_name == "offense") built$players else built$players[tracked_def_chances > 0]
   M <- scaled_matrices(built$values, built$dictionary, dict$feature, pool$pid)
   in_fit <- pool[[paste0("fit_", side_name)]]
@@ -151,17 +181,19 @@ for (side_name in c("offense", "defense")) {
   if (side_name == "defense") membership[, c("basis", "season_attempts") := NULL]
   fwrite(membership[order(cluster, -probability)], out_file(paste0(side_name, "_membership")))
 
+  # Each cluster's feature profile over the fit players, with its player counts.
   profiles <- cluster_profiles(P[in_fit, , drop = FALSE], F$shrunk, built$values, built$dictionary)
   profiles[, archetype := names_k[cluster]]
   profiles <- merge(profiles, membership[, .(players = .N, defining_players = sum(defines_clusters)), by = cluster], by = "cluster")
   fwrite(profiles[order(cluster, -z), .(cluster, archetype, players, defining_players, feature, z = round(z, 2), value = round(value, 4),
-                                       league_mean = round(league_mean, 4))], out_file(paste0(side_name, "_cluster_profiles")))
+                                        league_mean = round(league_mean, 4))], out_file(paste0(side_name, "_cluster_profiles")))
 
   # each cluster's centre on the components, in component standard deviations (0 = the average fit player)
   centres <- data.table(cluster = seq_len(fit$G), archetype = names_k, players = tabulate(top, fit$G),
                         round(sweep(fit$means, 2, pc$pca$sdev[seq_len(q)], "/"), 2))
   fwrite(centres, out_file(paste0(side_name, "_cluster_components")))
 
+  # Report the solution.
   message(sprintf("\n%s: %d features, %d principal components (%.0f%% of variance), %s with %d clusters, fitted on %d players.",
                   side_name, nrow(dict), q, 100 * pc$table$cumulative[q], fit$model, fit$G, sum(in_fit)))
   print(bic[check])
@@ -169,6 +201,6 @@ for (side_name in c("offense", "defense")) {
   print(membership[, .(players = .N, defining = sum(defines_clusters), mean_probability = round(mean(probability), 2),
                        under_half = sum(probability < 0.5)), by = .(cluster, archetype)][order(cluster)])
   if (side_name == "offense") print(membership[, .(players = .N, mean_probability = round(mean(probability), 2),
-                                              under_half = sum(probability < 0.5)), by = basis])
+                                                   under_half = sum(probability < 0.5)), by = basis])
 }
 fwrite(rbindlist(selection), out_file("cluster_selection"))

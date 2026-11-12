@@ -40,6 +40,7 @@ player_tracks <- function(raw, s, from, to) {
 #' Bundles for every eligible episode of one game.
 game_bundles <- function(raw, ep, hoops, aliases) {
   el <- ep[game_id == raw$shots$game_id[1] & status == "eligible"]
+  # One bundle per eligible episode: the ball track relative to its hoop, players and event times.
   lapply(seq_len(nrow(el)), function(k) {
     s <- el[k]
     h <- hoops[game_id == s$game_id & left_hoop == s$left_hoop]

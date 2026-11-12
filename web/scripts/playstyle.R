@@ -20,6 +20,7 @@ playstyle_figures <- function() {
 
   sides <- list()
   players <- list()
+  # Per side: refit the PCA on the fit players, check it against the saved loadings, and score every player.
   for (s in c("offense", "defense")) {
     key <- if (s == "offense") "off" else "def"
     saved <- fread(file.path(out_dir, paste0(s, "_component_loadings.csv")))
@@ -38,6 +39,7 @@ playstyle_figures <- function() {
     Z <- sweep(M$shrunk, 2, pca$center)[, saved$feature, drop = FALSE]
     scores <- sweep(Z %*% pca$rotation[saved$feature, seq_len(q), drop = FALSE], 2, pca$sdev[seq_len(q)] / signs, "/")
 
+    # The saved components, centres and memberships; the rebuilt scores' cluster means should match the centres.
     comps <- fread(file.path(out_dir, paste0(s, "_components.csv")))
     cc <- fread(file.path(out_dir, paste0(s, "_cluster_components.csv")))
     mem <- fread(file.path(out_dir, paste0(s, "_membership.csv")))
@@ -47,24 +49,23 @@ playstyle_figures <- function() {
     got <- t(vapply(cc$cluster, function(k) colMeans(scores[as.character(mem[cluster == k & defines_clusters == TRUE, pid]), , drop = FALSE]), numeric(q)))
     message(sprintf("  playstyle %s: rebuilt scores' cluster means vs saved centres, max gap %.2f", s, max(abs(got - centres))))
 
-    sides[[key]] <- list(
-      components = lapply(seq_len(q), function(j) {
-        n <- if (j <= length(notes)) notes[[j]] else list(plus = c("Positive end", ""), minus = c("Negative end", ""), context = "")
-        list(share = round(comps$share[j], 3), context = n$context, minus = n$minus[1], plus = n$plus[1],
-             minusText = n$minus[2], plusText = n$plus[2])
-      }),
-      archetypes = lapply(seq_len(nrow(cc)), function(i) {
-        tag <- a$ARCHETYPE_TAGS[[cc$archetype[i]]]
-        list(name = cc$archetype[i], short = if (is.null(tag)) cc$archetype[i] else tag[1], slot = if (is.null(tag)) NULL else tag[2],
-             centre = I(round(centres[i, ], 2)))
-      }))
+    # The tab's text for each component and archetype, then each player's probabilities and scores.
+    sides[[key]] <- list(components = lapply(seq_len(q), function(j) {
+                           n <- if (j <= length(notes)) notes[[j]] else list(plus = c("Positive end", ""), minus = c("Negative end", ""), context = "")
+                           list(share = round(comps$share[j], 3), context = n$context, minus = n$minus[1], plus = n$plus[1],
+                                minusText = n$minus[2], plusText = n$plus[2])
+                         }),
+                         archetypes = lapply(seq_len(nrow(cc)), function(i) {
+                           tag <- a$ARCHETYPE_TAGS[[cc$archetype[i]]]
+                           list(name = cc$archetype[i], short = if (is.null(tag)) cc$archetype[i] else tag[1], slot = if (is.null(tag)) NULL else tag[2],
+                                centre = I(round(centres[i, ], 2)))
+                         }))
     for (i in seq_len(nrow(mem))) {
       pid <- as.character(mem$pid[i])
       probs <- unlist(mem[i, ..pcols])
-      players[[pid]][[key]] <- list(
-        top = mem$archetype[i], p = mem$probability[i], defines = mem$defines_clusters[i],
-        probs = I(round(as.numeric(probs[paste0("p_", gsub("^_|_$", "", gsub("[^a-z0-9]+", "_", tolower(cc$archetype))))]), 3)),
-        scores = I(round(as.numeric(scores[pid, ]), 2)))
+      players[[pid]][[key]] <- list(top = mem$archetype[i], p = mem$probability[i], defines = mem$defines_clusters[i],
+                                    probs = I(round(as.numeric(probs[paste0("p_", gsub("^_|_$", "", gsub("[^a-z0-9]+", "_", tolower(cc$archetype))))]), 3)),
+                                    scores = I(round(as.numeric(scores[pid, ]), 2)))
     }
   }
   list(sides = sides, players = players)

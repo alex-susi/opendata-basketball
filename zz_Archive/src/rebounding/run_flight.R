@@ -1,7 +1,9 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 2 of the rebounding framework: fit and validate the ball-flight models, leave one game out.
 #   Rscript src/rebounding/run_flight.R [--refit]
 # Each fold is cached in outputs/cache/rebounding/flight_fold_{gameId}.rds, so an interrupted run resumes.
 # Writes outputs/rebounding/flight/*.csv and the all-games parameters (flight_params_all.rds, params.json).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -9,8 +11,25 @@ here <- if (length(script)) dirname(script) else "src/rebounding"
 source(file.path(here, "R", "setup.R"))
 out_dir <- file.path(report, "flight")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 CONTACT_GRID <- CJ(e_rim_hi = c(0.6, 0.75, 0.9), rim_jitter = c(0.35, 0.6, 1.0), obs_scale = c(0.2, 0.45, 0.8))
 CONTACT_SUBSAMPLE <- 100L
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FIT AND SCORE ONE FOLD -------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 checkpoints <- function(b) {
   tm <- bundle_times(b)
@@ -31,7 +50,7 @@ fit_flight <- function(train, lib, seed) {
   # floor, which left every multi-step forecast overconfident in the first build.
   grid <- copy(CONTACT_GRID)
   grid[, score := mapply(function(e, j, s) contact_score(sub, modifyList(base, list(e_rim_hi = e, e_rim_lo = max(0.05, e - 0.35),
-                                                                                     rim_jitter = j)), c(s, s), lib),
+                                                                                    rim_jitter = j)), c(s, s), lib),
                          e_rim_hi, rim_jitter, obs_scale)]
   best <- grid[which.max(score)]
   sig <- c(best$obs_scale, best$obs_scale)
@@ -56,6 +75,7 @@ fit_flight <- function(train, lib, seed) {
 score_flight <- function(test, fit, lib) {
   R <- c(fit$sig[1]^2, fit$sig[1]^2, fit$sig[2]^2)
   free <- modifyList(fit$phys, list(contacts = 0L))
+  # Per test bundle and checkpoint: forecast clouds of the ball, scored against the later observed ball.
   rbindlist(lapply(seq_along(test), function(i) {
     b <- test[[i]]
     tm <- bundle_times(b)
@@ -95,12 +115,14 @@ score_flight <- function(test, fit, lib) {
 score_landing <- function(test, fit, lib) {
   free <- modifyList(fit$phys, list(contacts = 0L))
   R <- c(fit$sig[1]^2, fit$sig[1]^2, 1)
+  # Per test bundle with a clean floor bounce: where the particle forecast puts the first landing.
   rbindlist(lapply(seq_along(test), function(i) {
     b <- test[[i]]
     s <- b$shot
     tm <- bundle_times(b)
     if (is.na(tm$bounce) || is.na(s$bounce_near) || s$bounce_near <= 4 || (!is.na(tm$control) && tm$control < tm$bounce))
       return(NULL)
+    # The observed bounce spot relative to the hoop, the target of every landing forecast.
     y <- c(s$bounce_x - b$hoop$hx, s$bounce_y - b$hoop$hy, 0)
     cps <- checkpoints(b)
     rbindlist(lapply(c("release", "contact", "after"), function(cp) {
@@ -119,6 +141,7 @@ score_landing <- function(test, fit, lib) {
           if (nrow(L2) >= 20L) out$empirical_bounce <- L2
         }
       }
+      # Score each forecast's landing points against the bounce.
       rbindlist(lapply(names(out), function(mod) {
         L <- out[[mod]]
         sc <- score_cloud(cbind(L[, 2], L[, 3], 0), y, R)
@@ -132,7 +155,16 @@ score_landing <- function(test, fit, lib) {
   }), fill = TRUE)
 }
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - FOLDS ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 only <- sub("^--game=", "", grep("^--game=", args, value = TRUE))
+# One fold per game (or only --game), cached: fit on the other nine games and score this one.
 for (g in if (length(only)) as.integer(only) else games) {
   path <- file.path(cache, sprintf("flight_fold_%s.rds", g))
   if (file.exists(path) && !"--refit" %in% args) next
@@ -148,6 +180,16 @@ for (g in if (length(only)) as.integer(only) else games) {
 }
 
 if (length(only)) quit(save = "no")
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - SUMMARIES AND THE ALL-GAMES FIT ----------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Stack the folds, summarise the held-out scores, and fit once on every game for the site.
 folds <- lapply(games, function(g) readRDS(file.path(cache, sprintf("flight_fold_%s.rds", g))))
 scores <- rbindlist(lapply(folds, `[[`, "scores"), fill = TRUE)
 landing <- rbindlist(lapply(folds, `[[`, "landing"), fill = TRUE)

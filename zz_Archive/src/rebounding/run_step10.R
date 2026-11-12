@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 10 of the rebounding manual: positioning versus movement. Each player's opportunity Q over the release-time
 # reference ball distribution (Step 05 map) at release and at the rim-arrival trigger, its decomposition into movement
 # and information, the access gained over the damped "ignores the ball" forecast (Step 08), the first sustained move
@@ -6,6 +7,7 @@
 # Needs raw_*.rds and the Step 01, 03, 05, 06 and 08 outputs (and the Step 05 map cache). Settings: config/experiment.yaml
 # (step10, fixed before any real-data run). Writes outputs/rebounding/step10/, reports/10_movement_attribution.md,
 # gate_results/10_movement.json and 10_tests.csv.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -18,12 +20,17 @@ for (f in c("geometry.R", "extract.R", "audit.R", "bundle.R", "step00.R", "folds
 
 root <- find_repo_root()
 cfg <- yaml::read_yaml(file.path(here, "config", "experiment.yaml"))
-th3 <- cfg$step03; th <- cfg$step10; op <- th$opportunity; rs <- th$response; inf <- th3$information
+th3 <- cfg$step03
+th <- cfg$step10
+op <- th$opportunity
+rs <- th$response
+inf <- th3$information
 # threshold variants: the prespecified sensitivity values plus the reporting curve (owner deviation 2026-11-05), base excluded
 thr_var <- setdiff(sort(unique(c(unlist(rs$sensitivity$toward_ft_s), unlist(rs$threshold_curve)))), rs$toward_ft_s)
 cache <- file.path(root, "outputs", "cache", "rebounding")
 o <- function(...) file.path(root, "outputs", "rebounding", ...)
-out <- o("step10"); dir.create(out, recursive = TRUE, showWarnings = FALSE)
+out <- o("step10")
+dir.create(out, recursive = TRUE, showWarnings = FALSE)
 matches <- jsonlite::fromJSON(file.path(root, "data", "matches.json"))
 fz <- jsonlite::fromJSON(o("step03", "design_freeze.json"))
 freeze_ok <- identical(fz$step03_config_sha256, paste(openssl::sha256(yaml::as.yaml(th3))))
@@ -36,17 +43,27 @@ t_rim <- pts[time_point == "rim+0" & defined == TRUE, .(episode_id, t_r = frame_
 f3 <- readRDS(file.path(cache, "step03_features.rds"))$features[time_point %in% c("release", "rim+0")]
 maps <- readRDS(file.path(cache, "step05_spatial_prior.rds"))
 grid <- maps$grid
-p6 <- fread(o("step06", "parameters_by_fold.csv")); l8 <- fread(o("step08", "limits_and_damping_by_fold.csv"))
-OFF <- unlist(cfg$step07$origins$offsets_frames); LEAD <- cfg$step09$particles$analog_lead_frames
+p6 <- fread(o("step06", "parameters_by_fold.csv"))
+l8 <- fread(o("step08", "limits_and_damping_by_fold.csv"))
+OFF <- unlist(cfg$step07$origins$offsets_frames)
+LEAD <- cfg$step09$particles$analog_lead_frames
 ids <- intersect(t_rim$episode_id, el$episode_id)
 ep_index <- setNames(seq_len(nrow(el)), el$episode_id)
 shot <- el[, .(episode_id, shooter_id, shot_range, game_id, release_frame, rebound_frame, left_hoop)]
 side <- merge(f3[time_point == "release", .(episode_id, pid, sy = y)], shot[, .(episode_id, pid = shooter_id)], by = c("episode_id", "pid"))
 shot <- merge(shot, side[, .(episode_id, side = shot_side(sy))], by = "episode_id")
 
-# ---- tracks and per-fold contexts ------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - TRACKS AND PER-FOLD CONTEXTS -------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 message("Step 10: tracks")
-eps <- list(); cross <- list()
+eps <- list()
+cross <- list()
 for (g in matches$id) {
   raw <- readRDS(file.path(cache, sprintf("raw_%s.rds", g)))
   home <- matches$home_team$id[matches$id == g]
@@ -59,14 +76,18 @@ for (g in matches$id) {
   }
 }
 cross <- rbindlist(cross)
+# One fold's context: hoops, gravity and the per-fold models.
 ctx_of <- function(k) {
-  s <- fold_split(fa, k); games <- unique(fa[episode_id %in% s$train]$game_id)
+  s <- fold_split(fa, k)
+  games <- unique(fa[episode_id %in% s$train]$game_id)
   hh <- cross[game_id %in% games, .(hx = median(x), hy = median(y)), by = left_hoop]
   hoops <- setNames(lapply(hh$left_hoop, function(l) c(hh[left_hoop == l]$hx, hh[left_hoop == l]$hy, RIM_Z)), as.character(hh$left_hoop))
   g <- p6[outer_fold == k]$g
   rows <- rbindlist(lapply(intersect(s$train, ids), function(id) {
-    e <- eps[[id]]; tr0 <- t_rim[episode_id == id]$t_r
-    org <- tr0 + OFF; org <- org[org < e$s$rebound_frame]
+    e <- eps[[id]]
+    tr0 <- t_rim[episode_id == id]$t_r
+    org <- tr0 + OFF
+    org <- org[org < e$s$rebound_frame]
     analog_rows(e$obs, org, OFF[seq_along(org)], LEAD, e$s$rebound_frame, hoops[[as.character(e$s$left_hoop)]], g)
   }))
   list(hoops = hoops, g = g, r = unlist(p6[outer_fold == k, .(r_x, r_y, r_z)]), lib = analog_library(rows),
@@ -80,7 +101,10 @@ avail_of <- function(g, range) el[game_id != g & shot_range == range, median((re
 #' `jitter`, a constant per player, when given).
 state_at <- function(id, t, window = rs$window_frames, jitter = NULL) {
   pl <- eps[[id]]$players[frame <= t, .(frame, pid, x, y, det, off)]
-  if (!is.null(jitter)) { pl <- merge(pl, jitter, by = "pid"); pl[, `:=`(x = x + jx, y = y + jy)][, c("jx", "jy") := NULL] }
+  if (!is.null(jitter)) {
+    pl <- merge(pl, jitter, by = "pid")
+    pl[, `:=`(x = x + jx, y = y + jy)][, c("jx", "jy") := NULL]
+  }
   v <- causal_velocity(pl[, .(frame, pid, x, y, det)], window, cfg$step08$velocity$min_detected)
   merge(v[frame == t, .(pid, x, y, vx = fcoalesce(vx, 0), vy = fcoalesce(vy, 0))], unique(pl[, .(pid, off)]), by = "pid")
 }
@@ -92,13 +116,30 @@ ref_particles <- function(id, model, seed) {
   B
 }
 
-# ---- per episode: decomposition, reference sensitivity, response ------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - PER EPISODE ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Decomposition, reference sensitivity, response.
+
 message("Step 10: episodes")
-rows <- list(); resp <- list(); qseed <- list()
+rows <- list()
+resp <- list()
+qseed <- list()
+# Per episode: decomposition, reference sensitivity and response.
 for (id in ids) {
-  e <- eps[[id]]; sh <- shot[episode_id == id]; k <- fa[episode_id == id]$outer_fold; cx <- ctxs[[k]]
-  tr0 <- e$s$release_frame; tt <- t_rim[episode_id == id]$t_r
-  s_r <- state_at(id, tr0); s_t <- state_at(id, tt)
+  e <- eps[[id]]
+  sh <- shot[episode_id == id]
+  k <- fa[episode_id == id]$outer_fold
+  cx <- ctxs[[k]]
+  tr0 <- e$s$release_frame
+  tt <- t_rim[episode_id == id]$t_r
+  s_r <- state_at(id, tr0)
+  s_t <- state_at(id, tt)
   if (nrow(s_r) != 10L || nrow(s_t) != 10L) next
   s_base <- damped_state(s_r, (tt - tr0) / FPS, cx$lambda, cx$vmax)
   seed <- op$seed + ep_index[[id]]
@@ -107,7 +148,11 @@ for (id in ids) {
   st2 <- two_point_state(e$obs[usable_from <= tt], tt, cx$g)
   B_t <- if (is.null(st2)) NULL else {
     a <- analog_forecast(cx$lib, st2, 0, LEAD, hoop, cfg$step07$empirical_k, cx$r)
-    set.seed(seed + 1L); b <- particles_from_analog(a, op$particles, hoop); b[, frame := tt + LEAD]; b }
+    set.seed(seed + 1L)
+    b <- particles_from_analog(a, op$particles, hoop)
+    b[, frame := tt + LEAD]
+    b
+  }
   d <- decompose_opportunity(s_r, tr0, s_t, tt, s_base, B_ref, B_t, cx$rp, op$sigma_s)
   for (m in unlist(th$decomposition$reference_sensitivity)) {
     dm <- decompose_opportunity(s_r, tr0, s_t, tt, s_base, ref_particles(id, m, seed), NULL, cx$rp, op$sigma_s)[, .(pid, move, vs_baseline)]
@@ -120,10 +165,14 @@ for (id in ids) {
   rows[[length(rows) + 1L]] <- cbind(episode_id = id, game_id = sh$game_id, shot_range = sh$shot_range,
                                      merge(merge(d, roles, by = "pid"), s_r[, .(pid, off)], by = "pid"))
   # response onset toward the reference distribution's centre, with its sensitivity variants
-  target <- c(mean(B_ref$bx), mean(B_ref$by)); hz <- tt + 10L
+  target <- c(mean(B_ref$bx), mean(B_ref$by))
+  hz <- tt + 10L
   vel <- function(window, jitter = NULL) {
     pl <- e$players[frame <= hz, .(frame, pid, x, y, det)]
-    if (!is.null(jitter)) { pl <- merge(pl, jitter, by = "pid"); pl[, `:=`(x = x + jx, y = y + jy)][, c("jx", "jy") := NULL] }
+    if (!is.null(jitter)) {
+      pl <- merge(pl, jitter, by = "pid")
+      pl[, `:=`(x = x + jx, y = y + jy)][, c("jx", "jy") := NULL]
+    }
     causal_velocity(pl, window, cfg$step08$velocity$min_detected)
   }
   set.seed(seed + 2L)
@@ -137,13 +186,22 @@ for (id in ids) {
   for (vn in names(variants))
     resp[[length(resp) + 1L]] <- cbind(episode_id = id, variant = vn, response_onset(variants[[vn]]$v, tr0, hz, target, variants[[vn]]$rs))
 }
-pm <- rbindlist(rows); resp <- rbindlist(resp); qseed <- rbindlist(qseed)
+pm <- rbindlist(rows)
+resp <- rbindlist(resp)
+qseed <- rbindlist(qseed)
 pm <- merge(pm, resp[variant == "base", .(episode_id, pid, response, onset_s, toward_release)], by = c("episode_id", "pid"))
 pm[, model_version := th$model_version]
 fwrite(pm, file.path(out, "opportunity_movement.csv.gz"))
 fwrite(resp, file.path(out, "response_onsets.csv.gz"))
 
-# ---- summaries by role --------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - SUMMARIES BY ROLE ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 u <- th3$uncertainty
 role_tab <- merge(merge(group_means(pm, "q_release_ref", "role", 1000L, u$seed)[, .(role, n, q_release = mean)],
                         group_means(pm, "move", "role", 1000L, u$seed)[, .(role, move = mean, move_lo = lo, move_hi = hi)], by = "role"),
@@ -164,8 +222,16 @@ assoc_tab <- assoc[, .(episodes = .N, top1_by_vs_baseline = mean(rank_vs == 1), 
                        top1_by_q_release = mean(rank_q_release == 1), top3_by_q_later = mean(rank_q_later <= 3))]
 fwrite(assoc_tab, file.path(out, "credited_rebounder_ranks.csv"))
 
-# ---- player effects, only if identifiable -----------------------------------------------------------------------------------
-ef <- th$effects; meas <- ef$measure
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - PLAYER EFFECTS, ONLY IF IDENTIFIABLE -----------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+ef <- th$effects
+meas <- ef$measure
 pm[, adj := get(meas) - mean(get(meas)), by = role]
 pl_tab <- pm[, .(n = .N, games = uniqueN(game_id), mean = mean(adj), within_var = var(adj)), by = pid]
 fwrite(pm[, .(episodes = .N), by = .(pid, game_id)], file.path(out, "exposure_by_player_game.csv"))
@@ -181,10 +247,17 @@ fwrite(merge(shr, pl_tab[, .(pid, games)], by = "pid")[order(-shrunk)], file.pat
 fwrite(two, file.path(out, "player_split_by_game.csv"))
 claims_ok <- isTRUE(rel >= 0.3) && all(sign_change$share_sign_change <= 0.1)
 
-# ---- checks -----------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - CHECKS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 ck <- list()
 addc <- function(check, value, expected, pass) ck[[length(ck) + 1L]] <<- data.table(check = check, value = as.character(value),
-                                                                                     expected = as.character(expected), pass = pass)
+                                                                                    expected = as.character(expected), pass = pass)
 addc("Step 03 design freeze in force", freeze_ok, TRUE, freeze_ok)
 idg <- pm[!is.na(total), max(abs(total - (move + info + interaction)))]
 addc("decomposition adds up (largest |total - move - info - interaction|)", signif(idg, 3), "< 1e-9", idg < 1e-9)
@@ -222,85 +295,105 @@ checks <- rbindlist(ck)
 fwrite(checks, file.path(out, "checks.csv"))
 meas_ok <- all(checks$pass)
 
-# ---- report -----------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - REPORT -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 md_table <- function(d, digits = 3) {
   d <- copy(d)
   for (c in names(d)) if (is.numeric(d[[c]]) && !is.integer(d[[c]])) set(d, j = c, value = formatC(d[[c]], digits = digits, format = "f"))
   c(paste("|", paste(names(d), collapse = " | "), "|"), paste("|", paste(rep("---", ncol(d)), collapse = " | "), "|"),
     apply(d, 1, function(r) paste("|", paste(r, collapse = " | "), "|")))
 }
-lines <- c(
-  "# Step 10: positioning, movement and response",
-  "",
-  sprintf("Run %s by `src/rebounding/run_step10.R`; settings `config/experiment.yaml` (`step10`, config v%d), fixed before any",
-          format(Sys.Date()), cfg$config_version),
-  "real-data run. Reference ball distribution: the Step 05 release map (not validated), so every measure is exploratory",
-  "with respect to it. Later time: the rim-arrival trigger (the ball's flight before the rim).",
-  "",
-  "**Measures.** Q = a player's expected chance of reaching the ball over the reference distribution (logistic in his",
-  "arrival margin, sigma 0.45 s). Move = Q at the rim arrival minus Q at release, same distribution in absolute time:",
-  "0 for ideal pursuit, negative when time passes faster than he closes. vs_baseline = Q at the rim arrival minus Q of",
-  "the damped forecast that ignores the ball: access gained by reading the shot. Info = Q at release under the updated",
-  "ball forecast minus under the reference (player fixed).",
-  "",
-  "## By role (game bootstrap intervals)", "", md_table(role_tab[order(role)], 3), "",
-  "## By side and shot range (vs_baseline)", "", md_table(ctx_tab, 3), "",
-  "## Decomposition (mean over player-episodes with an updated forecast)", "", md_table(dec_tab, 4), "",
-  "## Does it line up with the credited rebounder? (association, rank within the ten)", "", md_table(assoc_tab, 3), "",
-  "## Response onset stability", "",
-  "Threshold variants are judged on class change only; their onset timing is reported as the curve below (owner",
-  "deviation 2026-11-05, after the first run's 8 ft/s variant shifted the median onset by 5 frames).", "",
-  md_table(stab, 3), "",
-  "## Response onset by speed threshold (curve)", "",
-  "Onset = first frame of 5 in a row moving toward the ball's expected landing spot at least this fast (and 3 ft/s",
-  "faster than at release). Read onsets as a curve: a higher bar is reached later by construction.", "",
-  md_table(curve_tab, 2), "",
-  sprintf("## Player effects (%s, role-adjusted, empirical Bayes; players with at least %d episodes: %d)", meas, ef$player_min_episodes, nrow(elig)), "",
-  sprintf("Split-by-game reliability over %d players seen in two games: r = %s (needed >= 0.3).", nrow(two), formatC(rel, digits = 3, format = "f")),
-  "", md_table(sign_change, 3), "",
-  sprintf("**Player-level claims: %s.** %s", if (claims_ok) "supported" else "not supported",
-          if (claims_ok) "" else "Results are reported as descriptive role and context measures only."), "",
-  "## Checks", "", md_table(checks), "",
-  "## Limits", "",
-  "- An onset is an observed response, not a physiological reaction time. Players who anticipate move before release",
-  "  (\"already moving\"); players with transition duty do not crash by design (\"no response\").",
-  "- Reference distribution and arrival rule are assumptions (Steps 05 and 08); no player heights or speeds of their own.",
-  "- 179 of 204 players appear in only one game, so player-level differences cannot be checked across games for them.")
+# The step's markdown report.
+lines <- c("# Step 10: positioning, movement and response",
+           "",
+           sprintf("Run %s by `src/rebounding/run_step10.R`; settings `config/experiment.yaml` (`step10`, config v%d), fixed before any",
+                   format(Sys.Date()), cfg$config_version),
+           "real-data run. Reference ball distribution: the Step 05 release map (not validated), so every measure is exploratory",
+           "with respect to it. Later time: the rim-arrival trigger (the ball's flight before the rim).",
+           "",
+           "**Measures.** Q = a player's expected chance of reaching the ball over the reference distribution (logistic in his",
+           "arrival margin, sigma 0.45 s). Move = Q at the rim arrival minus Q at release, same distribution in absolute time:",
+           "0 for ideal pursuit, negative when time passes faster than he closes. vs_baseline = Q at the rim arrival minus Q of",
+           "the damped forecast that ignores the ball: access gained by reading the shot. Info = Q at release under the updated",
+           "ball forecast minus under the reference (player fixed).",
+           "",
+           "## By role (game bootstrap intervals)", "", md_table(role_tab[order(role)], 3), "",
+           "## By side and shot range (vs_baseline)", "", md_table(ctx_tab, 3), "",
+           "## Decomposition (mean over player-episodes with an updated forecast)", "", md_table(dec_tab, 4), "",
+           "## Does it line up with the credited rebounder? (association, rank within the ten)", "", md_table(assoc_tab, 3), "",
+           "## Response onset stability", "",
+           "Threshold variants are judged on class change only; their onset timing is reported as the curve below (owner",
+           "deviation 2026-11-05, after the first run's 8 ft/s variant shifted the median onset by 5 frames).", "",
+           md_table(stab, 3), "",
+           "## Response onset by speed threshold (curve)", "",
+           "Onset = first frame of 5 in a row moving toward the ball's expected landing spot at least this fast (and 3 ft/s",
+           "faster than at release). Read onsets as a curve: a higher bar is reached later by construction.", "",
+           md_table(curve_tab, 2), "",
+           sprintf("## Player effects (%s, role-adjusted, empirical Bayes; players with at least %d episodes: %d)", meas, ef$player_min_episodes, nrow(elig)), "",
+           sprintf("Split-by-game reliability over %d players seen in two games: r = %s (needed >= 0.3).", nrow(two), formatC(rel, digits = 3, format = "f")),
+           "", md_table(sign_change, 3), "",
+           sprintf("**Player-level claims: %s.** %s", if (claims_ok) "supported" else "not supported",
+                   if (claims_ok) "" else "Results are reported as descriptive role and context measures only."), "",
+           "## Checks", "", md_table(checks), "",
+           "## Limits", "",
+           "- An onset is an observed response, not a physiological reaction time. Players who anticipate move before release",
+           "  (\"already moving\"); players with transition duty do not crash by design (\"no response\").",
+           "- Reference distribution and arrival rule are assumptions (Steps 05 and 08); no player heights or speeds of their own.",
+           "- 179 of 204 players appear in only one game, so player-level differences cannot be checked across games for them.")
 writeLines(lines, o("reports", "10_movement_attribution.md"))
 
-# ---- gate record ------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - GATE RECORD ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 tests <- rbind(run_tests(here, root, "unit", "opportunity"), run_tests(here, root, "gates", "step_10"), fill = TRUE)
 fwrite(tests, o("gate_results", "10_tests.csv"))
 tests_ok <- nrow(tests) > 0 && !any(tests$failed > 0 | tests$error)
 status <- if (meas_ok && tests_ok) "PASS" else "BLOCKED"
-rec <- list(
-  step = "10", status = status,
-  scope = sprintf("opportunity, movement and response measures for %d episodes (%d player-episodes); exploratory against the Step 05 reference",
-                  uniqueN(pm$episode_id), nrow(pm)),
-  components = list(measurements = if (meas_ok) "PASS" else "BLOCKED", player_claims = if (claims_ok) "PASS" else "BLOCKED (descriptive only)"),
-  source_commits = list(skillcorner = cfg$dataset$upstream_commit, LaurieOnTracking = "control-probability logistic adapted (MIT)"),
-  data_revision = list(upstream = cfg$dataset$upstream_commit, step03_freeze = fz$frozen_at),
-  model_revision = list(model_version = th$model_version, step10_config_sha256 = paste(openssl::sha256(yaml::as.yaml(th))),
-                        code_sha256 = setNames(lapply(c("opportunity_value.R", "response.R", "positioning.R"), function(f) sha256_file(file.path(here, "R", f))),
-                                               c("opportunity_value.R", "response.R", "positioning.R"))),
-  repository_head = git_out(root, "rev-parse", "HEAD")[1],
-  test_command = "Rscript src/rebounding/run_tests.R unit opportunity; Rscript src/rebounding/run_tests.R gates step_10",
-  unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
-  data_audit_passed = meas_ok,
-  heldout_metrics_file = "outputs/rebounding/step10/by_role.csv",
-  acceptance_criteria_version = sprintf("manual %s, config v%d (step10 fixed before any real-data run)", cfg$manual_revision, cfg$config_version),
-  decision = list(reliability_r = rel, sign_change = sign_change, reference_rho = as.list(round(rho, 4)), response_stability = stab,
-                  response_onset_curve_all = curve_tab[role == "all players"]),
-  deviations = list("Onset timing reported as a curve over 5-8 ft/s; threshold variants judged on class change only (owner, 2026-11-05)",
-                    "25 frames of player history before release so every velocity window exists at release (bug fix, 2026-11-05)"),
-  evidence = c("outputs/rebounding/step10/", "outputs/rebounding/reports/10_movement_attribution.md"),
-  reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
-  open_risks = list("Reference distribution not validated (Step 05 BLOCKED)", "Most players seen in one game only",
-                    "Onsets are observed responses, not reaction times; their timing depends on the speed threshold"),
-  decision_note = sprintf("Measurements %s; player claims %s.", if (meas_ok) "robust" else "not robust", if (claims_ok) "supported" else "not supported"))
+# The gate record.
+rec <- list(step = "10", status = status,
+            scope = sprintf("opportunity, movement and response measures for %d episodes (%d player-episodes); exploratory against the Step 05 reference",
+                            uniqueN(pm$episode_id), nrow(pm)),
+            components = list(measurements = if (meas_ok) "PASS" else "BLOCKED", player_claims = if (claims_ok) "PASS" else "BLOCKED (descriptive only)"),
+            source_commits = list(skillcorner = cfg$dataset$upstream_commit, LaurieOnTracking = "control-probability logistic adapted (MIT)"),
+            data_revision = list(upstream = cfg$dataset$upstream_commit, step03_freeze = fz$frozen_at),
+            model_revision = list(model_version = th$model_version, step10_config_sha256 = paste(openssl::sha256(yaml::as.yaml(th))),
+                                  code_sha256 = setNames(lapply(c("opportunity_value.R", "response.R", "positioning.R"), function(f) sha256_file(file.path(here, "R", f))),
+                                                         c("opportunity_value.R", "response.R", "positioning.R"))),
+            repository_head = git_out(root, "rev-parse", "HEAD")[1],
+            test_command = "Rscript src/rebounding/run_tests.R unit opportunity; Rscript src/rebounding/run_tests.R gates step_10",
+            unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
+            data_audit_passed = meas_ok,
+            heldout_metrics_file = "outputs/rebounding/step10/by_role.csv",
+            acceptance_criteria_version = sprintf("manual %s, config v%d (step10 fixed before any real-data run)", cfg$manual_revision, cfg$config_version),
+            decision = list(reliability_r = rel, sign_change = sign_change, reference_rho = as.list(round(rho, 4)), response_stability = stab,
+                            response_onset_curve_all = curve_tab[role == "all players"]),
+            deviations = list("Onset timing reported as a curve over 5-8 ft/s; threshold variants judged on class change only (owner, 2026-11-05)",
+                              "25 frames of player history before release so every velocity window exists at release (bug fix, 2026-11-05)"),
+            evidence = c("outputs/rebounding/step10/", "outputs/rebounding/reports/10_movement_attribution.md"),
+            reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
+            open_risks = list("Reference distribution not validated (Step 05 BLOCKED)", "Most players seen in one game only",
+                              "Onsets are observed responses, not reaction times; their timing depends on the speed threshold"),
+            decision_note = sprintf("Measurements %s; player claims %s.", if (meas_ok) "robust" else "not robust", if (claims_ok) "supported" else "not supported"))
 write_gate(o("gate_results", "10_movement.json"), rec)
 
-print(role_tab[order(role)]); print(ctx_tab); print(dec_tab); print(assoc_tab); print(stab); print(curve_tab); print(sign_change)
+print(role_tab[order(role)])
+print(ctx_tab)
+print(dec_tab)
+print(assoc_tab)
+print(stab)
+print(curve_tab)
+print(sign_change)
 cat("reliability r =", rel, "over", nrow(two), "players\n")
 print(checks[, .(check = substr(check, 1, 80), value, pass)])
 print(tests[, .(dir, file, test = substr(test, 1, 60), expectations, failed, error)])

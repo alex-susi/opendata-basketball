@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 02, labeler v2: a hidden Markov model of the ball after a missed shot (flight, on the rim, held, low and loose,
 # and short rim / board / tip impacts) over per-frame tracking features at 25 Hz. v1 (run_step02.R) stays frozen.
 #   Rscript src/rebounding/run_step02_v2.R --phase=sample|features|fit|decode|compare
@@ -8,6 +9,7 @@
 #   decode    Viterbi states and v2 labels for every eligible episode;     -> step02_v2/states.csv, auto_summary.csv,
 #             development comparison on the 30 reviewer-1 episodes (v1 held-aside, now development)  dev_comparison.csv
 # Settings: config/experiment.yaml (step02_v2, step02$detector).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -54,7 +56,16 @@ hoop_of <- function(s) {
   list(hx = h$hx, hy = h$hy)
 }
 
-# ---- sample: the v2 held-aside subset, before anything else exists -------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SAMPLE -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# The v2 held-aside subset, before anything else exists.
+
 if (phase == "sample") {
   sm <- cfg$step02$sample
   if (file.exists(file.path(rev_dir, "sample.csv"))) stop("sample.csv exists; the v2 sample is drawn once")
@@ -84,7 +95,14 @@ if (phase == "sample") {
 
 heldout_v2 <- if (file.exists(file.path(rev_dir, "sample.csv"))) fread(file.path(rev_dir, "sample.csv"))$shot_id else NULL
 
-# ---- features ---------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FEATURES ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 if (phase == "features") {
   if (is.null(heldout_v2)) stop("run --phase=sample first")
   feats <- rbindlist(lapply(seq_len(nrow(el)), function(i) {
@@ -98,18 +116,24 @@ if (phase == "features") {
   print(obs[, lapply(.SD, function(v) round(quantile(v, c(0.05, 0.5, 0.95), na.rm = TRUE), 2)), .SDcols = HMM_FEATURES])
 }
 
-# ---- fit: EM from geometric starts ------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - FIT: EM FROM GEOMETRIC STARTS ------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 states <- v2$hmm$states
 # allowed transitions (from row to column), hard constraints: incoming flight leaves only through a contact, a hold or the
 # floor; outgoing flight never returns to incoming
-ALLOWED <- list(
-  flight_in        = setdiff(states, "flight_out"),
-  flight_out       = setdiff(states, "flight_in"),
-  on_rim           = c("flight_out", "on_rim", "held", "impact_rim_board", "impact_tip"),
-  held             = c("flight_out", "held", "low_loose", "impact_tip"),
-  low_loose        = c("flight_out", "held", "low_loose", "impact_tip"),
-  impact_rim_board = c("flight_out", "on_rim", "held", "impact_rim_board", "impact_tip"),
-  impact_tip       = c("flight_out", "held", "low_loose", "impact_rim_board", "impact_tip"))
+ALLOWED <- list(flight_in        = setdiff(states, "flight_out"),
+                flight_out       = setdiff(states, "flight_in"),
+                on_rim           = c("flight_out", "on_rim", "held", "impact_rim_board", "impact_tip"),
+                held             = c("flight_out", "held", "low_loose", "impact_tip"),
+                low_loose        = c("flight_out", "held", "low_loose", "impact_tip"),
+                impact_rim_board = c("flight_out", "on_rim", "held", "impact_rim_board", "impact_tip"),
+                impact_tip       = c("flight_out", "held", "low_loose", "impact_rim_board", "impact_tip"))
 stopifnot(setequal(names(ALLOWED), states))
 is_impact <- grepl("^impact", states)
 fixed_stay <- ifelse(is_impact & isTRUE(v2$hmm$impact_stay_fixed), v2$hmm$impact_stay, NA_real_)
@@ -147,7 +171,11 @@ start_trans <- function() {
 #' between the measured frames on either side (as the vendor's filled frames are); the release guard holds on every frame.
 state_mask <- function(d) {
   mk <- v2$hmm$masks
-  lin <- function(x, f) { ok <- !is.na(x); if (sum(ok) < 2L) return(x); approx(f[ok], x[ok], f, rule = 2)$y }
+  lin <- function(x, f) {
+    ok <- !is.na(x)
+    if (sum(ok) < 2L) return(x)
+    approx(f[ok], x[ok], f, rule = 2)$y
+  }
   d <- d[, .(z = lin(z, frame), hoop_ft = lin(hoop_ft, frame), near_ft = lin(near_ft, frame), rel_frame), by = shot_id]
   rim_ok <- d$hoop_ft <= RIM_R + BALL_R + th$rim_pad_ft & d$z >= RIM_Z - th$rim_z_below_ft
   touch_ok <- d$near_ft <= th$touch_ft & d$z <= th$reach_max_z_ft
@@ -160,13 +188,19 @@ state_mask <- function(d) {
 }
 
 #' Feature matrix with the missing rule: a frame is observed only if every feature is present.
-obs_matrix <- function(d) { X <- as.matrix(d[, ..HMM_FEATURES]); X[!complete.cases(X), ] <- NA; X }
+obs_matrix <- function(d) {
+  X <- as.matrix(d[, ..HMM_FEATURES])
+  X[!complete.cases(X), ] <- NA
+  X
+}
 
+# Fit the HMM by EM on the episodes outside the held-aside subset.
 if (phase == "fit") {
   source(file.path(here, "R", "hmm_em.R"))
   feats <- readRDS(file.path(cache, "hmm_features.rds"))
   setorder(feats, shot_id, frame)
   train <- feats[!shot_id %in% heldout_v2]
+  # Observations, state masks, and starting values from the seeded states.
   X <- obs_matrix(train)
   M <- state_mask(train)
   print(round(colMeans(M), 3))
@@ -177,6 +211,7 @@ if (phase == "fit") {
   init <- as.numeric(states == v2$hmm$start_state)
   em <- v2$hmm$em
   fits <- list()
+  # EM from several restarts; keep the fit with the best log likelihood.
   for (r in seq_len(v2$hmm$restarts)) {
     set.seed(cfg$seeds[(r - 1L) %% length(cfg$seeds) + 1L] + r)
     jm <- if (r == 1L) start_means else start_means + matrix(rnorm(length(start_means), 0, 0.25), nrow(start_means)) * start_sds
@@ -191,18 +226,30 @@ if (phase == "fit") {
   n_obs <- sum(complete.cases(X))
   cat(sprintf("best logLik %.1f, BIC %.1f (%d free parameters, %d observed frames)\n", best$loglik,
               -2 * best$loglik + best$n_par * log(n_obs), best$n_par, n_obs))
+  # Save the fit with its state means, sds and transitions.
   saveRDS(list(fit = best, states = states, features = HMM_FEATURES, start_means = start_means, loglik = ll,
                fixed_stay = fixed_stay, n_train = uniqueN(train$shot_id)), file.path(out, "hmm_fit.rds"))
-  tab <- data.table(state = states, round(best$mu, 2)); setnames(tab, c("state", HMM_FEATURES))
+  tab <- data.table(state = states, round(best$mu, 2))
+  setnames(tab, c("state", HMM_FEATURES))
   fwrite(tab, file.path(out, "state_means.csv"))
-  sdt <- data.table(state = states, round(best$sd, 2)); setnames(sdt, c("state", HMM_FEATURES))
+  sdt <- data.table(state = states, round(best$sd, 2))
+  setnames(sdt, c("state", HMM_FEATURES))
   fwrite(sdt, file.path(out, "state_sds.csv"))
-  trm <- best$A; dimnames(trm) <- list(states, states)
+  trm <- best$A
+  dimnames(trm) <- list(states, states)
   fwrite(data.table(from = states, round(trm, 3)), file.path(out, "transitions.csv"))
-  print(tab); print(round(trm, 3))
+  print(tab)
+  print(round(trm, 3))
 }
 
-# ---- decode: Viterbi states and v2 labels ------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - DECODE: VITERBI STATES AND v2 LABELS -----------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 #' The v2 labels of one episode from its decoded state path (frames on the 25 Hz grid).
 episode_labels_v2 <- function(e, s) {
   e <- copy(e)
@@ -227,7 +274,10 @@ episode_labels_v2 <- function(e, s) {
   block <- NULL
   for (i in seq_len(nrow(pre))) {
     a <- actor(pre$start[i])
-    if (isFALSE(a$off)) { block <- c(list(frame = pre$start[i]), a); break }
+    if (isFALSE(a$off)) {
+      block <- c(list(frame = pre$start[i]), a)
+      break
+    }
   }
   after <- fcoalesce(as.integer(rim_frame), if (is.null(block)) NA_integer_ else as.integer(block$frame), as.integer(s$f1))
   oob <- e[frame > after & (abs(xp) > COURT_HALF_L + BALL_R | abs(yp) > COURT_HALF_W + BALL_R) & z < 3]$frame[1]
@@ -263,22 +313,22 @@ episode_labels_v2 <- function(e, s) {
   tips <- if (nrow(touches)) touches[type == "tip"] else touches
   terminal <- if (!is.null(ctl_info)) (if (ctl_info$shared) "held_ball" else "control") else if (!is.na(oob)) "out_of_bounds" else "unresolved"
   zat <- function(f) if (is.null(f) || is.na(f)) NA_real_ else e[frame == f]$z[1]
-  data.table(
-    episode_id = s$shot_id, game_id = s$game_id, f0 = s$f0,
-    first_rim_or_board_frame = rim_frame, contact_kind = kind,
-    first_player_contact_frame = if (!is.null(first)) first$frame else NA_integer_,
-    first_contact_player_id = if (!is.null(first)) first$actor_id else NA_integer_,
-    first_contact_off = if (!is.null(first)) first$actor_off else NA,
-    first_contact_type = if (!is.null(first)) (if (is.na(first$actor_id) && first$type != "block") first$type else first$type) else "none",
-    tip_frames_and_players = if (nrow(tips)) paste(sprintf("%d:%s", tips$frame, fifelse(is.na(tips$actor_id), "?", as.character(tips$actor_id))), collapse = ";") else "",
-    n_tips = nrow(tips),
-    first_control_frame = if (!is.null(ctl_info)) ctl_info$frame else NA_integer_,
-    controller_id = if (!is.null(ctl_info)) ctl_info$pid else NA_integer_,
-    controller_off = if (!is.null(ctl_info)) ctl_info$off else NA,
-    out_of_bounds_frame = oob, terminal = terminal,
-    ball_center_z_at_first_touch = zat(first$frame), ball_center_z_at_control = zat(ctl_info$frame))
+  data.table(episode_id = s$shot_id, game_id = s$game_id, f0 = s$f0,
+             first_rim_or_board_frame = rim_frame, contact_kind = kind,
+             first_player_contact_frame = if (!is.null(first)) first$frame else NA_integer_,
+             first_contact_player_id = if (!is.null(first)) first$actor_id else NA_integer_,
+             first_contact_off = if (!is.null(first)) first$actor_off else NA,
+             first_contact_type = if (!is.null(first)) (if (is.na(first$actor_id) && first$type != "block") first$type else first$type) else "none",
+             tip_frames_and_players = if (nrow(tips)) paste(sprintf("%d:%s", tips$frame, fifelse(is.na(tips$actor_id), "?", as.character(tips$actor_id))), collapse = ";") else "",
+             n_tips = nrow(tips),
+             first_control_frame = if (!is.null(ctl_info)) ctl_info$frame else NA_integer_,
+             controller_id = if (!is.null(ctl_info)) ctl_info$pid else NA_integer_,
+             controller_off = if (!is.null(ctl_info)) ctl_info$off else NA,
+             out_of_bounds_frame = oob, terminal = terminal,
+             ball_center_z_at_first_touch = zat(first$frame), ball_center_z_at_control = zat(ctl_info$frame))
 }
 
+# Decode every episode's state path and turn it into v2 labels.
 if (phase == "decode") {
   fit_rec <- readRDS(file.path(out, "hmm_fit.rds"))
   feats <- readRDS(file.path(cache, "hmm_features.rds"))
@@ -294,10 +344,21 @@ if (phase == "decode") {
   print(feats[, .N, by = state][order(-N)])
   summ <- rbindlist(lapply(split(feats, by = "shot_id"), function(e) episode_labels_v2(e, el[shot_id == e$shot_id[1]])))
   fwrite(summ, file.path(out, "auto_summary.csv"))
-  print(summ[, .N, by = contact_kind]); print(summ[, .N, by = first_contact_type]); print(summ[, .N, by = terminal])
+  print(summ[, .N, by = contact_kind])
+  print(summ[, .N, by = first_contact_type])
+  print(summ[, .N, by = terminal])
 }
 
-# ---- compare: v1 and v2 against reviewer 1 on the 30 development episodes (v1's spent held-aside subset) ----------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - COMPARE ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# v1 and v2 against reviewer 1 on the 30 development episodes (v1's spent held-aside subset)
+
 if (phase == "compare") {
   ag <- cfg$step02$agreement
   r1 <- fread(file.path(root, "outputs", "rebounding", "step02", "review", "reviewer1_heldout.csv"), colClasses = "character")
@@ -330,11 +391,15 @@ if (phase == "compare") {
     a1[, first_contact_off := offmap(episode_id, first_contact_player_id)]
   }
   a2 <- fread(file.path(out, "auto_summary.csv"), na.strings = c("", "NA"))
+  # Agreement of one labeler against another on touch, control and timing.
   score <- function(x, y, who) {
     j <- merge(x, y, by = "episode_id", suffixes = c(".r", ".a"))
     cnt <- function(ok, n) sprintf("%d/%d", sum(ok, na.rm = TRUE), n)
-    both_t <- j[!is.na(touch_p.r) & !is.na(touch_p.a)]; both_c <- j[!is.na(ctl_p.r) & !is.na(ctl_p.a)]
-    ft <- j[!is.na(touch.r) & !is.na(touch.a)]; fc <- j[!is.na(ctl.r) & !is.na(ctl.a)]; fr <- j[!is.na(rim.r) & !is.na(rim.a)]
+    both_t <- j[!is.na(touch_p.r) & !is.na(touch_p.a)]
+    both_c <- j[!is.na(ctl_p.r) & !is.na(ctl_p.a)]
+    ft <- j[!is.na(touch.r) & !is.na(touch.a)]
+    fc <- j[!is.na(ctl.r) & !is.na(ctl.a)]
+    fr <- j[!is.na(rim.r) & !is.na(rim.a)]
     tc <- function(n) pmin(n, 2L)
     data.table(labeler = who,
                rim_within_2 = cnt(abs(fr$rim.r - fr$rim.a) <= ag$frame_tol_contact, nrow(fr)),

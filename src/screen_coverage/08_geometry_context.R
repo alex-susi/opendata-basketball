@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Screen coverage, step 8: screen geometry and context. Where and when is each screen set, and does knowing that
 # help predict the call?
 #   Rscript src/screen_coverage/08_geometry_context.R
@@ -29,14 +30,20 @@
 #   + both      base, tta plus both groups
 # Paired change in log loss against "base, tta" with a 95% interval from resampling whole games.
 # Writes outputs/screen_coverage/context/predictive_test.csv and figures/predictive_test.png.
+## ═════════════════════════════════════════════════════════════════════════════
 
-suppressPackageStartupMessages({ library(data.table); library(nnet); library(ggplot2) })
+suppressPackageStartupMessages({
+  library(data.table)
+  library(nnet)
+  library(ggplot2)
+})
 args <- commandArgs(FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 root <- normalizePath(file.path(dirname(normalizePath(script)), "..", ".."), winslash = "/")
 out_dir <- file.path(root, "outputs", "screen_coverage", "context")
 dir.create(file.path(out_dir, "figures"), recursive = TRUE, showWarnings = FALSE)
 
+# Court geometry in feet; LOOK is the movement window for the approach angle.
 FPS <- 25
 FT <- 3.28084
 HOOP_X <- (14 - 1.575) * FT
@@ -48,6 +55,7 @@ CALLS <- c("over + show", "over + soft", "under + soft", "under + show", "switch
 games <- as.integer(jsonlite::fromJSON(file.path(root, "data", "matches.json"))$id)
 bundle <- function(g) readRDS(file.path(root, "outputs", "cache", "explore", sprintf("bundle_%d.rds", g)))
 
+# Position of each (frame, player) pair, falling back to the nearest frame within two either side.
 pos_at <- function(B, frames, ids) {
   out <- data.table(x = rep(NA_real_, length(frames)), y = NA_real_, poss = NA_character_)
   for (d in c(0L, -1L, 1L, -2L, 2L)) {
@@ -59,8 +67,15 @@ pos_at <- function(B, frames, ids) {
   out
 }
 
-# ---- part 1: features for every screen --------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - PART 1: FEATURES FOR EVERY SCREEN --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# One game's screens: names and re-screen context, then the geometry features at each moment.
 build_game <- function(g) {
   B <- bundle(g)
   p <- B$picks[, .(id, chance, f0, H = actor, BD = adef, S = screener, SD = sdef, cov, scov, spot, ex = x, ey = y)]
@@ -78,19 +93,32 @@ build_game <- function(g) {
   p[, `:=`(k_poss = seq_len(.N), prev_f = shift(f0), prev_h = shift(H), prev_s = shift(S)), by = poss]
   p[, `:=`(rescreen = as.integer(k_poss > 1L), same_pair = as.integer(k_poss > 1L & prev_h == H & prev_s == S),
            since_prev = fifelse(k_poss > 1L, pmin(24, (f0 - prev_f) / FPS), 24))]
+  # One moment: positions now and LOOK frames earlier. The tag's location stands in for an untracked screener.
   rbindlist(lapply(OFFS, function(o) {
     f <- p$f0 + o
-    hn <- pos_at(B, f, p$H); hb <- pos_at(B, f - LOOK, p$H)
-    sn <- pos_at(B, f, p$S); sb <- pos_at(B, f - LOOK, p$S)
+    hn <- pos_at(B, f, p$H)
+    hb <- pos_at(B, f - LOOK, p$H)
+    sn <- pos_at(B, f, p$S)
+    sb <- pos_at(B, f - LOOK, p$S)
     ok <- !is.na(hn$x) & !is.na(sn$x) & hn$poss %in% p$poss & sn$poss == p$poss
-    sx <- fifelse(is.na(sn$x), p$ex, sn$x); sy <- fifelse(is.na(sn$y), p$ey, sn$y)
+    sx <- fifelse(is.na(sn$x), p$ex, sn$x)
+    sy <- fifelse(is.na(sn$y), p$ey, sn$y)
     fr <- B$Fr[.(f), .(sc, gc), nomatch = NA]
     # which shoulder: the screener against the handler's straight line to the hoop
-    ux <- HOOP_X - hn$x; uy <- -hn$y; ul <- pmax(sqrt(ux^2 + uy^2), 1e-6); ux <- ux / ul; uy <- uy / ul
+    ux <- HOOP_X - hn$x
+    uy <- -hn$y
+    ul <- pmax(sqrt(ux^2 + uy^2), 1e-6)
+    ux <- ux / ul
+    uy <- uy / ul
     proj <- (sx - hn$x) * ux + (sy - hn$y) * uy
     line_y <- hn$y + proj * uy
-    smx <- sn$x - sb$x; smy <- sn$y - sb$y; hmx <- hn$x - hb$x; hmy <- hn$y - hb$y
-    s_d <- sqrt(smx^2 + smy^2); h_d <- sqrt(hmx^2 + hmy^2)
+    # Approach angle between the screener's and the handler's movement over the last LOOK frames.
+    smx <- sn$x - sb$x
+    smy <- sn$y - sb$y
+    hmx <- hn$x - hb$x
+    hmy <- hn$y - hb$y
+    s_d <- sqrt(smx^2 + smy^2)
+    h_d <- sqrt(hmx^2 + hmy^2)
     still <- is.na(s_d) | is.na(h_d) | s_d < 1 | h_d < 1
     ang <- acos(pmin(1, pmax(-1, (smx * hmx + smy * hmy) / pmax(s_d * h_d, 1e-6)))) * 180 / pi
     data.table(id = p$id, off = o, t = o / FPS, tracked = ok,
@@ -101,16 +129,25 @@ build_game <- function(g) {
   }))[p[, .(id, game_id, poss, period, f0, call, cov, scov, spot, hop, transition, rescreen, same_pair, since_prev,
             def_name, h_name, s_name, H, S)], on = "id"]
 }
+# All games; a moment with neither clock running counts as 24 s to act.
 FEAT <- rbindlist(lapply(games, build_game))
 FEAT[is.infinite(time_to_act), time_to_act := 24]
 fwrite(FEAT[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 3) else v)], file.path(out_dir, "screen_features.csv"))
 cat("Screen features:", uniqueN(FEAT$id), "screens x", length(OFFS), "moments\n")
 print(FEAT[off == 0, .N, by = call][order(-N)])
 
-# ---- part 2: do the new features help? ---------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - PART 2: DO THE NEW FEATURES HELP? --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# The scored screens and frame rows from step 2, and the input sets compared.
 L <- readRDS(file.path(root, "outputs", "cache", "screen_coverage", "logistic_per_frame.rds"))
-P <- L$P; X <- L$X
+P <- L$P
+X <- L$X
 GEOM4 <- c("d_hs", "d_bd", "d_sd", "d_def", "bd_lvl", "sd_lvl", "h_lvl", "s_hoop", "bd_lvl_v", "sd_lvl_v")
 LSF <- paste0("lsf_", seq_along(CALLS))
 G_GEO <- c("dist_sideline", "dist_baseline", "side_left", "spot_angle", "lateral_mid", "approach", "s_still")
@@ -119,26 +156,42 @@ SETS <- list(`base (shot clock)` = c(GEOM4, "sc_now", LSF), `base, time to act` 
              `+ geometry` = c(GEOM4, "time_to_act", LSF, G_GEO), `+ context` = c(GEOM4, "time_to_act", LSF, G_CTX),
              `+ geometry + context` = c(GEOM4, "time_to_act", LSF, G_GEO, G_CTX))
 
+# Leave-one-game-out multinomial logit (ridge decay 1) on standardised inputs. Returns held-out probabilities.
 logo <- function(d, feats) {
   Pm <- matrix(NA_real_, nrow(d), length(CALLS))
   for (g in unique(d$game_id)) {
-    tr <- d$game_id != g; te <- !tr
-    Xtr <- as.matrix(d[tr, ..feats]); mu <- colMeans(Xtr); sdv <- apply(Xtr, 2, sd); sdv[sdv == 0] <- 1
+    tr <- d$game_id != g
+    te <- !tr
+    Xtr <- as.matrix(d[tr, ..feats])
+    mu <- colMeans(Xtr)
+    sdv <- apply(Xtr, 2, sd)
+    sdv[sdv == 0] <- 1
     fit <- multinom(y ~ ., data = data.frame(y = factor(d$call[tr], CALLS), scale(Xtr, mu, sdv)), decay = 1, trace = FALSE, maxit = 2000)
     Pm[te, ] <- predict(fit, newdata = data.frame(scale(as.matrix(d[te, ..feats]), mu, sdv)), type = "probs")[, CALLS, drop = FALSE]
   }
   Pm
 }
+# Mean with a 95% interval from resampling whole games.
 boot_ci <- function(score, game, reps = 2000L) {
-  set.seed(1); s <- split(score, game); sums <- vapply(s, sum, 0); ns <- lengths(s)
-  b <- replicate(reps, { k <- sample(names(s), length(s), TRUE); sum(sums[k]) / sum(ns[k]) })
+  set.seed(1)
+  s <- split(score, game)
+  sums <- vapply(s, sum, 0)
+  ns <- lengths(s)
+  b <- replicate(reps, {
+    k <- sample(names(s), length(s), TRUE)
+    sum(sums[k]) / sum(ns[k])
+  })
   c(mean(score), quantile(b, c(0.025, 0.975)))
 }
+# At each moment: fit every input set and compare its per-screen log loss with "base, time to act".
 res <- rbindlist(lapply(OFFS, function(o) {
   d <- X[off == o]
   d <- merge(d, FEAT[off == o, c("id", "time_to_act", G_GEO, G_CTX), with = FALSE], by = "id", sort = FALSE)
   stopifnot(nrow(d) == nrow(P))
-  ll <- lapply(SETS, function(fs) { Pm <- logo(d, fs); -log(pmax(Pm[cbind(seq_len(nrow(d)), match(d$call, CALLS))], 1e-12)) })
+  ll <- lapply(SETS, function(fs) {
+    Pm <- logo(d, fs)
+    -log(pmax(Pm[cbind(seq_len(nrow(d)), match(d$call, CALLS))], 1e-12))
+  })
   base <- ll[["base, time to act"]]
   rbindlist(lapply(names(SETS), function(s) {
     ci <- boot_ci(ll[[s]] - base, d$game_id)
@@ -150,16 +203,21 @@ fwrite(res[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 4) else v)], fi
 cat("\nLog loss by moment, and change against 'base, time to act' (95% game bootstrap):\n")
 print(res[, .(t, model, logloss = round(logloss, 4), change = round(change_vs_tta, 4), lo = round(lo, 4), hi = round(hi, 4), games_better)])
 
+# Figure: paired changes by moment, with intervals.
 pd <- res[model != "base, time to act"][, model := factor(model, levels = setdiff(names(SETS), "base, time to act"))]
 pg <- ggplot(pd, aes(t, change_vs_tta, colour = model, fill = model)) +
-  geom_hline(yintercept = 0, colour = "grey40") + geom_vline(xintercept = 0, colour = "grey70") +
-  geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.12, colour = NA) + geom_line(linewidth = 0.9) + geom_point(size = 2) +
+  geom_hline(yintercept = 0, colour = "grey40") +
+  geom_vline(xintercept = 0, colour = "grey70") +
+  geom_ribbon(aes(ymin = lo, ymax = hi), alpha = 0.12, colour = NA) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2) +
   scale_colour_manual(values = c("#9a9a96", "#2a78d6", "#eb6834", "#6250d6"), name = NULL) +
   scale_fill_manual(values = c("#9a9a96", "#2a78d6", "#eb6834", "#6250d6"), name = NULL) +
   scale_x_continuous(breaks = OFFS / FPS, labels = function(v) sprintf("%+.1f s", v)) +
   labs(title = "Do screen geometry and context help? Change in held-out log loss",
        subtitle = "Against the four-player logistic model with time to act (below zero = the added inputs helped; band: 95% interval from resampling whole games)",
        x = "Seconds relative to the screen tag", y = "Change in log loss") +
-  theme_minimal(base_size = 11) + theme(legend.position = "top", panel.grid.minor = element_blank(),
-                                        plot.title = element_text(face = "bold"), plot.subtitle = element_text(size = 9))
+  theme_minimal(base_size = 11) +
+  theme(legend.position = "top", panel.grid.minor = element_blank(),
+        plot.title = element_text(face = "bold"), plot.subtitle = element_text(size = 9))
 ggsave(file.path(out_dir, "figures", "predictive_test.png"), pg, width = 10, height = 5.8, dpi = 150, bg = "white")

@@ -30,7 +30,9 @@ contact_track <- function(raw, s, from, to, hoop, tol) {
 #' times `tn`. Needs at least two points; returns a matrix with columns x, y, z.
 arc_predict <- function(t, x, y, z, tn, g) {
   X <- cbind(1, t)
-  bx <- qr.solve(X, x); by <- qr.solve(X, y); bz <- qr.solve(X, z + 0.5 * g * t^2)
+  bx <- qr.solve(X, x)
+  by <- qr.solve(X, y)
+  bz <- qr.solve(X, z + 0.5 * g * t^2)
   cbind(x = bx[1] + bx[2] * tn, y = by[1] + by[2] * tn, z = bz[1] + bz[2] * tn - 0.5 * g * tn^2)
 }
 
@@ -56,11 +58,17 @@ segment_breaks <- function(track, th, break_ft, start) {
   out <- list()
   seg <- 1L
   i <- 4L
+  # Walk the keyframes: predict each from the arc fitted to the keyframes before it; a miss of more than break_ft is
+  # contact.
   while (i <= n) {
     idx <- max(seg, i - th$fit_keys):(i - 1L)
-    if (length(idx) < 3L) { i <- i + 1L; next }
+    if (length(idx) < 3L) {
+      i <- i + 1L
+      next
+    }
     p <- arc_predict(k$t[idx], k$x[idx], k$y[idx], k$z[idx], k$t[i], th$g_track_ft_s2)
     r <- sqrt((p[1] - k$x[i])^2 + (p[2] - k$y[i])^2 + (p[3] - k$z[i])^2)
+    # Contact: find the last frame still on the arc, and the vertical speed coming in.
     if (r > break_ft) {
       between <- track[frame > k$frame[i - 1L] & frame <= k$frame[i]]
       pb <- arc_predict(k$t[idx], k$x[idx], k$y[idx], k$z[idx], between$t, th$g_track_ft_s2)
@@ -89,7 +97,9 @@ nearest_players <- function(track, pl, frames) {
 #' Name one departure: rim, board, rim_or_board, floor, player (with actor or unknown actor) or unknown.
 classify_break <- function(br, track, near, hoop, th) {
   at <- track[frame %in% c(br$frame, br$frame + 1L)]
-  dx <- at$x - hoop$hx; dy <- at$y - hoop$hy; dh <- sqrt(dx^2 + dy^2)
+  dx <- at$x - hoop$hx
+  dy <- at$y - hoop$hy
+  dh <- sqrt(dx^2 + dy^2)
   in_rim <- any(dh <= RIM_R + BALL_R + th$rim_pad_ft & at$z >= RIM_Z - th$rim_z_below_ft & at$z <= RIM_Z + th$rim_z_above_ft)
   in_board <- any(dx >= (BOARD_X - RIM_X) - BALL_R - th$board_pad_ft & abs(dy) <= BOARD_HALF_W + th$board_pad_ft &
                     at$z >= BOARD_Z0 - th$board_pad_ft & at$z <= BOARD_Z1 + th$board_pad_ft)
@@ -203,50 +213,51 @@ episode_contact_states <- function(raw, s, hoop, th, break_ft) {
                                          actor_det = ctl$det, type = "catch", key_gap = NA_integer_), fill = TRUE)
     inferred <- TRUE
   }
+  # Summarise the episode: first contact, first touch, tips, control or terminal state, and their confidences.
   setorder(touches, frame)
   first_touch <- if (nrow(blocks)) blocks[1][, type := "block"] else touches[seq_len(min(1L, .N))]
   tips <- touches[type != "catch"]
   terminal <- if (!is.null(ctl)) (if (ctl$shared) "held_ball" else "control") else if (!is.na(oob)) "out_of_bounds" else "unresolved"
   conf <- function(r) if (is.null(r) || !nrow(r) || is.na(r$frame)) NA_character_ else
     event_confidence(r$key_gap, r$resid, break_ft, if (identical(r$kind, "player")) !is.na(r$actor_id) && r$actor_det %in% 1L else TRUE)
-  c_rim <- conf(first_rim); c_touch <- conf(first_touch)
+  c_rim <- conf(first_rim)
+  c_touch <- conf(first_touch)
   c_ctl <- if (is.null(ctl)) NA_character_ else if (ctl$shared) "low" else if (ctl$det %in% 1L) "high" else "medium"
   levels <- c("low", "medium", "high")
   label_conf <- if (terminal == "unresolved") "low" else
     levels[min(match(na.omit(c(c_rim, c_touch, c_ctl)), levels), 3L)]
   zat <- function(f) if (is.na(f)) NA_real_ else tr[frame == f]$z[1]
-  summary <- data.table(
-    episode_id = s$shot_id, game_id = s$game_id, break_ft = break_ft, n_breaks = nrow(cls),
-    first_rim_or_board_frame = rim_frame,
-    contact_kind = if (is.na(rim_frame)) (if (nrow(cls[kind == "unknown" & frame < s$f1 + 10L])) "UNKNOWN" else "none") else first_rim$kind,
-    first_player_contact_frame = if (nrow(first_touch)) first_touch$frame else NA_integer_,
-    first_contact_player_id = if (nrow(first_touch)) first_touch$actor_id else NA_integer_,
-    first_contact_type = if (nrow(first_touch)) first_touch$type else "none",
-    first_touch_inferred = inferred && nrow(first_touch) && first_touch$frame == ctl$frame,
-    tip_frames_and_players = paste(sprintf("%d:%s", tips$frame, fifelse(is.na(tips$actor_id), "?", as.character(tips$actor_id))),
-                                   collapse = ";"),
-    n_tips = nrow(tips),
-    first_control_frame = if (!is.null(ctl)) ctl$frame else NA_integer_,
-    controller_id = if (!is.null(ctl) && !ctl$shared) ctl$pid else NA_integer_,
-    controller_off = if (!is.null(ctl)) ctl$off else NA,
-    out_of_bounds_frame = oob, terminal = terminal,
-    ball_center_z_at_first_touch = zat(if (nrow(first_touch)) first_touch$frame else NA_integer_),
-    ball_center_z_at_control = zat(if (!is.null(ctl)) ctl$frame else NA_integer_),
-    first_touch_actor_detected = if (nrow(first_touch)) first_touch$actor_det else NA_integer_,
-    controller_detected = if (!is.null(ctl)) ctl$det else NA_integer_,
-    rim_confidence = c_rim, touch_confidence = c_touch, control_confidence = c_ctl, label_confidence = label_conf,
-    n_unknown_breaks = nrow(cls[kind == "unknown" & frame <= end]))
-  ev <- rbind(
-    data.table(frame = s$f0, kind = "released", actor_id = s$pid, confidence = "high"),
-    if (nrow(cls)) cls[frame <= end, .(frame, kind = fifelse(kind == "player", "player_touch", kind), actor_id,
-                                       confidence = vapply(seq_len(.N), function(i) conf(.SD[i]), ""))],
-    if (nrow(blocks)) blocks[1, .(frame, kind = "block", actor_id, confidence = c_touch)],
-    if (nrow(tips)) tips[, .(frame, kind = "tip", actor_id, confidence = vapply(seq_len(.N), function(i) conf(.SD[i]), ""))],
-    if (!is.null(ctl)) data.table(frame = ctl$frame, kind = "controlled", actor_id = if (ctl$shared) NA_integer_ else ctl$pid,
-                                  confidence = c_ctl),
-    if (!is.na(oob)) data.table(frame = oob, kind = "out_of_bounds", actor_id = NA_integer_, confidence = "medium"),
-    data.table(frame = s$rf, kind = "credited_rebound", actor_id = s$rpid, confidence = "official"),
-    fill = TRUE)
+  summary <- data.table(episode_id = s$shot_id, game_id = s$game_id, break_ft = break_ft, n_breaks = nrow(cls),
+                        first_rim_or_board_frame = rim_frame,
+                        contact_kind = if (is.na(rim_frame)) (if (nrow(cls[kind == "unknown" & frame < s$f1 + 10L])) "UNKNOWN" else "none") else first_rim$kind,
+                        first_player_contact_frame = if (nrow(first_touch)) first_touch$frame else NA_integer_,
+                        first_contact_player_id = if (nrow(first_touch)) first_touch$actor_id else NA_integer_,
+                        first_contact_type = if (nrow(first_touch)) first_touch$type else "none",
+                        first_touch_inferred = inferred && nrow(first_touch) && first_touch$frame == ctl$frame,
+                        tip_frames_and_players = paste(sprintf("%d:%s", tips$frame, fifelse(is.na(tips$actor_id), "?", as.character(tips$actor_id))),
+                                                       collapse = ";"),
+                        n_tips = nrow(tips),
+                        first_control_frame = if (!is.null(ctl)) ctl$frame else NA_integer_,
+                        controller_id = if (!is.null(ctl) && !ctl$shared) ctl$pid else NA_integer_,
+                        controller_off = if (!is.null(ctl)) ctl$off else NA,
+                        out_of_bounds_frame = oob, terminal = terminal,
+                        ball_center_z_at_first_touch = zat(if (nrow(first_touch)) first_touch$frame else NA_integer_),
+                        ball_center_z_at_control = zat(if (!is.null(ctl)) ctl$frame else NA_integer_),
+                        first_touch_actor_detected = if (nrow(first_touch)) first_touch$actor_det else NA_integer_,
+                        controller_detected = if (!is.null(ctl)) ctl$det else NA_integer_,
+                        rim_confidence = c_rim, touch_confidence = c_touch, control_confidence = c_ctl, label_confidence = label_conf,
+                        n_unknown_breaks = nrow(cls[kind == "unknown" & frame <= end]))
+  # The episode's event rows in time order.
+  ev <- rbind(data.table(frame = s$f0, kind = "released", actor_id = s$pid, confidence = "high"),
+              if (nrow(cls)) cls[frame <= end, .(frame, kind = fifelse(kind == "player", "player_touch", kind), actor_id,
+                                                 confidence = vapply(seq_len(.N), function(i) conf(.SD[i]), ""))],
+              if (nrow(blocks)) blocks[1, .(frame, kind = "block", actor_id, confidence = c_touch)],
+              if (nrow(tips)) tips[, .(frame, kind = "tip", actor_id, confidence = vapply(seq_len(.N), function(i) conf(.SD[i]), ""))],
+              if (!is.null(ctl)) data.table(frame = ctl$frame, kind = "controlled", actor_id = if (ctl$shared) NA_integer_ else ctl$pid,
+                                            confidence = c_ctl),
+              if (!is.na(oob)) data.table(frame = oob, kind = "out_of_bounds", actor_id = NA_integer_, confidence = "medium"),
+              data.table(frame = s$rf, kind = "credited_rebound", actor_id = s$rpid, confidence = "official"),
+              fill = TRUE)
   ev[, ball_z_ft := tr$z[match(frame, tr$frame)]]
   ev[, c("episode_id", "game_id") := .(s$shot_id, s$game_id)]
   setorder(ev, frame)

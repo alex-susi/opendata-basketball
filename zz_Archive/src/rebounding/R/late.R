@@ -42,6 +42,7 @@ contact_seen <- function(b, t_now = Inf) {
 #' (build_scene() drops checkpoints at or after the rebound). Each scene carries tau and the contact time.
 build_late_scenes <- function(bundles, fit, lib, path, force = FALSE) {
   if (file.exists(path) && !force) return(readRDS(path))
+  # Per bundle and late offset: a scene at the contact time seen so far plus that offset (cached).
   out <- unlist(lapply(seq_along(bundles), function(i) {
     b <- bundles[[i]]
     cs <- contact_seen(b)
@@ -51,8 +52,12 @@ build_late_scenes <- function(bundles, fit, lib, path, force = FALSE) {
       if (a + LATE_TAU[k] < cs[[2]] - 1e-9) return(NULL)
       sc <- build_scene(b, a + LATE_TAU[k], fit, lib, seed = 10L * i + k)
       if (!length(sc)) return(NULL)
-      sc$tau <- LATE_TAU[k]; sc$anchor <- a; sc$bundle <- i
-      sc$bx <- unname(sc$bx); sc$by <- unname(sc$by); sc$bz <- unname(sc$bz)
+      sc$tau <- LATE_TAU[k]
+      sc$anchor <- a
+      sc$bundle <- i
+      sc$bx <- unname(sc$bx)
+      sc$by <- unname(sc$by)
+      sc$bz <- unname(sc$bz)
       sc
     })
   }), recursive = FALSE)
@@ -90,7 +95,8 @@ fit_late <- function(st, free = rep(TRUE, 11), start = NULL, use = seq_len(st$di
   M <- if (sd_u > 0) st$dims[5] else 0L
   par0 <- c(if (is.null(start)) c(-6, 0.5, 0, 1, -6, -6, 0.6, 0, 0, 0, 0) else unname(start), rep(0, M))
   free_all <- c(free, rep(TRUE, M))
-  dims <- st$dims; dims[5] <- M
+  dims <- st$dims
+  dims[5] <- M
   pidx <- if (M) st$pidx else rep(-1L, length(st$pidx))
   w <- if (weighted) st$w else numeric(0)
   f <- function(p) {
@@ -98,7 +104,12 @@ fit_late <- function(st, free = rep(TRUE, 11), start = NULL, use = seq_len(st$di
     crt_objective(p, st$A, st$D, st$tau, st$out_step, st$Z, pidx, st$y, dims, as.integer(use), free_all, sd_u, ridge, w)
   }
   cache <- new.env()
-  val <- function(p) { r <- f(p); cache$g <- r$gradient; cache$p <- p; r$value }
+  val <- function(p) {
+    r <- f(p)
+    cache$g <- r$gradient
+    cache$p <- p
+    r$value
+  }
   grd <- function(p) { if (!identical(cache$p, p)) f(p)$gradient else cache$g }
   o <- optim(par0, val, grd, method = "BFGS", control = list(maxit = 500, reltol = 1e-10))
   p <- o$par
@@ -175,7 +186,9 @@ late_recovery <- function(st, base, sd_true = 0.3, reps = 3, min_misses = 20) {
   players <- st$players
   first <- !duplicated(st$ids)
   misses_on <- table(unlist(lapply(which(first), function(e) players[st$pidx[(e - 1) * 10 + 1:10] + 1L])))
-  n_on <- as.numeric(misses_on[players]); n_on[is.na(n_on)] <- 0
+  n_on <- as.numeric(misses_on[players])
+  n_on[is.na(n_on)] <- 0
+  # Per replicate: simulate outcomes from known player effects, refit, and keep how well the effects are recovered.
   rbindlist(lapply(seq_len(reps), function(r) {
     set.seed(200 + r)
     u_true <- setNames(rnorm(length(players), 0, sd_true), players)

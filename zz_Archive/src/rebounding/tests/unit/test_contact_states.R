@@ -13,7 +13,8 @@ synthetic_episode <- function(fill_midpoints = FALSE) {
   t <- f / FPS
   vx <- (RIM_X - 1.1 - 20) / 1.0
   vz <- (10.6 - 8 + 0.5 * G)
-  x <- 20 + vx * t; z <- 8 + vz * t - 0.5 * G * t^2
+  x <- 20 + vx * t
+  z <- 8 + vz * t - 0.5 * G * t^2
   after <- f > 25
   t2 <- t[after] - 1.0
   x[after] <- (RIM_X - 1.1) - 8 * t2
@@ -21,15 +22,18 @@ synthetic_episode <- function(fill_midpoints = FALSE) {
   catch_f <- 25 + 20
   held <- f >= catch_f
   px2 <- (RIM_X - 1.1) - 8 * 0.8
-  x[held] <- px2; z[held] <- 5
+  x[held] <- px2
+  z[held] <- 5
   if (fill_midpoints) {
     odd <- which(f %% 2 == 1 & f > 0 & f < max(f))
-    x[odd] <- (x[odd - 1] + x[odd + 1]) / 2; z[odd] <- (z[odd - 1] + z[odd + 1]) / 2
+    x[odd] <- (x[odd - 1] + x[odd + 1]) / 2
+    z[odd] <- (z[odd - 1] + z[odd + 1]) / 2
   }
   frames <- data.table(frame = f, bx = x, by = 0, bz = z, berr = 1, bspeed = 0)
   ppos <- data.table(pid = 1:10, home = rep(c(TRUE, FALSE), each = 5),
                      x = c(20, 10, 12, 14, 16, px2, 10, 12, 14, 16), y = c(0, 15, -15, 18, -18, 0, 15, -15, 18, -18))
-  ppos[6, pid := 2L]; ppos[2, pid := 6L]
+  ppos[6, pid := 2L]
+  ppos[2, pid := 6L]
   players <- ppos[, .(frame = f, x, y, det = 1L, err = 1), by = .(pid, home)]
   raw <- list(frames = frames, players = players, home_team = 100L)
   s <- data.table(shot_id = "synthetic", game_id = 1L, f0 = 0L, f1 = 24L, rf = 50L, flip = 1, off_team = 100L,
@@ -47,6 +51,7 @@ test_that("a ballistic arc is predicted exactly and a pure arc never breaks", {
 })
 
 test_that("the rim contact, the catch and control are found at the right frames and in order", {
+  # With and without filled frames.
   for (fill in c(FALSE, TRUE)) {
     e <- synthetic_episode(fill)
     r <- episode_contact_states(e$raw, e$s, hoop, th, 0.65)

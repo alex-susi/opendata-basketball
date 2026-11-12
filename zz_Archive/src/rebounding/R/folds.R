@@ -36,10 +36,9 @@ check_folds <- function(fa) {
     inner_bad <- any(vapply(s$inner, function(f) any(s$test_game %in% fa[episode_id %in% c(f$train, f$test)]$game_id), NA))
     as.integer(any(s$test_game %in% tr_games) || length(intersect(s$train, s$test)) > 0 || inner_bad)
   }, 0L))
-  data.table(
-    check = c("episodes in exactly one outer test fold", "folds whose test game reaches training or an inner fold",
-              "one game per outer fold", "episode ids unique"),
-    value = c(sum(table(tested) == 1L), leaks, sum(fa[, uniqueN(game_id), by = outer_fold]$V1 == 1L),
-              anyDuplicated(fa$episode_id)),
-    expected = c(nrow(fa), 0L, length(k), 0L))[, pass := value == expected][]
+  data.table(check = c("episodes in exactly one outer test fold", "folds whose test game reaches training or an inner fold",
+                       "one game per outer fold", "episode ids unique"),
+             value = c(sum(table(tested) == 1L), leaks, sum(fa[, uniqueN(game_id), by = outer_fold]$V1 == 1L),
+                       anyDuplicated(fa$episode_id)),
+             expected = c(nrow(fa), 0L, length(k), 0L))[, pass := value == expected][]
 }

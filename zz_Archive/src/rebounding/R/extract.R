@@ -72,6 +72,7 @@ read_frames <- function(root, g, frames, chunk = 5000L) {
   lines <- lines[match(frames[frames %in% idx], idx)]
   index_gaps <- data.table(game_id = g, lines = length(idx), last_frame = max(idx),
                            missing_indices = max(idx) + 1L - length(idx), longest_gap = max(diff(idx)) - 1L)
+  # Parse the lines in chunks: per frame, the ball's position and fields, and every player's position.
   out <- lapply(split(seq_along(lines), ceiling(seq_along(lines) / chunk)), function(idx) {
     fr <- jsonlite::fromJSON(paste0("[", paste(lines[idx], collapse = ","), "]"), simplifyVector = FALSE)
     ball <- lapply(fr, `[[`, "ball")

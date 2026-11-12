@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 8: WHEN does the receiver act? A timing audit of every catch, and a second target at a fixed horizon.
 #   Rscript src/kickout_transformer/08_timing_audit.R
 #
@@ -25,6 +26,7 @@
 # Writes outputs/kickout_timing/: timing_audit.csv (one row per catch), timing_by_label.csv,
 # horizon_vs_label.csv, horizon_shares.csv, film_play_timing.csv, figures/acted_by_time.png,
 # and outputs/cache/kickout_transformer/timing.rds for steps 9-10.
+## ═════════════════════════════════════════════════════════════════════════════
 
 source(file.path(dirname(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))), "R", "common.R"))
 root <- kt_root()
@@ -33,6 +35,7 @@ suppressPackageStartupMessages(library(ggplot2))
 out_dir <- file.path(root, "outputs", "kickout_timing")
 dir.create(file.path(out_dir, "figures"), recursive = TRUE, showWarnings = FALSE)
 
+# Horizons in seconds after the catch, H_MAIN the main one. "hold" means no action yet at the horizon.
 FPS <- 25
 HORIZONS <- c(0.75, 1.25, 2.0)
 H_MAIN <- 1.25
@@ -41,6 +44,7 @@ H_CLASSES <- c("shot", "drive", "pass", "other", "hold")
 m <- readRDS(file.path(paths$base_cache, "catches.rds"))$meta
 bundle <- function(g) readRDS(file.path(root, "outputs", "cache", "explore", sprintf("bundle_%d.rds", g)))
 
+# The first event of each touch in an event table: one row per touch, with its frame and any kept columns.
 first_by_touch <- function(dt, frame_col, keep = NULL) {
   if (!nrow(dt)) return(data.table(touch = character(), f = integer()))
   cols <- c("touch", frame_col, keep)
@@ -49,11 +53,13 @@ first_by_touch <- function(dt, frame_col, keep = NULL) {
   out[order(f)][, .SD[1], by = touch]
 }
 
+# One game's catches with the frame of each event on the receiver's touch: drive, shot, pass, turnover, own screen.
 audit_game <- function(g) {
   B <- bundle(g)
   c <- m[game_id == g, .(pass_id, game_id, poss_id, chance_id, catch, receiver, label, t_id)]
   tc <- B$touches[, .(touch, t_f0 = f0, t_f1 = f1, outs)]
   c[tc, on = .(t_id = touch), `:=`(t_f0 = i.t_f0, t_f1 = i.t_f1, outs = i.outs)]
+  # First drive, shot, pass, turnover and ball screen on each touch.
   dr <- first_by_touch(B$drives, "f0", c("category", "end"))
   sh <- first_by_touch(B$shots, "f", c("made", "three"))
   ps <- first_by_touch(B$passes, "f0", c("receiver", "complete"))
@@ -63,9 +69,10 @@ audit_game <- function(g) {
   c[sh, on = .(t_id = touch), `:=`(f_shot = i.f)]
   c[ps, on = .(t_id = touch), `:=`(f_pass = i.f, pass_to = i.receiver)]
   c[to, on = .(t_id = touch), `:=`(f_tov = i.f)]
+  # A ball screen counts only when the receiver is its ball handler.
   c[pk, on = .(t_id = touch), `:=`(f_screen = fifelse(i.actor == receiver, i.f, NA_integer_),
-                                  screener = fifelse(i.actor == receiver, i.screener, NA_integer_),
-                                  screen_cov = fifelse(i.actor == receiver, paste(i.cov, i.scov, sep = " + "), NA_character_))]
+                                   screener = fifelse(i.actor == receiver, i.screener, NA_integer_),
+                                   screen_cov = fifelse(i.actor == receiver, paste(i.cov, i.scov, sep = " + "), NA_character_))]
   # a foul whistled in the same chance between the catch and the end of the receiver's touch
   fo <- B$fo[!is.na(f), .(chance, f)]
   c[, f_foul := NA_integer_]
@@ -73,6 +80,7 @@ audit_game <- function(g) {
   c
 }
 
+# Every game; event times in seconds after the catch.
 a <- rbindlist(lapply(sort(unique(m$game_id)), audit_game), fill = TRUE)
 sec <- function(f) (f - a$catch) / FPS
 a[, `:=`(t_touch_start = sec(t_f0), t_touch_end = sec(t_f1), t_drive = sec(f_drive), t_shot = sec(f_shot),
@@ -80,7 +88,8 @@ a[, `:=`(t_touch_start = sec(t_f0), t_touch_end = sec(t_f1), t_drive = sec(f_dri
 
 # first action: earliest event; ties go to drive, then shot, then pass
 ev_cols <- c(drive = "t_drive", shot = "t_shot", pass = "t_pass", turnover = "t_tov", foul = "t_foul")
-tm <- as.matrix(a[, ..ev_cols]); tm[is.na(tm)] <- Inf
+tm <- as.matrix(a[, ..ev_cols])
+tm[is.na(tm)] <- Inf
 k <- max.col(-tm, ties.method = "first")
 a[, t_first := tm[cbind(seq_len(.N), k)]]
 a[, first_action := fifelse(is.finite(t_first), names(ev_cols)[k], NA_character_)]
@@ -91,6 +100,7 @@ a[, first_class := fcase(first_action %in% c("shot", "drive", "pass"), first_act
 a[, t_label := fcase(label == "drive", t_drive, label == "shot", t_shot, label == "pass", t_pass, default = t_first)]
 a[, screen_before_label := !is.na(t_screen) & t_screen < t_label]
 
+# The state at each horizon: the first action's class if it has happened by then, otherwise "hold".
 for (H in HORIZONS) {
   col <- sprintf("h_%s", gsub("\\.", "_", sprintf("%.2f", H)))
   a[, (col) := fifelse(t_first <= H, first_class, "hold")]
@@ -98,6 +108,7 @@ for (H in HORIZONS) {
 H_COL <- sprintf("h_%s", gsub("\\.", "_", sprintf("%.2f", H_MAIN)))
 a[, horizon := factor(get(H_COL), levels = H_CLASSES)]
 
+# Write the audit table and cache it for steps 9-10.
 setcolorder(a, c("pass_id", "game_id", "poss_id", "catch", "label", "first_action", "t_first", "t_label",
                  "t_drive", "t_shot", "t_pass", "t_tov", "t_foul", "t_touch_start", "t_touch_end", "t_screen",
                  "screener", "screen_cov", "screen_before_label"))
@@ -105,8 +116,15 @@ fwrite(a[, !c("outs", "f_drive", "f_shot", "f_pass", "f_tov", "f_foul", "f_scree
        file.path(out_dir, "timing_audit.csv"))
 saveRDS(a, file.path(paths$base_cache, "timing.rds"))
 
-# ---- summaries -----------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SUMMARIES --------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Timing of the labelled action by label: quantiles, and the shares that come late or after a screen.
 q <- function(v, p) round(unname(quantile(v, p, na.rm = TRUE)), 2)
 by_label <- a[, .(catches = .N, median_s = q(t_label, 0.5), p25_s = q(t_label, 0.25), p75_s = q(t_label, 0.75),
                   p90_s = q(t_label, 0.9), share_after_1.25s = round(mean(t_label > 1.25, na.rm = TRUE), 3),
@@ -114,18 +132,23 @@ by_label <- a[, .(catches = .N, median_s = q(t_label, 0.5), p25_s = q(t_label, 0
                   share_screen_first = round(mean(screen_before_label), 3),
                   label_is_first_action = round(mean(first_class == label), 3)), by = label][order(label)]
 fwrite(by_label, file.path(out_dir, "timing_by_label.csv"))
-cat("Seconds from the catch to the labelled action (same-touch label):\n"); print(by_label)
+cat("Seconds from the catch to the labelled action (same-touch label):\n")
+print(by_label)
 
+# Same-touch label against the state at the main horizon.
 cross <- dcast(a[, .N, by = .(label, horizon)], label ~ horizon, value.var = "N", fill = 0)
 fwrite(cross, file.path(out_dir, "horizon_vs_label.csv"))
-cat(sprintf("\nSame-touch label (rows) vs state at %.2f s after the catch (columns):\n", H_MAIN)); print(cross)
+cat(sprintf("\nSame-touch label (rows) vs state at %.2f s after the catch (columns):\n", H_MAIN))
+print(cross)
 
+# Share of catches in each state at each horizon.
 shares <- rbindlist(lapply(HORIZONS, function(H) {
   col <- sprintf("h_%s", gsub("\\.", "_", sprintf("%.2f", H)))
   a[, .(horizon_s = H, catches = .N), by = c(state = col)][, share := round(catches / sum(catches), 3)][]
 }))
 fwrite(shares, file.path(out_dir, "horizon_shares.csv"))
-cat("\nState at each horizon:\n"); print(dcast(shares, state ~ horizon_s, value.var = "share"))
+cat("\nState at each horizon:\n")
+print(dcast(shares, state ~ horizon_s, value.var = "share"))
 cat("\nCatches where a ball screen came before the labelled action:", a[, sum(screen_before_label)],
     sprintf("(%.1f%%)\n", 100 * a[, mean(screen_before_label)]))
 
@@ -138,8 +161,17 @@ fwrite(fp[, .(file, pass_id, poss_id, label, horizon, first_action, t_first, t_s
 cat("\nFilm-study plays:\n")
 print(fp[, .(file, label, horizon, first = first_action, t_first, t_screen, t_drive, t_shot, t_pass)])
 
-# ---- figure: share of catches that have acted, by time after the catch ------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FIGURE -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Share of catches that have acted, by time after the catch.
+
+# At each time on a 0.04 s grid: the share of catches whose first action has happened, by class.
 grid <- seq(0, 6, by = 0.04)
 cum <- rbindlist(lapply(grid, function(t) a[, .(t = t, state = fifelse(t_first <= t, first_class, "hold"))][
   , .N, by = .(t, state)]))
@@ -147,6 +179,7 @@ cum[, share := N / nrow(a)]
 cum[, state := factor(state, levels = rev(H_CLASSES))]
 COLS <- c(shot = "#2a78d6", drive = "#eb6834", pass = "#1baf7a", other = "#eda100", hold = "#c9ccd1")
 t_lab <- grid[which.min(abs(grid - 5.5))]
+# Labels inside the bands at about 5.5 s, for bands above 2%.
 lab_at <- cum[t == t_lab][order(state)][, y := cumsum(share) - share / 2][share > 0.02]
 pg <- ggplot(cum, aes(t, share, fill = state)) +
   geom_area(colour = "white", linewidth = 0.5) +

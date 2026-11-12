@@ -1,5 +1,7 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Data layer for the play viewer: event index, tracking cache and per-play payloads.
 # Files under data/ are only read. Derived files go to outputs/cache/play_viewer/.
+## ═════════════════════════════════════════════════════════════════════════════
 
 suppressPackageStartupMessages(library(data.table))
 
@@ -71,7 +73,13 @@ ACTIONS <- list(pick = list(table = "picks", frame = "frame", off = c("ballhandl
                 shot = list(table = "shots", frame = "startFrame", off = "shooterId",
                             def = c("closestDefId", "blockerId")))
 
-# ---- paths ---------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - PATHS ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Locate the repository root: the nearest parent folder that holds data/matches.json.
 #' @param start Folder to start from.
@@ -101,7 +109,13 @@ tracking_source <- function(root, game_id) {
   found[1]
 }
 
-# ---- record helpers ------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - RECORD HELPERS ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 read_json_file <- function(path) jsonlite::fromJSON(path, simplifyVector = FALSE)
 
@@ -123,7 +137,13 @@ canon_id <- function(ids, aliases) {
 
 camel_to_words <- function(x) tolower(gsub("([a-z])([A-Z])", "\\1 \\2", x))
 
-# ---- team colours --------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - TEAM COLOURS -----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Relative luminance of a colour (WCAG), 0 for black to 1 for white.
 luminance <- function(hex) {
@@ -175,7 +195,13 @@ side_colors <- function(row) {
   list(off = kits[[if (home_is_off) "home" else "away"]], def = kits[[if (home_is_off) "away" else "home"]])
 }
 
-# ---- tracking cache ------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - TRACKING CACHE ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Flatten one side's player objects for a chunk of parsed frames.
 side_rows <- function(fr, key, home) {
@@ -201,6 +227,7 @@ parse_tracking_chunk <- function(lines) {
   live <- lengths(lapply(fr, `[[`, "homePlayers")) + lengths(lapply(fr, `[[`, "awayPlayers")) > 0L
   fr <- fr[live]
   if (!length(fr)) return(NULL)
+  # Ball position per frame, NA when the ball object is empty.
   ball <- lapply(fr, function(f) if (length(f$ball$xyz) == 3L) as.numeric(unlist(f$ball$xyz)) else rep(NA_real_, 3))
   frames <- data.table(frame = int_field(fr, "frameIdx"),
                        period = int_field(fr, "period"),
@@ -220,6 +247,7 @@ build_tracking_cache <- function(root, game_id, chunk_lines = 4000L) {
   con <- if (grepl("\\.gz$", src)) gzfile(src, "r") else file(src, "r")
   on.exit(close(con))
   parts <- list()
+  # Read the file in chunks so the whole game never sits in memory as JSON.
   repeat {
     lines <- readLines(con, n = chunk_lines, warn = FALSE)
     if (!length(lines)) break
@@ -227,6 +255,7 @@ build_tracking_cache <- function(root, game_id, chunk_lines = 4000L) {
   }
   frames <- rbindlist(lapply(parts, `[[`, "frames"))
   players <- rbindlist(lapply(parts, `[[`, "players"))
+  # Fail on out-of-order frames; keep each player's jersey once.
   if (is.unsorted(frames$frame, strictly = TRUE)) stop("Tracking frames are not strictly increasing in game ", game_id)
   jerseys <- unique(players[, .(pid, jersey)], by = "pid")
   players[, jersey := NULL]
@@ -244,7 +273,13 @@ tracking_cache_is_current <- function(root, game_id) {
   identical(cached$version, CACHE_VERSION) && identical(cached$source_size, file.size(tracking_source(root, game_id)))
 }
 
-# ---- event index ---------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - EVENT INDEX ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Both rosters of one game as a table, with canonical ids.
 game_roster <- function(root, game_id, aliases) {
@@ -320,6 +355,7 @@ other_events <- function(ev, nm, nmj) {
   fo <- ev$fouls
   rb <- ev$rebounds
   ft <- ev$free_throws
+  # One table of turnovers, fouls, rebounds and free throws, with labels naming the players.
   steal <- ifelse(is.na(int_field(to, "stealerId")), "", paste0(", steal ", nmj(int_field(to, "stealerId"))))
   reb_by <- function(f) ifelse(lgl_field(rb, "rebounded"), f(int_field(rb, "rebounderId")), "team")
   rbind(data.table(poss_id = chr_field(to, "possessionId"), type = "turnover", frame = int_field(to, "frame"),
@@ -385,16 +421,16 @@ DECIDED_OUTCOMES <- c("FGM", "FGM3", "FGX", "FGX3", "TO", "FOU")
 #' @return list(view_start, view_end), in the order of `plays`.
 view_windows <- function(plays, ev) {
   old_end <- view_end_frames(plays, ev)
+  # Each possession's deciding events and how long its window may run on after them.
   shot_f <- pmax(int_field(ev$shots, "endFrame"), int_field(ev$shots, "startFrame"), na.rm = TRUE)
   made <- lgl_field(ev$shots, "outcome")
-  events <- rbind(
-    data.table(id = chr_field(ev$shots, "possessionId"), f = shot_f,
-               grace = SETTLE_GRACE[ifelse(made, "made", "missed")]),
-    data.table(id = chr_field(ev$rebounds, "possessionId"), f = int_field(ev$rebounds, "frame"), grace = SETTLE_GRACE[["rebound"]]),
-    data.table(id = chr_field(ev$turnovers, "possessionId"), f = int_field(ev$turnovers, "frame"), grace = SETTLE_GRACE[["turnover"]]),
-    data.table(id = chr_field(ev$fouls, "possessionId"), f = int_field(ev$fouls, "frame"), grace = SETTLE_GRACE[["foul"]]),
-    data.table(id = chr_field(ev$free_throws, "possessionId"), f = int_field(ev$free_throws, "frame"),
-               grace = SETTLE_GRACE[["free_throw"]]))[!is.na(f)]
+  events <- rbind(data.table(id = chr_field(ev$shots, "possessionId"), f = shot_f,
+                             grace = SETTLE_GRACE[ifelse(made, "made", "missed")]),
+                  data.table(id = chr_field(ev$rebounds, "possessionId"), f = int_field(ev$rebounds, "frame"), grace = SETTLE_GRACE[["rebound"]]),
+                  data.table(id = chr_field(ev$turnovers, "possessionId"), f = int_field(ev$turnovers, "frame"), grace = SETTLE_GRACE[["turnover"]]),
+                  data.table(id = chr_field(ev$fouls, "possessionId"), f = int_field(ev$fouls, "frame"), grace = SETTLE_GRACE[["foul"]]),
+                  data.table(id = chr_field(ev$free_throws, "possessionId"), f = int_field(ev$free_throws, "frame"),
+                             grace = SETTLE_GRACE[["free_throw"]]))[!is.na(f)]
   settle <- events[, .(f = max(f), until = max(f + grace)), by = id]
   first_touch <- data.table(id = chr_field(ev$touches, "possessionId"), f = int_field(ev$touches, "startFrame"))[
     !is.na(f), .(f = min(f)), by = id]
@@ -403,6 +439,8 @@ view_windows <- function(plays, ev) {
   view_end <- old_end
   view_end[decided] <- settle$until[at[decided]]
   view_start <- plays$start_frame
+  # Walk the possessions in order: end each window before the next possession's first touch, then start the next
+  # window on the following frame.
   o <- order(plays$period, plays$start_frame)
   for (k in seq_along(o)[-1]) {
     a <- o[k - 1L]
@@ -452,6 +490,7 @@ live_counts <- function(plays, frames) {
 
 #' Index one game: possessions with filter fields, timeline events, touches and rosters.
 game_index <- function(root, game_id, aliases, match_row) {
+  # Last names, with and without jerseys, for labels.
   ev <- read_json_file(match_file(root, game_id, "_dynamic_events.json"))
   roster <- game_roster(root, game_id, aliases)
   nm <- function(ids) fifelse(is.na(match(ids, roster$pid)), "unknown", roster$last[match(ids, roster$pid)])
@@ -459,6 +498,7 @@ game_index <- function(root, game_id, aliases, match_row) {
     jersey <- roster$jersey[match(ids, roster$pid)]
     fifelse(is.na(jersey) | jersey == "", nm(ids), paste0("#", jersey, " ", nm(ids)))
   }
+  # One row per possession with its filter fields, players on court and viewing window.
   po <- ev$possessions
   if (any(vapply(po, function(p) is.null(p$leftHoop), NA))) warning("Missing leftHoop in game ", game_id)
   plays <- data.table(id = chr_field(po, "id"), game_id = game_id, period = int_field(po, "period"),
@@ -473,6 +513,7 @@ game_index <- function(root, game_id, aliases, match_row) {
   plays[, def_ids := lapply(po, function(p) canon_id(as.integer(unlist(p$defPlayerIds)), aliases))]
   plays[, c("view_start", "view_end") := view_windows(plays, ev)]
 
+  # Action markings and their actors, moved to the possession whose window holds their frame.
   actions <- rehome(rbindlist(lapply(names(ACTIONS), action_events, ev = ev, nm = nm, nmj = nmj)), plays)
   actors <- rehome(rbindlist(lapply(names(ACTIONS), action_actors, ev = ev)), plays)[, frame := NULL]
   actors[, pid := canon_id(pid, aliases)]
@@ -509,6 +550,7 @@ game_index <- function(root, game_id, aliases, match_row) {
   oreb <- table(chr_field(rb, "possessionId")[!lgl_field(rb, "defensive") & lgl_field(rb, "rebounded")])
   plays[, n_oreb := fcoalesce(as.integer(oreb[id]), 0L)]
 
+  # Touches, for the viewer's ball-holder highlight.
   touches <- data.table(game_id = game_id, pid = int_field(ev$touches, "playerId"),
                         f0 = int_field(ev$touches, "startFrame"), f1 = int_field(ev$touches, "endFrame"))
   list(plays = plays, actors = unique(actors), events = events[, game_id := game_id],
@@ -533,6 +575,7 @@ load_matches <- function(root) {
 build_index <- function(root) {
   matches <- load_matches(root)
   aliases <- fread(file.path(root, "data", "player_id_aliases.csv"))
+  # Index every game, then clip windows to their period and count live frames; drop possessions with too few.
   games <- lapply(seq_len(nrow(matches)), function(i) game_index(root, matches$game_id[i], aliases, matches[i]))
   plays <- rbindlist(lapply(games, `[[`, "plays"))
   for (g in matches$game_id) {
@@ -544,6 +587,7 @@ build_index <- function(root) {
   plays <- plays[n_live >= MIN_LIVE_FRAMES]
   plays[, game_date := matches$date[match(game_id, matches$game_id)]]
   setorder(plays, game_date, start_frame)
+  # Rosters, teams and people (canonical ids, alias names) for the filters.
   roster <- rbindlist(lapply(games, `[[`, "roster"))
   teams <- unique(roster[, .(team_id, team_name)])[order(team_name)]
   plays[, off_name := teams$team_name[match(off_team, teams$team_id)]]
@@ -577,7 +621,13 @@ ensure_cache <- function(root, force = FALSE) {
   invisible(stale)
 }
 
-# ---- app-facing API ------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - APP-FACING API ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Each player's most likely playstyle archetype on each side of the ball (built by src/archetypes/), or an
 #' empty table if the archetypes have not been built.
@@ -621,6 +671,7 @@ filter_plays <- function(app, f) {
   keep <- rep(TRUE, nrow(plays))
   has_any <- function(col, values) vapply(col, function(v) any(v %in% values), NA)
   has_all <- function(col, values) vapply(col, function(v) all(values %in% v), NA)
+  # Each filter narrows `keep`; an empty filter leaves it unchanged.
   if (length(f[["game"]])) keep <- keep & plays$game_id %in% as.integer(f[["game"]])
   if (length(f[["period"]])) keep <- keep & plays$period %in% as.integer(f[["period"]])
   if (length(f[["result"]])) keep <- keep & plays$result %in% f[["result"]]
@@ -635,6 +686,7 @@ filter_plays <- function(app, f) {
     keep <- keep & switch(f[["team_side"]], off = plays$off_team %in% team, def = plays$def_team %in% team,
                           plays$off_team %in% team | plays$def_team %in% team)
   }
+  # Player filter: on court on either side, on one side, or named in a matching action.
   if (length(f[["player"]]) && nzchar(f[["player"]])) {
     p <- as.integer(f[["player"]])
     acted <- app$actors[pid == p & (!length(f[["types"]]) | type %in% f[["types"]]), unique(poss_id)]
@@ -677,6 +729,7 @@ player_track <- function(p, pl, frames, flip, info, home_is_off, archetypes) {
 #' right-hand hoop. Stored positions are (flip * x, -flip * y).
 #' Frames run over the viewing window (view_start to view_end), which can outlast the delivered possession.
 play_payload <- function(app, play_id) {
+  # The possession's frames, players and their tracks, flipped so that the offense attacks toward +x.
   row <- app$plays[id == play_id]
   if (nrow(row) != 1L) return(NULL)
   trk <- get_tracking(app, row$game_id)
@@ -689,6 +742,7 @@ play_payload <- function(app, play_id) {
   info <- info[order(suppressWarnings(as.integer(jersey)))]
   players <- lapply(seq_len(nrow(info)), function(i) player_track(info$pid[i], pl, fr$frame, flip, info[i],
                                                                   row$off_team == row$home_team, app$archetypes))
+  # Timeline events and touches inside the window, then the payload.
   in_window <- function(dt, col) dt[game_id == row$game_id & get(col) >= row$view_start & get(col) <= row$view_end]
   events <- in_window(app$events, "frame")[order(frame), .(f = frame, kind, label, short, who)]
   touches <- app$touches[game_id == row$game_id & f1 >= row$view_start & f0 <= row$view_end, .(pid, f0, f1)]

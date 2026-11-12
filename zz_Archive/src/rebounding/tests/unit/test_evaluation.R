@@ -36,17 +36,26 @@ synthetic <- function(n_games = 3L, per_game = 8L, seed = 7L) {
 test_that("log loss, Brier, pessimistic ranks and the OREB score match hand calculations", {
   el <- data.table(episode_id = c("e1", "e2"), game_id = 1L, release_off_ids = "1;2;3;4;5", release_def_ids = "6;7;8;9;10",
                    credited_outcome = c("def player", "off team award"), rebounder_id = c(6L, NA), side = c("def", "off"))
-  choice <- choice_sets(el); labels <- episode_labels(el)
+  choice <- choice_sets(el)
+  labels <- episode_labels(el)
   expect_equal(labels$outcome_id, c("6", "team_off"))
   uni <- choice[, .(model = "u", time_point = "t", episode_id, outcome_id, probability = 1 / 12)]
   tie <- copy(uni)[, model := "tie"][episode_id == "e1", probability := fifelse(outcome_id %in% c("6", "7"), 0.2, 0.06)]
   expect_true(all(check_predictions(rbind(uni, tie), choice)$ok))
   sc <- score_episodes(rbind(uni, tie), choice, labels)
   u1 <- sc[model == "u" & episode_id == "e1"]
-  expect_equal(u1$ll, log(12)); expect_equal(u1$brier, 132 / 144); expect_equal(u1$rank, 12)
-  expect_false(u1$top3); expect_equal(u1$p_off, 0.5); expect_equal(u1$team_ll, log(2)); expect_false(u1$y_off)
+  expect_equal(u1$ll, log(12))
+  expect_equal(u1$brier, 132 / 144)
+  expect_equal(u1$rank, 12)
+  expect_false(u1$top3)
+  expect_equal(u1$p_off, 0.5)
+  expect_equal(u1$team_ll, log(2))
+  expect_false(u1$y_off)
   t1 <- sc[model == "tie" & episode_id == "e1"]
-  expect_equal(t1$rank, 2); expect_false(t1$top1); expect_true(t1$top3); expect_equal(t1$ll, -log(0.2))
+  expect_equal(t1$rank, 2)
+  expect_false(t1$top1)
+  expect_true(t1$top3)
+  expect_equal(t1$ll, -log(0.2))
   expect_true(sc[model == "u" & episode_id == "e2"]$y_off)
 })
 
@@ -142,12 +151,20 @@ synthetic_raw <- function(flip, fill_midpoints = FALSE) {
   f <- 90:180
   t <- pmax(0, (f - 100) / FPS)
   g <- 28.3
-  x <- 20 + (RIM_X - 1 - 20) * t; y <- 3 - 3 * t; z <- 7 + (10.3 - 7 + 0.5 * g) * t - 0.5 * g * t^2
+  x <- 20 + (RIM_X - 1 - 20) * t
+  y <- 3 - 3 * t
+  z <- 7 + (10.3 - 7 + 0.5 * g) * t - 0.5 * g * t^2
   out <- f > 125
   t2 <- (f[out] - 125) / FPS
-  x[out] <- RIM_X - 1 - 9 * t2; y[out] <- 2 * t2; z[out] <- 10.3 + 5 * t2 - 0.5 * g * t2^2
-  if (fill_midpoints) { odd <- which(f %% 2 == 1 & f > 90 & f < 180); x[odd] <- (x[odd - 1] + x[odd + 1]) / 2
-                        y[odd] <- (y[odd - 1] + y[odd + 1]) / 2; z[odd] <- (z[odd - 1] + z[odd + 1]) / 2 }
+  x[out] <- RIM_X - 1 - 9 * t2
+  y[out] <- 2 * t2
+  z[out] <- 10.3 + 5 * t2 - 0.5 * g * t2^2
+  if (fill_midpoints) {
+    odd <- which(f %% 2 == 1 & f > 90 & f < 180)
+    x[odd] <- (x[odd - 1] + x[odd + 1]) / 2
+    y[odd] <- (y[odd - 1] + y[odd + 1]) / 2
+    z[odd] <- (z[odd - 1] + z[odd + 1]) / 2
+  }
   frames <- data.table(frame = f, bx = flip * x, by = flip * y, bz = z)
   px <- c(RIM_X - 3, RIM_X - 10, RIM_X - 22, RIM_X - 6, RIM_X - 15, RIM_X - 2, RIM_X - 8, RIM_X - 20, RIM_X - 5, RIM_X - 12)
   py <- c(2, -8, 0, 12, -14, -1, -6, 3, 9, -10)
@@ -184,11 +201,13 @@ test_that("the rim-arrival trigger is causal, fires where the rule says, and ski
 
 test_that("triggers and features are the same in both attack directions", {
   inf <- th$information
-  a <- synthetic_raw(1); b <- synthetic_raw(-1)
+  a <- synthetic_raw(1)
+  b <- synthetic_raw(-1)
   ta <- episode_tracking(a$raw, a$s, TRUE, inf$keyframe_tol_ft, inf$ball_delay_frames, inf$player_carry_frames)
   tb <- episode_tracking(b$raw, b$s, TRUE, inf$keyframe_tol_ft, inf$ball_delay_frames, inf$player_carry_frames)
   expect_equal(prediction_points(ta, a$s, th), prediction_points(tb, b$s, th))
-  fa <- features_at(ta$players, 120L, 5L); fb <- features_at(tb$players, 120L, 5L)
+  fa <- features_at(ta$players, 120L, 5L)
+  fb <- features_at(tb$players, 120L, 5L)
   expect_equal(fa, fb)
   expect_equal(fa[pid == 506]$rank_all, 1L)               # the defender 2 ft from the hoop is nearest
   expect_true(fa[pid == 506]$inside_gap > 0)

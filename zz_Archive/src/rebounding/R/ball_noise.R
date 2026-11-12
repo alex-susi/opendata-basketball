@@ -20,7 +20,8 @@ estimate_noise <- function(segments, min_span = 0.4) {
   ok <- vapply(segments, nrow, 0L) >= 5L
   res <- do.call(rbind, lapply(fits[ok], `[[`, "res"))
   dof <- nrow(res) - 3L * sum(ok)
-  spans <- vapply(fits, `[[`, 0, "span"); gs <- vapply(fits, `[[`, 0, "g")
+  spans <- vapply(fits, `[[`, 0, "span")
+  gs <- vapply(fits, `[[`, 0, "g")
   list(r = sqrt(colSums(res^2) / dof), g = median(gs[spans >= min_span]), n_segments = sum(ok), n_obs = nrow(res),
        n_g = sum(spans >= min_span))
 }

@@ -30,15 +30,19 @@ hmm_log_emis <- function(X, mu, sd, mask = NULL) {
 hmm_fb <- function(L, A, init, idx) {
   off <- apply(L, 1, max)
   B <- exp(L - off)
-  n <- nrow(B); K <- ncol(B)
-  al <- matrix(0, n, K); sc <- numeric(n)
+  n <- nrow(B)
+  K <- ncol(B)
+  al <- matrix(0, n, K)
+  sc <- numeric(n)
   r <- idx[[1]]
   a <- B[r, , drop = FALSE] * rep(init, each = length(r))
-  sc[r] <- rowSums(a); al[r, ] <- a / sc[r]
+  sc[r] <- rowSums(a)
+  al[r, ] <- a / sc[r]
   for (t in seq_along(idx)[-1]) {
     r <- idx[[t]]
     a <- (al[r - 1L, , drop = FALSE] %*% A) * B[r, , drop = FALSE]
-    sc[r] <- rowSums(a); al[r, ] <- a / sc[r]
+    sc[r] <- rowSums(a)
+    al[r, ] <- a / sc[r]
   }
   be <- matrix(1, n, K)
   Xi <- matrix(0, K, K)
@@ -55,7 +59,9 @@ hmm_fb <- function(L, A, init, idx) {
 #' Transition M-step: rows proportional to expected counts over the allowed cells; a state with a fixed stay keeps it
 #' and shares the rest in proportion to its counts.
 hmm_m_trans <- function(xi, allowed, fixed_stay) {
-  K <- nrow(xi); A <- matrix(0, K, K)
+  K <- nrow(xi)
+  A <- matrix(0, K, K)
+  # Each state's transition row from expected counts, holding a fixed stay probability where one is given.
   for (k in seq_len(K)) {
     ok <- allowed[k, ]
     if (!is.na(fixed_stay[k])) {
@@ -79,8 +85,12 @@ hmm_em <- function(X, ep, A0, mu0, sd0, init, fixed_stay, maxit = 500, rel_tol =
   allowed <- A0 > 0
   obs <- stats::complete.cases(X)
   Xo <- X[obs, , drop = FALSE]
-  A <- A0; mu <- mu0; sd <- sd0
-  ll_old <- -Inf; trace <- numeric(0)
+  A <- A0
+  mu <- mu0
+  sd <- sd0
+  ll_old <- -Inf
+  trace <- numeric(0)
+  # EM: forward-backward, then update transitions and emissions, until the log likelihood stops improving.
   for (it in seq_len(maxit)) {
     fb <- hmm_fb(hmm_log_emis(X, mu, sd, mask), A, init, idx)
     trace <- c(trace, fb$loglik)
@@ -100,8 +110,11 @@ hmm_em <- function(X, ep, A0, mu0, sd0, init, fixed_stay, maxit = 500, rel_tol =
 
 #' Viterbi path (state index per row), vectorized over episodes.
 hmm_viterbi <- function(L, A, init, idx) {
-  n <- nrow(L); K <- ncol(L)
-  lA <- log(A); dl <- matrix(-Inf, n, K); bp <- matrix(0L, n, K)
+  n <- nrow(L)
+  K <- ncol(L)
+  lA <- log(A)
+  dl <- matrix(-Inf, n, K)
+  bp <- matrix(0L, n, K)
   r <- idx[[1]]
   dl[r, ] <- L[r, , drop = FALSE] + rep(log(init), each = length(r))
   for (t in seq_along(idx)[-1]) {
@@ -117,7 +130,10 @@ hmm_viterbi <- function(L, A, init, idx) {
   path <- integer(n)
   T <- length(idx)
   # last row of each episode: its best final state
-  last <- unlist(lapply(seq_len(T), function(t) { r <- idx[[t]]; if (t < T) setdiff(r, idx[[t + 1]] - 1L) else r }))
+  last <- unlist(lapply(seq_len(T), function(t) {
+    r <- idx[[t]]
+    if (t < T) setdiff(r, idx[[t + 1]] - 1L) else r
+  }))
   path[last] <- max.col(dl[last, , drop = FALSE], ties.method = "first")
   for (t in rev(seq_len(T)[-1])) {
     r <- idx[[t]]

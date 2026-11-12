@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Anticipation, boxing out and collection effects (framework sections 8, 9, 10 and 11).
 #
 # Each skill is estimated from its own kind of evidence: anticipation from movement in the first half
@@ -5,6 +6,7 @@
 # release; boxing out from opponent pairs whose routes to the reachable ball are blocked (a spatial
 # obstruction proxy: no video, no body orientation); collection from who secures the ball given access
 # (player effects in the competing-risks model). Requires opportunity.R and cpp/opportunity.cpp.
+## ═════════════════════════════════════════════════════════════════════════════
 
 ANT_STEPS <- 6L           # decision interval: 6 path steps = 0.48 s after release
 ANT_FRAMES <- 12L         # the same interval in tracking frames
@@ -15,7 +17,13 @@ BOX_HOLD <- 0.25          # obstruction that counts as still holding it
 BOX_LOST <- 0.10          # obstruction below which it is lost
 BOX_STEP <- 5L            # frames between box-out samples (0.2 s)
 
-# ---- movement and anticipation ------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - MOVEMENT AND ANTICIPATION ----------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Role at release: side, and the shooter or a distance band from the hoop.
 player_roles <- function(pl, shooter) {
@@ -26,7 +34,8 @@ player_roles <- function(pl, shooter) {
 
 #' Hoop-polar unit vectors at each position: radial toward the hoop and its left-hand tangent.
 polar_axes <- function(x, y) {
-  dx <- RIM_X - x; dy <- -y
+  dx <- RIM_X - x
+  dy <- -y
   d <- pmax(sqrt(dx^2 + dy^2), 0.5)
   list(rx = dx / d, ry = dy / d, tx = -dy / d, ty = dx / d)
 }
@@ -39,7 +48,8 @@ movement_rows <- function(b, sc) {
   p1 <- p1[match(p0$pid, p1$pid)]
   if (anyNA(p1$x)) return(NULL)
   ax <- polar_axes(p0$x, p0$y)
-  dx <- p1$x - p0$x; dy <- p1$y - p0$y
+  dx <- p1$x - p0$x
+  dy <- p1$y - p0$y
   data.table(shot_id = b$id, game_id = b$game_id, pid = p0$pid, canon = p0$canon, off = p0$off,
              role = player_roles(p0, b$shot$canon), x0 = p0$x, y0 = p0$y, vx0 = p0$vx, vy0 = p0$vy,
              x1 = p1$x, y1 = p1$y, vx1 = p1$vx, vy1 = p1$vy,
@@ -60,11 +70,15 @@ residual_cloud <- function(row, lib, damp) {
   pool <- lib[role == row$role]
   if (nrow(pool) < 20L) pool <- lib[off == row$off]
   h <- ANT_FRAMES / FPS
-  ex <- pool$x1 - pool$x0 - damp$pos * pool$vx0 * h; ey <- pool$y1 - pool$y0 - damp$pos * pool$vy0 * h
-  evx <- pool$vx1 - damp$vel * pool$vx0; evy <- pool$vy1 - damp$vel * pool$vy0
+  ex <- pool$x1 - pool$x0 - damp$pos * pool$vx0 * h
+  ey <- pool$y1 - pool$y0 - damp$pos * pool$vy0 * h
+  evx <- pool$vx1 - damp$vel * pool$vx0
+  evy <- pool$vy1 - damp$vel * pool$vy0
   a <- polar_axes(pool$x0, pool$y0)
-  dr <- ex * a$rx + ey * a$ry; dt <- ex * a$tx + ey * a$ty
-  vr <- evx * a$rx + evy * a$ry; vt <- evx * a$tx + evy * a$ty
+  dr <- ex * a$rx + ey * a$ry
+  dt <- ex * a$tx + ey * a$ty
+  vr <- evx * a$rx + evy * a$ry
+  vt <- evx * a$tx + evy * a$ty
   ax <- polar_axes(row$x0, row$y0)
   data.table(x = row$x0 + damp$pos * row$vx0 * h + dr * ax$rx + dt * ax$tx,
              y = row$y0 + damp$pos * row$vy0 * h + dr * ax$ry + dt * ax$ty,
@@ -85,11 +99,14 @@ reference_moves <- function(row, lib, n, seed, damp) {
 variant_probs <- function(sc, base_pl, i, ends, acc, fit) {
   K <- N_STEPS - ANT_STEPS
   cols <- ANT_STEPS + seq_len(K)
-  bx <- sc$bx[, cols, drop = FALSE]; by <- sc$by[, cols, drop = FALSE]; bz <- sc$bz[, cols, drop = FALSE]
+  bx <- sc$bx[, cols, drop = FALSE]
+  by <- sc$by[, cols, drop = FALSE]
+  bz <- sc$bz[, cols, drop = FALSE]
   out_step <- ifelse(sc$out_step < 0L, -1L, pmax(0L, sc$out_step - ANT_STEPS))
   t_info <- pmax(0, sc$t_info - ANT_STEPS * STEP)
   V <- nrow(ends)
-  A <- numeric(0); Z <- numeric(0)
+  A <- numeric(0)
+  Z <- numeric(0)
   for (v in seq_len(V)) {
     pl <- copy(base_pl)
     pl[i, c("x", "y", "vx", "vy") := ends[v]]
@@ -134,6 +151,7 @@ score_movement <- function(test, lib, damp, sd_stat, sd_damp) {
     ld <- vapply(seq_len(min(200L, length(ex))), function(j) kde(ex[j] + rnorm(1), ey[j] + rnorm(1)), 0)
     c(err = sqrt((r$x1 - mean(ex))^2 + (r$y1 - mean(ey))^2), ls = ly, cover80 = ly >= unname(quantile(ld, 0.2)))
   }
+  # Per test row: forecast the player's spot h seconds ahead from the residual cloud of similar library rows.
   rbindlist(lapply(seq_len(nrow(test)), function(k) {
     r <- test[k]
     pool <- lib[role == r$role]
@@ -152,7 +170,13 @@ score_movement <- function(test, lib, damp, sd_stat, sd_damp) {
   }))
 }
 
-# ---- boxing out ---------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - BOXING OUT -------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Candidate box-out pairs of one episode and their obstruction over time. Pairs are opponents within 6 ft
 #' of each other at release, both within 22 ft of the hoop, neither the shooter; obstruction is measured
@@ -176,13 +200,16 @@ boxout_pairs <- function(b, sc) {
   cand <- cand[sqrt((p0$x[bb] - p0$x[o])^2 + (p0$y[bb] - p0$y[o])^2) <= 6]
   if (!nrow(cand)) return(NULL)
   t_rim <- rim_time(b)
+  # Per candidate pair: the obstruction series over the window, when it first reached BOX_ON, and how it held.
   rbindlist(lapply(seq_len(nrow(cand)), function(k) {
-    bb <- cand$bb[k]; o <- cand$o[k]
+    bb <- cand$bb[k]
+    o <- cand$o[k]
     s <- vapply(series, function(x) x$O[bb, o], 0)
     tt <- (vapply(series, function(x) as.numeric(x$frame), 0) - b$shot$f0) / FPS
     est <- which(s >= BOX_ON)[1]
     at <- if (is.na(est)) 1L else est
-    pb <- series[[at]]$pl[bb]; po <- series[[at]]$pl[o]
+    pb <- series[[at]]$pl[bb]
+    po <- series[[at]]$pl[o]
     gap <- sqrt((pb$x - po$x)^2 + (pb$y - po$y)^2)
     after <- if (is.na(est)) integer(0) else seq(est, length(s))
     upto <- after[tt[after] <= t_rim + 0.2]
@@ -212,7 +239,11 @@ boxout_value <- function(sc, acc, fit) {
   A <- scene_access(sc, acc)
   base_Z <- function(O) as.vector(rbind(as.numeric(!sc$pl$off), apply(O, 2, max)))
   Zs <- list(base_Z(sc$O))
-  for (bb in 1:10) { O <- sc$O; O[bb, ] <- 0; Zs[[bb + 1]] <- base_Z(O) }
+  for (bb in 1:10) {
+    O <- sc$O
+    O[bb, ] <- 0
+    Zs[[bb + 1]] <- base_Z(O)
+  }
   V <- length(Zs)
   dims <- as.integer(c(V, P_SCENE, N_STEPS, 10L, 0L))
   P <- cr_predict(fit$theta, rep(A, V), rep(sc$out_step, V), unlist(Zs), rep(-1L, 10L * V), rep(0L, V), dims)

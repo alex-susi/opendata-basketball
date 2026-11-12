@@ -1,8 +1,10 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Steps 2 and 4 of the rebounding framework: physical opportunity and collection, leave one game out.
 #   Rscript src/rebounding/run_opportunity.R [--refit]
 # Needs run_flight.R's folds. Scenes are cached per flight fold (outputs/cache/rebounding/scenes_{gameId}.rds,
 # built with flight parameters fitted without that game) and model folds in opp_fold_{gameId}.rds, so an
 # interrupted run resumes. Writes outputs/rebounding/collection/*.csv.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -12,10 +14,26 @@ load_opportunity_cpp(here, cache)
 out_dir <- file.path(report, "collection")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 ACC_BASE <- list(react = 0.5, vmax = 18.1, sigma = 0.25, z_reach = 10.5, z_scale = 0.35, info_lag = 0.25, policy = 1L)
 ACC_GRID <- CJ(policy = 0:2, react = c(0.5, 1.0))
 SD_U <- c(0.15, 0.3, 0.6)
 CHECKPOINTS <- names(OPP_CHECKPOINTS)
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - SCENES AND FOLDS -------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 # Recorded rebound spots in the player frame, for the empirical-density benchmark.
 reb_xy <- rbindlist(lapply(bundles, function(b) {
@@ -38,8 +56,10 @@ run_fold <- function(sc_all, g, cp) {
   ok <- vapply(sc_all, valid, NA)
   tr <- which(ok & bundle_game != g)
   te <- which(ok & bundle_game == g)
-  s_tr <- sc_all[tr]; s_te <- sc_all[te]
-  y_tr <- vapply(s_tr, `[[`, 0L, "y"); y_te <- vapply(s_te, `[[`, 0L, "y")
+  s_tr <- sc_all[tr]
+  s_te <- sc_all[te]
+  y_tr <- vapply(s_tr, `[[`, 0L, "y")
+  y_te <- vapply(s_te, `[[`, 0L, "y")
   players <- sort(unique(unlist(lapply(s_tr, function(sc) as.character(sc$pl$canon)))))
   # access physics: information policy and reaction time by training likelihood (no obstruction, no effects)
   grid <- copy(ACC_GRID)
@@ -48,8 +68,10 @@ run_fold <- function(sc_all, g, cp) {
     fit_cr(stack_scenes(s_tr, acc, players, FALSE), free_theta = c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE))$value
   }, policy, react)]
   acc <- modifyList(ACC_BASE, as.list(grid[which.min(nll), .(policy, react)]))
-  st_tr0 <- stack_scenes(s_tr, acc, players, FALSE); st_te0 <- stack_scenes(s_te, acc, players, FALSE)
-  st_tr <- stack_scenes(s_tr, acc, players, TRUE); st_te <- stack_scenes(s_te, acc, players, TRUE)
+  st_tr0 <- stack_scenes(s_tr, acc, players, FALSE)
+  st_te0 <- stack_scenes(s_te, acc, players, FALSE)
+  st_tr <- stack_scenes(s_tr, acc, players, TRUE)
+  st_te <- stack_scenes(s_te, acc, players, TRUE)
   f3 <- fit_cr(st_tr0, free_theta = c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE))
   f4 <- fit_cr(st_tr, start = f3$theta)
   f5 <- lapply(SD_U, function(sd) fit_cr(st_tr, sd_u = sd, start = f4$theta))
@@ -69,11 +91,19 @@ run_fold <- function(sc_all, g, cp) {
   scores <- rbindlist(lapply(names(preds), function(m) {
     colnames(preds[[m]]) <- OUTCOMES
     score_outcomes(preds[[m]], y_te)[, `:=`(model = m, shot_id = te_ids, game_id = g, checkpoint = cp,
-                                           repeat_player = repeat_ep, rebounder_seen = rebounder_seen)]
+                                            repeat_player = repeat_ep, rebounder_seen = rebounder_seen)]
   }))
   list(scores = scores, grid = grid[, game_id := g], acc = acc,
        fits = list(access = f3, access_obstruction = f4, effects = f5), preds = preds, te_ids = te_ids)
 }
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - FOLDS ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 only <- sub("^--game=", "", grep("^--game=", args, value = TRUE))
 for (g in if (length(only)) as.integer(only) else games) {
@@ -88,13 +118,21 @@ for (g in if (length(only)) as.integer(only) else games) {
   message(sprintf("Opportunity fold %s: %.0f s", g, as.numeric(difftime(Sys.time(), t0, units = "secs"))))
 }
 
-# ---- summaries -----------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - SUMMARIES --------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 if (length(only)) quit(save = "no")
 folds <- lapply(games, function(g) readRDS(file.path(cache, sprintf("opp_fold_%s.rds", g))))
 scores <- rbindlist(lapply(folds, function(f) rbindlist(lapply(f, `[[`, "scores"))))
 auc <- function(p, y) {
-  r <- rank(p); n1 <- sum(y); n0 <- sum(!y)
+  r <- rank(p)
+  n1 <- sum(y)
+  n0 <- sum(!y)
   if (!n1 || !n0) return(NA_real_)
   (sum(r[y]) - n1 * (n1 + 1) / 2) / (n1 * n0)
 }

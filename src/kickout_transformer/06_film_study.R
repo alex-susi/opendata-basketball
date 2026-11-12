@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 6: film study. Plays where one or both models were confident and wrong, one card per play.
 #   Rscript src/kickout_transformer/06_film_study.R [--drop-other] [--model=freeze] [--n_per=...]
 #
@@ -13,6 +14,7 @@
 #
 # Writes figures/film_study/<nn>_<category>.png and film_study_plays.csv (links, clock, probabilities) under the
 # output folder, plus a count of every confident miss by kind (film_study_miss_counts.csv).
+## ═════════════════════════════════════════════════════════════════════════════
 
 source(file.path(dirname(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))), "R", "common.R"))
 root <- kt_root()
@@ -23,24 +25,33 @@ arg <- function(name, default) {
   if (length(hit)) sub(paste0("^--", name, "="), "", hit[1]) else default
 }
 MODEL <- arg("model", "freeze")
+# A confident miss puts at least CONFIDENT on an outcome that did not happen; N_PER plays are drawn per category.
 CONFIDENT <- 0.6
 N_PER <- c(both_pass_was_drive = 2, both_pass_was_shot = 2, both_shot_was_other = 1, transformer_only = 1,
            logistic_only = 1, kickout = 1)
 
+# Held-out transformer and logistic predictions, and the transformer's attention stacked over its folds.
 d <- kt_load_catches(paths)
 m <- d$meta
 tf <- lapply(list.files(paths$cache, sprintf("^tf_%s_[0-9]+\\.rds$", MODEL), full.names = TRUE), readRDS)
 tf_pred <- rbindlist(lapply(tf, `[[`, "pred"))
 att_rows <- unlist(lapply(tf, function(o) o$pred$row))
 att <- do.call(abind_first <- function(...) {
-  parts <- list(...); n <- vapply(parts, function(a) dim(a)[1], 0L)
-  out <- array(NA_real_, c(sum(n), dim(parts[[1]])[-1])); at <- 0L
-  for (a in parts) { out[at + seq_len(dim(a)[1]), , , ] <- a; at <- at + dim(a)[1] }
+  parts <- list(...)
+  n <- vapply(parts, function(a) dim(a)[1], 0L)
+  out <- array(NA_real_, c(sum(n), dim(parts[[1]])[-1]))
+  at <- 0L
+  for (a in parts) {
+    out[at + seq_len(dim(a)[1]), , , ] <- a
+    at <- at + dim(a)[1]
+  }
   out
 }, lapply(tf, `[[`, "attention"))                                       # [catch, layer, head, token]
+# Receiver's last-layer attention for one catch, heads averaged.
 last_layer_w <- function(r) colMeans(matrix(att[match(r, att_rows), dim(att)[2], , ], nrow = dim(att)[3]))
 lg_pred <- readRDS(file.path(paths$cache, "pred_baselines.rds"))[model == "logistic"]
 
+# Each model's top class and its probability; then classify every catch by which model missed confidently.
 top_of <- function(p) {
   P <- as.matrix(p[, ..PROB_COLS])
   data.table(row = p$row, top = CLASSES[max.col(P, ties.method = "first")], ptop = apply(P, 1, max))
@@ -58,7 +69,13 @@ fwrite(counts, file.path(paths$out, "film_study_miss_counts.csv"))
 cat(sprintf("Confident misses (>= %.0f%% on an outcome that did not happen), out of %d catches:\n", 100 * CONFIDENT, nrow(x)))
 print(counts)
 
-# ---- pick the plays ---------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - PICK THE PLAYS ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 # A "perimeter catch" more than 40 ft from the hoop means the positions (or the court direction) are broken for that
 # play. Those are data problems, not model mistakes: list them separately and keep them out of the film-study set.
@@ -71,15 +88,18 @@ if (nrow(issues)) cat("\nLeft out as data problems (receiver drawn > 40 ft from 
                       paste0("#/play/", m[row %in% issues$row, poss_id]), "\n")
 x <- x[recv_hoop_dist <= 40]
 
+# Candidate pools per category, most confident first.
 both <- x[conf_wrong_tf & conf_wrong_lg][, conf := pmin(ptop_tf, ptop_lg)]
-pools <- list(
-  both_pass_was_drive = both[top_tf == "pass" & top_lg == "pass" & label == "drive"][order(-conf)],
-  both_pass_was_shot = both[top_tf == "pass" & top_lg == "pass" & label == "shot"][order(-conf)],
-  both_shot_was_other = both[top_tf == "shot" & top_lg == "shot"][order(-conf)],
-  transformer_only = x[conf_wrong_tf & top_lg == label][order(-ptop_tf)],
-  logistic_only = x[conf_wrong_lg & top_tf == label][order(-ptop_lg)],
-  kickout = x[kickout == TRUE & (conf_wrong_tf | conf_wrong_lg)][order(-pmax(ptop_tf * conf_wrong_tf, ptop_lg * conf_wrong_lg))])
-picked <- list(); used_games <- integer(); used_rows <- integer()
+pools <- list(both_pass_was_drive = both[top_tf == "pass" & top_lg == "pass" & label == "drive"][order(-conf)],
+              both_pass_was_shot = both[top_tf == "pass" & top_lg == "pass" & label == "shot"][order(-conf)],
+              both_shot_was_other = both[top_tf == "shot" & top_lg == "shot"][order(-conf)],
+              transformer_only = x[conf_wrong_tf & top_lg == label][order(-ptop_tf)],
+              logistic_only = x[conf_wrong_lg & top_tf == label][order(-ptop_lg)],
+              kickout = x[kickout == TRUE & (conf_wrong_tf | conf_wrong_lg)][order(-pmax(ptop_tf * conf_wrong_tf, ptop_lg * conf_wrong_lg))])
+# Draw plays category by category, preferring games not used yet and never repeating a catch.
+picked <- list()
+used_games <- integer()
+used_rows <- integer()
 for (cat_name in names(N_PER)) {
   pool <- pools[[cat_name]][!row %in% used_rows]
   for (k in seq_len(N_PER[[cat_name]])) {
@@ -87,15 +107,23 @@ for (cat_name in names(N_PER)) {
     fresh <- pool[!game_id %in% used_games]
     pick <- if (nrow(fresh)) fresh[1] else pool[1]
     picked[[length(picked) + 1]] <- pick[, category := cat_name]
-    used_games <- c(used_games, pick$game_id); used_rows <- c(used_rows, pick$row)
+    used_games <- c(used_games, pick$game_id)
+    used_rows <- c(used_rows, pick$row)
     pool <- pool[row != pick$row]
   }
 }
 picked <- rbindlist(picked, fill = TRUE)
 
-# ---- draw ---------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - DRAW -------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 roster <- load_rosters(root, unique(picked$game_id))
+# Card headline: what happened and what each model expected.
 pct <- function(p) sprintf("%.0f%%", 100 * p)
 headline_of <- function(s) {
   actual <- sprintf("Actually a %s.", toupper(s$label))
@@ -113,9 +141,12 @@ tf_label <- if (MODEL == "hist") "Transformer (+ last 1 s)" else "Transformer (f
 fig_dir <- file.path(paths$out, "figures", "film_study")
 dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 unlink(list.files(fig_dir, "\\.png$", full.names = TRUE))
+# One card per picked play, plus a table row with its dashboard link and both models' probabilities.
 rows_out <- list()
 for (i in seq_len(nrow(picked))) {
-  s <- picked[i]; r <- s$row; meta <- m[row == r]
+  s <- picked[i]
+  r <- s$row
+  meta <- m[row == r]
   probs <- setNames(list(setNames(unlist(tf_pred[row == r, ..PROB_COLS]), CLASSES),
                          setNames(unlist(lg_pred[row == r, ..PROB_COLS]), CLASSES)),
                     c(tf_label, "Logistic (10 hand features)"))

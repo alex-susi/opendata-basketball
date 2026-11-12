@@ -1,9 +1,11 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 07 of the rebounding manual: forecasts of the ball after it reaches the rim. Three models share one scoring
 # rule: a Gaussian around the gravity-only forecast (gravity_gauss), empirical analog transitions (empirical), and a
 # particle filter running the physics of physics.R (physics). Settings: config/experiment.yaml (step07). Resampling
 # and effective sample size follow filterpy's monte_carlo module and the Kalman book's particle-filter chapter (MIT;
 # ideas, written independently in R).
 # Requires geometry.R, physics.R.
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Run `expr` with its own random stream and leave the caller's stream untouched.
 with_seed <- function(seed, expr) {
@@ -22,7 +24,13 @@ systematic_resample <- function(w, u0 = runif(1) / length(w)) {
   pmin(findInterval(pos, cumsum(w) / sum(w)) + 1L, n)
 }
 
-# ---- physics particle filter ---------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - PHYSICS PARTICLE FILTER ------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Particles from the two-point state: positions with observation noise, velocities with velocity_sd, contact
 #' parameters from their priors; equal weights. Positions are hoop-relative.
@@ -39,7 +47,10 @@ pf_advance <- function(pf, frame, g, ph) {
   t <- (frame - pf$frame) / FPS
   if (t <= 0) return(pf)
   s <- simulate_balls(pf$X, pf$V, pf$C, t, g, ph)
-  pf$X <- s$X; pf$V <- s$V; pf$contacts <- pf$contacts + s$contacts; pf$frame <- frame
+  pf$X <- s$X
+  pf$V <- s$V
+  pf$contacts <- pf$contacts + s$contacts
+  pf$frame <- frame
   pf
 }
 
@@ -49,14 +60,19 @@ pf_update <- function(pf, z, ph) {
   zr <- z - pf$hoop
   ll <- rowSums(dnorm(sweep(pf$X, 2, zr), 0, ph$weight_sd_ft, log = TRUE))
   lw <- log(pf$w) + ll
-  w <- exp(lw - max(lw)); w <- w / sum(w)
-  e <- ess(w); resampled <- FALSE
+  w <- exp(lw - max(lw))
+  w <- w / sum(w)
+  e <- ess(w)
+  resampled <- FALSE
   if (e < ph$resample_below * length(w)) {
     i <- systematic_resample(w)
-    pf$X <- pf$X[i, , drop = FALSE]; pf$V <- pf$V[i, , drop = FALSE]; pf$contacts <- pf$contacts[i, , drop = FALSE]
+    pf$X <- pf$X[i, , drop = FALSE]
+    pf$V <- pf$V[i, , drop = FALSE]
+    pf$contacts <- pf$contacts[i, , drop = FALSE]
     pf$C <- lapply(pf$C, `[`, i)
     pf$V <- pf$V + matrix(rnorm(length(pf$V), 0, ph$roughen_sd_ft_s), ncol = 3)
-    w <- rep(1 / length(w), length(w)); resampled <- TRUE
+    w <- rep(1 / length(w), length(w))
+    resampled <- TRUE
   }
   pf$w <- w
   pf$log[[length(pf$log) + 1L]] <- data.table(frame = pf$frame, ess = e, resampled = resampled, weight_sum = sum(w))
@@ -69,15 +85,23 @@ pf_forecast <- function(pf, frame, g, ph) {
   list(X = from_hoop(f$X, pf$hoop), w = f$w, contacts = f$contacts)
 }
 
-# ---- empirical analog transitions ----------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - EMPIRICAL ANALOG TRANSITIONS -------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Library rows from one episode: the state at each origin (position relative to its hoop, two-point velocity, offset
 #' since the trigger) and the displacement from the last usable measured position to each measured frame at the given
 #' leads (frames after the origin; the column is called horizon).
 analog_rows <- function(obs, origins, offsets, horizons, rebound_frame, hoop, g) {
   meas <- obs[measured == TRUE]
+  # Per origin and horizon: the measured ball positions to score against the forecast from that origin.
   rbindlist(lapply(seq_along(origins), function(j) {
-    t <- origins[j]; st <- two_point_state(obs, t, g)
+    t <- origins[j]
+    st <- two_point_state(obs, t, g)
     if (is.null(st)) return(NULL)
     rbindlist(lapply(horizons, function(h) {
       tg <- meas[frame == t + h & frame < rebound_frame]
@@ -109,7 +133,13 @@ analog_forecast <- function(al, st, offset, h, hoop, k, r) {
   list(X = sweep(D, 2, st$p, `+`), w = rep(1 / nrow(D), nrow(D)), sd = sqrt(bw^2 + r^2))
 }
 
-# ---- scoring a forecast cloud ---------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - SCORING A FORECAST CLOUD -----------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Log density of points Y (m x 3) under a weighted Gaussian mixture with centres X, weights w and per-axis sd.
 mixture_logdens <- function(Y, X, w, sd) {
@@ -134,7 +164,8 @@ score_mixture <- function(y, X, w, sd, n_draw, seed) {
     i <- sample.int(nrow(X), n_draw, replace = TRUE, prob = w)
     X[i, , drop = FALSE] + matrix(rnorm(3 * n_draw), ncol = 3) %*% diag(sd)
   })
-  ly <- mixture_logdens(y, X, w, sd); lz <- mixture_logdens(Z, X, w, sd)
+  ly <- mixture_logdens(y, X, w, sd)
+  lz <- mixture_logdens(Z, X, w, sd)
   half <- seq_len(n_draw %/% 2)
   es <- mean(sqrt(rowSums(sweep(Z, 2, y)^2))) - 0.5 * mean(sqrt(rowSums((Z[half, , drop = FALSE] - Z[-half, , drop = FALSE][half, , drop = FALSE])^2)))
   mu <- colSums(X * w) / sum(w)

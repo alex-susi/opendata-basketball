@@ -28,10 +28,13 @@ group_means <- function(d, value, by, reps, seed, level = 0.95) {
   rbindlist(lapply(split(d, by = by), function(g) {
     pg <- g[, .(s = sum(get(value), na.rm = TRUE), n = sum(!is.na(get(value)))), by = game_id]
     set.seed(seed)
-    b <- replicate(reps, { i <- sample.int(nrow(pg), replace = TRUE); sum(pg$s[i]) / sum(pg$n[i]) })
+    b <- replicate(reps, {
+      i <- sample.int(nrow(pg), replace = TRUE)
+      sum(pg$s[i]) / sum(pg$n[i])
+    })
     a <- (1 - level) / 2
     cbind(g[1, ..by], data.table(n = sum(pg$n), games = nrow(pg), mean = sum(pg$s) / sum(pg$n),
-                                  lo = unname(quantile(b, a, na.rm = TRUE)), hi = unname(quantile(b, 1 - a, na.rm = TRUE))))
+                                 lo = unname(quantile(b, a, na.rm = TRUE)), hi = unname(quantile(b, 1 - a, na.rm = TRUE))))
   }))
 }
 

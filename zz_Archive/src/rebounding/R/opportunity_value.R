@@ -10,7 +10,7 @@ opportunity <- function(st, t0, parts, rp, sigma) {
   avail <- (parts$frame - t0) / FPS
   M <- vapply(seq_len(nrow(parts)), function(k)
     avail[k] - arrival_time(st$x, st$y, st$vx, st$vy, parts$bx[k], parts$by[k], rp) - height_cost(parts$z[k], rp),
-    numeric(nrow(st)))
+              numeric(nrow(st)))
   M <- matrix(M, nrow = nrow(st))
   P <- 1 / (1 + exp(-pi / sqrt(3) / sigma * M))
   data.table(pid = st$pid, Q = rowMeans(P))

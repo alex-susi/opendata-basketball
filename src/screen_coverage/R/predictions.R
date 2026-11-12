@@ -29,12 +29,15 @@ SEQ_MODEL <- "time-aware transformer, two heads"
 load_seqheads <- function(root) {
   cache_dir <- file.path(root, "outputs", "cache", "screen_coverage")
   X <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))$X
+  # Gather the ten fold files into X's row order.
   out <- list(prob = matrix(NA_real_, nrow(X), 5), heads = matrix(NA_real_, nrow(X), 3), att = matrix(NA_real_, nrow(X), 10))
   for (g in sort(unique(X$game_id))) {
     f <- file.path(cache_dir, "tf", sprintf("seqheads_%d.rds", g))
     if (!file.exists(f)) stop("Missing ", f, ": run 10_train_seq_transformer.R --fold=", g)
     o <- readRDS(f)
-    out$prob[o$rows, ] <- o$prob; out$heads[o$rows, ] <- o$heads; out$att[o$rows, ] <- o$att
+    out$prob[o$rows, ] <- o$prob
+    out$heads[o$rows, ] <- o$heads
+    out$att[o$rows, ] <- o$att
   }
   out
 }
@@ -45,14 +48,19 @@ load_coverage_predictions <- function(root) {
   cache_dir <- file.path(root, "outputs", "cache", "screen_coverage")
   L <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))
   X <- L$X
+  # Each transformer variant's ten fold files, gathered into X's row order.
   tf <- lapply(TF_VARIANT, function(v) {
     files <- file.path(cache_dir, "tf", sprintf("%s_%d.rds", v, sort(unique(X$game_id))))
     if (!all(file.exists(files))) stop("Missing transformer folds for ", v, ": run 04_train_transformer.R")
     Pm <- matrix(NA_real_, nrow(X), length(L$calls))
-    for (f in files) { o <- readRDS(f); Pm[o$rows, ] <- o$prob }
+    for (f in files) {
+      o <- readRDS(f)
+      Pm[o$rows, ] <- o$prob
+    }
     stopifnot(!anyNA(Pm))
     Pm
   })
+  # Name every model by its family and variant.
   prob <- c(setNames(L$prob[COVERAGE_MODELS], paste("logistic:", COVERAGE_MODELS)),
             setNames(tf, paste("transformer:", COVERAGE_MODELS)))
   list(P = L$P, X = X, calls = L$calls, offs = L$offs, lg_ll = L$lg_ll, sf_ll = L$sf_ll, prob = prob)

@@ -36,6 +36,7 @@ season_jump_effects <- function(root, shots) {
   label[, contest := fifelse(level %in% UNCONTESTED_LEVELS, "uncontested", fifelse(level %in% CONTESTED_LEVELS, "contested", NA_character_))]
   label[, release := fifelse(!typed, NA_character_, fifelse(cns, "catch_and_shoot", "off_dribble"))]
   season <- fread(file.path(root, "data", "aggregates", "acb_shotsaggregates_20252026.csv"))[!is.na(team_id)]
+  # Per split: tracked attempts and makes beside the season aggregate's attempts and makes for the same groups.
   detail <- rbindlist(lapply(names(SEASON_SPLITS), function(split) {
     cols <- SEASON_SPLITS[[split]]
     out <- label[!is.na(get(split)), .(tracked_attempts = .N, tracked_mades = sum(made), tracked_located = sum(!is.na(close)),

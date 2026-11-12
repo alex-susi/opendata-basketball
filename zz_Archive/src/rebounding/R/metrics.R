@@ -120,7 +120,10 @@ paired_comparison <- function(sc, candidate, reference, time, metric = "ll", rep
   d[, diff := a - b]
   pg <- d[, .(n = .N, s = sum(diff), mean_diff = mean(diff)), by = game_id][order(game_id)]
   set.seed(seed)
-  boot <- replicate(reps, { i <- sample.int(nrow(pg), replace = TRUE); sum(pg$s[i]) / sum(pg$n[i]) })
+  boot <- replicate(reps, {
+    i <- sample.int(nrow(pg), replace = TRUE)
+    sum(pg$s[i]) / sum(pg$n[i])
+  })
   alpha <- (1 - level) / 2
   bq <- unname(quantile(boot, c(alpha, 1 - alpha)))
   m <- mean(pg$mean_diff)

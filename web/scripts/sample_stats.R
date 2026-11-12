@@ -35,6 +35,7 @@
 #                  other constants were fitted with.
 
 sample_figures <- function() {
+  # Court geometry in feet, record-field helpers, and the points an action's outcomes are worth (own make plus assist).
   M <- 3.28084
   HALF_L <- 14 * M
   KEY_X <- HALF_L - 5.8 * M
@@ -46,11 +47,21 @@ sample_figures <- function() {
   act_pts <- function(outs) vapply(outs, function(o) own_pts(o) + ast_pts(o), 0L)
   games <- as.integer(fromJSON(file.path(a$root, "data", "matches.json"))$id)
 
-  box <- list(); trk_rows <- list(); acts <- list(); zones <- list(); guards <- list(); ball <- list(); sprint <- list()
-  glass <- list(); glass_val <- list()
+  # Per-game pieces, stacked after the loop.
+  box <- list()
+  trk_rows <- list()
+  acts <- list()
+  zones <- list()
+  guards <- list()
+  ball <- list()
+  sprint <- list()
+  glass <- list()
+  glass_val <- list()
   VMAX <- 18.1147264926486      # the archived control model's league-wide top speed (web/src/lib/control.ts)
   PRIOR_FRAMES <- 15000L        # frames (10 minutes of live play) of the archetype's value in each player's estimate
   ACCEL_LAG <- 6L               # frames between the two velocities whose difference is an acceleration
+  # One game at a time: events, minutes, possessions, rebounding chances, box score, glass roles, touches, actions,
+  # tracking.
   for (g in games) {
     ev <- a$read_json_file(a$match_file(a$root, g, "_dynamic_events.json"))
     roster <- a$app_data$roster[game_id == g, .(pid, team = team_id, canon)]
@@ -113,20 +124,19 @@ sample_figures <- function() {
     for (col in c("o", "d")) if (!col %in% names(reb_opp)) reb_opp[, (col) := 0L]
 
     # ---- the box score per player ----
-    b <- Reduce(function(x, y) merge(x, y, by = "pid", all = TRUE), list(
-      roster[, .(pid)], mins,
-      shots[, .(pts_fg = sum(pts), fga = sum(fga), fgm = sum(made), fg3a = sum(fga & three), fg3m = sum(made & three),
-                fouledShots = sum(fouled), blockedOn = sum(blocked & fga)), by = pid],
-      ft[, .(fta = .N, ftm = sum(made)), by = pid],
-      rb[got == TRUE, .(oreb = sum(!defensive), dreb = sum(defensive)), by = pid],
-      shots[made == TRUE & assisted == TRUE & !is.na(passer), .(ast = .N), by = .(pid = passer)],
-      shots[made == TRUE & assisted == TRUE, .(astd = .N), by = pid],
-      to[!is.na(stealer), .(stl = .N), by = .(pid = stealer)],
-      shots[!is.na(blocker), .(blk = .N), by = .(pid = blocker)],
-      to[!is.na(pid), .(tov = .N), by = pid],
-      fo[tech == FALSE, .(pf = .N), by = pid],
-      rate_off, rate_def,
-      reb_opp[, .(pid, orebOpp = o, drebOpp = d)]))
+    b <- Reduce(function(x, y) merge(x, y, by = "pid", all = TRUE), list(roster[, .(pid)], mins,
+                                                                         shots[, .(pts_fg = sum(pts), fga = sum(fga), fgm = sum(made), fg3a = sum(fga & three), fg3m = sum(made & three),
+                                                                                   fouledShots = sum(fouled), blockedOn = sum(blocked & fga)), by = pid],
+                                                                         ft[, .(fta = .N, ftm = sum(made)), by = pid],
+                                                                         rb[got == TRUE, .(oreb = sum(!defensive), dreb = sum(defensive)), by = pid],
+                                                                         shots[made == TRUE & assisted == TRUE & !is.na(passer), .(ast = .N), by = .(pid = passer)],
+                                                                         shots[made == TRUE & assisted == TRUE, .(astd = .N), by = pid],
+                                                                         to[!is.na(stealer), .(stl = .N), by = .(pid = stealer)],
+                                                                         shots[!is.na(blocker), .(blk = .N), by = .(pid = blocker)],
+                                                                         to[!is.na(pid), .(tov = .N), by = pid],
+                                                                         fo[tech == FALSE, .(pf = .N), by = pid],
+                                                                         rate_off, rate_def,
+                                                                         reb_opp[, .(pid, orebOpp = o, drebOpp = d)]))
     num <- setdiff(names(b), "pid")
     for (col in num) set(b, which(is.na(b[[col]])), col, 0)
     b <- b[min > 0 | fga > 0 | fta > 0]
@@ -155,7 +165,7 @@ sample_figures <- function() {
     tc <- ev$touches
     ball[[length(ball) + 1L]] <- data.table(pid = a$int_field(tc, "playerId"), secs = a$num_field(tc, "touchTime"),
                                             drb = a$int_field(tc, "numDribbles"))[, .(touches = .N, ballSecs = sum(secs, na.rm = TRUE),
-                                                                                       dribbles = sum(drb, na.rm = TRUE)), by = pid][, team := team_of(pid)]
+                                                                                      dribbles = sum(drb, na.rm = TRUE)), by = pid][, team := team_of(pid)]
 
     # ---- actions ----
     act <- function(key, recs, actor, outs, cov, direct_only = FALSE) {
@@ -166,19 +176,19 @@ sample_figures <- function() {
       if (direct_only) dt <- dt[direct == TRUE]
       dt[, team := team_of(pid)][, direct := NULL]
     }
-    acts[[length(acts) + 1L]] <- rbind(
-      act("pickH", ev$picks, "ballhandlerId", "bhrOutcomes", "bhrDefType", TRUE),
-      act("pickS", ev$picks, "screenerId", "scrOutcomes", "scrDefType", TRUE),
-      act("drive", ev$drives, "ballhandlerId", "bhrOutcomes", "category"),
-      act("handoff", ev$handoffs, "receiverId", "bhrOutcomes", "receiverDefType"),
-      act("obs", ev$off_ball_screens, "cutterId", "outcomes", "cutterDefType"),
-      act("obsS", ev$off_ball_screens, "screenerId", "scrOutcomes", "screenerDefType"),
-      act("post", ev$posts, "ballhandlerId", "bhrOutcomes", "section"),
-      act("iso", ev$isolations, "ballhandlerId", "bhrOutcomes", NULL),
-      act("closeout", ev$closeouts, "ballhandlerId", "bhrOutcomes", "bhrAction"))
+    acts[[length(acts) + 1L]] <- rbind(act("pickH", ev$picks, "ballhandlerId", "bhrOutcomes", "bhrDefType", TRUE),
+                                       act("pickS", ev$picks, "screenerId", "scrOutcomes", "scrDefType", TRUE),
+                                       act("drive", ev$drives, "ballhandlerId", "bhrOutcomes", "category"),
+                                       act("handoff", ev$handoffs, "receiverId", "bhrOutcomes", "receiverDefType"),
+                                       act("obs", ev$off_ball_screens, "cutterId", "outcomes", "cutterDefType"),
+                                       act("obsS", ev$off_ball_screens, "screenerId", "scrOutcomes", "screenerDefType"),
+                                       act("post", ev$posts, "ballhandlerId", "bhrOutcomes", "section"),
+                                       act("iso", ev$isolations, "ballhandlerId", "bhrOutcomes", NULL),
+                                       act("closeout", ev$closeouts, "ballhandlerId", "bhrOutcomes", "bhrAction"))
 
     # ---- tracking ----
     trk <- a$get_tracking(a$app_data, g)
+    # Positions smoothed over 5 frames within unbroken runs; steps over 35 ft/s dropped; top speed averaged over 0.5 s.
     pl <- merge(trk$players[, .(frame, pid, x, y)], trk$frames[, .(frame, stopped)], by = "frame")
     setorder(pl, pid, frame)
     pl[, run := cumsum(c(TRUE, diff(frame) != 1L)), by = pid]
@@ -188,6 +198,7 @@ sample_figures <- function() {
     pl[step * 25 > 35, step := NA_real_]
     pl[, top := frollmean(step * 25, 13L, align = "center"), by = .(pid, run)]
     setorder(poss, f0)
+    # Each frame's possession: the offense and its attack direction.
     k <- findInterval(pl$frame, poss$f0)
     inside <- k > 0L & pl$frame <= poss$f1[pmax(k, 1L)]
     pl[, `:=`(off_team = fifelse(inside, poss$off[pmax(k, 1L)], NA_integer_),
@@ -202,12 +213,14 @@ sample_figures <- function() {
     pl[, a6 := fifelse(fn - frame == ACCEL_LAG, (v6n - v6) * 25 / ACCEL_LAG, NA_real_)]
     lv <- pl[stopped == FALSE]
     sprint[[length(sprint) + 1L]] <- lv[!is.na(v6) & !is.na(team), .(pid, team, v6, a6)]
+    # Live-play distance, time on each end, paint time on offense, and top speed.
     t1 <- lv[, .(secs = .N / 25, dist = sum(step, na.rm = TRUE),
                  offSecs = sum(on_o %in% TRUE) / 25, offDist = sum(step[on_o %in% TRUE], na.rm = TRUE),
                  defSecs = sum(on_o %in% FALSE) / 25, defDist = sum(step[on_o %in% FALSE], na.rm = TRUE),
                  paint = sum(on_o %in% TRUE & sgn * x >= KEY_X & abs(y) <= KEY_HW) / 25,
                  top = suppressWarnings(max(top, na.rm = TRUE))), by = .(pid, team)]
     t1[!is.finite(top), top := NA_real_]
+    # Nearest opponent every 5th frame: openness on offense, closeness on defense.
     sub <- lv[frame %% 5L == 0L & !is.na(on_o), .(frame, pid, team, on_o, x, y)]
     near <- sub[sub, on = "frame", allow.cartesian = TRUE, nomatch = NULL][team != i.team,
              .(d = min(sqrt((x - i.x)^2 + (y - i.y)^2))), by = .(frame, pid = i.pid, on_o = i.on_o)]
@@ -240,6 +253,7 @@ sample_figures <- function() {
     message("  sample figures: game ", g)
   }
 
+  # Sum every piece per person and team ("<canonical id>:<team id>").
   key_of <- function(pid, team) {
     canon <- a$app_data$roster$canon[match(pid, a$app_data$roster$pid)]
     paste0(fcoalesce(canon, pid), ":", team)
@@ -251,6 +265,8 @@ sample_figures <- function() {
     dt[, lapply(.SD, function(v) sum(v, na.rm = TRUE)), by = key, .SDcols = cols]
   }
   B <- sum_key(rbindlist(box, fill = TRUE))
+  # Motion limits: 99th percentiles of speed and acceleration (1st for braking), shrunk toward the archetype's average
+  # with PRIOR_FRAMES frames, then sprint speeds scaled so their frame-weighted average is VMAX.
   S <- rbindlist(sprint)
   S[, key := key_of(pid, team)]
   q <- function(v, p) unname(quantile(v, p, na.rm = TRUE))
@@ -269,6 +285,7 @@ sample_figures <- function() {
                   min(Sp$dmax), max(Sp$dmax)))
   print(Sp[, .(players = .N, sprint = round(weighted.mean(vmax, n), 2), accel = round(weighted.mean(amax, n), 1),
                braking = round(weighted.mean(dmax, n), 1)), by = arch][order(-sprint)])
+  # Tracking, zone, guarding, touch, action and glass totals per key.
   Tk <- rbindlist(trk_rows, fill = TRUE)[!is.na(team)]
   Tk[, key := key_of(pid, team)]
   Tk <- Tk[, c(lapply(.SD, function(v) sum(v, na.rm = TRUE)), list(top = suppressWarnings(max(top, na.rm = TRUE)))), by = key,
@@ -282,22 +299,29 @@ sample_figures <- function() {
   GL <- rbindlist(glass)[!is.na(team)]
   GL[, key := key_of(pid, team)]
   GLk <- GL[!role %in% c("shooter", "follow"), .(n = .N, crash = sum(role == "crash"), back = sum(role == "back"),
-                                                safety = sum(role == "safety"), hold = sum(role == "hold"),
-                                                boxedN = sum(role == "crash" & !is.na(boxed)), boxed = sum(role == "crash" & boxed %in% TRUE),
-                                                crashMiss = sum(role == "crash" & made == FALSE), crashOreb = sum(role == "crash" & oreb),
-                                                seen = round(mean(seen, na.rm = TRUE), 2)), by = key]
+                                                 safety = sum(role == "safety"), hold = sum(role == "hold"),
+                                                 boxedN = sum(role == "crash" & !is.na(boxed)), boxed = sum(role == "crash" & boxed %in% TRUE),
+                                                 crashMiss = sum(role == "crash" & made == FALSE), crashOreb = sum(role == "crash" & oreb),
+                                                 seen = round(mean(seen, na.rm = TRUE), 2)), by = key]
   GV <- rbindlist(glass_val)
-  glass_league <- list(
-    oreb = setNames(lapply(split(GL[made == FALSE], GL[made == FALSE]$role), function(d) I(c(nrow(d), sum(d$oreb)))),
-                    sort(unique(GL[made == FALSE]$role))),
-    boxed = lapply(list(met = TRUE, open = FALSE), function(v) { d <- GL[made == FALSE & role == "crash" & boxed %in% v]; I(c(nrow(d), sum(d$oreb))) }),
-    # The same split, only where the ball came his way: the rebound was taken within R ft of where he was when the
-    # flight ended (glass.R, rd), for R = 4, 6, 8.
-    boxedNear = lapply(c(`4` = 4, `6` = 6, `8` = 8), function(R) lapply(list(met = TRUE, open = FALSE), function(v) {
-      d <- GL[made == FALSE & role == "crash" & boxed %in% v & !is.na(rd) & rd <= R]; I(c(nrow(d), sum(d$oreb))) })),
-    transition = lapply(split(GV[!is.na(trans)], pmin(GV[!is.na(trans)]$nback, 3L)), function(d) I(c(nrow(d), sum(d$trans)))))
+  # League references for the glass panels: offensive-rebound rates by role and by box-out, and transition after a
+  # defensive rebound by players back.
+  glass_league <- list(oreb = setNames(lapply(split(GL[made == FALSE], GL[made == FALSE]$role), function(d) I(c(nrow(d), sum(d$oreb)))),
+                                       sort(unique(GL[made == FALSE]$role))),
+                       boxed = lapply(list(met = TRUE, open = FALSE), function(v) {
+                         d <- GL[made == FALSE & role == "crash" & boxed %in% v]
+                         I(c(nrow(d), sum(d$oreb)))
+                       }),
+                       # The same split, only where the ball came his way: the rebound was taken within R ft of where he was when the
+                       # flight ended (glass.R, rd), for R = 4, 6, 8.
+                       boxedNear = lapply(c(`4` = 4, `6` = 6, `8` = 8), function(R) lapply(list(met = TRUE, open = FALSE), function(v) {
+                         d <- GL[made == FALSE & role == "crash" & boxed %in% v & !is.na(rd) & rd <= R]
+                         I(c(nrow(d), sum(d$oreb)))
+                       })),
+                       transition = lapply(split(GV[!is.na(trans)], pmin(GV[!is.na(trans)]$nback, 3L)), function(d) I(c(nrow(d), sum(d$trans)))))
   Ak <- A[!is.na(team)][, key := key_of(pid, team)][, .(n = .N, pts = sum(pts)), by = .(key, kind)]
 
+  # One record per person and team, leaving out pieces he has no data for.
   r1 <- function(v) round(v, 1)
   zone_vec <- function(z) c(nrow(z), sum(z$made), sum(z$made & z$three), sum(!is.na(z$sq)), r1(sum(z$sq, na.rm = TRUE)))
   players <- list()
@@ -310,30 +334,30 @@ sample_figures <- function() {
     bl <- BL[key == k]
     ak <- Ak[key == k]
     gk <- GLk[key == k]
-    rec <- list(
-      g = r$g, min = r1(r$min), pts = r$pts, fga = r$fga, fgm = r$fgm, fg3a = r$fg3a, fg3m = r$fg3m, fta = r$fta, ftm = r$ftm,
-      oreb = r$oreb, dreb = r$dreb, ast = r$ast, astd = r$astd, stl = r$stl, blk = r$blk, tov = r$tov, pf = r$pf,
-      offPoss = r$offPoss, offPts = r$offPts, defPoss = r$defPoss, defPts = r$defPts, plays = r1(r$plays), teamPlays = r1(r$teamPlays),
-      orebOpp = r$orebOpp, drebOpp = r$drebOpp,
-      zone = list(rim = I(zone_vec(z[zone == "rim"])), mid = I(zone_vec(z[zone == "mid"])), three = I(zone_vec(z[zone == "three"]))),
-      shotDef = I(c(nrow(z), r1(sum(z$defDist, na.rm = TRUE)), sum(z$contested))),
-      guard = I(c(nrow(gd), sum(gd$made), sum(gd$made & gd$three))),
-      guardZone = list(rim = I(zone_vec(gd[zone == "rim"])), mid = I(zone_vec(gd[zone == "mid"])), three = I(zone_vec(gd[zone == "three"]))),
-      fouledShots = r$fouledShots, blockedOn = r$blockedOn,
-      ball = if (nrow(bl)) I(c(bl$touches, r1(bl$ballSecs), bl$dribbles)) else NULL,
-      trk = if (nrow(t)) list(secs = r1(t$secs), dist = round(t$dist), offSecs = r1(t$offSecs), offDist = round(t$offDist),
-                              defSecs = r1(t$defSecs), defDist = round(t$defDist), paint = r1(t$paint),
-                              top = if (is.finite(t$top)) r1(t$top) else NULL,
-                              open = I(c(t$openN, r1(t$openSum))), near = I(c(t$nearN, r1(t$nearSum))),
-                              v99 = if (nrow(sp <- Sp[key == k])) round(sp$v99, 2) else NULL,
-                              vmax = if (nrow(sp)) round(sp$vmax, 2) else NULL,
-                              acc = if (nrow(sp)) round(sp$acc, 1) else NULL, amax = if (nrow(sp)) round(sp$amax, 2) else NULL,
-                              dec = if (nrow(sp)) round(sp$dec, 1) else NULL, dmax = if (nrow(sp)) round(sp$dmax, 2) else NULL) else NULL,
-      glass = if (nrow(gk)) I(c(gk$n, gk$crash, gk$back, gk$safety, gk$hold, gk$boxedN, gk$boxed, gk$crashMiss, gk$crashOreb)) else NULL,
-      acts = if (nrow(ak)) setNames(lapply(seq_len(nrow(ak)), function(j) I(c(ak$n[j], ak$pts[j]))), ak$kind) else NULL)
+    rec <- list(g = r$g, min = r1(r$min), pts = r$pts, fga = r$fga, fgm = r$fgm, fg3a = r$fg3a, fg3m = r$fg3m, fta = r$fta, ftm = r$ftm,
+                oreb = r$oreb, dreb = r$dreb, ast = r$ast, astd = r$astd, stl = r$stl, blk = r$blk, tov = r$tov, pf = r$pf,
+                offPoss = r$offPoss, offPts = r$offPts, defPoss = r$defPoss, defPts = r$defPts, plays = r1(r$plays), teamPlays = r1(r$teamPlays),
+                orebOpp = r$orebOpp, drebOpp = r$drebOpp,
+                zone = list(rim = I(zone_vec(z[zone == "rim"])), mid = I(zone_vec(z[zone == "mid"])), three = I(zone_vec(z[zone == "three"]))),
+                shotDef = I(c(nrow(z), r1(sum(z$defDist, na.rm = TRUE)), sum(z$contested))),
+                guard = I(c(nrow(gd), sum(gd$made), sum(gd$made & gd$three))),
+                guardZone = list(rim = I(zone_vec(gd[zone == "rim"])), mid = I(zone_vec(gd[zone == "mid"])), three = I(zone_vec(gd[zone == "three"]))),
+                fouledShots = r$fouledShots, blockedOn = r$blockedOn,
+                ball = if (nrow(bl)) I(c(bl$touches, r1(bl$ballSecs), bl$dribbles)) else NULL,
+                trk = if (nrow(t)) list(secs = r1(t$secs), dist = round(t$dist), offSecs = r1(t$offSecs), offDist = round(t$offDist),
+                                        defSecs = r1(t$defSecs), defDist = round(t$defDist), paint = r1(t$paint),
+                                        top = if (is.finite(t$top)) r1(t$top) else NULL,
+                                        open = I(c(t$openN, r1(t$openSum))), near = I(c(t$nearN, r1(t$nearSum))),
+                                        v99 = if (nrow(sp <- Sp[key == k])) round(sp$v99, 2) else NULL,
+                                        vmax = if (nrow(sp)) round(sp$vmax, 2) else NULL,
+                                        acc = if (nrow(sp)) round(sp$acc, 1) else NULL, amax = if (nrow(sp)) round(sp$amax, 2) else NULL,
+                                        dec = if (nrow(sp)) round(sp$dec, 1) else NULL, dmax = if (nrow(sp)) round(sp$dmax, 2) else NULL) else NULL,
+                glass = if (nrow(gk)) I(c(gk$n, gk$crash, gk$back, gk$safety, gk$hold, gk$boxedN, gk$boxed, gk$crashMiss, gk$crashOreb)) else NULL,
+                acts = if (nrow(ak)) setNames(lapply(seq_len(nrow(ak)), function(j) I(c(ak$n[j], ak$pts[j]))), ak$kind) else NULL)
     players[[k]] <- rec[!vapply(rec, is.null, NA)]
   }
 
+  # League points per action, overall and by coverage (or category).
   league_acts <- lapply(split(A, A$kind), function(d) {
     by <- d[, .(n = .N, pts = sum(pts)), by = cov]
     list(all = I(c(nrow(d), sum(d$pts))), by = setNames(lapply(seq_len(nrow(by)), function(j) I(c(by$n[j], by$pts[j]))), by$cov))
@@ -342,6 +366,6 @@ sample_figures <- function() {
        players = players,
        # Every FGA's SkillCorner xPoints (shot quality / 100 × the shot's value), sorted: the shot card's percentile.
        league = list(glass = glass_league, xpts = I(sort(round(Z[!is.na(sq), sq * fifelse(three, 3, 2) / 100], 3))), sprint = round(pooled[["v"]], 2), accel = round(pooled[["a"]], 2), braking = round(pooled[["d"]], 2), zone = list(rim = I(zone_vec(Z[zone == "rim"])), mid = I(zone_vec(Z[zone == "mid"])),
-                                 three = I(zone_vec(Z[zone == "three"]))),
+                                                                                                                                                                                                                                       three = I(zone_vec(Z[zone == "three"]))),
                      acts = league_acts))
 }

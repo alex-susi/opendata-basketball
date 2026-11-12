@@ -19,6 +19,7 @@ sha256_file <- function(path, gunzip = FALSE) {
 
 #' Every pinned source's checkout: present, at its commit, licence file as recorded, excluded paths absent.
 source_checks <- function(root, sources) {
+  # Per external source: present at the pinned commit, its licence file, and its excluded paths.
   rbindlist(lapply(sources, function(s) {
     dir <- file.path(root, "external", s$name)
     present <- dir.exists(file.path(dir, ".git"))
@@ -43,6 +44,7 @@ data_provenance <- function(root, upstream) {
     p <- git_out(root, "cat-file", "-p", ref)
     if (anyNA(p)) NA_character_ else sub("^oid sha256:", "", grep("^oid sha256:", p, value = TRUE))[1]
   }
+  # Per data file: size and checksum; tracking files are also checked against the upstream LFS object.
   rbindlist(lapply(files, function(f) {
     path <- file.path(root, "data", f)
     sha <- sha256_file(path)
@@ -82,7 +84,7 @@ lockfile_check <- function(lockfile, lib = .libPaths()) {
   lk <- jsonlite::fromJSON(lockfile, simplifyVector = FALSE)
   pk <- rbindlist(lapply(lk$Packages, function(p) data.table(package = p$Package, locked = p$Version)))
   pk[, installed := vapply(package, function(p) tryCatch(as.character(packageVersion(p, lib.loc = lib)),
-                                                          error = function(e) NA_character_), "")]
+                                                         error = function(e) NA_character_), "")]
   pk[, match := !is.na(installed) & mapply(function(a, b) !is.na(a) && package_version(a) == package_version(b), installed, locked)]
   list(r_locked = lk$R$Version, r_running = paste(R.version$major, R.version$minor, sep = "."), packages = pk[])
 }

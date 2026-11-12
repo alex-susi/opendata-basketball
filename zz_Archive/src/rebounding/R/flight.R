@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Ball flight: launch prior, filters, contact models and their forecasts (framework sections 1, 6, 13).
 #
 # All positions here are in the hoop-relative ball frame (bundle.R): the calibrated hoop centre is (0, 0) at
@@ -5,6 +6,7 @@
 # Only keyframes enter a filter: about half of the delivered ball positions are exact midpoints of their
 # neighbours (linear interpolation by the vendor) and carry no new information.
 # Requires geometry.R and the C++ functions of cpp/ball.cpp (load_ball_cpp()).
+## ═════════════════════════════════════════════════════════════════════════════
 
 N_PARTICLES <- 400L
 ARRIVE_DZ <- 0.75        # ft above rim height at which a descending ball "arrives" at the basket (launch prior)
@@ -34,7 +36,13 @@ phys_par <- function(...) {
                   side_y = COURT_HALF_W, h = 0.005, contacts = 1L), list(...))
 }
 
-# ---- episode times ---------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - EPISODE TIMES ----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Event times of a bundle in seconds after release: contact, first possible touch, rebound, control proxy.
 bundle_times <- function(b) {
@@ -47,7 +55,13 @@ bundle_times <- function(b) {
 #' Keyframe observations strictly after release and no later than t_to.
 key_obs <- function(b, t_to = Inf, t_from = 0) b$ball[key == TRUE & t > t_from + 1e-9 & t <= t_to + 1e-9]
 
-# ---- launch prior ----------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - LAUNCH PRIOR -----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' One row per tracked attempt (made or missed): release point, distance, time until the ball comes down
 #' through ARRIVE_DZ above rim height, and where it is then along and across the line of the shot.
@@ -91,7 +105,13 @@ launch_particles <- function(lib, r0, n, seed) {
   cbind(x0, y0, z0, (ax - x0) / Tt, (ay - y0) / Tt, (az - z0 + 0.5 * GRAVITY * Tt^2) / Tt)
 }
 
-# ---- particle filter forecasts ----------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - PARTICLE FILTER FORECASTS ----------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Posterior particles at time t_chk from the launch prior and every keyframe up to t_chk.
 #' @param miss Keep only particles whose simulated future does not go through the hoop (a miss scenario).
@@ -127,7 +147,13 @@ forecast_paths <- function(S, times, par, seed, miss = TRUE) {
        t_out = out$t_out[idx], contacts = out$contacts[idx], t_contact = out$t_contact[idx], S = S[idx, , drop = FALSE])
 }
 
-# ---- scoring ------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - SCORING ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Score one observed position against a forecast cloud (n x 3) with Gaussian observation error R (diag):
 #' log predictive density of the mixture, error of the cloud's mean, highest-density coverage at LEVELS and
@@ -149,7 +175,8 @@ score_cloud <- function(X, y, R) {
   ld <- dens(draws[seq_len(min(n, 200L)), , drop = FALSE])
   cov <- vapply(LEVELS, function(a) ly >= quantile(ld, 1 - a), NA)
   mx <- colMeans(X)
-  hx <- median(X[, 1]); hy <- median(X[, 2])
+  hx <- median(X[, 1])
+  hy <- median(X[, 2])
   c(logscore = ly, err = sqrt(sum((mx - y)^2)), err_xy = sqrt(sum((mx[1:2] - y[1:2])^2)),
     setNames(as.numeric(cov), paste0("cover", LEVELS * 100)),
     radius90 = unname(quantile(sqrt((X[, 1] - hx)^2 + (X[, 2] - hy)^2), 0.9)))
@@ -167,7 +194,13 @@ targets_for <- function(b, t_chk, tm) {
   }))
 }
 
-# ---- Gaussian baselines -----------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - GAUSSIAN BASELINES -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Constant velocity, ballistic least squares and Kalman forecasts at t_chk from keyframes up to t_chk.
 #' Each returns a mean and a covariance per horizon; the two simple ones take their spread from training
@@ -193,7 +226,7 @@ gaussian_forecasts <- function(b, t_chk, horizons, kf, spread = NULL) {
     fy <- lm.fit(cbind(1, tt), ob$y)$coefficients
     fz <- lm.fit(cbind(1, tt), ob$z + 0.5 * GRAVITY * tt^2)$coefficients
     out$ballistic <- lapply(horizons, function(h) list(m = c(fx[1] + fx[2] * h, fy[1] + fy[2] * h,
-                                                           fz[1] + fz[2] * h - 0.5 * GRAVITY * h^2)))
+                                                             fz[1] + fz[2] * h - 0.5 * GRAVITY * h^2)))
   }
   # Kalman filter over every keyframe since release
   all <- rbind(ob0[t == 0], key_obs(b, t_chk))
@@ -209,7 +242,10 @@ gaussian_forecasts <- function(b, t_chk, horizons, kf, spread = NULL) {
     })
   }
   if (!is.null(spread)) for (mod in c("cv", "ballistic")) if (!is.null(out[[mod]])) {
-    out[[mod]] <- Map(function(f, h) { f$v <- spread[model == mod & horizon == h, c(sx, sy, sz)]^2; f }, out[[mod]], horizons)
+    out[[mod]] <- Map(function(f, h) {
+      f$v <- spread[model == mod & horizon == h, c(sx, sy, sz)]^2
+      f
+    }, out[[mod]], horizons)
   }
   out
 }
@@ -219,7 +255,13 @@ gauss_cloud <- function(f, n = 300L) {
   cbind(rnorm(n, f$m[1], sqrt(f$v[1])), rnorm(n, f$m[2], sqrt(f$v[2])), rnorm(n, f$m[3], sqrt(f$v[3])))
 }
 
-# ---- fitting ----------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - FITTING ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Kalman process and observation noise by maximum predictive likelihood on pre-contact flight.
 fit_kf_noise <- function(bundles) {
@@ -229,8 +271,11 @@ fit_kf_noise <- function(bundles) {
     rbind(b$ball[t == 0], key_obs(b, stop_at))
   })
   segs <- segs[vapply(segs, nrow, 0L) >= 6L]
+  # Negative log likelihood of the free-flight segments under process noise q and observation noises rxy and rz.
   nll <- function(lp) {
-    q <- exp(lp[1]); rxy <- R_FLOOR + exp(lp[2]); rz <- R_FLOOR + exp(lp[3])
+    q <- exp(lp[1])
+    rxy <- R_FLOOR + exp(lp[2])
+    rz <- R_FLOOR + exp(lp[3])
     P0 <- diag(c(0.25, 400))
     -sum(vapply(segs, function(o) {
       lx <- kf_axis(o$t, o$x, 0, c(o$x[1], 0), P0, q, rxy, max(o$t))$loglik
@@ -246,6 +291,7 @@ fit_kf_noise <- function(bundles) {
 #' Floor contact: effective floor height of the reconstructed ball centre, vertical restitution and
 #' horizontal speed retained, from ballistic fits either side of observed bounces.
 fit_floor <- function(bundles) {
+  # Per bundle with a floor bounce: fit the ball's path just before and just after it.
   rows <- rbindlist(lapply(bundles, function(b) {
     tm <- bundle_times(b)
     if (is.na(tm$bounce)) return(NULL)
@@ -257,7 +303,8 @@ fit_floor <- function(bundles) {
       list(z = lm.fit(cbind(1, tt), o$z + 0.5 * GRAVITY * tt^2)$coefficients,
            x = lm.fit(cbind(1, tt), o$x)$coefficients, y = lm.fit(cbind(1, tt), o$y)$coefficients)
     }
-    a <- fit(pre); c2 <- fit(post)
+    a <- fit(pre)
+    c2 <- fit(post)
     # height and time where the falling and the rising parabolas meet
     f <- function(tt) (a$z[1] + a$z[2] * tt) - (c2$z[1] + c2$z[2] * tt)
     tt <- if (abs(a$z[2] - c2$z[2]) > 1e-6) (c2$z[1] - a$z[1]) / (a$z[2] - c2$z[2]) else 0
@@ -273,6 +320,7 @@ fit_floor <- function(bundles) {
 #' Mean log predictive density of post-contact keyframes (up to 0.6 s after contact, before any touch)
 #' from the particle filter's state at the contact time, for one set of contact parameters.
 contact_score <- function(bundles, par, sig, lib, n = 300L) {
+  # Per bundle: score the observed ball just after contact against the forecast cloud from just before it.
   vals <- vapply(seq_along(bundles), function(i) {
     b <- bundles[[i]]
     tm <- bundle_times(b)
@@ -294,13 +342,14 @@ contact_score <- function(bundles, par, sig, lib, n = 300L) {
 #' Empirical contact library: incoming velocity (Kalman, pre-contact keyframes) and outgoing velocity
 #' (ballistic fit to 0.08-0.4 s after contact) of training episodes, in the frame of the incoming direction.
 contact_library <- function(bundles, kf) {
+  # Per bundle: the ball's velocity change at contact, from free-flight fits before and after it.
   rbindlist(lapply(bundles, function(b) {
     tm <- bundle_times(b)
     if (is.na(tm$contact)) return(NULL)
     stop_at <- min(c(tm$touch, tm$rebound, tm$contact + 0.4), na.rm = TRUE)
     post <- key_obs(b, stop_at, tm$contact + 0.06)
     if (nrow(post) < 4L) return(NULL)
-    pre <-rbind(b$ball[t == 0], key_obs(b, tm$contact - 0.04))
+    pre <- rbind(b$ball[t == 0], key_obs(b, tm$contact - 0.04))
     vin <- vapply(c("x", "y"), function(col) coef(lm(pre[t >= tm$contact - 0.3][[col]] ~ pre[t >= tm$contact - 0.3]$t))[2], 0)
     vzin <- coef(lm(I(z + 0.5 * GRAVITY * t^2) ~ t, data = pre[t >= tm$contact - 0.3]))[2] - GRAVITY * tm$contact
     tt <- post$t - tm$contact
@@ -337,7 +386,8 @@ empirical_contact_particles <- function(b, t_c, kf, lib_c, n = N_PARTICLES, seed
   dd <- (cand$vin_h - vh)^2 / 9 + (cand$dist - b$shot$shot_dist)^2 / 36
   near <- cand[order(dd)][seq_len(min(.N, 30L))]
   pick <- near[sample(.N, n, replace = TRUE)]
-  va <- pick$vout_a; vc <- pick$vout_c
+  va <- pick$vout_a
+  vc <- pick$vout_c
   cbind(g$m[1] + rnorm(n, 0, sqrt(g$v[1])), g$m[2] + rnorm(n, 0, sqrt(g$v[2])), g$m[3] + rnorm(n, 0, sqrt(g$v[3])),
         cos(ang) * va - sin(ang) * vc, sin(ang) * va + cos(ang) * vc, pick$vout_z)
 }

@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Screen coverage, step 6: if each model simply "called" its most likely coverage, how often would it be right?
 #   Rscript src/screen_coverage/06_classification.R
 #
@@ -20,6 +21,7 @@
 #
 # Writes outputs/screen_coverage/per_frame/classification/: metrics_by_frame.csv, metrics_by_window.csv,
 # per_call_live.csv, confusion_live.csv, figures/accuracy_by_frame.png, figures/confusion_live.png.
+## ═════════════════════════════════════════════════════════════════════════════
 
 source_root <- function() {
   args <- commandArgs(FALSE)
@@ -28,15 +30,38 @@ source_root <- function() {
 }
 root <- source_root()
 source(file.path(root, "src", "screen_coverage", "R", "predictions.R"))
-suppressPackageStartupMessages({ library(ggplot2); library(patchwork) })
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(patchwork)
+})
 out_dir <- file.path(root, "outputs", "screen_coverage", "per_frame", "classification")
 dir.create(file.path(out_dir, "figures"), recursive = TRUE, showWarnings = FALSE)
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 FPS <- 25
 LIVE <- "transformer: pooled, no timing, + closeness"
 LIVE_CUTS <- c(-1.0, -0.6, -0.4, -0.2, 0, 0.4)
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - TOP CALLS --------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Predictions in X's row order; y is the true call's position among the five.
 L <- load_coverage_predictions(root)
-P <- L$P; X <- L$X; CALLS <- L$calls
+P <- L$P
+X <- L$X
+CALLS <- L$calls
 y <- match(X$call, CALLS)
 BD_OF <- c("over", "over", "under", "under", "switch")      # ball defender's part of each joint call
 BIG_OF <- c("show", "soft", "soft", "show", "switch")       # the big's part
@@ -45,6 +70,7 @@ BIG_OF <- c("show", "soft", "soft", "show", "switch")       # the big's part
 sofar <- as.matrix(P[X$idx, paste0("so_far_", seq_along(CALLS)), with = FALSE])
 probs <- c(L$prob, list(`baseline: always over + show` = matrix(rep(c(1, 0, 0, 0, 0), each = nrow(X)), nrow(X)),
                         `baseline: defense's most frequent call so far` = sofar))
+# A part call (ball defender or big): the part with the highest summed probability over the joint calls.
 part_call <- function(Pm, of) {
   lv <- unique(of)
   m <- sapply(lv, function(l) rowSums(Pm[, of == l, drop = FALSE]))
@@ -53,16 +79,30 @@ part_call <- function(Pm, of) {
 calls <- lapply(probs, function(Pm) max.col(Pm, ties.method = "first"))
 bd_call <- lapply(probs, part_call, of = BD_OF)
 big_call <- lapply(probs, part_call, of = BIG_OF)
-bd_true <- BD_OF[y]; big_true <- BIG_OF[y]
+bd_true <- BD_OF[y]
+big_true <- BIG_OF[y]
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - METRICS ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Precision, recall and F1 for each call; a call never made has NA precision.
 per_call <- function(pred, truth) {
   rbindlist(lapply(seq_along(CALLS), function(k) {
-    tp <- sum(pred == k & truth == k); np <- sum(pred == k); na <- sum(truth == k)
-    prec <- if (np) tp / np else NA_real_; rec <- if (na) tp / na else NA_real_
+    tp <- sum(pred == k & truth == k)
+    np <- sum(pred == k)
+    na <- sum(truth == k)
+    prec <- if (np) tp / np else NA_real_
+    rec <- if (na) tp / na else NA_real_
     data.table(call = CALLS[k], happened = na, called = np, right = tp, precision = prec, recall = rec,
                f1 = if (is.na(prec) || is.na(rec) || prec + rec == 0) 0 else 2 * prec * rec / (prec + rec))
   }))
 }
+# Accuracy, macro scores and part accuracies over a set of rows for one model.
 summarise <- function(rows, m) {
   pc <- per_call(calls[[m]][rows], y[rows])
   data.table(accuracy = mean(calls[[m]][rows] == y[rows]),
@@ -71,6 +111,7 @@ summarise <- function(rows, m) {
              big_accuracy = mean(big_call[[m]][rows] == big_true[rows]), calls_made = sum(table(calls[[m]][rows]) > 0))
 }
 
+# Metrics at every frame and over the two windows, for every model and baseline.
 by_frame <- rbindlist(lapply(names(probs), function(m) rbindlist(lapply(sort(unique(X$off)), function(o)
   cbind(data.table(model = m, off = o, t = o / FPS), summarise(which(X$off == o), m))))))
 fwrite(by_frame[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 4) else v)], file.path(out_dir, "metrics_by_frame.csv"))
@@ -88,7 +129,9 @@ print(dcast(by_frame[round(t, 2) %in% LIVE_CUTS], model ~ t, value.var = "accura
 # the live model, call by call, at a few moments
 pcl <- rbindlist(lapply(LIVE_CUTS, function(tc) cbind(data.table(t = tc), per_call(calls[[LIVE]][X$off == round(tc * FPS)], y[X$off == round(tc * FPS)]))))
 fwrite(pcl[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 3) else v)], file.path(out_dir, "per_call_live.csv"))
-cat("\nLive model, call by call:\n"); print(pcl[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 2) else v)])
+cat("\nLive model, call by call:\n")
+print(pcl[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 2) else v)])
+# Confusion tables of the live model at -0.4 s and at the tag: counts and each row's shares.
 conf <- rbindlist(lapply(c(-0.4, 0), function(tc) {
   r <- X$off == round(tc * FPS)
   d <- data.table(actual = factor(CALLS[y[r]], CALLS), called = factor(CALLS[calls[[LIVE]][r]], CALLS))[, .N, by = .(actual, called)]
@@ -97,13 +140,20 @@ conf <- rbindlist(lapply(c(-0.4, 0), function(tc) {
 }))
 fwrite(conf, file.path(out_dir, "confusion_live.csv"))
 
-# ---- figures ------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - FIGURES ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 MODELS <- COVERAGE_MODELS
 bf <- by_frame[!startsWith(model, "baseline")]
 bf[, `:=`(family = sub(":.*", "", model), variant = factor(sub("^[a-z]+: ", "", model), levels = MODELS))]
 bl <- by_frame[startsWith(model, "baseline")]
 MCOL <- setNames(c("#2a78d6", "#eb6834", "#1baf7a", "#6250d6"), MODELS)
+# One metric by frame: colour by variant, solid logistic, dashed transformer, baselines dotted grey.
 panel <- function(col, ttl, ylab) {
   lab <- bl[off == max(off)]
   lab[, vj := fifelse(get(col) == max(get(col)), -0.5, 1.5)]          # the higher baseline labelled above its line
@@ -111,13 +161,15 @@ panel <- function(col, ttl, ylab) {
     geom_line(data = bl, aes(t, .data[[col]], group = model), inherit.aes = FALSE, colour = "grey55", linetype = "dotted") +
     geom_text(data = lab, aes(t, .data[[col]], label = sub("baseline: ", "", model), vjust = vj), inherit.aes = FALSE,
               hjust = 1, size = 3, colour = "grey40") +
-    geom_vline(xintercept = 0, colour = "grey60") + geom_line(linewidth = 0.8) +
+    geom_vline(xintercept = 0, colour = "grey60") +
+    geom_line(linewidth = 0.8) +
     scale_colour_manual(values = MCOL, name = NULL) +
     scale_linetype_manual(values = c(logistic = "solid", transformer = "22"), name = NULL,
                           labels = c(logistic = "logistic (4 players)", transformer = "transformer (all 10 players)")) +
     scale_y_continuous(labels = function(v) paste0(round(100 * v), "%")) +
     scale_x_continuous(breaks = seq(-2, 1, 0.4), labels = function(v) sprintf("%+.1f s", v)) +
-    labs(subtitle = ttl, x = NULL, y = ylab) + theme_minimal(base_size = 11) +
+    labs(subtitle = ttl, x = NULL, y = ylab) +
+    theme_minimal(base_size = 11) +
     theme(legend.position = "top", panel.grid.minor = element_blank(), plot.subtitle = element_text(size = 9.5),
           legend.key.width = unit(26, "pt"))
 }
@@ -126,23 +178,29 @@ p1 <- panel("accuracy", "Accuracy: share of top calls that were right (out of fi
 p2 <- panel("macro_recall", "Balanced accuracy: recall averaged over the five calls (always calling over + show scores 20%)", "Balanced acc.") +
   theme(legend.position = "none")
 p3 <- panel("ball_defender_accuracy", "Ball defender only: over, under or switch (always 'over' is right 67% of the time)", "Accuracy") +
-  theme(legend.position = "none") + labs(x = "Seconds relative to the screen tag")
+  theme(legend.position = "none") +
+  labs(x = "Seconds relative to the screen tag")
 g <- p1 / p2 / p3 + plot_layout(heights = c(1.3, 1, 1)) +
   plot_annotation(title = "If each model just called its most likely coverage: how often it was right, frame by frame",
                   subtitle = sprintf("%s screens, held-out games. Dotted grey: baselines.", format(nrow(P), big.mark = ",")),
                   theme = theme(plot.title = element_text(face = "bold", size = 13)))
 ggsave(file.path(out_dir, "figures", "accuracy_by_frame.png"), g, width = 12, height = 11, dpi = 150, bg = "white")
 
+# Confusion heat maps for the live model.
 conf[, lab := sprintf("%d\n%.0f%%", N, 100 * share)]
 conf[, panel := factor(sprintf("%+.1f s", t), levels = sprintf("%+.1f s", c(-0.4, 0)))]
-pc <- ggplot(conf, aes(called, actual, fill = share)) + geom_tile(colour = "white", linewidth = 1) +
+pc <- ggplot(conf, aes(called, actual, fill = share)) +
+  geom_tile(colour = "white", linewidth = 1) +
   geom_text(aes(label = lab, colour = share > 0.5), size = 3.2, lineheight = 0.9) +
   scale_colour_manual(values = c(`TRUE` = "white", `FALSE` = "grey15"), guide = "none") +
   scale_fill_gradient(low = "#f1f6fd", high = "#1d5fae", labels = function(v) paste0(100 * v, "%"), name = "Share of\nthe row") +
-  scale_y_discrete(limits = rev) + facet_wrap(~ panel) + coord_equal() +
+  scale_y_discrete(limits = rev) +
+  facet_wrap(~ panel) +
+  coord_equal() +
   labs(title = "The live model's calls against what happened",
        subtitle = "Transformer, pooled, no timing, + closeness. Rows: the coverage that happened; each row sums to 100% (the diagonal is recall).",
        x = "The model's top call", y = "What happened") +
-  theme_minimal(base_size = 11) + theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 30, hjust = 1),
-                                        plot.title = element_text(face = "bold"), plot.subtitle = element_text(size = 9.5))
+  theme_minimal(base_size = 11) +
+  theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 30, hjust = 1),
+        plot.title = element_text(face = "bold"), plot.subtitle = element_text(size = 9.5))
 ggsave(file.path(out_dir, "figures", "confusion_live.png"), pc, width = 12, height = 6.2, dpi = 150, bg = "white")

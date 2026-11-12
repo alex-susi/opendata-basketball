@@ -1,8 +1,10 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 3 and 4 of the rebounding framework: behaviour models and the three skill components, each tested
 # for identification before any of them is allowed into the site's talent-aware forecast.
 #   Rscript src/rebounding/run_skills.R [--refit]
 # Needs run_flight.R and run_opportunity.R. Writes outputs/rebounding/skills/*.csv and caches its
 # per-game evidence in outputs/cache/rebounding/skills_{gameId}.rds and the all-games fits in final_fits.rds.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -19,7 +21,15 @@ names(opp) <- games
 fold_scenes <- function(g) readRDS(file.path(cache, sprintf("scenes_%s.rds", g)))
 idx_of <- function(g) which(bundle_game == g)
 
-# ---- movement library (pooled behaviour; framework section 8) --------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - MOVEMENT LIBRARY -------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Pooled behaviour; framework section 8.
 
 mv_path <- file.path(cache, "movement_rows.rds")
 if (!file.exists(mv_path) || "--refit" %in% args) {
@@ -31,9 +41,18 @@ if (!file.exists(mv_path) || "--refit" %in% args) {
 }
 movement <- readRDS(mv_path)
 
-# ---- per held-out game: anticipation, movement scores, box-out pairs and values -------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - PER HELD-OUT GAME ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Anticipation, movement scores, box-out pairs and values.
 
 only <- sub("^--game=", "", grep("^--game=", args, value = TRUE))
+# One fold per game (or only --game), cached: anticipation, movement and box-out measures on the held-out game.
 for (g in if (length(only)) as.integer(only) else games) {
   path <- file.path(cache, sprintf("skills_%s.rds", g))
   if (file.exists(path) && !"--refit" %in% args) next
@@ -61,7 +80,13 @@ for (g in if (length(only)) as.integer(only) else games) {
 if (length(only)) quit(save = "no")
 sk <- lapply(games, function(g) readRDS(file.path(cache, sprintf("skills_%s.rds", g))))
 
-# ---- movement validation -----------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - MOVEMENT VALIDATION ----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 mscore <- rbindlist(lapply(sk, `[[`, "movement"))
 fwrite(mscore[, .(n = .N, error_ft = mean(err), log_score = mean(ls), cover80 = mean(cover80)), by = model][order(-log_score)],
@@ -69,7 +94,13 @@ fwrite(mscore[, .(n = .N, error_ft = mean(err), log_score = mean(ls), cover80 = 
 fwrite(mscore[, .(n = .N, error_ft = mean(err), log_score = mean(ls)), by = .(role, model)][order(role, -log_score)],
        file.path(out_dir, "movement_by_role.csv"))
 
-# ---- anticipation --------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - ANTICIPATION -----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 ant <- rbindlist(lapply(sk, `[[`, "anticipation"))
 ant[, `:=`(gain = v_obs - v_ref, team_gain = team_obs - team_ref, w = v_ref_sd)]
@@ -109,7 +140,13 @@ anticip_player <- eligible[, .(episodes = .N, exposure = sum(wt), raw_gain = wei
 anticip_player <- merge(anticip_player, data.table(canon = as.integer(levels(eligible$canon_f)), effect = re_coef, effect_se = re_se), by = "canon")
 fwrite(anticip_player[order(-effect)], file.path(out_dir, "anticipation_player.csv"))
 
-# ---- boxing out ---------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - BOXING OUT -------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 box <- rbindlist(lapply(sk, `[[`, "boxout"))
 fwrite(box[, .(pairs = .N, share = .N / nrow(box)), by = .(label, blocker_def)][order(blocker_def, -pairs)],
@@ -120,9 +157,17 @@ bm[, `:=`(y = as.integer(label == "maintained"), order = as.integer(blocker_hoop
           blk_f = factor(blocker_canon), opp_f = factor(opponent_canon))]
 bm <- merge(bm, episodes[, .(shot_id, shot_dist, three)], by = "shot_id")
 logl <- function(p, y) -mean(y * log(pmax(p, 1e-6)) + (1 - y) * log(pmax(1 - p, 1e-6)))
-auc <- function(p, y) { r <- rank(p); n1 <- sum(y == 1); n0 <- sum(y == 0); if (!n1 || !n0) return(NA_real_); (sum(r[y == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0) }
+auc <- function(p, y) {
+  r <- rank(p)
+  n1 <- sum(y == 1)
+  n0 <- sum(y == 0)
+  if (!n1 || !n0) return(NA_real_)
+  (sum(r[y == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0)
+}
+# Box-out models, leave one game out: order only, then geometry.
 box_cv <- rbindlist(lapply(games, function(g) {
-  tr <- bm[game_id != g]; te <- bm[game_id == g]
+  tr <- bm[game_id != g]
+  te <- bm[game_id == g]
   if (!nrow(te)) return(NULL)
   f_ord <- glm(y ~ order, binomial, tr)
   f_geo <- gam(y ~ s(gap, k = 5) + obs_at_est + I(opp_toward - blk_toward) + blocker_def + s(blocker_hoop, k = 5) + s(shot_dist, k = 5) + three + t_establish,
@@ -133,7 +178,8 @@ box_cv <- rbindlist(lapply(games, function(g) {
   # unseen players get the population (zero) effect
   te_re[!blk_f %in% levels(tr$blk_f), blk_f := levels(tr$blk_f)[1]]
   te_re[!opp_f %in% levels(tr$opp_f), opp_f := levels(tr$opp_f)[1]]
-  unseen_b <- !te$blk_f %in% levels(tr$blk_f); unseen_o <- !te$opp_f %in% levels(tr$opp_f)
+  unseen_b <- !te$blk_f %in% levels(tr$blk_f)
+  unseen_o <- !te$opp_f %in% levels(tr$opp_f)
   lp <- predict(f_re, te_re, type = "terms")
   eta <- attr(lp, "constant") + rowSums(lp[, setdiff(colnames(lp), c("s(blk_f)", "s(opp_f)")), drop = FALSE]) +
     (!unseen_b) * lp[, "s(blk_f)"] + (!unseen_o) * lp[, "s(opp_f)"]
@@ -159,13 +205,19 @@ fwrite(val, file.path(out_dir, "boxout_value_rows.csv"))
 box_player <- merge(bm[, .(established = .N, maintained = sum(y)), by = .(canon = blocker_canon)],
                     data.table(canon = as.integer(levels(bm$blk_f)), effect = bcoef, effect_se = bse), by = "canon", all = TRUE)
 box_player <- merge(box_player, val[obstruction_given >= 0.15, .(obstructing_scenes = .N, team_value = mean(team_value),
-                                                                  own_value = mean(own_value)), by = canon], by = "canon", all = TRUE)
+                                                                 own_value = mean(own_value)), by = canon], by = "canon", all = TRUE)
 bm_rep <- bm[, .(m = mean(y - fitted(b_0)[.I]), n = .N), by = .(canon = blocker_canon, game_id)]
 bm_rep <- bm_rep[, if (.N == 2) .(a = m[1], b = m[2]), by = canon]
 b_rep <- if (nrow(bm_rep) >= 5) cor(bm_rep$a, bm_rep$b) else NA_real_
 fwrite(box_player[order(-team_value)], file.path(out_dir, "boxout_player.csv"))
 
-# ---- collection effects (all games) -------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - COLLECTION EFFECTS (ALL GAMES) -----------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 final_path <- file.path(cache, "final_fits.rds")
 flight_all <- readRDS(file.path(cache, "flight_params_all.rds"))
@@ -174,6 +226,7 @@ mode_acc <- function(cp) {
   a <- rbindlist(lapply(opp, function(f) as.data.table(f[[cp]]$acc)))
   modifyList(opp[[1]][[cp]]$acc, as.list(a[, .N, by = .(policy, react)][which.max(N), .(policy, react)]))
 }
+# The all-games fit at each checkpoint, with and without player effects (cached unless --refit).
 if (!file.exists(final_path) || "--refit" %in% args) {
   final <- lapply(names(OPP_CHECKPOINTS), function(cp) {
     s <- Filter(function(x) length(x) > 0L, scenes_all[[cp]])
@@ -200,12 +253,14 @@ if (!file.exists(final_path) || "--refit" %in% args) {
   saveRDS(lapply(final, function(f) f[setdiff(names(f), "stack")]), final_path)
   # parameter recovery: outcomes simulated from the fitted population model plus known effects, refitted
   st <- final$rim$stack
+  # Recovery check: simulate outcomes from known player effects and refit.
   rec <- rbindlist(lapply(c(0.3, 0.6), function(sd_true) rbindlist(lapply(1:3, function(rep) {
     set.seed(100 * rep + round(10 * sd_true))
     u_true <- rnorm(length(final$rim$players), 0, sd_true)
     P <- cr_predict(c(final$rim$access_obstruction$theta, u_true), st$A, st$out_step, st$Z, st$pidx, st$y, st$dims)
     ysim <- apply(P[, 1:12], 1, function(p) sample.int(12, 1, prob = p / sum(p))) - 1L
-    st2 <- st; st2$y <- as.integer(ysim)
+    st2 <- st
+    st2$y <- as.integer(ysim)
     f <- fit_cr(st2, sd_u = sd_true, free_theta = rep(FALSE, 7), start = final$rim$access_obstruction$theta)
     n_on <- as.numeric(final$rim$on_court[final$rim$players])
     data.table(sd_true = sd_true, rep = rep, cor_all = cor(u_true, f$u), cor_20plus = cor(u_true[n_on >= 20], f$u[n_on >= 20]),
@@ -225,23 +280,30 @@ sens <- rbindlist(lapply(opp, function(f) rbindlist(lapply(names(f), function(cp
 fwrite(sens[, .(log_loss = weighted.mean(ll, n), n = sum(n)), by = .(checkpoint, model, rebounder_seen)][order(checkpoint, rebounder_seen, log_loss)],
        file.path(out_dir, "collection_sensitivity.csv"))
 
-# ---- identification tests (framework section 11 and step 4) -------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - IDENTIFICATION TESTS ---------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Framework section 11 and step 4.
 
 rec <- fread(file.path(out_dir, "collection_recovery.csv"))
 eff <- sens[, .(log_loss = weighted.mean(ll, n)), by = .(checkpoint, model, rebounder_seen)]
 gain_seen <- eff[rebounder_seen == TRUE & model == "access_obstruction", .(checkpoint, base = log_loss)][
   eff[rebounder_seen == TRUE & model == "effects_sd0.3", .(checkpoint, eff = log_loss)], on = "checkpoint"]
-ident <- data.table(
-  component = c("Anticipation", "Boxing out (spatial obstruction proxy)", "Collection"),
-  evidence = c(sprintf("%d player-episodes with exposure, %d players", nrow(eligible), uniqueN(eligible$canon)),
-               sprintf("%d established pairs, %d blockers", nrow(bm), uniqueN(bm$blocker_canon)),
-               sprintf("%d rim-checkpoint episodes, %d players", length(final$rim$ids), length(final$rim$players))),
-  player_sd = c(re_sd, re_sd_of(b_re, "s(blk_f)"), sd(final$rim$effects$u)),
-  likelihood_ratio = c(a_lrt, b_lrt, NA_real_),
-  cross_game_r = c(a_rep, b_rep, NA_real_),
-  heldout_gain_repeat = c(NA_real_, box_sum[model == "geometry_player_effects", gain] - box_sum[model == "geometry", gain],
-                          gain_seen[checkpoint == "rim", base - eff]),
-  recovery_r = c(NA_real_, NA_real_, rec[sd_true == 0.3, mean(cor_20plus)]))
+ident <- data.table(component = c("Anticipation", "Boxing out (spatial obstruction proxy)", "Collection"),
+                    evidence = c(sprintf("%d player-episodes with exposure, %d players", nrow(eligible), uniqueN(eligible$canon)),
+                                 sprintf("%d established pairs, %d blockers", nrow(bm), uniqueN(bm$blocker_canon)),
+                                 sprintf("%d rim-checkpoint episodes, %d players", length(final$rim$ids), length(final$rim$players))),
+                    player_sd = c(re_sd, re_sd_of(b_re, "s(blk_f)"), sd(final$rim$effects$u)),
+                    likelihood_ratio = c(a_lrt, b_lrt, NA_real_),
+                    cross_game_r = c(a_rep, b_rep, NA_real_),
+                    heldout_gain_repeat = c(NA_real_, box_sum[model == "geometry_player_effects", gain] - box_sum[model == "geometry", gain],
+                                            gain_seen[checkpoint == "rim", base - eff]),
+                    recovery_r = c(NA_real_, NA_real_, rec[sd_true == 0.3, mean(cor_20plus)]))
 ident[, passes := c(isTRUE(a_lrt > 3.84 && a_rep > 0.3), isTRUE(b_lrt > 3.84 && b_rep > 0.3),
                     isTRUE(heldout_gain_repeat[3] > 0 && recovery_r[3] > 0.5))]
 ident[, used_in_site := ifelse(passes, "player effects", "pooled (population) only")]

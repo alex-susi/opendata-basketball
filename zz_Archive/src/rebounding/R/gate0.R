@@ -10,19 +10,17 @@
 
 # Thresholds fixed before the checks were run (2026-10-28). Gate 0 has no held-out evaluation; these only
 # decide PASS / BLOCKED.
-GATE0 <- list(
-  landmark_usable = 0.95,   # retained prediction landmarks with a usable ball and a complete identity set
-  review_min = 30L,         # rebounds reviewed: at least this many ...
-  review_share = 0.10,      # ... or this share of the candidate rebounds, whichever is larger
-  ball_recent = 2L,         # a usable ball: tracked at the landmark and a keyframe in the 2 frames up to it
-  clock_tol_ms = 0L,        # event wallClock must equal the tracking wallClock at its frame
-  oob_margin = 0.5,         # ft past the lines before a ball counts as out of court
-  putback_s = 1,            # an offensive shot this soon after an offensive rebound is a put-back attempt
-  foul_after_s = 1,         # a non-shooting foul between the shot's end and this long after the rebound
-  period_end_s = 1,         # game clock at or under this at the rebound: end of period
-  fallback_frames = 5L,     # added after the first run: a landmark may move back this far to a usable ball
-  reach_ball_ft = 3         # added after the review: a credited rebounder never this close to the ball is suspect
-)
+GATE0 <- list(landmark_usable = 0.95,   # retained prediction landmarks with a usable ball and a complete identity set
+              review_min = 30L,         # rebounds reviewed: at least this many ...
+              review_share = 0.10,      # ... or this share of the candidate rebounds, whichever is larger
+              ball_recent = 2L,         # a usable ball: tracked at the landmark and a keyframe in the 2 frames up to it
+              clock_tol_ms = 0L,        # event wallClock must equal the tracking wallClock at its frame
+              oob_margin = 0.5,         # ft past the lines before a ball counts as out of court
+              putback_s = 1,            # an offensive shot this soon after an offensive rebound is a put-back attempt
+              foul_after_s = 1,         # a non-shooting foul between the shot's end and this long after the rebound
+              period_end_s = 1,         # game clock at or under this at the rebound: end of period
+              fallback_frames = 5L,     # added after the first run: a landmark may move back this far to a usable ball
+              reach_ball_ft = 3)        # added after the review: a credited rebounder never this close to the ball is suspect
 
 #' A logical field that keeps missing values as NA (lgl_field in data.R turns them into FALSE).
 lgl_na <- function(recs, name) vapply(recs, function(r) if (is.null(r[[name]])) NA else as.logical(r[[name]]), NA)
@@ -49,6 +47,7 @@ gate0_events <- function(root, g, aliases) {
                   data.table(pid = int_field(gd$awayTeam$players, "playerId"), team = gd$awayTeam$teamId, home = FALSE))
   roster[, c("game_id", "canon") := .(g, canon_id(pid, aliases))]
   xy <- function(recs, f, k) vapply(recs, function(r) as.numeric(r[[f]][[k]] %||% NA), 0)
+  # Each event family as a table, with ids, frames, teams and flags.
   sh <- data.table(game_id = g, shot_id = chr_field(ev$shots, "id"), chance_id = chr_field(ev$shots, "chanceId"),
                    poss_id = chr_field(ev$shots, "possessionId"), period = int_field(ev$shots, "period"),
                    f0 = int_field(ev$shots, "startFrame"), f1 = int_field(ev$shots, "endFrame"),
@@ -82,6 +81,7 @@ gate0_events <- function(root, g, aliases) {
                    c1 = int_field(ev$chances, "endFrame"))
   to <- data.table(game_id = g, chance_id = chr_field(ev$turnovers, "id"), frame = int_field(ev$turnovers, "frame"),
                    off_team = int_field(ev$turnovers, "offTeamId"))
+  # Attack direction per possession, and on-court players per chance.
   poss <- data.table(poss_id = chr_field(ev$possessions, "id"), left_hoop = lgl_na(ev$possessions, "leftHoop"))
   sh <- merge(sh, poss, by = "poss_id", all.x = TRUE, sort = FALSE)
   cp <- data.table(game_id = g, chance_id = chr_field(ev$chance_players, "chanceId"),
@@ -157,7 +157,8 @@ miss_record <- function(raw, s, hoop, roster, cp_ids, clock) {
     out$z_reb <- at(s$rf, "z")
     out$speed_reb <- at(s$rf, "bspeed")
     out$ball_tracked_reb <- !is.na(out$z_reb)
-    bx <- at(s$rf, "x"); by <- at(s$rf, "y")
+    bx <- at(s$rf, "x")
+    by <- at(s$rf, "y")
     out$ball_oob_reb <- !is.na(bx) && (abs(bx) > COURT_HALF_L + GATE0$oob_margin | abs(by) > COURT_HALF_W + GATE0$oob_margin)
     post <- w[frame >= s$f1 & frame <= s$rf + 12L & !is.na(x)]
     out$ball_oob_window <- nrow(post) > 0 &&
@@ -211,6 +212,7 @@ miss_record <- function(raw, s, hoop, roster, cp_ids, clock) {
           pre_touch = if (is.na(s$touch_frame)) NA_integer_ else max(s$f0, s$touch_frame - 1L))
   ids <- tracked_identity(raw, roster, lm[!is.na(lm)])
   home_off <- raw$home_team == s$off_team
+  # At each landmark frame: is the ball tracked, and are all ten players tracked and on the right sides?
   lms <- rbindlist(lapply(names(lm), function(k) {
     f <- lm[[k]]
     if (is.na(f)) return(data.table(landmark = k, frame = NA_integer_, ball_ok = NA, ball_lag = NA_integer_,
@@ -230,22 +232,21 @@ miss_record <- function(raw, s, hoop, roster, cp_ids, clock) {
 #' The terminal-outcome taxonomy of the roadmap, one label per missed field goal, from event rows and the
 #' ball track. Tipped-but-unsecured is not identifiable from Gate 0 evidence and is left to Gate 1.
 terminal_outcome <- function(ep) {
-  ep[, terminal := fcase(
-    made %in% TRUE, "made (no rebound)",
-    fouled %in% TRUE, "fouled miss (free throws, no live rebound)",
-    is.na(reb_id) & period_end, "no rebound row: end of period",
-    is.na(reb_id) & foul_after, "no rebound row: foul",
-    is.na(reb_id) & turnover_after, "no rebound row: turnover or violation",
-    is.na(reb_id), "no rebound row: unexplained",
-    rf <= f0, "rebound row at or before the release (tip sequence linked to the tip)",
-    grabbed %in% TRUE & foul_after, "player rebound, foul in the scramble",
-    grabbed %in% TRUE, "secured individual rebound",
-    grabbed %in% FALSE & period_end, "team rebound: end of period",
-    grabbed %in% FALSE & held_ball, "team rebound: held ball",
-    grabbed %in% FALSE & foul_after, "team rebound: foul",
-    grabbed %in% FALSE & (ball_oob_window %in% TRUE), "team rebound: out of bounds (ball seen out)",
-    grabbed %in% FALSE & (ball_tracked_reb %in% FALSE | dead_at_reb %in% TRUE), "team rebound: ball not tracked at the award",
-    grabbed %in% FALSE, "team rebound: other / unclear",
-    default = "unknown")]
+  ep[, terminal := fcase(made %in% TRUE, "made (no rebound)",
+                         fouled %in% TRUE, "fouled miss (free throws, no live rebound)",
+                         is.na(reb_id) & period_end, "no rebound row: end of period",
+                         is.na(reb_id) & foul_after, "no rebound row: foul",
+                         is.na(reb_id) & turnover_after, "no rebound row: turnover or violation",
+                         is.na(reb_id), "no rebound row: unexplained",
+                         rf <= f0, "rebound row at or before the release (tip sequence linked to the tip)",
+                         grabbed %in% TRUE & foul_after, "player rebound, foul in the scramble",
+                         grabbed %in% TRUE, "secured individual rebound",
+                         grabbed %in% FALSE & period_end, "team rebound: end of period",
+                         grabbed %in% FALSE & held_ball, "team rebound: held ball",
+                         grabbed %in% FALSE & foul_after, "team rebound: foul",
+                         grabbed %in% FALSE & (ball_oob_window %in% TRUE), "team rebound: out of bounds (ball seen out)",
+                         grabbed %in% FALSE & (ball_tracked_reb %in% FALSE | dead_at_reb %in% TRUE), "team rebound: ball not tracked at the award",
+                         grabbed %in% FALSE, "team rebound: other / unclear",
+                         default = "unknown")]
   ep[]
 }

@@ -1,8 +1,10 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Gate 0 review sample: at least 30 rebounds or 10% of them, every game, unusual cases oversampled, each drawn as
 # a ball-height timeline and a top-down view at the rebound frame for review against the event labels.
 #   Rscript src/rebounding/run_gate0_review.R
 # Needs outputs/cache/rebounding/gate0.rds (run_gate0.R). Writes outputs/rebounding/gate0/review/sample.csv and
 # page_*.png. The labels go in outputs/rebounding/gate0/review/review_log.csv (filled by hand, not by this script).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -21,7 +23,16 @@ hoops <- readRDS(file.path(cache, "episodes.rds"))$hoops
 ep <- g0$episodes
 PER_PAGE <- 3L
 
-# ---- the sample: unusual strata first, then ordinary rebounds spread over games ----------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - THE SAMPLE -------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Unusual strata first, then ordinary rebounds spread over games.
+
 set.seed(20261028L)
 pool <- ep[!is.na(reb_id)]
 take <- function(rows, n, why) {
@@ -54,7 +65,14 @@ fwrite(smp[, .(page, shot_id, game_id, reason, period, f0, f1, rf, kind, termina
                nearest_pid, reb_ball_dist, z_reb, contact_frame, touch_frame, control_frame, retained)],
        file.path(out, "sample.csv"))
 
-# ---- drawing -------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - DRAWING ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 court <- function(hoop) {
   rect(-COURT_HALF_L, -COURT_HALF_W, COURT_HALF_L, COURT_HALF_W, border = "grey40")
   lines(c(0, 0), c(-COURT_HALF_W, COURT_HALF_W), col = "grey60")
@@ -64,6 +82,7 @@ court <- function(hoop) {
   lines(RIM_X - r3 * cos(a), r3 * sin(a), col = "grey60")
   symbols(hoop$hx, hoop$hy, circles = RIM_R, inches = FALSE, add = TRUE, fg = "orange", lwd = 2)
 }
+# Draw one episode: the ball's height and hoop distance over time beside a court view of the window.
 draw_episode <- function(raw, s, hoop) {
   last <- if (!is.na(s$rf)) max(s$rf, s$f1) else s$f1
   w <- ball_track(raw$frames, s, s$f0 - 5L, last + 30L)
@@ -79,9 +98,15 @@ draw_episode <- function(raw, s, hoop) {
   if (!is.null(rb) && nrow(rb)) lines(ts(rb$frame), sqrt((rb$px - rb$x)^2 + (rb$py - rb$y)^2), col = "darkgreen", lwd = 2)
   lines(t, w$z, lwd = 1.5)
   points(t[!(w$interp %in% TRUE)], w$z[!(w$interp %in% TRUE)], pch = 16, cex = 0.5)
-  mark <- function(f, col, lab) if (!is.na(f)) { abline(v = ts(f), col = col, lwd = 2); mtext(lab, 3, 0, at = ts(f), col = col, cex = 0.7) }
-  mark(s$f1, "blue", "end"); mark(s$contact_frame, "purple", "c"); mark(s$touch_frame, "orange", "t")
-  mark(s$rf, "red", "REB"); mark(s$control_frame, "darkgreen", "ctl")
+  mark <- function(f, col, lab) if (!is.na(f)) {
+    abline(v = ts(f), col = col, lwd = 2)
+    mtext(lab, 3, 0, at = ts(f), col = col, cex = 0.7)
+  }
+  mark(s$f1, "blue", "end")
+  mark(s$contact_frame, "purple", "c")
+  mark(s$touch_frame, "orange", "t")
+  mark(s$rf, "red", "REB")
+  mark(s$control_frame, "darkgreen", "ctl")
   legend("topright", c("ball z", "ball-hoop xy", "rebounder-ball xy"), col = c("black", "grey55", "darkgreen"),
          lty = c(1, 2, 1), bty = "n", cex = 0.8)
   # top-down at the rebound frame (or the end of the window when there is none)
@@ -108,6 +133,7 @@ draw_episode <- function(raw, s, hoop) {
 }
 
 raws <- list()
+# One page of PER_PAGE episodes each.
 for (p in unique(smp$page)) {
   png(file.path(out, sprintf("page_%02d.png", p)), width = 1500, height = 420 * PER_PAGE, res = 100)
   layout(matrix(seq_len(2L * PER_PAGE), ncol = 2, byrow = TRUE), widths = c(1.1, 1))

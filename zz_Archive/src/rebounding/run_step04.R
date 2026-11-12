@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 04 of the rebounding manual: the static rebounding baseline. A grouped conditional logit over the 12 outcomes
 # from player geometry (C1, at release; also fitted at rim + 0.2 s as the same-time static model Step 09 needs) and a
 # binary offensive-rebound model (C2, at release), both fitted per leave-one-game-out fold with lambda chosen inside
@@ -6,6 +7,7 @@
 # Needs the Step 03 outputs and outputs/cache/rebounding/step03_features.rds. Settings: config/experiment.yaml
 # (step04, fixed before any fit). Writes outputs/rebounding/step04/, reports/04_static_model.md,
 # gate_results/04_static.json and 04_tests.csv.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -17,7 +19,8 @@ for (f in c("geometry.R", "step00.R", "folds.R", "metrics.R", "reference_baselin
 
 root <- find_repo_root()
 cfg <- yaml::read_yaml(file.path(here, "config", "experiment.yaml"))
-th3 <- cfg$step03; th <- cfg$step04
+th3 <- cfg$step03
+th <- cfg$step04
 cache <- file.path(root, "outputs", "cache", "rebounding")
 s3 <- file.path(root, "outputs", "rebounding", "step03")
 out <- file.path(root, "outputs", "rebounding", "step04")
@@ -25,17 +28,32 @@ reports <- file.path(root, "outputs", "rebounding", "reports")
 gr <- file.path(root, "outputs", "rebounding", "gate_results")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 
-# ---- Step 03's frozen design must be the one in force ----------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - STEP 03'S FROZEN DESIGN MUST BE THE ONE IN FORCE -----------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 fz <- jsonlite::fromJSON(file.path(s3, "design_freeze.json"))
 freeze_ok <- c(config = identical(fz$step03_config_sha256, paste(openssl::sha256(yaml::as.yaml(th3)))),
                code = all(vapply(names(fz$code_sha256), function(f) identical(fz$code_sha256[[f]], sha256_file(file.path(here, "R", f))), NA)),
                predictions = identical(fz$predictions_sha256, sha256_file(file.path(s3, "reference_baselines.csv.gz"))))
 if (!all(freeze_ok)) stop("Step 03's design changed since it was frozen: ", paste(names(freeze_ok)[!freeze_ok], collapse = ", "))
 
-# ---- inputs ----------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - INPUTS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 el <- fread(file.path(root, "outputs", "rebounding", "step01", "rebound_episodes.csv"), na.strings = c("", "NA"))[eligible == TRUE]
 fa <- fread(file.path(s3, "fold_assignment.csv"))
-choice <- choice_sets(el); labels <- episode_labels(el)
+choice <- choice_sets(el)
+labels <- episode_labels(el)
 f3 <- readRDS(file.path(cache, "step03_features.rds"))$features
 times <- unlist(th$times)
 f3 <- f3[time_point %in% times]
@@ -47,10 +65,19 @@ shot <- merge(shot, sp[, .(episode_id, sx, sy)], by = "episode_id")
 if (nrow(shot) != nrow(el)) stop("a shooter is missing from the ten players at release")
 base_pred <- fread(file.path(s3, "reference_baselines.csv.gz"), colClasses = list(character = "outcome_id"))[time_point %in% times]
 refs <- unlist(th3$confirmatory[[which(vapply(th3$confirmatory, `[[`, "", "id") == "C1")]]$references)
-u <- th3$uncertainty; dec <- th3$decision
+u <- th3$uncertainty
+dec <- th3$decision
 
-# ---- fits ------------------------------------------------------------------------------------------------------------
-sf_at <- list(); cl <- list()
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - FITS -------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+sf_at <- list()
+cl <- list()
 for (tp in times) {
   message("Step 04: conditional logit at ", tp)
   pl <- f3[time_point == tp, .(episode_id, pid, off, x, y, source_frame)]
@@ -80,7 +107,14 @@ fwrite(orb$coef, file.path(out, "oreb_coefficients.csv"))
 fwrite(ef, file.path(out, "oreb_features.csv"))
 fwrite(rbindlist(lapply(times, function(tp) cbind(time_point = tp, sf_at[[tp]]))), file.path(out, "player_features.csv.gz"))
 
-# ---- scores ----------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - SCORES -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 valid <- check_predictions(pred, choice, th3$metrics$sum_tol)
 allp <- rbind(base_pred[, .(model, time_point, episode_id, outcome_id, probability)],
               pred[, .(model, time_point, episode_id, outcome_id, probability)])
@@ -114,9 +148,9 @@ c2 <- paired_comparison(tsc, "oreb_logit", "constant_oreb", "release", "team_ll"
 c2_large <- tsc[model == "oreb_logit", abs(mean(p_off) - mean(y_off))]
 c2_pass <- decide(c2$summary, "superiority", dec$non_inferiority_margin_nats) && c2_large <= dec$team_calibration_in_large_max
 team_sum <- rbind(tsc[, .(episodes = .N, team_log_loss = mean(team_ll), team_brier = mean(team_brier), mean_p_off = mean(p_off),
-                         oreb_rate = mean(y_off)), by = model],
+                          oreb_rate = mean(y_off)), by = model],
                   sc[time_point == "release" & model == "static_clogit", .(model = "static_clogit (implied)", episodes = .N,
-                     team_log_loss = mean(team_ll), team_brier = mean(team_brier), mean_p_off = mean(p_off), oreb_rate = mean(y_off))])
+                                                                           team_log_loss = mean(team_ll), team_brier = mean(team_brier), mean_p_off = mean(p_off), oreb_rate = mean(y_off))])
 fwrite(team_sum, file.path(out, "oreb_scores.csv"))
 fwrite(rbind(c2$summary, paired_comparison(rbind(tsc[model == "constant_oreb", .(model, time_point, episode_id, game_id, team_ll)],
                                                  sc[time_point == "release" & model == "static_clogit", .(model, time_point, episode_id, game_id, team_ll)]),
@@ -144,8 +178,10 @@ fwrite(sl[order(-diff)][, .SD[1:15], by = time_point], file.path(out, "worst_epi
 # interpretation only: one fit on all ten games, lambda by leave-one-game-out over the ten
 all_ids <- unique(sf_at$release$episode_id)
 lam_all <- rbindlist(lapply(unlist(th$clogit$lambda_grid), function(l) {
-  p <- rbindlist(lapply(sort(unique(fa$outer_fold)), function(k) { s <- fold_split(fa, k)
-    clogit_fit_predict(sf_at$release, shot, labels, s$train, s$test, l, th$clogit$maxit)$pred }))
+  p <- rbindlist(lapply(sort(unique(fa$outer_fold)), function(k) {
+    s <- fold_split(fa, k)
+    clogit_fit_predict(sf_at$release, shot, labels, s$train, s$test, l, th$clogit$maxit)$pred
+  }))
   p[, `:=`(model = "clogit", time_point = "release")]
   data.table(lambda = l, logo_log_loss = mean(score_episodes(p, choice, labels)$ll))
 }))
@@ -158,10 +194,17 @@ fold_sd <- cl$release$coef[, .(fold_min = min(estimate), fold_max = max(estimate
 coef_all <- merge(coef_all, fold_sd, by = "term", sort = FALSE)
 fwrite(coef_all, file.path(out, "coefficients_all_games.csv"))
 
-# ---- checks ----------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - CHECKS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 ck <- list()
 addc <- function(check, value, expected, pass) ck[[length(ck) + 1L]] <<- data.table(check = check, value = as.character(value),
-                                                                                     expected = as.character(expected), pass = pass)
+                                                                                    expected = as.character(expected), pass = pass)
 addc("Step 03 design freeze in force (config, harness code, baseline predictions)", all(freeze_ok), TRUE, all(freeze_ok))
 addc("prediction tables valid (12 outcomes, finite, non-negative, sum to 1)", sum(valid$ok), nrow(valid), all(valid$ok))
 addc("exactly one credited outcome per choice set", nrow(merge(labels, choice, by = c("episode_id", "outcome_id"))), nrow(labels),
@@ -217,7 +260,14 @@ addc("top-1 counted once per rebound", sc[, .N, by = .(model, time_point, episod
 checks <- rbindlist(ck)
 fwrite(checks, file.path(out, "checks.csv"))
 
-# ---- report ----------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - REPORT -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 md_table <- function(d, digits = 3) {
   d <- copy(d)
   for (c in names(d)) if (is.numeric(d[[c]]) && !is.integer(d[[c]])) set(d, j = c, value = formatC(d[[c]], digits = digits, format = "f"))
@@ -229,92 +279,99 @@ rimt <- rim$by_reference[, .(reference, mean_diff, lo, hi, games_better, drop_on
 lam_tab <- rbindlist(lapply(times, function(tp) cl[[tp]]$lambda[selected == TRUE, .N, by = lambda][, time_point := tp]))
 status_clogit <- if (c1_pass) "PASS" else "BLOCKED"
 status_oreb <- if (c2_pass) "PASS" else "BLOCKED"
-lines <- c(
-  "# Step 04: static rebounding model",
-  "",
-  sprintf("Run %s by `src/rebounding/run_step04.R`; settings `config/experiment.yaml` (`step04`, config v%d), fixed before any fit.",
-          format(Sys.Date()), cfg$config_version),
-  "Folds, outcomes, scoring and decision rules are Step 03's frozen harness. Step 02 is BLOCKED: the target is the credited",
-  sprintf("outcome (ten players, team award to either side) of %d missed shots.", nrow(el)),
-  "",
-  "## Models",
-  "",
-  "- **Grouped conditional logit** over the 12 outcomes. Player features at t: distance to the hoop, distance minus the",
-  "  ten's mean, nearest opponent, inside gap, opponents and teammates nearer the hoop, angle from the shooter's line,",
-  "  offence, shooter, distance x shot distance, shooter on a rim shot, players within 6 ft, closeness share. Team awards",
-  "  are alternatives with a constant and a shot-distance slope. Standardised and L2-penalised on the training games;",
-  "  lambda by inner leave-one-game-out. Fitted at release (C1) and at rim + 0.2 s (exploratory; Step 09's C3b reference).",
-  "- **Binary OREB model** (C2): logistic regression on shot distance, three, the two nearest offensive and defensive",
-  "  hoop distances, offence minus defence mean distance, and attackers nearer the hoop than their assigned defender",
-  "  (five-against-five assignment minimising total distance).",
-  "- **Boosted challenger**: not run (optional in the manual, only after the logit passes).",
-  "",
-  sprintf("## C1: conditional logit at release: %s", status_clogit),
-  "",
-  "Paired log-loss difference, logit minus each reference (negative is better). Superiority needs `hi` < 0 and every",
-  "drop-one-game mean < 0:", "", md_table(c1t, 4), "",
-  sprintf("Class-wise ECE: logit %.4f, selected reference %.4f (allowed: reference + %.2f): %s.", ece["static_clogit"],
-          ece["selected_reference"], dec$calibration_ece_margin, if (c1_cal_ok) "met" else "not met"),
-  "",
-  sprintf("## C2: binary OREB model at release: %s", status_oreb),
-  "", md_table(team_sum, 4), "",
-  sprintf("Paired binary log loss, model minus constant: %.4f (interval %.4f to %.4f, better in %d of %d games, drop-one max %.4f).",
-          c2$summary$mean_diff, c2$summary$lo, c2$summary$hi, c2$summary$games_better, c2$summary$games, c2$summary$drop_one_max),
-  sprintf("Calibration in the large: |mean P(OREB) - rate| = %.4f (allowed %.2f).", c2_large, dec$team_calibration_in_large_max),
-  "",
-  "## Scores at both time points (held-out games)",
-  "", md_table(summ[, .(time_point, model, episodes, log_loss, brier, top1, top3, team_log_loss, ece)], 4), "",
-  "## Exploratory: logit at rim + 0.2 s against every baseline", "", md_table(rimt, 4), "",
-  "## Lambda chosen (folds)", "", md_table(lam_tab), "",
-  "## Coefficients (all ten games, for reading only; per standard deviation)",
-  "", md_table(coef_all[, .(term, estimate_per_sd, fold_min, fold_max, sign_changes)], 3), "",
-  "`dist_hoop` and `dist_minus_mean` differ by a per-shot constant, so the softmax splits one distance effect between",
-  "them (and `dist_x_shot`); read them together. Fold ranges show how stable each term is across held-out games.",
-  "",
-  "## Where it gains and loses (difference against the selected reference)",
-  "", md_table(fail, 4), "",
-  "## Checks", "", md_table(checks), "",
-  "## Limits",
-  "",
-  "- Ten games: intervals are indicative. Leave one game out trains on later games; teams recur across games.",
-  "- Release geometry only; no velocities, no ball. The rim + 0.2 s fit uses positions then, still without the ball.",
-  "- Coefficients describe association in these games, not effects of moving a player.")
+# The step's markdown report.
+lines <- c("# Step 04: static rebounding model",
+           "",
+           sprintf("Run %s by `src/rebounding/run_step04.R`; settings `config/experiment.yaml` (`step04`, config v%d), fixed before any fit.",
+                   format(Sys.Date()), cfg$config_version),
+           "Folds, outcomes, scoring and decision rules are Step 03's frozen harness. Step 02 is BLOCKED: the target is the credited",
+           sprintf("outcome (ten players, team award to either side) of %d missed shots.", nrow(el)),
+           "",
+           "## Models",
+           "",
+           "- **Grouped conditional logit** over the 12 outcomes. Player features at t: distance to the hoop, distance minus the",
+           "  ten's mean, nearest opponent, inside gap, opponents and teammates nearer the hoop, angle from the shooter's line,",
+           "  offence, shooter, distance x shot distance, shooter on a rim shot, players within 6 ft, closeness share. Team awards",
+           "  are alternatives with a constant and a shot-distance slope. Standardised and L2-penalised on the training games;",
+           "  lambda by inner leave-one-game-out. Fitted at release (C1) and at rim + 0.2 s (exploratory; Step 09's C3b reference).",
+           "- **Binary OREB model** (C2): logistic regression on shot distance, three, the two nearest offensive and defensive",
+           "  hoop distances, offence minus defence mean distance, and attackers nearer the hoop than their assigned defender",
+           "  (five-against-five assignment minimising total distance).",
+           "- **Boosted challenger**: not run (optional in the manual, only after the logit passes).",
+           "",
+           sprintf("## C1: conditional logit at release: %s", status_clogit),
+           "",
+           "Paired log-loss difference, logit minus each reference (negative is better). Superiority needs `hi` < 0 and every",
+           "drop-one-game mean < 0:", "", md_table(c1t, 4), "",
+           sprintf("Class-wise ECE: logit %.4f, selected reference %.4f (allowed: reference + %.2f): %s.", ece["static_clogit"],
+                   ece["selected_reference"], dec$calibration_ece_margin, if (c1_cal_ok) "met" else "not met"),
+           "",
+           sprintf("## C2: binary OREB model at release: %s", status_oreb),
+           "", md_table(team_sum, 4), "",
+           sprintf("Paired binary log loss, model minus constant: %.4f (interval %.4f to %.4f, better in %d of %d games, drop-one max %.4f).",
+                   c2$summary$mean_diff, c2$summary$lo, c2$summary$hi, c2$summary$games_better, c2$summary$games, c2$summary$drop_one_max),
+           sprintf("Calibration in the large: |mean P(OREB) - rate| = %.4f (allowed %.2f).", c2_large, dec$team_calibration_in_large_max),
+           "",
+           "## Scores at both time points (held-out games)",
+           "", md_table(summ[, .(time_point, model, episodes, log_loss, brier, top1, top3, team_log_loss, ece)], 4), "",
+           "## Exploratory: logit at rim + 0.2 s against every baseline", "", md_table(rimt, 4), "",
+           "## Lambda chosen (folds)", "", md_table(lam_tab), "",
+           "## Coefficients (all ten games, for reading only; per standard deviation)",
+           "", md_table(coef_all[, .(term, estimate_per_sd, fold_min, fold_max, sign_changes)], 3), "",
+           "`dist_hoop` and `dist_minus_mean` differ by a per-shot constant, so the softmax splits one distance effect between",
+           "them (and `dist_x_shot`); read them together. Fold ranges show how stable each term is across held-out games.",
+           "",
+           "## Where it gains and loses (difference against the selected reference)",
+           "", md_table(fail, 4), "",
+           "## Checks", "", md_table(checks), "",
+           "## Limits",
+           "",
+           "- Ten games: intervals are indicative. Leave one game out trains on later games; teams recur across games.",
+           "- Release geometry only; no velocities, no ball. The rim + 0.2 s fit uses positions then, still without the ball.",
+           "- Coefficients describe association in these games, not effects of moving a player.")
 writeLines(lines, file.path(reports, "04_static_model.md"))
 
-# ---- gate record -------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - GATE RECORD ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 tests <- rbind(run_tests(here, root, "unit", "static_model"), run_tests(here, root, "gates", "step_04"), fill = TRUE)
 fwrite(tests, file.path(gr, "04_tests.csv"))
 tests_ok <- nrow(tests) > 0 && !any(tests$failed > 0 | tests$error)
 harness_ok <- all(checks$pass) && tests_ok
 status <- if (!harness_ok) "BLOCKED" else if (c1_pass) "PASS" else "PASS_BASELINE"
 best_base <- summ[time_point == "release" & model %in% th3$baselines$models][which.min(log_loss)]
-rec <- list(
-  step = "04", status = status,
-  scope = sprintf("static models at release on %d eligible misses (12-class credited outcome; binary OREB); Step 02 BLOCKED", nrow(el)),
-  components = list(static_clogit = status_clogit, oreb_logit = status_oreb, boosted_challenger = "NOT_RUN",
-                    shipped_static_model = if (c1_pass) "static_clogit" else paste("best Step 03 baseline:", best_base$model)),
-  source_commits = list(skillcorner = cfg$dataset$upstream_commit),
-  data_revision = list(upstream = cfg$dataset$upstream_commit, step03_freeze = fz$frozen_at),
-  model_revision = list(model_version = th$model_version, step04_config_sha256 = paste(openssl::sha256(yaml::as.yaml(th))),
-                        code_sha256 = setNames(lapply(c("static_geometry.R", "conditional_choice.R", "team_rebound.R"), function(f)
-                          sha256_file(file.path(here, "R", f))), c("static_geometry.R", "conditional_choice.R", "team_rebound.R")),
-                        predictions_sha256 = sha256_file(file.path(out, "static_oof.csv.gz"))),
-  repository_head = git_out(root, "rev-parse", "HEAD")[1],
-  test_command = "Rscript src/rebounding/run_tests.R unit static_model; Rscript src/rebounding/run_tests.R gates step_04",
-  unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
-  data_audit_passed = all(checks$pass),
-  heldout_metrics_file = "outputs/rebounding/step04/scores_summary.csv",
-  acceptance_criteria_version = sprintf("manual %s, config v%d (step03 rules; step04 settings fixed before any fit)", cfg$manual_revision, cfg$config_version),
-  c1 = list(pass = c1_pass, superiority_over_every_reference = c1$pass, ece_ok = c1_cal_ok,
-            by_reference = c1$by_reference[, .(reference, mean_diff = round(mean_diff, 5), lo = round(lo, 5), hi = round(hi, 5),
-                                               drop_one_max = round(drop_one_max, 5), pass)]),
-  c2 = list(pass = c2_pass, mean_diff = round(c2$summary$mean_diff, 5), lo = round(c2$summary$lo, 5), hi = round(c2$summary$hi, 5),
-            drop_one_max = round(c2$summary$drop_one_max, 5), calibration_in_large = round(c2_large, 5)),
-  evidence = c("outputs/rebounding/step04/", "outputs/rebounding/reports/04_static_model.md"),
-  reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
-  open_risks = list("Ten game clusters: intervals are indicative only", "dist_hoop and dist_minus_mean are not separately identified",
-                    "No velocity or ball information at release"),
-  decision_note = sprintf("C1 %s, C2 %s.", status_clogit, status_oreb))
+# The gate record.
+rec <- list(step = "04", status = status,
+            scope = sprintf("static models at release on %d eligible misses (12-class credited outcome; binary OREB); Step 02 BLOCKED", nrow(el)),
+            components = list(static_clogit = status_clogit, oreb_logit = status_oreb, boosted_challenger = "NOT_RUN",
+                              shipped_static_model = if (c1_pass) "static_clogit" else paste("best Step 03 baseline:", best_base$model)),
+            source_commits = list(skillcorner = cfg$dataset$upstream_commit),
+            data_revision = list(upstream = cfg$dataset$upstream_commit, step03_freeze = fz$frozen_at),
+            model_revision = list(model_version = th$model_version, step04_config_sha256 = paste(openssl::sha256(yaml::as.yaml(th))),
+                                  code_sha256 = setNames(lapply(c("static_geometry.R", "conditional_choice.R", "team_rebound.R"), function(f)
+                                    sha256_file(file.path(here, "R", f))), c("static_geometry.R", "conditional_choice.R", "team_rebound.R")),
+                                  predictions_sha256 = sha256_file(file.path(out, "static_oof.csv.gz"))),
+            repository_head = git_out(root, "rev-parse", "HEAD")[1],
+            test_command = "Rscript src/rebounding/run_tests.R unit static_model; Rscript src/rebounding/run_tests.R gates step_04",
+            unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
+            data_audit_passed = all(checks$pass),
+            heldout_metrics_file = "outputs/rebounding/step04/scores_summary.csv",
+            acceptance_criteria_version = sprintf("manual %s, config v%d (step03 rules; step04 settings fixed before any fit)", cfg$manual_revision, cfg$config_version),
+            c1 = list(pass = c1_pass, superiority_over_every_reference = c1$pass, ece_ok = c1_cal_ok,
+                      by_reference = c1$by_reference[, .(reference, mean_diff = round(mean_diff, 5), lo = round(lo, 5), hi = round(hi, 5),
+                                                         drop_one_max = round(drop_one_max, 5), pass)]),
+            c2 = list(pass = c2_pass, mean_diff = round(c2$summary$mean_diff, 5), lo = round(c2$summary$lo, 5), hi = round(c2$summary$hi, 5),
+                      drop_one_max = round(c2$summary$drop_one_max, 5), calibration_in_large = round(c2_large, 5)),
+            evidence = c("outputs/rebounding/step04/", "outputs/rebounding/reports/04_static_model.md"),
+            reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
+            open_risks = list("Ten game clusters: intervals are indicative only", "dist_hoop and dist_minus_mean are not separately identified",
+                              "No velocity or ball information at release"),
+            decision_note = sprintf("C1 %s, C2 %s.", status_clogit, status_oreb))
 write_gate(file.path(gr, "04_static.json"), rec)
 
 print(summ[, .(time_point, model, ll = round(log_loss, 4), top1 = round(top1, 3), top3 = round(top3, 3), tll = round(team_log_loss, 4), ece = round(ece, 4))], nrows = 50)

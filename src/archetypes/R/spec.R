@@ -9,6 +9,8 @@
 #        quality = data-quality column
 # Per-chance and per-possession rates are scaled to "per 100".
 
+# Denominators shared by several features: typed attempts, the dribble and contest splits, drive endings, called
+# coverages.
 SHOT_TYPES <- c("catch_and_shoot", "dribble_pull_up", "dunk", "floater", "heave", "hook", "layup", "leaner", "lob", "off_move",
                 "post_fadeaway", "shake_and_raise", "stepback", "tip")
 TYPED <- paste0("(", paste0("cst_", SHOT_TYPES, "_attempts", collapse = " + "), ")")
@@ -19,6 +21,7 @@ DRIVE_ENDS <- paste0("(", paste0("dr_end_type_", c("kickout", "pullout", "pullup
 HANDLER_COVERAGES <- paste0("(", paste0("handler_picks_vs_", c("blitz", "ice", "over", "switch", "under"), collapse = " + "), ")")
 SCREENER_COVERAGES <- paste0("(", paste0("screener_picks_vs_", c("blitz", "ice", "show", "soft", "switch"), collapse = " + "), ")")
 
+# Every feature as one row: name, numerator and denominator expressions over the count columns, scale, use, definition.
 feature_spec <- function() {
   rows <- list()
   add <- function(feature, num, den, definition, use = "cluster", scale = 1) {
@@ -51,7 +54,7 @@ feature_spec <- function() {
   for (k in c("pick", "handoff", "off_ball_screen", "iso", "closeout")) {
     add(paste0("s_drv_", sub("off_ball_screen", "obs", k), "_share"), paste0("dr_category_", k, "_count"), "dr_total_drives",
         paste("Share of drives that start from", c(pick = "an on-ball screen", handoff = "a handoff", off_ball_screen = "an off-ball screen",
-                                                    iso = "an isolation", closeout = "attacking a closeout")[[k]]))
+                                                   iso = "an isolation", closeout = "attacking a closeout")[[k]]))
   }
   add("s_drv_kickout_share", "dr_end_type_kickout_count", DRIVE_ENDS, "Share of drives ending in a kick-out (turnovers and stoppages left out)")
   add("s_drv_pullup_share", "dr_end_type_pullup_count", DRIVE_ENDS, "Share of drives ending in a pull-up")

@@ -2,14 +2,22 @@
 # probabilities and the key numbers on the right, and a header that says what happened and how to find the play in
 # the dashboard. Used by 05_attention.R and 06_film_study.R.
 
-suppressPackageStartupMessages({ library(ggplot2); library(patchwork); library(ggrepel) })
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(patchwork)
+  library(ggrepel)
+})
 
 FT_PER_M <- 3.28084
 HOOP_X <- (14 - 1.575) * FT_PER_M
 COURT_X <- 14 * FT_PER_M          # baseline
 COURT_Y <- 7.5 * FT_PER_M         # sideline
 
-COL_OFF <- "#2a6f97"; COL_DEF <- "#d1495b"; COL_ATT <- "#7b2cbf"; COL_RIGHT <- "#2a9d8f"; COL_WRONG <- "#c9ccd1"
+COL_OFF <- "#2a6f97"
+COL_DEF <- "#d1495b"
+COL_ATT <- "#7b2cbf"
+COL_RIGHT <- "#2a9d8f"
+COL_WRONG <- "#c9ccd1"
 
 #' Jersey number, short name and team of every player in the given games, from the supplied rosters.
 load_rosters <- function(root, games) {
@@ -40,10 +48,12 @@ catch_clock <- function(root, game, pass_id) fmt_clock(pass_clocks(root, game, p
 
 #' The attacking half court. `x_from` < 0 also shows that much of the backcourt (for players past half court).
 court_layer <- function(x_from = 0) {
+  # Court markings in feet: three-point arc and corner lines, the lane, and the hoop.
   arc <- seq(-pi / 2 - 0.3, pi / 2 + 0.3, length.out = 120)
   three <- data.table(x = HOOP_X - 6.75 * FT_PER_M * cos(arc), y = 6.75 * FT_PER_M * sin(arc))
   three <- three[abs(y) <= 6.6 * FT_PER_M & x <= HOOP_X]
-  lane <- 4.9 / 2 * FT_PER_M; ft <- COURT_X - 5.8 * FT_PER_M
+  lane <- 4.9 / 2 * FT_PER_M
+  ft <- COURT_X - 5.8 * FT_PER_M
   list(if (x_from < 0) annotate("rect", xmin = x_from, xmax = 0, ymin = -COURT_Y, ymax = COURT_Y, fill = "#ece9e4", colour = "grey55"),
        annotate("rect", xmin = 0, xmax = COURT_X, ymin = -COURT_Y, ymax = COURT_Y, fill = "#f7efe3", colour = "grey55"),
        annotate("rect", xmin = ft, xmax = COURT_X, ymin = -lane, ymax = lane, fill = "#efe2cf", colour = "grey55"),
@@ -56,6 +66,7 @@ court_layer <- function(x_from = 0) {
 
 #' The court at the catch. `w` is the receiver's attention to each of the ten tokens (NULL to leave it out).
 court_panel <- function(tokens, pids, roster, w = NULL, top_n = 3) {
+  # The ten tokens with jerseys and names, sides and roles, and each player's attention rank.
   tok <- as.data.table(tokens[, c("hoop_dx", "y", "vx", "vy", "is_offense", "is_passer", "rel_dist")])
   tok[, `:=`(X = HOOP_X - hoop_dx, token = .I, pid = pids)]
   tok[roster, on = "pid", `:=`(jersey = i.jersey, name = i.name)]
@@ -70,12 +81,15 @@ court_panel <- function(tokens, pids, roster, w = NULL, top_n = 3) {
   tok[, tag := ""]
   tok[!is.na(role) | watched, tag := paste0(fifelse(is.na(role), "", paste0(role, " ")), "#", jersey, " ", name)]
   tok[watched == TRUE, tag := sprintf("%s\n%.0f%% of the read", tag, 100 * w)]
-  rx <- tok$X[1]; ry <- tok$y[1]
+  rx <- tok$X[1]
+  ry <- tok$y[1]
   # start each label a few feet outward: away from the receiver for the others, away from the hoop for the receiver
   tok[, `:=`(ux = fifelse(token == 1, rx - HOOP_X, X - rx), uy = fifelse(token == 1, ry, y - ry))]
   tok[, len := pmax(sqrt(ux^2 + uy^2), 1e-6)]
   tok[, `:=`(nx = 3 * ux / len, ny = 3 * uy / len)]
-  g <- ggplot() + court_layer(if (min(tok$X) < 0) floor(min(tok$X) - 3) else 0)
+  # Court first, then the receiver's attention lines (when given), velocity arrows, dots, jerseys and labels.
+  g <- ggplot() +
+    court_layer(if (min(tok$X) < 0) floor(min(tok$X) - 3) else 0)
   if (!is.null(w)) {
     g <- g +
       geom_segment(data = tok[token > 1], aes(x = rx, y = ry, xend = X, yend = y, linewidth = w, alpha = watched),
@@ -83,8 +97,9 @@ court_panel <- function(tokens, pids, roster, w = NULL, top_n = 3) {
       scale_linewidth(range = c(0.3, 3.5), guide = "none") +
       scale_alpha_manual(values = c(`TRUE` = 0.7, `FALSE` = 0.15), guide = "none")
   }
-  g + geom_segment(data = tok, aes(x = X, y = y, xend = X + 0.5 * vx, yend = y + 0.5 * vy),
-                   arrow = arrow(length = unit(0.14, "cm"), type = "closed"), colour = "grey35", linewidth = 0.5) +
+  g +
+    geom_segment(data = tok, aes(x = X, y = y, xend = X + 0.5 * vx, yend = y + 0.5 * vy),
+                 arrow = arrow(length = unit(0.14, "cm"), type = "closed"), colour = "grey35", linewidth = 0.5) +
     geom_point(data = tok[1], aes(X, y), shape = 21, size = 10.5, stroke = 1.6, colour = "black", fill = NA) +
     geom_point(data = tok, aes(X, y, fill = side), shape = 21, size = 7, colour = "white", stroke = 0.8) +
     geom_text(data = tok, aes(X, y, label = jersey), colour = "white", size = 2.9, fontface = "bold") +
@@ -102,6 +117,7 @@ court_panel <- function(tokens, pids, roster, w = NULL, top_n = 3) {
 
 #' Probability bars, one block per model. The outcome that actually happened is the coloured bar.
 prob_panel <- function(probs, actual) {
+  # One row per model and class.
   pt <- rbindlist(lapply(names(probs), function(nm)
     data.table(model = nm, class = names(probs[[nm]]), p = unname(probs[[nm]]))))
   pt[, `:=`(model = factor(model, levels = names(probs)), class = factor(class, levels = rev(names(probs[[1]]))),
@@ -129,6 +145,7 @@ facts_panel <- function(meta, clocks) {
     sprintf("Time to act:  %.0f s  (shot clock %s, %s left in Q%d)", meta$time_to_act, shot_clock,
             fmt_clock(clocks$game), meta$period)
   else sprintf("Shot clock:  %s  (game clock %s in Q%d, not a model input)", shot_clock, fmt_clock(clocks$game), meta$period)
+  # The key numbers, one line each.
   lines <- c(sprintf("Closest defender:  %.1f ft away", meta$def1_dist),
              sprintf("   closing at %.1f ft/s%s", abs(meta$def1_closing),
                      if (meta$def1_closing < 0) " (moving away)" else ""),
@@ -146,20 +163,26 @@ facts_panel <- function(meta, clocks) {
   }
   ggplot() +
     annotate("text", x = 0, y = rev(seq_along(lines)), label = lines, hjust = 0, size = 3.3, colour = cols) +
-    scale_x_continuous(limits = c(0, 1)) + scale_y_continuous(limits = c(0.5, length(lines) + 0.5)) +
-    labs(title = "At the catch") + theme_void(base_size = 10) +
+    scale_x_continuous(limits = c(0, 1)) +
+    scale_y_continuous(limits = c(0.5, length(lines) + 0.5)) +
+    labs(title = "At the catch") +
+    theme_void(base_size = 10) +
     theme(plot.title = element_text(face = "bold", size = 11))
 }
 
+# Card header: the headline, then a line with the teams, the clock and the dashboard link.
 header_panel <- function(headline, sub) {
   ggplot() +
     annotate("text", x = 0, y = 0.72, label = headline, hjust = 0, size = 5.2, fontface = "bold", colour = "grey10") +
     annotate("text", x = 0, y = 0.2, label = sub, hjust = 0, size = 3.4, colour = "grey30", lineheight = 1) +
-    scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) + scale_y_continuous(limits = c(0, 1)) + theme_void()
+    scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+    scale_y_continuous(limits = c(0, 1)) +
+    theme_void()
 }
 
 #' A full card. probs is a named list (model label -> named probability vector over CLASSES).
 play_card <- function(root, meta, tokens, pids, roster, w, probs, headline) {
+  # Teams and clocks for the header's second line.
   off_team <- roster[pid == meta$receiver, team][1]
   teams <- unique(roster[game_id == meta$game_id, team])
   def_team <- setdiff(teams, off_team)[1]
@@ -179,9 +202,8 @@ play_card <- function(root, meta, tokens, pids, roster, w, probs, headline) {
     theme(plot.margin = margin(4, 8, 4, 8))
 }
 
-CARD_CAPTION <- paste(
-  "How to read the court: hoop on the right. Numbers are jerseys; the ringed player is the receiver.",
-  "Grey arrows show where each player moves over the next 0.5 s.",
-  "Purple lines show how much of the transformer's read went to each player (the receiver's last-layer attention,",
-  "heads averaged); the three heaviest are labelled in purple. Attention shows where the model looked, not what changed its mind.",
-  sep = "\n")
+CARD_CAPTION <- paste("How to read the court: hoop on the right. Numbers are jerseys; the ringed player is the receiver.",
+                      "Grey arrows show where each player moves over the next 0.5 s.",
+                      "Purple lines show how much of the transformer's read went to each player (the receiver's last-layer attention,",
+                      "heads averaged); the three heaviest are labelled in purple. Attention shows where the model looked, not what changed its mind.",
+                      sep = "\n")

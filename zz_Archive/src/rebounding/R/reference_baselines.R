@@ -14,7 +14,9 @@
 episode_tracking <- function(raw, s, home_off, tol, delay, carry, to = s$rebound_frame) {
   ids <- as.integer(c(strsplit(s$release_off_ids, ";", fixed = TRUE)[[1]], strsplit(s$release_def_ids, ";", fixed = TRUE)[[1]]))
   w <- raw$frames[frame >= s$release_frame - 2L & frame <= to + 1L & !is.na(bx)][order(frame)]
-  x <- w$bx * s$flip; y <- w$by * s$flip; z <- w$bz
+  x <- w$bx * s$flip
+  y <- w$by * s$flip
+  z <- w$bz
   mid <- abs(x - (shift(x) + shift(x, -1L)) / 2) < tol & abs(z - (shift(z) + shift(z, -1L)) / 2) < tol &
     shift(w$frame) == w$frame - 1L & shift(w$frame, -1L) == w$frame + 1L
   ball <- data.table(frame = w$frame, x = x, y = y, z = z, measured = !(mid %in% TRUE), usable_from = w$frame + delay)
@@ -143,6 +145,7 @@ predict_baselines <- function(fit, feat, ids, models = BASELINES) {
   rank_rows <- function(fr, tab, col, mass) fr[, .(episode_id, outcome_id = as.character(pid), probability = mass * tab[as.character(get(col))])]
   team_rows <- function(eps, rates) data.table(episode_id = rep(eps, each = 2L), outcome_id = c("team_off", "team_def"),
                                                probability = rep(unname(rates), length(eps)))
+  # Each model's predictions: rank tables by shot range, or pooled tables with the team-rebound rows.
   rbindlist(lapply(models, function(m) {
     if (m %in% names(BY_RANGE)) {
       col <- RANK_TABLES[[BY_RANGE[[m]]]]
@@ -153,10 +156,10 @@ predict_baselines <- function(fit, feat, ids, models = BASELINES) {
       }))))
     }
     pl <- switch(m,
-      uniform = f[, .(episode_id, outcome_id = as.character(pid), probability = players_mass / 10)],
-      side_prior = f[, .(episode_id, outcome_id = as.character(pid),
-                         probability = fifelse(off, fit$side[["off"]], fit$side[["def"]]) / 5)],
-      rank_rows(f, fit$tabs[[m]], RANK_TABLES[[m]], players_mass))
+                 uniform = f[, .(episode_id, outcome_id = as.character(pid), probability = players_mass / 10)],
+                 side_prior = f[, .(episode_id, outcome_id = as.character(pid),
+                                    probability = fifelse(off, fit$side[["off"]], fit$side[["def"]]) / 5)],
+                 rank_rows(f, fit$tabs[[m]], RANK_TABLES[[m]], players_mass))
     cbind(model = m, rbind(pl, team_rows(unique(f$episode_id), fit$rates)))
   }))
 }
@@ -167,7 +170,9 @@ predict_baselines <- function(fit, feat, ids, models = BASELINES) {
 fold_predictions <- function(feat, labels, fa, choice, a, floor) {
   ids <- unique(feat$episode_id)
   fa <- fa[episode_id %in% ids]
-  out <- list(); sel <- list()
+  out <- list()
+  sel <- list()
+  # Per outer fold: fit the baselines on the training games, predict the test game, and score the inner folds.
   for (k in sort(unique(fa$outer_fold))) {
     s <- fold_split(fa, k)
     fit <- fit_baselines(feat, labels, s$train, a)
@@ -200,7 +205,8 @@ label_invariance <- function(fit_predict, feat, labels, choice, split) {
   stopifnot(all(alt$outcome_id[test] != labels$outcome_id[test]))
   a <- fit_predict(feat, labels, split)
   b <- fit_predict(feat, alt, split)
-  setkeyv(a, c("model", "episode_id", "outcome_id")); setkeyv(b, c("model", "episode_id", "outcome_id"))
+  setkeyv(a, c("model", "episode_id", "outcome_id"))
+  setkeyv(b, c("model", "episode_id", "outcome_id"))
   isTRUE(all.equal(a, b, tolerance = 0))
 }
 
@@ -212,6 +218,7 @@ poisoning_invariance <- function(raw, s, home_off, th, pts) {
   inf <- th$information
   ok <- TRUE
   clean <- episode_tracking(raw, s, home_off, inf$keyframe_tol_ft, inf$ball_delay_frames, inf$player_carry_frames)
+  # At each defined time point, corrupt the tracking after it and check that the features do not change.
   for (i in which(pts$defined)) {
     t <- pts$frame_idx[i]
     bad <- list(frames = copy(raw$frames), players = copy(raw$players))

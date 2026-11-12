@@ -6,7 +6,11 @@
 # (TEAM_COLS, UNPENALISED, fit_scaler), particle_integration.R (ACCESS_FEATURES).
 
 #' Column maxima of a matrix with few rows (faster than apply over many columns).
-col_max <- function(U) { m <- U[1, ]; for (i in seq_len(nrow(U))[-1]) m <- pmax(m, U[i, ]); m }
+col_max <- function(U) {
+  m <- U[1, ]
+  for (i in seq_len(nrow(U))[-1]) m <- pmax(m, U[i, ])
+  m
+}
 
 #' Standardisation of the access features over the training player-particle rows.
 fit_access_scaler <- function(acc, ids) {
@@ -37,23 +41,34 @@ dyn_design <- function(sf, acc, shot, ids, sc, asc, features = c(PLAYER_FEATURES
   for (f in intersect(features, PLAYER_FEATURES)) M[prow, f] <- (pl[[f]] - sc$mean[[f]]) / sc$sd[[f]]
   for (f in intersect(features, ACCESS_FEATURES)) M[prow, f] <- (pl[[f]] - asc$mean[[f]]) / asc$sd[[f]]
   z <- (shot$shot_dist[match(blocks$episode_id, shot$episode_id)] - sc$shot_mean) / sc$shot_sd
-  orow <- (0:(nb - 1L)) * 12L + 11L; drow <- orow + 1L
-  M[orow, "team_off"] <- 1; M[drow, "team_def"] <- 1
-  M[orow, "team_off_x_shot_dist"] <- z; M[drow, "team_def_x_shot_dist"] <- z
+  orow <- (0:(nb - 1L)) * 12L + 11L
+  drow <- orow + 1L
+  M[orow, "team_off"] <- 1
+  M[drow, "team_def"] <- 1
+  M[orow, "team_off_x_shot_dist"] <- z
+  M[drow, "team_def_x_shot_dist"] <- z
   rows <- data.table(episode_id = rep(blocks$episode_id, each = 12L), k = rep(blocks$k, each = 12L), outcome_id = "")
-  rows[prow, outcome_id := as.character(pl$pid)]; rows[orow, outcome_id := "team_off"]; rows[drow, outcome_id := "team_def"]
+  rows[prow, outcome_id := as.character(pl$pid)]
+  rows[orow, outcome_id := "team_off"]
+  rows[drow, outcome_id := "team_def"]
   list(M = M, rows = rows, w = 1 / blocks$nk, blocks = blocks)
 }
 
 #' Fit the particle-mixture conditional logit. `y`: row (1..12) of the credited outcome in each block.
 fit_dyn <- function(des, y, lambda, maxit = 1000L) {
-  M <- des$M; nb <- nrow(des$blocks)
+  M <- des$M
+  nb <- nrow(des$blocks)
   ep <- match(des$blocks$episode_id, unique(des$blocks$episode_id))
   pen <- as.numeric(!colnames(M) %in% UNPENALISED)
-  Y <- matrix(0, 12L, nb); Y[cbind(y, seq_len(nb))] <- 1
+  Y <- matrix(0, 12L, nb)
+  Y[cbind(y, seq_len(nb))] <- 1
+  # Negative log likelihood and its gradient over the twelve outcomes, for the optimiser.
   vg <- function(b) {
     U <- matrix(M %*% b, 12L)
-    mx <- col_max(U); E <- exp(sweep(U, 2, mx)); s <- colSums(E); P <- sweep(E, 2, s, `/`)
+    mx <- col_max(U)
+    E <- exp(sweep(U, 2, mx))
+    s <- colSums(E)
+    P <- sweep(E, 2, s, `/`)
     py <- P[cbind(y, seq_len(nb))]
     num <- des$w * py
     den <- as.vector(rowsum(num, ep))
@@ -62,7 +77,11 @@ fit_dyn <- function(des, y, lambda, maxit = 1000L) {
          g = -as.vector(crossprod(M, as.vector(sweep(Y - P, 2, r, `*`)))) + lambda * pen * b)
   }
   cache <- new.env()
-  fn <- function(b) { cache$v <- vg(b); cache$b <- b; cache$v$f }
+  fn <- function(b) {
+    cache$v <- vg(b)
+    cache$b <- b
+    cache$v$f
+  }
   gr <- function(b) if (identical(cache$b, b)) cache$v$g else vg(b)$g
   o <- optim(rep(0, ncol(M)), fn, gr, method = "BFGS", control = list(maxit = maxit, reltol = 1e-12))
   list(beta = setNames(o$par, colnames(M)), lambda = lambda, converged = o$convergence == 0L, objective = o$value)
@@ -71,7 +90,8 @@ fit_dyn <- function(des, y, lambda, maxit = 1000L) {
 #' Episode probabilities: the weighted average over particles of each particle's softmax.
 predict_dyn <- function(fit, des) {
   U <- matrix(des$M %*% fit$beta[colnames(des$M)], 12L)
-  P <- exp(sweep(U, 2, col_max(U))); P <- sweep(P, 2, colSums(P), `/`)
+  P <- exp(sweep(U, 2, col_max(U)))
+  P <- sweep(P, 2, colSums(P), `/`)
   P <- sweep(P, 2, des$w, `*`)
   d <- cbind(des$rows, probability = as.vector(P))
   d[, .(probability = sum(probability)), by = .(episode_id, outcome_id)]

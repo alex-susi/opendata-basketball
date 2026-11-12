@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Play viewer: animate any possession from the 10 tracked ACB games.
 #
 # Start it from R with the repository as working directory:
@@ -7,13 +8,21 @@
 # under outputs/cache/play_viewer/. Rscript src/play_viewer/build_cache.R does the same ahead of time.
 # R/data.R holds the data layer; www/player.js draws the animation in the browser.
 # The second tab (R/archetype_page.R) explains the playstyle archetypes shown beside each player's name.
+## ═════════════════════════════════════════════════════════════════════════════
 
 library(shiny)
 
 app_data <- load_app_data()
 
-# ---- filter choices ------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - FILTER CHOICES ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Labelled values for every filter input, built once from the play index.
 period_label <- function(p) ifelse(p <= 4L, paste0("Q", p), paste0("OT", p - 4L))
 periods <- sort(unique(app_data$plays$period))
 results <- intersect(c(RESULT_LABELS, sort(unique(app_data$plays$result))), app_data$plays$result)
@@ -29,7 +38,13 @@ choices <- list(game = setNames(app_data$matches$game_id, app_data$matches$label
                 result = setNames(results, results),
                 shot_type = setNames(shot_types, tools::toTitleCase(camel_to_words(shot_types))))
 
-# ---- UI ------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - UI ---------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' A multi-select filter; empty means "no restriction".
 pick_many <- function(id, label, placeholder) {
@@ -40,6 +55,7 @@ pick_many <- function(id, label, placeholder) {
 #' A compact native dropdown that qualifies the filter next to it.
 pick_mode <- function(id, label, options) selectInput(id, label, choices = options, selectize = FALSE)
 
+# Left column: the filters, then the list of matching possessions.
 filters_panel <- tags$details(class = "panel filters", open = NA,
                               tags$summary(span("Filters"), actionLink("reset", "Reset")),
                               pick_many("game", "Game", "All games"),
@@ -71,6 +87,7 @@ tab_bar <- tags$nav(class = "tabs",
                     tags$button(type = "button", class = "on", `data-tab` = "viewer", "Play viewer"),
                     tags$button(type = "button", `data-tab` = "archetypes", "Archetypes"))
 
+# Page: the tab bar, the viewer tab (filters plus the drawing area from www/viewer.html) and the archetypes tab.
 ui <- bootstrapPage(tags$head(tags$title("ACB play viewer"),
                               tags$link(rel = "stylesheet", href = "style.css")),
                     tab_bar,
@@ -80,7 +97,13 @@ ui <- bootstrapPage(tags$head(tags$title("ACB play viewer"),
                     tags$main(class = "doc tab-page", id = "tab-archetypes", hidden = NA, archetype_page(app_data$root)),
                     tags$script(src = "player.js"))
 
-# ---- server --------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - SERVER -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Clear every filter back to "no restriction".
 reset_filters <- function(session) {
@@ -91,6 +114,7 @@ reset_filters <- function(session) {
   for (id in c("team_side", "player_role", "types_mode", "oreb")) updateSelectInput(session, id, selected = "any")
 }
 
+# Refilter on every input change; send a play's frames when one is chosen from the list.
 server <- function(input, output, session) {
   matching <- reactive(filter_plays(app_data, input))
   observe(session$sendCustomMessage("plays", plays_json(app_data, matching())))

@@ -12,7 +12,8 @@ sc <- fread(file.path(s5, "spatial_oof.csv.gz"))
 test_that("the density is normalised over the allowed domain in feet", {
   for (k in c("sums to 1", "positive and finite", "maps exist for every", "cell area")) expect_true(checks[grepl(k, check)]$pass, info = k)
   g <- spatial_grid(th$domain)
-  expect_equal(c(min(g$xe), max(g$xe)), c(0, 46)); expect_equal(c(min(g$ye), max(g$ye)), c(-25, 25))
+  expect_equal(c(min(g$xe), max(g$xe)), c(0, 46))
+  expect_equal(c(min(g$ye), max(g$ye)), c(-25, 25))
 })
 
 test_that("held-out coverage of the prespecified regions is reported with intervals, by shot range and game", {

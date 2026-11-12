@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 3: train the transformer, leave-one-game-out, exactly like the baselines.
 #   Rscript src/kickout_transformer/03_train_transformer.R --model=freeze [--fold=114243] [--force]
 #   Rscript src/kickout_transformer/03_train_transformer.R --model=hist   [--fold=114243] [--force]
@@ -15,6 +16,7 @@
 #
 # Writes one file per test game: outputs/cache/kickout_transformer/tf_{model}_{game}.rds with the predictions,
 # the receiver's attention weights, the training curves, and the seed-1 model (tf_{model}_{game}.pt).
+## ═════════════════════════════════════════════════════════════════════════════
 
 source(file.path(dirname(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))), "R", "common.R"))
 root <- kt_root()
@@ -30,6 +32,15 @@ MODEL <- arg("model", "freeze")
 FOLD <- arg("fold")
 FORCE <- "--force" %in% commandArgs(TRUE)
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SETTINGS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Training: random starts averaged, epoch cap, early-stopping patience, batch size, learning rate, weight decay.
 N_SEEDS <- 3L
 MAX_EPOCHS <- 200L
 PATIENCE <- 25L
@@ -38,6 +49,15 @@ LR <- 1e-3
 WD <- 1e-2
 CTX_FEATS <- c("time_to_act", "kickout", "from_paint")   # play-level facts, joined to the receiver row before the head
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - DATA -------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Catches and tokens for the chosen model. y_feats are the token columns whose sign flips under a mirror.
 d <- kt_load_catches(paths)
 m <- d$meta
 tokens <- if (MODEL == "freeze") d$freeze else d$hist
@@ -47,29 +67,58 @@ ctx_all <- as.matrix(m[, ..CTX_FEATS]) * 1
 y_all <- match(m$label, CLASSES)
 games <- sort(unique(m$game_id))
 
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - LEAVE-ONE-GAME-OUT TRAINING --------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# One held-out game: validate on the next game in order, train on the other eight, then predict the held-out game.
 run_fold <- function(g) {
   out_path <- file.path(paths$cache, sprintf("tf_%s_%s.rds", MODEL, g))
   if (file.exists(out_path) && !FORCE) return(invisible(readRDS(out_path)))
   t0 <- Sys.time()
   val_g <- games[(match(g, games) %% length(games)) + 1L]
-  tr <- which(!m$game_id %in% c(g, val_g)); va <- which(m$game_id == val_g); te <- which(m$game_id == g)
+  tr <- which(!m$game_id %in% c(g, val_g))
+  va <- which(m$game_id == val_g)
+  te <- which(m$game_id == g)
 
   # standardise with training rows only; mirrored features keep a centre of 0 so a flip stays a flip
   flat <- matrix(tokens[tr, , ], ncol = length(feats))
-  mu <- colMeans(flat); sdv <- apply(flat, 2, sd); sdv[sdv < 1e-6] <- 1; mu[y_feats] <- 0
-  cmu <- colMeans(ctx_all[tr, , drop = FALSE]); csd <- apply(ctx_all[tr, , drop = FALSE], 2, sd); csd[csd < 1e-6] <- 1
-  mu_t <- torch_tensor(mu); sd_t <- torch_tensor(sdv)
+  mu <- colMeans(flat)
+  sdv <- apply(flat, 2, sd)
+  sdv[sdv < 1e-6] <- 1
+  mu[y_feats] <- 0
+  cmu <- colMeans(ctx_all[tr, , drop = FALSE])
+  csd <- apply(ctx_all[tr, , drop = FALSE], 2, sd)
+  csd[csd < 1e-6] <- 1
+  mu_t <- torch_tensor(mu)
+  sd_t <- torch_tensor(sdv)
+  # Model inputs: standardised tokens and context. The validation and test inputs are built once.
   as_x <- function(i) (torch_tensor(tokens[i, , , drop = FALSE]) - mu_t) / sd_t
   as_c <- function(i) torch_tensor(scale(ctx_all[i, , drop = FALSE], cmu, csd))
-  Xva <- as_x(va); Cva <- as_c(va); Yva <- torch_tensor(y_all[va], dtype = torch_long())
-  Xte <- as_x(te); Cte <- as_c(te)
-  raw_tr <- torch_tensor(tokens[tr, , , drop = FALSE]); Ctr <- as_c(tr); Ytr <- torch_tensor(y_all[tr], dtype = torch_long())
+  Xva <- as_x(va)
+  Cva <- as_c(va)
+  Yva <- torch_tensor(y_all[va], dtype = torch_long())
+  Xte <- as_x(te)
+  Cte <- as_c(te)
+  raw_tr <- torch_tensor(tokens[tr, , , drop = FALSE])
+  Ctr <- as_c(tr)
+  Ytr <- torch_tensor(y_all[tr], dtype = torch_long())
 
+  # One random start: train with early stopping on the validation game, then predict the test game with the best weights.
   fit_seed <- function(seed) {
-    torch_manual_seed(seed); set.seed(seed)
+    torch_manual_seed(seed)
+    set.seed(seed)
     net <- kickout_transformer(n_feat = length(feats), n_ctx = length(CTX_FEATS), n_class = length(CLASSES))
     opt <- optim_adamw(net$parameters, lr = LR, weight_decay = WD)
-    best <- Inf; best_state <- NULL; best_ep <- 0L; curve <- list()
+    best <- Inf
+    best_state <- NULL
+    best_ep <- 0L
+    curve <- list()
+    # Each epoch: shuffle the training catches into batches.
     for (ep in seq_len(MAX_EPOCHS)) {
       net$train()
       idx <- sample(length(tr))
@@ -77,26 +126,33 @@ run_fold <- function(g) {
       batches <- split(idx, ceiling(seq_along(idx) / BATCH))
       nb <- length(batches)
       if (nb > 1 && length(batches[[nb]]) == 1) {          # a one-catch batch loses a dimension in torch: merge it
-        batches[[nb - 1]] <- c(batches[[nb - 1]], batches[[nb]]); batches[[nb]] <- NULL
+        batches[[nb - 1]] <- c(batches[[nb - 1]], batches[[nb]])
+        batches[[nb]] <- NULL
       }
       for (b in batches) {
+        # Mirror a random half of each batch (y-type features change sign) before standardising.
         sgn <- matrix(1, length(b), length(feats))
         sgn[runif(length(b)) < 0.5, y_feats] <- -1
         xb <- (raw_tr[b, , ] * torch_tensor(sgn)$unsqueeze(2) - mu_t) / sd_t
         loss <- nnf_cross_entropy(net(xb, Ctr[b, ]), Ytr[b])
-        opt$zero_grad(); loss$backward(); opt$step()
+        opt$zero_grad()
+        loss$backward()
+        opt$step()
         tot <- tot + loss$item() * length(b)
       }
+      # Validation loss: keep the best epoch's weights and stop after PATIENCE epochs without improvement.
       net$eval()
       vl <- with_no_grad(nnf_cross_entropy(net(Xva, Cva), Yva)$item())
       curve[[ep]] <- data.table(seed = seed, epoch = ep, train = tot / length(tr), val = vl)
       if (vl < best - 1e-4) {
-        best <- vl; best_ep <- ep
+        best <- vl
+        best_ep <- ep
         best_state <- lapply(net$state_dict(), function(t) t$clone())
       } else if (ep - best_ep >= PATIENCE) break
     }
     net$load_state_dict(best_state)
     net$eval()
+    # Test-game probabilities and attention; the first start's network is saved.
     o <- with_no_grad(net(Xte, Cte, return_attention = TRUE))
     prob <- as_array(nnf_softmax(o$logits, dim = 2))
     # receiver's attention row in every layer: [test catches, layer, head, 10 tokens]
@@ -106,6 +162,7 @@ run_fold <- function(g) {
     list(prob = prob, att = att, curve = rbindlist(curve), best_ep = best_ep, best_val = best)
   }
 
+  # Average the random starts and save the fold.
   fits <- lapply(seq_len(N_SEEDS), fit_seed)
   prob <- Reduce(`+`, lapply(fits, `[[`, "prob")) / N_SEEDS
   att <- Reduce(`+`, lapply(fits, `[[`, "att")) / N_SEEDS
@@ -123,4 +180,5 @@ run_fold <- function(g) {
   invisible(out)
 }
 
+# Every game, or only the one given by --fold.
 for (g in if (is.null(FOLD)) games else as.integer(FOLD)) run_fold(g)

@@ -1,7 +1,9 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Gate 0 of the gated rebound roadmap: rebound event audit and data contract.
 #   Rscript src/rebounding/run_gate0.R
 # Needs outputs/cache/rebounding/raw_*.rds (extract_windows.R) and episodes.rds (run_audit.R).
 # Writes outputs/rebounding/gate0/*.csv and outputs/cache/rebounding/gate0.rds (input of run_gate0_review.R).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -25,11 +27,23 @@ add <- function(area, name, value, expected = NA, note = "") {
   check[[length(check) + 1L]] <<- data.table(area = area, check = name, value = value, expected = expected, note = note)
 }
 
-# ---- inventory and identity contract --------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - INVENTORY AND IDENTITY CONTRACT ----------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 add("inventory", "match folders", sum(dir.exists(file.path(root, "data", "matches", matches$id))), 10)
 add("inventory", "alias map idempotent (canon of canon = canon)",
     all(canon_id(canon_id(aliases$player_id, aliases), aliases) == canon_id(aliases$player_id, aliases)), TRUE)
-inv <- list(); per_game <- list(); misses <- list(); lmarks <- list(); clocks <- list()
+inv <- list()
+per_game <- list()
+misses <- list()
+lmarks <- list()
+clocks <- list()
+# One game at a time: event checks, clocks, the raw tracking, and every miss's rebound timeline.
 for (g in matches$id) {
   message("Gate 0: ", g)
   e <- gate0_events(root, g, aliases)
@@ -37,17 +51,17 @@ for (g in matches$id) {
   raw <- readRDS(file.path(cache, sprintf("raw_%s.rds", g)))
   raw$home_team <- matches$home_team$id[matches$id == g]
   gd <- read_json_file(match_file(root, g, "_game_data.json"))
-  inv[[length(inv) + 1L]] <- data.table(
-    game_id = g, events_file = file.exists(match_file(root, g, "_dynamic_events.json")),
-    game_data_file = file.exists(match_file(root, g, "_game_data.json")),
-    tracking_file = basename(tracking_source(root, g)), tracking_mb = round(file.size(tracking_source(root, g)) / 2^20, 1),
-    game_id_matches = gd$gameId == g, event_keys_exact = setequal(e$keys, KEYS) && length(e$keys) == 20L,
-    roster_home = sum(e$roster$home), roster_away = sum(!e$roster$home), roster_dupes = anyDuplicated(e$roster$pid) > 0,
-    tracking_lines = nrow(clock), frame_strictly_increasing = !is.unsorted(clock$frame, strictly = TRUE),
-    wall_is_40_per_frame = all(clock$wall == 40 * clock$frame), missing_frame_indices = max(clock$frame) + 1L - nrow(clock),
-    dead_frame_share = mean(clock$no_players), periods = uniqueN(clock$period))
+  inv[[length(inv) + 1L]] <- data.table(game_id = g, events_file = file.exists(match_file(root, g, "_dynamic_events.json")),
+                                        game_data_file = file.exists(match_file(root, g, "_game_data.json")),
+                                        tracking_file = basename(tracking_source(root, g)), tracking_mb = round(file.size(tracking_source(root, g)) / 2^20, 1),
+                                        game_id_matches = gd$gameId == g, event_keys_exact = setequal(e$keys, KEYS) && length(e$keys) == 20L,
+                                        roster_home = sum(e$roster$home), roster_away = sum(!e$roster$home), roster_dupes = anyDuplicated(e$roster$pid) > 0,
+                                        tracking_lines = nrow(clock), frame_strictly_increasing = !is.unsorted(clock$frame, strictly = TRUE),
+                                        wall_is_40_per_frame = all(clock$wall == 40 * clock$frame), missing_frame_indices = max(clock$frame) + 1L - nrow(clock),
+                                        dead_frame_share = mean(clock$no_players), periods = uniqueN(clock$period))
 
   # rebounds: what each row points to
+  # Rebound links for field-goal misses, with the shot, roster and next-chance fields used to check them.
   rb <- link_checks(e)
   sh <- e$shots
   fgr <- rb[ref_kind == "shot"]
@@ -59,36 +73,36 @@ for (g in matches$id) {
   nc <- e$chances[, .(next_chance = chance_id, nc_type = start_type, nc_off = off_team, nc_period = period)]
   fgr <- merge(fgr, nc, by = "next_chance", all.x = TRUE)
   ftl <- ft_live_misses(e)
-  per_game[[length(per_game) + 1L]] <- data.table(
-    game_id = g, shots = nrow(sh), made = sum(sh$made %in% TRUE), outcome_na = sum(is.na(sh$made)),
-    fouled_na = sum(is.na(sh$fouled)), non_fouled_misses = sum(sh$made %in% FALSE & sh$fouled %in% FALSE),
-    fouled_misses = sum(sh$made %in% FALSE & sh$fouled %in% TRUE), and_ones = sum(sh$made %in% TRUE & sh$fouled %in% TRUE),
-    blocked = sum(sh$blocked %in% TRUE), blocked_made = sum(sh$blocked %in% TRUE & sh$made %in% TRUE),
-    blocker_missing = sum(sh$blocked %in% TRUE & is.na(sh$blocker)),
-    blocker_not_defense = sum(sh$blocked %in% TRUE & !is.na(sh$blocker) &
-                                rost$team[match(sh$blocker, rost$pid)] != sh$def_team, na.rm = TRUE),
-    tip_shots = sum(sh$cst %in% "tip"),
-    rebound_rows = nrow(rb), fg_rebound_rows = sum(rb$fg %in% TRUE), ft_rebound_rows = sum(rb$fg %in% FALSE),
-    fg_flag_na = sum(is.na(rb$fg)),
-    fg_flag_vs_reference_mismatch = sum((rb$fg %in% TRUE) != (rb$ref_kind == "shot")),
-    rebound_reference_missing = sum(rb$ref_kind == "none"), rebound_reference_not_found = sum(!rb$ref_found),
-    duplicate_links = sum(duplicated(rb$ref_id[!is.na(rb$ref_id)])),
-    rebound_to_made_shot = sum(fgr$s_made %in% TRUE), rebound_to_fouled_shot = sum(fgr$s_fouled %in% TRUE),
-    non_fouled_miss_without_rebound = sum(sh$made %in% FALSE & sh$fouled %in% FALSE & !sh$shot_id %in% fgr$ref_id),
-    grabbed_na = sum(is.na(rb$grabbed)), defensive_na = sum(is.na(rb$defensive)),
-    grabbed_without_rebounder = sum(rb$grabbed %in% TRUE & is.na(rb$rpid)),
-    team_award_with_rebounder = sum(rb$grabbed %in% FALSE & !is.na(rb$rpid)),
-    rebounder_off_roster = sum(!is.na(fgr$rpid) & !fgr$rpid_on_roster),
-    rebounder_team_mismatch = sum(!is.na(fgr$rpid) & fgr$rpid_team != fgr$rteam, na.rm = TRUE),
-    defensive_flag_mismatch = sum(fgr$defensive != (fgr$rteam == fgr$s_def), na.rm = TRUE),
-    rebound_team_neither = sum(!fgr$rteam %in% c(fgr$s_def, fgr$s_off)),
-    rebound_period_mismatch = sum(fgr$period != fgr$s_period, na.rm = TRUE),
-    rebound_before_shot_end = sum(fgr$rf < fgr$s_f1, na.rm = TRUE),
-    next_chance_missing = sum(is.na(fgr$next_chance)), next_chance_not_found = sum(!is.na(fgr$next_chance) & is.na(fgr$nc_type)),
-    next_chance_team_mismatch = sum(fgr$nc_off != fgr$rteam, na.rm = TRUE),
-    next_chance_type_mismatch = sum(!is.na(fgr$nc_type) & fgr$nc_type != fifelse(fgr$defensive, "FGDRB", "FGORB")),
-    ft_live_misses = sum(ftl$made %in% FALSE & ftl$last_of_trip), ft_live_misses_with_rebound = sum(ftl$made %in% FALSE & ftl$last_of_trip & ftl$has_rebound),
-    ft_rebound_to_made_or_not_last = sum(ftl$has_rebound & !(ftl$made %in% FALSE & ftl$last_of_trip)))
+  # One row of link and consistency counts per game.
+  per_game[[length(per_game) + 1L]] <- data.table(game_id = g, shots = nrow(sh), made = sum(sh$made %in% TRUE), outcome_na = sum(is.na(sh$made)),
+                                                  fouled_na = sum(is.na(sh$fouled)), non_fouled_misses = sum(sh$made %in% FALSE & sh$fouled %in% FALSE),
+                                                  fouled_misses = sum(sh$made %in% FALSE & sh$fouled %in% TRUE), and_ones = sum(sh$made %in% TRUE & sh$fouled %in% TRUE),
+                                                  blocked = sum(sh$blocked %in% TRUE), blocked_made = sum(sh$blocked %in% TRUE & sh$made %in% TRUE),
+                                                  blocker_missing = sum(sh$blocked %in% TRUE & is.na(sh$blocker)),
+                                                  blocker_not_defense = sum(sh$blocked %in% TRUE & !is.na(sh$blocker) &
+                                                                              rost$team[match(sh$blocker, rost$pid)] != sh$def_team, na.rm = TRUE),
+                                                  tip_shots = sum(sh$cst %in% "tip"),
+                                                  rebound_rows = nrow(rb), fg_rebound_rows = sum(rb$fg %in% TRUE), ft_rebound_rows = sum(rb$fg %in% FALSE),
+                                                  fg_flag_na = sum(is.na(rb$fg)),
+                                                  fg_flag_vs_reference_mismatch = sum((rb$fg %in% TRUE) != (rb$ref_kind == "shot")),
+                                                  rebound_reference_missing = sum(rb$ref_kind == "none"), rebound_reference_not_found = sum(!rb$ref_found),
+                                                  duplicate_links = sum(duplicated(rb$ref_id[!is.na(rb$ref_id)])),
+                                                  rebound_to_made_shot = sum(fgr$s_made %in% TRUE), rebound_to_fouled_shot = sum(fgr$s_fouled %in% TRUE),
+                                                  non_fouled_miss_without_rebound = sum(sh$made %in% FALSE & sh$fouled %in% FALSE & !sh$shot_id %in% fgr$ref_id),
+                                                  grabbed_na = sum(is.na(rb$grabbed)), defensive_na = sum(is.na(rb$defensive)),
+                                                  grabbed_without_rebounder = sum(rb$grabbed %in% TRUE & is.na(rb$rpid)),
+                                                  team_award_with_rebounder = sum(rb$grabbed %in% FALSE & !is.na(rb$rpid)),
+                                                  rebounder_off_roster = sum(!is.na(fgr$rpid) & !fgr$rpid_on_roster),
+                                                  rebounder_team_mismatch = sum(!is.na(fgr$rpid) & fgr$rpid_team != fgr$rteam, na.rm = TRUE),
+                                                  defensive_flag_mismatch = sum(fgr$defensive != (fgr$rteam == fgr$s_def), na.rm = TRUE),
+                                                  rebound_team_neither = sum(!fgr$rteam %in% c(fgr$s_def, fgr$s_off)),
+                                                  rebound_period_mismatch = sum(fgr$period != fgr$s_period, na.rm = TRUE),
+                                                  rebound_before_shot_end = sum(fgr$rf < fgr$s_f1, na.rm = TRUE),
+                                                  next_chance_missing = sum(is.na(fgr$next_chance)), next_chance_not_found = sum(!is.na(fgr$next_chance) & is.na(fgr$nc_type)),
+                                                  next_chance_team_mismatch = sum(fgr$nc_off != fgr$rteam, na.rm = TRUE),
+                                                  next_chance_type_mismatch = sum(!is.na(fgr$nc_type) & fgr$nc_type != fifelse(fgr$defensive, "FGDRB", "FGORB")),
+                                                  ft_live_misses = sum(ftl$made %in% FALSE & ftl$last_of_trip), ft_live_misses_with_rebound = sum(ftl$made %in% FALSE & ftl$last_of_trip & ftl$has_rebound),
+                                                  ft_rebound_to_made_or_not_last = sum(ftl$has_rebound & !(ftl$made %in% FALSE & ftl$last_of_trip)))
   nc_types <- fgr[, .N, by = .(defensive, grabbed, nc_type)]
 
   # clocks: event wallClock / period / gameClock against the tracking line at the event's frame
@@ -100,10 +114,9 @@ for (g in matches$id) {
                gc_max_abs_diff = if (all(is.na(gc))) NA_real_ else max(abs(clock$gc[i] - gc), na.rm = TRUE),
                dead_at_frame = sum(clock$no_players[i], na.rm = TRUE))
   }
-  clocks[[length(clocks) + 1L]] <- rbind(
-    cm(sh$f0, sh$w0, sh$period, sh$gc0, "shot release (startFrame)"),
-    cm(sh$f1, sh$w1, sh$period, NA_real_, "shot end (endFrame)"),
-    cm(rb$rf, rb$rw, rb$period, rb$rgc, "rebound (frame)"))
+  clocks[[length(clocks) + 1L]] <- rbind(cm(sh$f0, sh$w0, sh$period, sh$gc0, "shot release (startFrame)"),
+                                         cm(sh$f1, sh$w1, sh$period, NA_real_, "shot end (endFrame)"),
+                                         cm(rb$rf, rb$rw, rb$period, rb$rgc, "rebound (frame)"))
 
   # every non-fouled miss: semantics, identity, quality and landmarks
   ep <- merge(sh, audited$episodes[game_id == g, .(shot_id, flip, contact_frame, contact_kind, touch_frame, control_frame,
@@ -116,6 +129,7 @@ for (g in matches$id) {
   hoops <- audited$hoops[game_id == g]
   cpc <- e$chance_players[, canon := canon_id(pid, aliases)]
   m <- ep[made %in% FALSE & fouled %in% FALSE]
+  # Per miss: its hoop, the players on court, and the audit of its rebound window.
   recs <- lapply(seq_len(nrow(m)), function(k) {
     s <- m[k]
     h <- hoops[left_hoop == s$left_hoop]
@@ -190,7 +204,14 @@ add("labels", "rebound frame after release but before endFrame", ep[!is.na(rf), 
     "kept: blocks and quick rebounds at the rim; endFrame is not the ball's arrival for short shots")
 add("labels", "shots with endFrame - startFrame over 40 frames", ep[, sum(f1 - f0 > 40)], NA)
 
-# ---- retained population and landmark usability -----------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - RETAINED POPULATION AND LANDMARK USABILITY -----------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 EXCLUDE <- c("no rebound row: end of period", "no rebound row: foul", "no rebound row: turnover or violation",
              "no rebound row: unexplained", "team rebound: end of period",
              "rebound row at or before the release (tip sequence linked to the tip)")
@@ -217,23 +238,29 @@ lm_summary <- lm[retained == TRUE, .(retained = .N, defined = sum(!is.na(frame))
                                      fallback_used = sum(ball_lag > 0, na.rm = TRUE),
                                      abstain = sum(!is.na(frame) & !usable_after_fallback)), by = landmark]
 
-# ---- semantics of endFrame and rebound frame --------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - SEMANTICS OF endFrame AND REBOUND FRAME --------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 el <- ep[retained == TRUE]
 q <- function(v) c(p10 = quantile(v, 0.1, na.rm = TRUE), med = median(v, na.rm = TRUE), p90 = quantile(v, 0.9, na.rm = TRUE))
-sem <- rbind(
-  data.table(quantity = "ball height at shots.endFrame (ft)", t(q(el$z_end))),
-  data.table(quantity = "ball distance from calibrated hoop at endFrame (ft)", t(q(el$hd_end))),
-  data.table(quantity = "frames from endFrame to the ball's closest approach to the hoop", t(q(el$closest_minus_end))),
-  data.table(quantity = "frames from endFrame to the contact proxy", t(q(el$contact_frame - el$f1))),
-  data.table(quantity = "seconds from endFrame to rebounds.frame", t(q((el$rf - el$f1) / FPS))),
-  data.table(quantity = "seconds from the first-touch proxy to rebounds.frame", t(q((el$rf - el$touch_frame) / FPS))),
-  data.table(quantity = "seconds from rebounds.frame to the control proxy", t(q((el$control_frame - el$rf) / FPS))),
-  data.table(quantity = "ball height at rebounds.frame (ft), player rebounds", t(q(el[grabbed == TRUE]$z_reb))),
-  data.table(quantity = "ball speed at rebounds.frame (ft/s), player rebounds", t(q(el[grabbed == TRUE]$speed_reb))),
-  data.table(quantity = "rebounder to ball, horizontal, at rebounds.frame (ft)", t(q(el$reb_ball_dist))),
-  data.table(quantity = "rebounds.location vs tracked rebounder, event frame turned 180 deg (ft)", t(q(el$reb_loc_gap))),
-  data.table(quantity = "rebounds.location vs tracked rebounder, not turned (ft)", t(q(el$reb_loc_gap_unflipped))),
-  data.table(quantity = "shots.location vs tracked shooter at release, turned (ft)", t(q(audited$episodes$loc_gap))))
+sem <- rbind(data.table(quantity = "ball height at shots.endFrame (ft)", t(q(el$z_end))),
+             data.table(quantity = "ball distance from calibrated hoop at endFrame (ft)", t(q(el$hd_end))),
+             data.table(quantity = "frames from endFrame to the ball's closest approach to the hoop", t(q(el$closest_minus_end))),
+             data.table(quantity = "frames from endFrame to the contact proxy", t(q(el$contact_frame - el$f1))),
+             data.table(quantity = "seconds from endFrame to rebounds.frame", t(q((el$rf - el$f1) / FPS))),
+             data.table(quantity = "seconds from the first-touch proxy to rebounds.frame", t(q((el$rf - el$touch_frame) / FPS))),
+             data.table(quantity = "seconds from rebounds.frame to the control proxy", t(q((el$control_frame - el$rf) / FPS))),
+             data.table(quantity = "ball height at rebounds.frame (ft), player rebounds", t(q(el[grabbed == TRUE]$z_reb))),
+             data.table(quantity = "ball speed at rebounds.frame (ft/s), player rebounds", t(q(el[grabbed == TRUE]$speed_reb))),
+             data.table(quantity = "rebounder to ball, horizontal, at rebounds.frame (ft)", t(q(el$reb_ball_dist))),
+             data.table(quantity = "rebounds.location vs tracked rebounder, event frame turned 180 deg (ft)", t(q(el$reb_loc_gap))),
+             data.table(quantity = "rebounds.location vs tracked rebounder, not turned (ft)", t(q(el$reb_loc_gap_unflipped))),
+             data.table(quantity = "shots.location vs tracked shooter at release, turned (ft)", t(q(audited$episodes$loc_gap))))
 setnames(sem, c("quantity", "p10", "median", "p90"))
 made_lag <- audited$hoops[, .(quantity = "made shots: frames from endFrame to the rim-height crossing (median per game end)",
                               p10 = quantile(lag_frames, 0.1), median = median(lag_frames), p90 = quantile(lag_frames, 0.9))]
@@ -245,7 +272,14 @@ sem_share <- el[grabbed == TRUE, .(player_rebounds = .N, rebounder_tracked = mea
                                    ball_below_8ft = mean(z_reb < 8, na.rm = TRUE),
                                    rf_after_contact = mean(rf > fcoalesce(contact_frame, f1)))]
 
-# ---- quality in shot-to-rebound windows -------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - QUALITY IN SHOT-TO-REBOUND WINDOWS -------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 window_quality <- function(d) d[, .(misses_with_rebound = .N, frames = sum(span_frames),
                                     index_missing_frames = sum(index_missing), windows_with_index_gap = sum(index_missing > 0),
                                     dead_frames = sum(reb_dead_frames, na.rm = TRUE),
@@ -270,7 +304,14 @@ pw <- rbindlist(lapply(matches$id, function(g) {
 }))
 det_split <- pw[, .(rows = .N, share = .N / nrow(pw), err_mean = mean(err), err_p95 = quantile(err, 0.95)), by = .(detected = det == 1L)]
 
-# ---- normalized event table (the data contract) -----------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - NORMALIZED EVENT TABLE (THE DATA CONTRACT) -----------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 contract <- ep[, .(game_id, shot_id, chance_id, poss_id, period, shot_start_frame = f0, shot_end_frame = f1,
                    rebound_id = reb_id, rebound_frame = rf, rebounder_id = rpid, rebounder_canonical = rcanon,
                    rebound_team = rteam, rebounded = grabbed, defensive, side_by_flag, side, outcome12,
@@ -281,7 +322,14 @@ contract <- ep[, .(game_id, shot_id, chance_id, poss_id, period, shot_start_fram
                    identity_suspect, terminal, retained, exclusion)]
 fwrite(contract, file.path(out, "event_table.csv"))
 
-# ---- assemble checks and the gate decision ----------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - ASSEMBLE CHECKS AND THE GATE DECISION ----------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 tot <- links[, lapply(.SD, sum), .SDcols = -"game_id"]
 for (n in names(tot)) add("links", n, tot[[n]])
 for (n in setdiff(names(inventory), c("game_id", "tracking_file", "tracking_mb")))
@@ -296,56 +344,65 @@ add("identity", "credited rebounder tracked on court at the rebound frame", sum(
     sum(ep$grabbed %in% TRUE))
 review_n <- max(GATE0$review_min, ceiling(GATE0$review_share * sum(!is.na(ep$reb_id))))
 
-# ---- gate decision: each check and PASS criterion of the roadmap's Gate 0 -----------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - GATE DECISION ----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Each check and PASS criterion of the roadmap's Gate 0.
+
 log_path <- file.path(out, "review", "review_log.csv")
 rv <- if (file.exists(log_path)) merge(fread(log_path), ep[, .(shot_id, game_id, retained, identity_suspect)], by = "shot_id") else NULL
 counted <- if (is.null(rv)) NULL else rv[verdict != "extra"]
 r <- ep[retained == TRUE]
-gate <- rbind(
-  data.table(item = "Every shot and rebound row enumerated by game, every link counted",
-             evidence = sprintf("%d shots, %d rebound rows (%d FG, %d FT); 0 duplicate links, %d null references, %d misses without a row",
-                                tot$shots, tot$rebound_rows, tot$fg_rebound_rows, tot$ft_rebound_rows, tot$rebound_reference_missing,
-                                tot$non_fouled_miss_without_rebound),
-             pass = tot$duplicate_links == 0 && tot$rebound_to_made_shot == 0 && tot$rebound_to_fouled_shot == 0),
-  data.table(item = "Missed free throws: separate join needed?",
-             evidence = sprintf("FT rebounds point to free_throws ids (%d of %d live FT misses have one); outside the FG population",
-                                tot$ft_live_misses_with_rebound, tot$ft_live_misses), pass = TRUE),
-  data.table(item = "endFrame and rebound frame semantics checked against the ball",
-             evidence = "endFrame: ball at the rim zone (median 11.2 ft high, 1.3 ft from the hoop), never > 40 frames after release; rebound frame: between first touch and control",
-             pass = TRUE),
-  data.table(item = "Rosters, IDs, teams, orientation, units, 25 fps, clocks",
-             evidence = sprintf("wallClock = 40 x frameIdx on every line; %d event wallClock and %d period mismatches; rebounder off roster %d; location turned 180 deg matches tracking (median 0 ft)",
-                                sum(clock_checks$wall_mismatch), sum(clock_checks$period_mismatch), tot$rebounder_off_roster),
-             pass = sum(clock_checks$wall_mismatch) == 0 && sum(clock_checks$period_mismatch) == 0 && tot$rebounder_off_roster == 0),
-  data.table(item = "Terminal outcome taxonomy defined", evidence = "taxonomy.csv; tipped-but-unsecured left to Gate 1", pass = TRUE),
-  data.table(item = sprintf("Review of at least %d rebounds across games and kinds", review_n),
-             evidence = if (is.null(counted)) "no review log" else
-               sprintf("%d reviewed from %d games: %d agree, %d disagree, %d unclear (tracking plots; no video in the release)",
-                       nrow(counted), uniqueN(counted$game_id), sum(counted$verdict == "agree"), sum(counted$verdict == "disagree"),
-                       sum(counted$verdict == "unclear")),
-             pass = !is.null(counted) && nrow(counted) >= review_n && uniqueN(counted$game_id) == 10L),
-  data.table(item = "Ball and player quality in shot-to-rebound windows, detected vs extrapolated",
-             evidence = sprintf("retained windows: ball present %.1f%%, keyframes %.1f%%, ball isDetected %.0f%%; players detected %.1f%%",
-                                100 * qual[game_id == -1L]$ball_present, 100 * qual[game_id == -1L]$ball_keyframe,
-                                100 * qual[game_id == -1L]$ball_detected, 100 * qual[game_id == -1L]$player_detected), pass = TRUE),
-  data.table(item = "PASS 1: retained examples have one outcome label",
-             evidence = sprintf("%d retained; %d without a label; side by teamId (14 defensive flags overridden)", nrow(r), sum(is.na(r$outcome12))),
-             pass = all(!is.na(r$outcome12))),
-  data.table(item = "PASS 2: valid player and team IDs",
-             evidence = sprintf("rebounder off roster %d, rebounder's team mismatch %d, not in the chance's players %d",
-                                tot$rebounder_off_roster, tot$rebounder_team_mismatch, sum(r$rebounder_in_chance %in% FALSE)),
-             pass = tot$rebounder_off_roster == 0 && tot$rebounder_team_mismatch == 0 && !any(r$rebounder_in_chance %in% FALSE)),
-  data.table(item = "PASS 3: temporally ordered frames",
-             evidence = sprintf("retained with rebound at or before release %d; period changes in windows %d; clock increases %d",
-                                sum(r$rf <= r$f0), sum(r$period_changes), sum(r$gc_increases)),
-             pass = all(r$rf > r$f0) && sum(r$period_changes) == 0 && sum(r$gc_increases) == 0),
-  data.table(item = sprintf("PASS 4: landmarks usable >= %.0f%%, or a documented abstention", 100 * GATE0$landmark_usable),
-             evidence = paste(sprintf("%s %.1f%% (%.1f%% after fallback, %d abstain)", lm_summary$landmark, 100 * lm_summary$usable,
-                                      100 * lm_summary$usable_after_fallback, lm_summary$abstain), collapse = "; "),
-             pass = all(lm_summary$usable_after_fallback >= GATE0$landmark_usable)),
-  data.table(item = "PASS 5: uncertain outcomes excluded with counts or flagged",
-             evidence = sprintf("%d excluded by reason (exclusions.csv); %d retained player rebounds flagged identity_suspect",
-                                sum(!ep$retained), sum(r$identity_suspect)), pass = TRUE))
+# One row per Gate 0 criterion, with its evidence and pass flag.
+gate <- rbind(data.table(item = "Every shot and rebound row enumerated by game, every link counted",
+                         evidence = sprintf("%d shots, %d rebound rows (%d FG, %d FT); 0 duplicate links, %d null references, %d misses without a row",
+                                            tot$shots, tot$rebound_rows, tot$fg_rebound_rows, tot$ft_rebound_rows, tot$rebound_reference_missing,
+                                            tot$non_fouled_miss_without_rebound),
+                         pass = tot$duplicate_links == 0 && tot$rebound_to_made_shot == 0 && tot$rebound_to_fouled_shot == 0),
+              data.table(item = "Missed free throws: separate join needed?",
+                         evidence = sprintf("FT rebounds point to free_throws ids (%d of %d live FT misses have one); outside the FG population",
+                                            tot$ft_live_misses_with_rebound, tot$ft_live_misses), pass = TRUE),
+              data.table(item = "endFrame and rebound frame semantics checked against the ball",
+                         evidence = "endFrame: ball at the rim zone (median 11.2 ft high, 1.3 ft from the hoop), never > 40 frames after release; rebound frame: between first touch and control",
+                         pass = TRUE),
+              data.table(item = "Rosters, IDs, teams, orientation, units, 25 fps, clocks",
+                         evidence = sprintf("wallClock = 40 x frameIdx on every line; %d event wallClock and %d period mismatches; rebounder off roster %d; location turned 180 deg matches tracking (median 0 ft)",
+                                            sum(clock_checks$wall_mismatch), sum(clock_checks$period_mismatch), tot$rebounder_off_roster),
+                         pass = sum(clock_checks$wall_mismatch) == 0 && sum(clock_checks$period_mismatch) == 0 && tot$rebounder_off_roster == 0),
+              data.table(item = "Terminal outcome taxonomy defined", evidence = "taxonomy.csv; tipped-but-unsecured left to Gate 1", pass = TRUE),
+              data.table(item = sprintf("Review of at least %d rebounds across games and kinds", review_n),
+                         evidence = if (is.null(counted)) "no review log" else
+                           sprintf("%d reviewed from %d games: %d agree, %d disagree, %d unclear (tracking plots; no video in the release)",
+                                   nrow(counted), uniqueN(counted$game_id), sum(counted$verdict == "agree"), sum(counted$verdict == "disagree"),
+                                   sum(counted$verdict == "unclear")),
+                         pass = !is.null(counted) && nrow(counted) >= review_n && uniqueN(counted$game_id) == 10L),
+              data.table(item = "Ball and player quality in shot-to-rebound windows, detected vs extrapolated",
+                         evidence = sprintf("retained windows: ball present %.1f%%, keyframes %.1f%%, ball isDetected %.0f%%; players detected %.1f%%",
+                                            100 * qual[game_id == -1L]$ball_present, 100 * qual[game_id == -1L]$ball_keyframe,
+                                            100 * qual[game_id == -1L]$ball_detected, 100 * qual[game_id == -1L]$player_detected), pass = TRUE),
+              data.table(item = "PASS 1: retained examples have one outcome label",
+                         evidence = sprintf("%d retained; %d without a label; side by teamId (14 defensive flags overridden)", nrow(r), sum(is.na(r$outcome12))),
+                         pass = all(!is.na(r$outcome12))),
+              data.table(item = "PASS 2: valid player and team IDs",
+                         evidence = sprintf("rebounder off roster %d, rebounder's team mismatch %d, not in the chance's players %d",
+                                            tot$rebounder_off_roster, tot$rebounder_team_mismatch, sum(r$rebounder_in_chance %in% FALSE)),
+                         pass = tot$rebounder_off_roster == 0 && tot$rebounder_team_mismatch == 0 && !any(r$rebounder_in_chance %in% FALSE)),
+              data.table(item = "PASS 3: temporally ordered frames",
+                         evidence = sprintf("retained with rebound at or before release %d; period changes in windows %d; clock increases %d",
+                                            sum(r$rf <= r$f0), sum(r$period_changes), sum(r$gc_increases)),
+                         pass = all(r$rf > r$f0) && sum(r$period_changes) == 0 && sum(r$gc_increases) == 0),
+              data.table(item = sprintf("PASS 4: landmarks usable >= %.0f%%, or a documented abstention", 100 * GATE0$landmark_usable),
+                         evidence = paste(sprintf("%s %.1f%% (%.1f%% after fallback, %d abstain)", lm_summary$landmark, 100 * lm_summary$usable,
+                                                  100 * lm_summary$usable_after_fallback, lm_summary$abstain), collapse = "; "),
+                         pass = all(lm_summary$usable_after_fallback >= GATE0$landmark_usable)),
+              data.table(item = "PASS 5: uncertain outcomes excluded with counts or flagged",
+                         evidence = sprintf("%d excluded by reason (exclusions.csv); %d retained player rebounds flagged identity_suspect",
+                                            sum(!ep$retained), sum(r$identity_suspect)), pass = TRUE))
 gate[, status := fifelse(pass, "PASS", "BLOCKED")]
 fwrite(gate, file.path(out, "gate_decision.csv"))
 
@@ -363,6 +420,14 @@ fwrite(ep[, .N, by = .(terminal, retained)][order(-N)], file.path(out, "taxonomy
 fwrite(ep[, .N, by = .(exclusion)][order(-N)], file.path(out, "exclusions.csv"))
 fwrite(ep[, .N, by = .(game_id, terminal)][order(game_id, -N)], file.path(out, "taxonomy_by_game.csv"))
 
-print(inventory); print(tot); print(ctot); print(sem); print(sem_share); print(qual); print(det_split)
-print(lm_summary); print(ep[, .N, by = .(terminal, retained)][order(-N)]); print(rbindlist(check)[area == "identity"])
+print(inventory)
+print(tot)
+print(ctot)
+print(sem)
+print(sem_share)
+print(qual)
+print(det_split)
+print(lm_summary)
+print(ep[, .N, by = .(terminal, retained)][order(-N)])
+print(rbindlist(check)[area == "identity"])
 cat("review sample size:", review_n, "\n")

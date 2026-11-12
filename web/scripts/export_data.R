@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Export the play viewer's data for the static site in web/.
 #   Rscript web/scripts/export_data.R          (from anywhere inside the repository)
 #   Rscript web/scripts/export_data.R --page   (only archetypes.html, after editing the Archetypes tab's wording)
@@ -26,6 +27,7 @@
 #
 # After a full run, run web/scripts/parity_reference.R too and keep both outputs together. A --page run leaves
 # the data and its stamp alone, so the reference stays valid.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -40,7 +42,15 @@ source(file.path(if (length(script)) dirname(script) else "web/scripts", "playst
 out_dir <- file.path(a$root, "web", "public", "data")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
-# ---- the Archetypes tab, rendered by the app's own page function ------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - THE ARCHETYPES TAB -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Rendered by the app's own page function.
 
 writeLines(enc2utf8(as.character(a$archetype_page(a$root))), file.path(out_dir, "archetypes.html"), useBytes = TRUE)
 if ("--page" %in% args) {
@@ -63,6 +73,7 @@ if ("--figures" %in% args) {
   quit(save = "no")
 }
 
+# Remove the previous export's per-period files before writing new ones.
 unlink(list.files(out_dir, "^g[0-9]+_p[0-9]+[.](bin|json)$", full.names = TRUE))
 
 NULL16 <- -32768L
@@ -84,6 +95,7 @@ ids32 <- function(v) {
 
 #' Write one play's segment and return its length in bytes (a multiple of 4).
 write_segment <- function(con, p) {
+  # Frames as int32, clocks and positions as scaled int16, then the clock-stopped flag, detection and predError as uint8.
   i32 <- ids32(p$frames)
   i16 <- c(scaled(p$gc, 10), scaled(p$sc, 10), scaled(p$ball$x, 100), scaled(p$ball$y, 100), scaled(p$ball$z, 100),
            unlist(lapply(p$players, function(pl) c(scaled(pl$x, 100), scaled(pl$y, 100)))))
@@ -94,6 +106,7 @@ write_segment <- function(con, p) {
   }
   u8 <- c(as.integer(p$stopped), unlist(lapply(p$players, function(pl) fcoalesce(as.integer(pl$d), 0L))),
           unlist(lapply(p$players, function(pl) err(pl$e))))
+  # Pad the segment to a 4-byte boundary.
   bytes <- 4L * length(i32) + 2L * length(i16) + length(u8)
   pad <- (4L - bytes %% 4L) %% 4L
   writeBin(i32, con, size = 4L, endian = "little")
@@ -105,6 +118,7 @@ write_segment <- function(con, p) {
 
 #' Everything about a play that is not a per-frame series.
 play_header <- function(p, offset, ann) {
+  # The play's row and roster, for team and canonical ids.
   row <- a$app_data$plays[id == p$id]
   roster <- a$app_data$roster[game_id == row$game_id]
   team_of <- function(pid) roster$team_id[match(pid, roster$pid)]
@@ -119,8 +133,15 @@ play_header <- function(p, offset, ann) {
        events = p$events, touches = p$touches, ann = ann)
 }
 
-# ---- tracking, one pair of files per game period -------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - TRACKING, ONE PAIR OF FILES PER GAME PERIOD ----------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# One binary file and one header file per game period; each play's header records its byte offset.
 plays <- copy(a$app_data$plays)
 plays[, file := sprintf("g%d_p%d", game_id, period)]
 game_ann <- list()
@@ -141,7 +162,13 @@ for (stem in unique(plays$file)) {
   save_json(list(bytes = offset, plays = headers), paste0(stem, ".json"))
 }
 
-# ---- play list with the fields the filters read -------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - PLAY LIST WITH THE FIELDS THE FILTERS READ -----------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 shown <- fromJSON(a$plays_json(a$app_data, plays), simplifyDataFrame = TRUE)
 stopifnot(identical(shown$id, plays$id))
@@ -152,12 +179,14 @@ CUT_TYPES <- c(cut_basket = "Basket Cut", cut_in = "Off-Ball Screen Cut (In)", c
 CUT_CHIPS <- c(cut_basket = "Basket Cut", cut_in = "Screen Cut In", cut_out = "Screen Cut Out", cut_pop = "Pick and Pop")
 # Each action's first frame and how many times it happens in the possession (the chips show "×n" for more than one).
 first_at <- a$app_data$events[, .(frame = min(frame), n = .N), by = .(poss_id, type)]
+# A play's action chips: its play types and cuts in the order they happen, with counts and the cut actors.
 play_actions <- function(i) {
   id <- plays$id[i]
   types <- as.character(plays$types[[i]])
   mine <- first_at[poss_id == id][match(types, type)]
   at <- mine$frame
   counts <- fcoalesce(mine$n, 1L)
+  # Transition always comes first; an action with no frame goes last.
   at[types == "transition"] <- -Inf
   counts[types == "transition"] <- 1L
   cuts <- game_ann[[as.character(plays$game_id[i])]]$cuts
@@ -179,6 +208,7 @@ play_actions <- function(i) {
   list(types = types, counts = counts[o], labels = paste(c(a$PLAY_TYPES, CUT_CHIPS)[types], collapse = "|"),
        actors = if (is.null(cuts) || !nrow(cuts)) list() else lapply(seq_len(nrow(cuts)), function(j) list(paste0("cut_", cuts$kind[j]), cuts$pid[j])))
 }
+# One light record per play for the list and the filters.
 light <- lapply(seq_len(nrow(plays)), function(i) {
   acted <- actors[[plays$id[i]]]
   acts <- play_actions(i)
@@ -192,8 +222,17 @@ light <- lapply(seq_len(nrow(plays)), function(i) {
 save_json(light, "plays.json")
 save_figures()
 
-# ---- filter choices, exactly as the Shiny inputs list them -------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - FILTER CHOICES ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Exactly as the Shiny inputs list them.
+
+# Filter options, team colours and the export stamp.
 options_of <- function(named) lapply(seq_along(named), function(i) list(value = as.character(named[[i]]), label = names(named)[i]))
 players <- a$choices$player[nzchar(a$choices$player)]
 generated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")

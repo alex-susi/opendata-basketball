@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 01 of the rebounding manual: a trustworthy rebound episode table and its join, identity, timing,
 # orientation, coverage and exclusion audits.
 #   Rscript src/rebounding/run_step01.R
@@ -6,6 +7,7 @@
 # Writes outputs/rebounding/step01/ (episode table, checks, quality, coverage, orientation, figures),
 # outputs/rebounding/reports/01_join_audit.md and gate_results/01_episodes.json. The frame-by-entity tracking table
 # and the frame index go to outputs/cache/rebounding/processed/ (git-ignored: they are the supplied tracking).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -30,11 +32,26 @@ audited <- readRDS(file.path(cache, "episodes.rds"))
 ep <- copy(g0$episodes)
 ep <- merge(ep, audited$episodes[, .(shot_id, loc_gap)], by = "shot_id", all.x = TRUE, sort = FALSE)
 
-# ---- per game: frame index, coverage, tracking rows, and the per-episode records -------------------------------
-coverage <- list(); orient <- list(); idrel <- list(); idreb <- list(); quality <- list(); round_trip <- 0
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - PER GAME ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Frame index, coverage, tracking rows, and the per-episode records.
+
+coverage <- list()
+orient <- list()
+idrel <- list()
+idreb <- list()
+quality <- list()
+round_trip <- 0
 trk_path <- file.path(processed, "tracking_frames.csv.gz")
 idx_path <- file.path(processed, "frame_index.csv.gz")
 for (p in c(trk_path, idx_path)) if (file.exists(p)) file.remove(p)
+# One game at a time: frame index, coverage, tracking rows and per-episode records.
 for (g in matches$id) {
   message("Step 01: ", g)
   raw <- readRDS(file.path(cache, sprintf("raw_%s.rds", g)))
@@ -74,7 +91,14 @@ idrel <- rbindlist(idrel)
 idreb <- rbindlist(idreb)
 quality <- rbindlist(quality)
 
-# ---- the episode table ------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - THE EPISODE TABLE ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 ep <- merge(ep, orient, by = "shot_id", sort = FALSE)
 setnames(idrel, setdiff(names(idrel), "shot_id"), paste0("release_", setdiff(names(idrel), "shot_id")))
 setnames(idreb, setdiff(names(idreb), "shot_id"), paste0("rebound_", setdiff(names(idreb), "shot_id")))
@@ -110,7 +134,14 @@ episodes <- ep[, .(episode_id = shot_id, game_id, rebound_event_id = reb_id, sho
 setorder(episodes, game_id, release_frame)
 fwrite(episodes, file.path(out, "rebound_episodes.csv"))
 
-# ---- audits ------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - AUDITS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 chk <- list()
 add <- function(area, check, value, expected, pass, note = "") {
   chk[[length(chk) + 1L]] <<- data.table(area = area, check = check, value = as.character(value),
@@ -154,15 +185,15 @@ add("identity", "player slots filled without a tracking row", 0, 0, TRUE,
 add("identity", "identity_suspect player rebounds (kept, flagged)", sum(el$identity_suspect), "reported", TRUE)
 # orientation, both attack directions
 ori <- ep[!is.na(ball_x_end), .(misses_with_ball_at_end = .N,
-                                 ball_near_attacked_hoop = mean(ball_end_hoop_dist <= th$orientation$ball_at_end_max_hoop_ft),
-                                 ball_in_attacked_half = mean(ball_x_end > 0),
-                                 ball_end_hoop_dist_median = median(ball_end_hoop_dist),
-                                 ball_nearer_attacked_hoop = mean(closest_attacked_hoop < closest_other_hoop, na.rm = TRUE),
-                                 closest_attacked_hoop_median = median(closest_attacked_hoop, na.rm = TRUE),
-                                 shooter_gap_median = median(loc_gap, na.rm = TRUE),
-                                 shooter_gap_p90 = quantile(loc_gap, 0.9, na.rm = TRUE),
-                                 defenders_in_attacked_half_mean = mean(defenders_attacked_half, na.rm = TRUE),
-                                 players_in_attacked_half_mean = mean(players_attacked_half, na.rm = TRUE)),
+                                ball_near_attacked_hoop = mean(ball_end_hoop_dist <= th$orientation$ball_at_end_max_hoop_ft),
+                                ball_in_attacked_half = mean(ball_x_end > 0),
+                                ball_end_hoop_dist_median = median(ball_end_hoop_dist),
+                                ball_nearer_attacked_hoop = mean(closest_attacked_hoop < closest_other_hoop, na.rm = TRUE),
+                                closest_attacked_hoop_median = median(closest_attacked_hoop, na.rm = TRUE),
+                                shooter_gap_median = median(loc_gap, na.rm = TRUE),
+                                shooter_gap_p90 = quantile(loc_gap, 0.9, na.rm = TRUE),
+                                defenders_in_attacked_half_mean = mean(defenders_attacked_half, na.rm = TRUE),
+                                players_in_attacked_half_mean = mean(players_attacked_half, na.rm = TRUE)),
           by = .(direction = fifelse(left_hoop, "attacks camera-left hoop (flip -1)", "attacks camera-right hoop (flip +1)"))]
 fwrite(ori, file.path(out, "orientation.csv"))
 fwrite(ep[ball_end_hoop_dist > th$orientation$ball_at_end_max_hoop_ft,
@@ -170,6 +201,7 @@ fwrite(ep[ball_end_hoop_dist > th$orientation$ball_at_end_max_hoop_ft,
             ball_end_hoop_dist = round(ball_end_hoop_dist, 2), ball_z_end = round(ball_z_end, 2),
             closest_attacked_hoop = round(closest_attacked_hoop, 2), closest_other_hoop = round(closest_other_hoop, 2), retained)][
        order(kind, -ball_end_hoop_dist)], file.path(out, "orientation_endframe_outliers.csv"))
+# One row per direction for the prespecified orientation check.
 for (i in seq_len(nrow(ori))) {
   # prespecified; superseded after the first run because endFrame is not the ball's arrival for every shot
   add("orientation (prespecified, superseded)",
@@ -198,16 +230,16 @@ add("coverage", "games below whole-game coverage threshold", sum(cov_game$runnin
 add("coverage", "eligible windows with missing frame indices", sum(el$index_missing_frames > 0), 0, all(el$index_missing_frames == 0))
 # quality by game and stage
 qg <- quality[retained == TRUE, .(episodes = .N, frames = sum(frames),
-                                   ball_present = weighted.mean(ball_present, frames),
-                                   ball_keyframe = weighted.mean(ball_keyframe, frames),
-                                   ball_keyframe_strict = weighted.mean(ball_keyframe_strict, frames),
-                                   ball_detected = weighted.mean(ball_detected, frames, na.rm = TRUE),
-                                   ball_pred_error = weighted.mean(ball_pred_error, frames, na.rm = TRUE),
-                                   player_rows_missing = 1 - sum(player_rows) / sum(player_rows_expected),
-                                   player_detected = weighted.mean(player_detected, player_rows, na.rm = TRUE),
-                                   player_err_detected = weighted.mean(player_err_detected, player_rows, na.rm = TRUE),
-                                   player_err_extrapolated = weighted.mean(player_err_extrapolated, player_rows, na.rm = TRUE),
-                                   player_err_p95 = weighted.mean(player_err_p95, player_rows, na.rm = TRUE)),
+                                  ball_present = weighted.mean(ball_present, frames),
+                                  ball_keyframe = weighted.mean(ball_keyframe, frames),
+                                  ball_keyframe_strict = weighted.mean(ball_keyframe_strict, frames),
+                                  ball_detected = weighted.mean(ball_detected, frames, na.rm = TRUE),
+                                  ball_pred_error = weighted.mean(ball_pred_error, frames, na.rm = TRUE),
+                                  player_rows_missing = 1 - sum(player_rows) / sum(player_rows_expected),
+                                  player_detected = weighted.mean(player_detected, player_rows, na.rm = TRUE),
+                                  player_err_detected = weighted.mean(player_err_detected, player_rows, na.rm = TRUE),
+                                  player_err_extrapolated = weighted.mean(player_err_extrapolated, player_rows, na.rm = TRUE),
+                                  player_err_p95 = weighted.mean(player_err_p95, player_rows, na.rm = TRUE)),
                  by = .(game_id, stage)]
 qa <- qg[, .(game_id = NA_integer_, episodes = sum(episodes), frames = sum(frames),
              ball_present = weighted.mean(ball_present, frames), ball_keyframe = weighted.mean(ball_keyframe, frames),
@@ -239,26 +271,33 @@ add("outcomes", "team awards carrying a rebounder id", sum(!is.na(el[rebounded =
 checks <- rbindlist(chk)
 fwrite(checks, file.path(out, "checks.csv"))
 
-# ---- edge-case figures --------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - EDGE-CASE FIGURES ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 set.seed(cfg$seeds[[1]])
 n_each <- th$review$edge_cases_per_kind
 pick <- function(rows, why, n = n_each) if (nrow(rows)) rows[sample(.N, min(.N, n))][, reason := why] else NULL
-edge <- rbind(
-  pick(ep[retained & left_hoop == TRUE], "attacks camera-left hoop"),
-  pick(ep[retained & left_hoop == FALSE], "attacks camera-right hoop"),
-  pick(ep[terminal %in% c("no rebound row: end of period", "team rebound: end of period")], "end of period"),
-  pick(ep[substitution_in_window %in% TRUE], "substitution between release and rebound"),
-  pick(ep[retained & outcome12 == "off team award"], "offensive team award", 1L),
-  pick(ep[retained & outcome12 == "def team award"], "defensive team award", 1L),
-  pick(ep[retained & grepl("rebound_before_shot_end", order_flags)], "rebound before endFrame"),
-  pick(ep[!(release_matches_chance %in% TRUE) & !is.na(release_n_off)], "tracked ten differ from chance_players"),
-  fill = TRUE)
+edge <- rbind(pick(ep[retained & left_hoop == TRUE], "attacks camera-left hoop"),
+              pick(ep[retained & left_hoop == FALSE], "attacks camera-right hoop"),
+              pick(ep[terminal %in% c("no rebound row: end of period", "team rebound: end of period")], "end of period"),
+              pick(ep[substitution_in_window %in% TRUE], "substitution between release and rebound"),
+              pick(ep[retained & outcome12 == "off team award"], "offensive team award", 1L),
+              pick(ep[retained & outcome12 == "def team award"], "defensive team award", 1L),
+              pick(ep[retained & grepl("rebound_before_shot_end", order_flags)], "rebound before endFrame"),
+              pick(ep[!(release_matches_chance %in% TRUE) & !is.na(release_n_off)], "tracked ten differ from chance_players"),
+              fill = TRUE)
 edge[, exclusion_label := fifelse(retained, "eligible", exclusion)]
 per_page <- 3L
 edge[, page := (seq_len(.N) - 1L) %/% per_page + 1L]
 fwrite(edge[, .(page, reason, shot_id, game_id, period, left_hoop, flip, f0, f1, rf, outcome12, exclusion_label,
                 substitution_in_window, release_matches_chance)], file.path(out, "figures", "edge_cases.csv"))
 raws <- list()
+# Edge-case pages, two episodes per row.
 for (p in unique(edge$page)) {
   png(file.path(out, "figures", sprintf("edge_cases_%02d.png", p)), width = 1500, height = 430 * per_page, res = 100)
   layout(matrix(seq_len(2L * per_page), ncol = 2, byrow = TRUE))
@@ -275,56 +314,63 @@ for (p in unique(edge$page)) {
   dev.off()
 }
 
-# ---- gate record ---------------------------------------------------------------------------------------------------
-crit <- list(
-  join_and_keys = all(checks[area %in% c("keys", "joins")]$pass),
-  timing_order = all(checks[area == "order"]$pass),
-  identity = all(checks[area == "identity"]$pass),
-  orientation_both_directions = all(checks[area == "orientation"]$pass),
-  quality_reported_by_game_and_stage = all(checks[area == "quality"]$pass),
-  exclusions_counted = all(checks[area == "exclusions"]$pass),
-  outcome_taxonomy_with_team_awards = all(checks[area == "outcomes"]$pass),
-  coverage_reported = all(checks[area == "coverage"]$pass))
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - GATE RECORD ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Criteria, tests and the gate record.
+crit <- list(join_and_keys = all(checks[area %in% c("keys", "joins")]$pass),
+             timing_order = all(checks[area == "order"]$pass),
+             identity = all(checks[area == "identity"]$pass),
+             orientation_both_directions = all(checks[area == "orientation"]$pass),
+             quality_reported_by_game_and_stage = all(checks[area == "quality"]$pass),
+             exclusions_counted = all(checks[area == "exclusions"]$pass),
+             outcome_taxonomy_with_team_awards = all(checks[area == "outcomes"]$pass),
+             coverage_reported = all(checks[area == "coverage"]$pass))
+# Unit and gate tests, then the gate record.
 tests <- rbind(run_tests(here, root, "unit", "orientation"), run_tests(here, root, "gates", "step_01"), fill = TRUE)
 fwrite(tests, file.path(gr, "01_tests.csv"))
 crit$tests_pass <- nrow(tests) > 0 && !any(tests$failed > 0 | tests$error)
 unmet <- names(crit)[!vapply(crit, isTRUE, NA)]
 status <- if (!length(unmet)) "PASS" else "BLOCKED"
-rec <- list(
-  step = "01", status = status,
-  scope = paste("credited outcome of a non-fouled missed field goal (12 classes), conditional on the miss;",
-                nrow(el), "eligible of", nrow(episodes), "episodes"),
-  source_commits = list(skillcorner = cfg$dataset$upstream_commit),
-  data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums),
-  model_revision = NULL, repository_head = git_out(root, "rev-parse", "HEAD")[1],
-  test_command = "Rscript src/rebounding/run_tests.R unit orientation; Rscript src/rebounding/run_tests.R gates step_01",
-  unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
-  data_audit_passed = all(unlist(crit[setdiff(names(crit), "tests_pass")])),
-  heldout_metrics_file = NULL, acceptance_criteria_version = sprintf("manual %s, config v%d", cfg$manual_revision, cfg$config_version),
-  criteria = crit, unmet = unmet,
-  deviations = list(
-    list(check = "orientation: ball at shots.endFrame within 6 ft of the attacked hoop, >= 98% per direction (prespecified)",
-         result = paste(sprintf("%s %.1f%%", ori$direction, 100 * ori$ball_near_attacked_hoop), collapse = "; "),
-         decision = paste("Superseded after the first run: every outlier is a blocked shot, an airball or heave, or a shot whose",
-                          "endFrame comes before the ball reaches the rim, so the check measured endFrame semantics, not orientation.",
-                          "Replaced by an endFrame-free check (ball nearer the attacked hoop than the other, same 98% share).",
-                          "Owner to confirm.")),
-    list(check = "joins: event gameClock equals tracking gameClock",
-         result = sprintf("largest gap %.4f s", max(clocks$gc_max_abs_diff, na.rm = TRUE)),
-         decision = "Tolerance 0.001 s set after the first run; the first run used 1e-6 s, fixed in code without a stated reason.")),
-  counts = list(episodes = nrow(episodes), eligible = nrow(el), excluded = nrow(episodes) - nrow(el),
-                outcomes = setNames(as.list(outc$N), outc$credited_outcome),
-                identity_suspect = sum(el$identity_suspect), substitution_in_window = sum(el$substitution_in_window)),
-  evidence = c("outputs/rebounding/step01/rebound_episodes.csv", "outputs/rebounding/step01/checks.csv",
-               "outputs/rebounding/step01/orientation.csv", "outputs/rebounding/step01/quality_by_game_stage.csv",
-               "outputs/rebounding/step01/period_coverage.csv", "outputs/rebounding/step01/exclusions.csv",
-               "outputs/rebounding/step01/figures/", "outputs/rebounding/reports/01_join_audit.md",
-               "outputs/rebounding/gate0/ (event links, clocks, taxonomy, 72-rebound review)"),
-  reviewer = "Claude (automated run; tracking-plot review from Gate 0); owner review pending", date = format(Sys.Date()),
-  open_risks = list("Contact, touch and control frames are automated proxies (Step 02 reviews them)",
-                    "5 of 64 reviewed player rebounds credit a player who never reaches the ball in tracking (identity_suspect flags 33 eligible)",
-                    "Single reviewer, tracking plots only; no video ships with the data and outside video is not allowed"),
-  decision_note = if (status == "PASS") "All Step 01 audits documented and passed." else paste("Unmet:", paste(unmet, collapse = ", ")))
+# The gate record.
+rec <- list(step = "01", status = status,
+            scope = paste("credited outcome of a non-fouled missed field goal (12 classes), conditional on the miss;",
+                          nrow(el), "eligible of", nrow(episodes), "episodes"),
+            source_commits = list(skillcorner = cfg$dataset$upstream_commit),
+            data_revision = list(upstream = cfg$dataset$upstream_commit, manifest = cfg$dataset$checksums),
+            model_revision = NULL, repository_head = git_out(root, "rev-parse", "HEAD")[1],
+            test_command = "Rscript src/rebounding/run_tests.R unit orientation; Rscript src/rebounding/run_tests.R gates step_01",
+            unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
+            data_audit_passed = all(unlist(crit[setdiff(names(crit), "tests_pass")])),
+            heldout_metrics_file = NULL, acceptance_criteria_version = sprintf("manual %s, config v%d", cfg$manual_revision, cfg$config_version),
+            criteria = crit, unmet = unmet,
+            deviations = list(list(check = "orientation: ball at shots.endFrame within 6 ft of the attacked hoop, >= 98% per direction (prespecified)",
+                                   result = paste(sprintf("%s %.1f%%", ori$direction, 100 * ori$ball_near_attacked_hoop), collapse = "; "),
+                                   decision = paste("Superseded after the first run: every outlier is a blocked shot, an airball or heave, or a shot whose",
+                                                    "endFrame comes before the ball reaches the rim, so the check measured endFrame semantics, not orientation.",
+                                                    "Replaced by an endFrame-free check (ball nearer the attacked hoop than the other, same 98% share).",
+                                                    "Owner to confirm.")),
+                              list(check = "joins: event gameClock equals tracking gameClock",
+                                   result = sprintf("largest gap %.4f s", max(clocks$gc_max_abs_diff, na.rm = TRUE)),
+                                   decision = "Tolerance 0.001 s set after the first run; the first run used 1e-6 s, fixed in code without a stated reason.")),
+            counts = list(episodes = nrow(episodes), eligible = nrow(el), excluded = nrow(episodes) - nrow(el),
+                          outcomes = setNames(as.list(outc$N), outc$credited_outcome),
+                          identity_suspect = sum(el$identity_suspect), substitution_in_window = sum(el$substitution_in_window)),
+            evidence = c("outputs/rebounding/step01/rebound_episodes.csv", "outputs/rebounding/step01/checks.csv",
+                         "outputs/rebounding/step01/orientation.csv", "outputs/rebounding/step01/quality_by_game_stage.csv",
+                         "outputs/rebounding/step01/period_coverage.csv", "outputs/rebounding/step01/exclusions.csv",
+                         "outputs/rebounding/step01/figures/", "outputs/rebounding/reports/01_join_audit.md",
+                         "outputs/rebounding/gate0/ (event links, clocks, taxonomy, 72-rebound review)"),
+            reviewer = "Claude (automated run; tracking-plot review from Gate 0); owner review pending", date = format(Sys.Date()),
+            open_risks = list("Contact, touch and control frames are automated proxies (Step 02 reviews them)",
+                              "5 of 64 reviewed player rebounds credit a player who never reaches the ball in tracking (identity_suspect flags 33 eligible)",
+                              "Single reviewer, tracking plots only; no video ships with the data and outside video is not allowed"),
+            decision_note = if (status == "PASS") "All Step 01 audits documented and passed." else paste("Unmet:", paste(unmet, collapse = ", ")))
 write_gate(file.path(gr, "01_episodes.json"), rec)
 saveRDS(list(episodes = episodes, checks = checks, coverage = coverage, quality = qual, orientation = ori,
              exclusions = excl, outcomes = outc, edge = edge, tests = tests, status = status),

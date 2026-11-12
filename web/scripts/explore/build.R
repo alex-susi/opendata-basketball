@@ -26,6 +26,7 @@ TOPICS <- c("paint", "chains", "closeouts", "crash", "lanes", "advantage", "grav
 want <- intersect(args, TOPICS)
 if (!length(want)) want <- TOPICS
 
+# Per-game bundles (cached), then each requested topic's document.
 BL <- lapply(EX_GAMES, game_bundle, rebuild = "--rebuild" %in% args)
 names(BL) <- EX_GAMES
 if ("--bundles" %in% args) quit(save = "no")

@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 08 of the rebounding manual: player movement forecasts (validated on held-out games) and who could reach the
 # ball after it gets to the rim (exploratory: Step 02 is BLOCKED, so no first-contact labels exist and the physical
 # interception validation is BLOCKED by the manual's Gate 08). Folds and rules are Step 03's.
@@ -5,6 +6,7 @@
 # Needs raw_*.rds, the Step 01 table, Step 02 automated labels and Step 03 outputs. Settings: config/experiment.yaml
 # (step08, fixed before any real-data run). Writes outputs/rebounding/step08/, reports/08_reachability.md,
 # gate_results/08_reachability.json and 08_tests.csv.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -16,7 +18,11 @@ for (f in c("geometry.R", "extract.R", "audit.R", "bundle.R", "step00.R", "folds
 
 root <- find_repo_root()
 cfg <- yaml::read_yaml(file.path(here, "config", "experiment.yaml"))
-th3 <- cfg$step03; th <- cfg$step08; inf <- th3$information; mv <- th$movement; vel <- th$velocity
+th3 <- cfg$step03
+th <- cfg$step08
+inf <- th3$information
+mv <- th$movement
+vel <- th$velocity
 cache <- file.path(root, "outputs", "cache", "rebounding")
 s3 <- file.path(root, "outputs", "rebounding", "step03")
 out <- file.path(root, "outputs", "rebounding", "step08")
@@ -36,9 +42,18 @@ pts <- fread(file.path(s3, "prediction_points.csv"))[defined == TRUE & time_poin
 auto <- fread(file.path(root, "outputs", "rebounding", "step02", "auto_summary.csv"), na.strings = c("", "NA"))
 H <- unlist(mv$horizons_frames)
 
-# ---- tracks and causal velocities -------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - TRACKS AND CAUSAL VELOCITIES -------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 message("Step 08: tracks")
-eps <- list(); cross <- list()
+eps <- list()
+cross <- list()
+# One game at a time: made-shot crossings, then every eligible episode's player tracks.
 for (g in matches$id) {
   raw <- readRDS(file.path(cache, sprintf("raw_%s.rds", g)))
   home <- matches$home_team$id[matches$id == g]
@@ -56,7 +71,8 @@ cross <- rbindlist(cross)
 
 # movement rows: every player's state at each origin and his tracked position h frames later
 mrows <- rbindlist(lapply(names(eps), function(id) {
-  e <- eps[[id]]; p <- pts[episode_id == id]
+  e <- eps[[id]]
+  p <- pts[episode_id == id]
   if (!nrow(p)) return(NULL)
   rbindlist(lapply(seq_len(nrow(p)), function(i) {
     t <- p$frame_idx[i]
@@ -72,9 +88,20 @@ mrows <- rbindlist(lapply(names(eps), function(id) {
 }))
 mrows <- merge(mrows, fa[, .(episode_id, game_id, outer_fold)], by = "episode_id")
 
-# ---- movement models by fold ------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - MOVEMENT MODELS BY FOLD ------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 message("Step 08: movement folds")
-lim_tab <- list(); lam_tab <- list(); fc <- list(); exceed <- list()
+lim_tab <- list()
+lam_tab <- list()
+fc <- list()
+exceed <- list()
+# Per outer fold: speed and acceleration limits and the damping choice from the training games.
 for (k in sort(unique(fa$outer_fold))) {
   s <- fold_split(fa, k)
   tr_v <- rbindlist(lapply(intersect(s$train, names(eps)), function(id) eps[[id]]$v))
@@ -87,17 +114,20 @@ for (k in sort(unique(fa$outer_fold))) {
   for (m in MOVE_MODELS) {
     f <- forecast_position(te$x, te$y, te$vx, te$vy, te$tau, m, dm$lambda, lim$v_max)
     fc[[length(fc) + 1L]] <- te[, .(episode_id, game_id, outer_fold, time_point, origin, horizon, pid, off, vel_from, det_target,
-                                     model = m, err = sqrt((f$x - tx)^2 + (f$y - ty)^2))]
+                                    model = m, err = sqrt((f$x - tx)^2 + (f$y - ty)^2))]
   }
   te_v <- rbindlist(lapply(intersect(s$test, names(eps)), function(id) eps[[id]]$v))[det == 1L & !is.na(speed)]
   exceed[[k]] <- data.table(outer_fold = k, frames = nrow(te_v), speed_above = mean(te_v$speed > lim$v_max),
                             accel_above = mean(te_v[!is.na(accel)]$accel > lim$a_max))
 }
-lim_tab <- rbindlist(lim_tab); fwrite(lim_tab, file.path(out, "limits_and_damping_by_fold.csv"))
+lim_tab <- rbindlist(lim_tab)
+fwrite(lim_tab, file.path(out, "limits_and_damping_by_fold.csv"))
 fwrite(rbindlist(lam_tab), file.path(out, "damping_selection.csv"))
-fc <- rbindlist(fc); fc[, model_version := th$model_version]
+fc <- rbindlist(fc)
+fc[, model_version := th$model_version]
 fwrite(fc, file.path(out, "movement_forecasts.csv.gz"))
-exceed <- rbindlist(exceed); fwrite(exceed, file.path(out, "limit_exceedance.csv"))
+exceed <- rbindlist(exceed)
+fwrite(exceed, file.path(out, "limit_exceedance.csv"))
 prim <- fc[det_target == 1L]
 mov_sum <- prim[, .(forecasts = .N, mean_err = mean(err), median_err = median(err), p90_err = quantile(err, 0.9)), by = .(horizon, model)][order(horizon, mean_err)]
 fwrite(mov_sum, file.path(out, "movement_errors.csv"))
@@ -114,15 +144,26 @@ cmp[, superior := hi < 0 & drop_one_max < 0]
 fwrite(cmp, file.path(out, "paired_movement.csv"))
 move_pass <- all(cmp[candidate == "damped"]$superior) && all(exceed$speed_above <= mv$limit_exceed_max)
 
-# ---- reach at the rim-arrival trigger (exploratory) -----------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - REACH AT THE RIM-ARRIVAL TRIGGER ---------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Exploratory.
+
 message("Step 08: reach")
 rp_base <- th$reach
+# Reach rows at rim+0 for the given episodes, under one fold's hoops and one set of reach settings.
 reach_rows <- function(ids, k, rp, jitter = 0, keep_ball = 1, seed = 1L) {
   s <- fold_split(fa, k)
   hh <- cross[game_id %in% unique(fa[episode_id %in% s$train]$game_id), .(hx = median(x), hy = median(y)), by = left_hoop]
   set.seed(seed)
   rbindlist(lapply(ids, function(id) {
-    e <- eps[[id]]; p <- pts[episode_id == id & time_point == "rim+0"]
+    e <- eps[[id]]
+    p <- pts[episode_id == id & time_point == "rim+0"]
     if (!nrow(p)) return(NULL)
     t <- p$frame_idx
     st <- e$v[frame == t & !is.na(vx), .(pid, off, x, y, vx, vy)]
@@ -136,13 +177,15 @@ reach_rows <- function(ids, k, rp, jitter = 0, keep_ball = 1, seed = 1L) {
     cbind(episode_id = id, origin = t, player_margins(st, path, t, rp))
   }))
 }
-reach <- list(); sens <- list()
+reach <- list()
+sens <- list()
 variants <- c(list(base = list()),
               setNames(lapply(unlist(th$reach$sensitivity$reaction_s), function(v) list(reaction_s = v)), paste0("reaction ", unlist(th$reach$sensitivity$reaction_s), " s")),
               setNames(lapply(unlist(th$reach$sensitivity$jump_reach_ft), function(v) list(jump_reach_ft = v)), paste0("jump reach ", unlist(th$reach$sensitivity$jump_reach_ft), " ft")),
               setNames(lapply(unlist(th$reach$sensitivity$takeoff_s), function(v) list(takeoff_s = v)), paste0("takeoff ", unlist(th$reach$sensitivity$takeoff_s), " s")),
               list(`position error 1 ft` = list(.jitter = th$reach$sensitivity$position_error_ft)),
               list(`half the ball frames` = list(.keep = th$reach$sensitivity$ball_frames_kept)))
+# Per outer fold and variant: reach on the test episodes.
 for (k in sort(unique(fa$outer_fold))) {
   ids <- intersect(fold_split(fa, k)$test, names(eps))
   vmax <- lim_tab[outer_fold == k]$v_max
@@ -155,9 +198,11 @@ for (k in sort(unique(fa$outer_fold))) {
     if (vn == "base") reach[[length(reach) + 1L]] <- r else sens[[length(sens) + 1L]] <- r
   }
 }
-reach <- rbindlist(reach); sens <- rbindlist(sens)
+reach <- rbindlist(reach)
+sens <- rbindlist(sens)
 lab <- el[, .(episode_id, credited = fifelse(rebounded, rebounder_id, NA_integer_))]
 lab <- merge(lab, auto[, .(episode_id, auto_first = first_contact_player_id)], by = "episode_id", all.x = TRUE)
+# Summarise reach against the labelled first contact.
 summ_reach <- function(r) {
   r <- merge(r, lab, by = "episode_id")
   r[, rank := frank(-margin, ties.method = "min"), by = .(variant, episode_id)]
@@ -172,21 +217,30 @@ summ_reach <- function(r) {
 }
 reach_sum <- rbind(summ_reach(reach), summ_reach(sens))
 top <- function(r) r[, .SD[which.max(margin)], by = .(variant, episode_id)][, .(variant, episode_id, top_pid = pid)]
-tb <- top(reach); ts <- top(sens)
+tb <- top(reach)
+ts <- top(sens)
 chg <- merge(ts, tb[, .(episode_id, base_pid = top_pid)], by = "episode_id")[, .(earliest_arriver_changes = mean(top_pid != base_pid)), by = variant]
 reach_sum <- merge(reach_sum, rbind(data.table(variant = "base", earliest_arriver_changes = 0), chg), by = "variant")
 fwrite(reach, file.path(out, "reach_margins.csv.gz"))
 fwrite(reach_sum[order(variant != "base", variant)], file.path(out, "reach_summary.csv"))
 
-# ---- checks -----------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - CHECKS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 ck <- list()
 addc <- function(check, value, expected, pass) ck[[length(ck) + 1L]] <<- data.table(check = check, value = as.character(value),
-                                                                                     expected = as.character(expected), pass = pass)
+                                                                                    expected = as.character(expected), pass = pass)
 addc("Step 03 design freeze in force", all(freeze_ok), TRUE, all(freeze_ok))
 set.seed(u$seed)
 pois <- sample(names(eps), 30L)
 vel_causal <- all(vapply(pois, function(id) {
-  e <- eps[[id]]; t <- e$s$release_frame
+  e <- eps[[id]]
+  t <- e$s$release_frame
   raw_pl <- e$v[, .(frame, pid, x, y, det)]
   bad <- copy(raw_pl)[frame > t, `:=`(x = x + 30, y = -y)]
   a <- causal_velocity(raw_pl, vel$window_frames, vel$min_detected)[frame <= t]
@@ -200,20 +254,33 @@ addc("speed limit plausible (training v_max, ft/s)", sprintf("%.1f to %.1f", min
 addc("held-out detected speeds above the training v_max (largest fold share)", signif(max(exceed$speed_above), 3),
      paste("<=", mv$limit_exceed_max), all(exceed$speed_above <= mv$limit_exceed_max))
 hi_only <- merge(reach[, .(none = all(margin < 0)), by = episode_id],
-                 rbindlist(lapply(unique(reach$episode_id), function(id) { e <- eps[[id]]; t <- unique(reach[episode_id == id]$origin)
-                   data.table(episode_id = id, all_high = all(e$ball[frame > t & frame <= e$s$rebound_frame]$z > th$reach$jump_reach_ft)) })), by = "episode_id")
+                 rbindlist(lapply(unique(reach$episode_id), function(id) {
+                   e <- eps[[id]]
+                   t <- unique(reach[episode_id == id]$origin)
+                   data.table(episode_id = id, all_high = all(e$ball[frame > t & frame <= e$s$rebound_frame]$z > th$reach$jump_reach_ft))
+                 })), by = "episode_id")
 addc("a ball above every player's reach gives no interception", hi_only[all_high == TRUE, all(none)], TRUE, hi_only[all_high == TRUE, all(none)])
 addc("first touch, first control and final credit kept apart (reach is scored against neither as a pass test)", TRUE, TRUE, TRUE)
 k1 <- fa[outer_fold == 1L]
 re1 <- {
-  te <- mrows[outer_fold == 1L]; lk <- lim_tab[outer_fold == 1L]
-  f <- forecast_position(te$x, te$y, te$vx, te$vy, te$tau, "damped", lk$lambda, lk$v_max); sqrt((f$x - te$tx)^2 + (f$y - te$ty)^2) }
+  te <- mrows[outer_fold == 1L]
+  lk <- lim_tab[outer_fold == 1L]
+  f <- forecast_position(te$x, te$y, te$vx, te$vy, te$tau, "damped", lk$lambda, lk$v_max)
+  sqrt((f$x - te$tx)^2 + (f$y - te$ty)^2)
+}
 same <- isTRUE(all.equal(re1, fc[outer_fold == 1L & model == "damped"]$err, tolerance = 0))
 addc("re-running fold 1 reproduces every damped forecast error", same, TRUE, same)
 checks <- rbindlist(ck)
 fwrite(checks, file.path(out, "checks.csv"))
 
-# ---- report ----------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - REPORT -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 md_table <- function(d, digits = 3) {
   d <- copy(d)
   for (c in names(d)) if (is.numeric(d[[c]]) && !is.integer(d[[c]])) set(d, j = c, value = formatC(d[[c]], digits = digits, format = "f"))
@@ -221,69 +288,80 @@ md_table <- function(d, digits = 3) {
     apply(d, 1, function(r) paste("|", paste(r, collapse = " | "), "|")))
 }
 st_move <- if (move_pass) "PASS" else "BLOCKED"
-lines <- c(
-  "# Step 08: player movement and reachability",
-  "",
-  sprintf("Run %s by `src/rebounding/run_step08.R`; settings `config/experiment.yaml` (`step08`, config v%d), fixed before any",
-          format(Sys.Date()), cfg$config_version),
-  "real-data run; folds and rules are Step 03's.",
-  "",
-  "**Gate rule.** Interception can only be validated against first-contact labels, and Step 02 is BLOCKED, so the",
-  "physical interception validation is BLOCKED and the reach margins below are exploratory. The movement models are",
-  "validated on held-out games.",
-  "",
-  "## Movement forecasts (held-out games, detected target positions, error in ft)", "", md_table(mov_sum, 3), "",
-  "Speed and acceleration limits and damping by fold (training games only):", "", md_table(lim_tab, 3), "",
-  md_table(exceed, 4), "",
-  sprintf("## Damped against stationary and constant velocity (superiority, Step 03 rule): %s", st_move), "",
-  md_table(cmp[, .(candidate, reference, time_point, mean_diff, lo, hi, games_better, drop_one_max, superior)], 3), "",
-  "By stratum (`movement_by_stratum.csv`): velocity from detected or extrapolated positions, target detected or not, origin.",
-  "",
-  "## Reach after the rim arrival (exploratory)", "",
-  "Margin = time the ball is at a point (on its measured path to the credited rebound) minus the player's arrival",
-  sprintf("there (reaction %.2f s, then straight at the fold's v_max to within %.1f ft; a jump adds %.2f s and reaches %.1f ft).",
-          rp_base$reaction_s, rp_base$catch_radius_ft, rp_base$takeoff_s, rp_base$jump_reach_ft),
-  "Feasible = margin >= 0. The ball path is the realised one, so this is feasibility after the fact, not a forecast.",
-  "The credited rebounder is the final credit, not the first touch; Step 02's first toucher is unvalidated.",
-  "", md_table(reach_sum[order(variant != "base", variant)], 3), "",
-  "## Checks", "", md_table(checks), "",
-  "## Limits", "",
-  "- No player heights, wingspans or jump data: the envelope is a broad assumption, not a measurement.",
-  "- Obstruction is not modelled (box-outs are Step 11).",
-  "- Reach uses the realised ball path; Step 09 has to use forecast paths instead.")
+# The step's markdown report.
+lines <- c("# Step 08: player movement and reachability",
+           "",
+           sprintf("Run %s by `src/rebounding/run_step08.R`; settings `config/experiment.yaml` (`step08`, config v%d), fixed before any",
+                   format(Sys.Date()), cfg$config_version),
+           "real-data run; folds and rules are Step 03's.",
+           "",
+           "**Gate rule.** Interception can only be validated against first-contact labels, and Step 02 is BLOCKED, so the",
+           "physical interception validation is BLOCKED and the reach margins below are exploratory. The movement models are",
+           "validated on held-out games.",
+           "",
+           "## Movement forecasts (held-out games, detected target positions, error in ft)", "", md_table(mov_sum, 3), "",
+           "Speed and acceleration limits and damping by fold (training games only):", "", md_table(lim_tab, 3), "",
+           md_table(exceed, 4), "",
+           sprintf("## Damped against stationary and constant velocity (superiority, Step 03 rule): %s", st_move), "",
+           md_table(cmp[, .(candidate, reference, time_point, mean_diff, lo, hi, games_better, drop_one_max, superior)], 3), "",
+           "By stratum (`movement_by_stratum.csv`): velocity from detected or extrapolated positions, target detected or not, origin.",
+           "",
+           "## Reach after the rim arrival (exploratory)", "",
+           "Margin = time the ball is at a point (on its measured path to the credited rebound) minus the player's arrival",
+           sprintf("there (reaction %.2f s, then straight at the fold's v_max to within %.1f ft; a jump adds %.2f s and reaches %.1f ft).",
+                   rp_base$reaction_s, rp_base$catch_radius_ft, rp_base$takeoff_s, rp_base$jump_reach_ft),
+           "Feasible = margin >= 0. The ball path is the realised one, so this is feasibility after the fact, not a forecast.",
+           "The credited rebounder is the final credit, not the first touch; Step 02's first toucher is unvalidated.",
+           "", md_table(reach_sum[order(variant != "base", variant)], 3), "",
+           "## Checks", "", md_table(checks), "",
+           "## Limits", "",
+           "- No player heights, wingspans or jump data: the envelope is a broad assumption, not a measurement.",
+           "- Obstruction is not modelled (box-outs are Step 11).",
+           "- Reach uses the realised ball path; Step 09 has to use forecast paths instead.")
 writeLines(lines, file.path(reports, "08_reachability.md"))
 
-# ---- gate record -------------------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - GATE RECORD ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 tests <- rbind(run_tests(here, root, "unit", "reach"), run_tests(here, root, "gates", "step_08"), fill = TRUE)
 fwrite(tests, file.path(gr, "08_tests.csv"))
 tests_ok <- nrow(tests) > 0 && !any(tests$failed > 0 | tests$error)
 harness_ok <- all(checks$pass) && tests_ok
 status <- if (harness_ok && move_pass) "PASS_BASELINE" else "BLOCKED"
-rec <- list(
-  step = "08", status = status,
-  scope = sprintf("player movement forecasts (%d episodes) and exploratory reach margins at the rim-arrival trigger", uniqueN(fc$episode_id)),
-  components = list(movement_damped = st_move, physical_interception = "BLOCKED (no first-contact labels; Step 02 BLOCKED)",
-                    reach_margins = "exploratory", static_and_damped_baselines = "kept as comparison baselines"),
-  source_commits = list(skillcorner = cfg$dataset$upstream_commit, LaurieOnTracking = "arrival rule adapted (MIT)"),
-  data_revision = list(upstream = cfg$dataset$upstream_commit, step03_freeze = fz$frozen_at),
-  model_revision = list(model_version = th$model_version, step08_config_sha256 = paste(openssl::sha256(yaml::as.yaml(th))),
-                        code_sha256 = setNames(lapply(c("player_motion.R", "reach.R"), function(f) sha256_file(file.path(here, "R", f))),
-                                               c("player_motion.R", "reach.R"))),
-  repository_head = git_out(root, "rev-parse", "HEAD")[1],
-  test_command = "Rscript src/rebounding/run_tests.R unit reach; Rscript src/rebounding/run_tests.R gates step_08",
-  unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
-  data_audit_passed = all(checks$pass),
-  heldout_metrics_file = "outputs/rebounding/step08/movement_errors.csv",
-  acceptance_criteria_version = sprintf("manual %s, config v%d (step08 fixed before any real-data run)", cfg$manual_revision, cfg$config_version),
-  decision = list(movement_pass = move_pass, comparisons = cmp[, .(candidate, reference, time_point, mean_diff = round(mean_diff, 4), hi = round(hi, 4), superior)],
-                  limit_exceedance = exceed, reach = reach_sum),
-  evidence = c("outputs/rebounding/step08/", "outputs/rebounding/reports/08_reachability.md"),
-  reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
-  open_risks = list("No first-contact labels", "Height envelope assumed", "Reach uses the realised ball path"),
-  decision_note = sprintf("Movement %s; interception BLOCKED; reach exploratory.", st_move))
+# The gate record.
+rec <- list(step = "08", status = status,
+            scope = sprintf("player movement forecasts (%d episodes) and exploratory reach margins at the rim-arrival trigger", uniqueN(fc$episode_id)),
+            components = list(movement_damped = st_move, physical_interception = "BLOCKED (no first-contact labels; Step 02 BLOCKED)",
+                              reach_margins = "exploratory", static_and_damped_baselines = "kept as comparison baselines"),
+            source_commits = list(skillcorner = cfg$dataset$upstream_commit, LaurieOnTracking = "arrival rule adapted (MIT)"),
+            data_revision = list(upstream = cfg$dataset$upstream_commit, step03_freeze = fz$frozen_at),
+            model_revision = list(model_version = th$model_version, step08_config_sha256 = paste(openssl::sha256(yaml::as.yaml(th))),
+                                  code_sha256 = setNames(lapply(c("player_motion.R", "reach.R"), function(f) sha256_file(file.path(here, "R", f))),
+                                                         c("player_motion.R", "reach.R"))),
+            repository_head = git_out(root, "rev-parse", "HEAD")[1],
+            test_command = "Rscript src/rebounding/run_tests.R unit reach; Rscript src/rebounding/run_tests.R gates step_08",
+            unit_tests_passed = !any(tests[dir == "unit"]$failed > 0 | tests[dir == "unit"]$error),
+            data_audit_passed = all(checks$pass),
+            heldout_metrics_file = "outputs/rebounding/step08/movement_errors.csv",
+            acceptance_criteria_version = sprintf("manual %s, config v%d (step08 fixed before any real-data run)", cfg$manual_revision, cfg$config_version),
+            decision = list(movement_pass = move_pass, comparisons = cmp[, .(candidate, reference, time_point, mean_diff = round(mean_diff, 4), hi = round(hi, 4), superior)],
+                            limit_exceedance = exceed, reach = reach_sum),
+            evidence = c("outputs/rebounding/step08/", "outputs/rebounding/reports/08_reachability.md"),
+            reviewer = "Claude (automated run); owner review pending", date = format(Sys.Date()),
+            open_risks = list("No first-contact labels", "Height envelope assumed", "Reach uses the realised ball path"),
+            decision_note = sprintf("Movement %s; interception BLOCKED; reach exploratory.", st_move))
 write_gate(file.path(gr, "08_reachability.json"), rec)
 
-print(mov_sum); print(lim_tab); print(exceed); print(cmp[, .(candidate, reference, time_point, d = round(mean_diff, 3), hi = round(hi, 3), superior)])
-print(reach_sum); print(checks[, .(check = substr(check, 1, 80), value, pass)])
+print(mov_sum)
+print(lim_tab)
+print(exceed)
+print(cmp[, .(candidate, reference, time_point, d = round(mean_diff, 3), hi = round(hi, 3), superior)])
+print(reach_sum)
+print(checks[, .(check = substr(check, 1, 80), value, pass)])
 print(tests[, .(dir, file, test = substr(test, 1, 60), expectations, failed, error)])
 cat("STEP 08:", status, "| movement", st_move, "\n")

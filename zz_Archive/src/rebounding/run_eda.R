@@ -1,8 +1,10 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Exploratory tables behind every modelling decision in the rebounding framework, for the Rebounding tab.
 #   Rscript src/rebounding/run_eda.R
 # Needs run_audit.R, run_flight.R, run_opportunity.R (scenes_all from run_skills.R) and run_skills.R.
 # Writes outputs/rebounding/eda/*.csv; run_export.R puts them in web/public/data/rebounding.json.
 # Everything here is description of the ten games: no model is fitted except where a table says so.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -31,19 +33,35 @@ el <- episodes[status == "eligible"]
 el[, off_ball := outcome %in% c("off player", "off team award")]
 el[, shot_range := shot_range(shot_dist, three)]
 
-# ---- 1. outcomes: what is being predicted ------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - OUTCOMES: WHAT IS BEING PREDICTED --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 w(el[, .N, by = outcome][, share := N / sum(N)][order(-N)], "outcomes")
 w(rate_table(el, "shot_range"), "oreb_by_distance")
 w(rate_table(el, "kind"), "oreb_by_kind")
 
-# ---- 2. where rebounds are secured -------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - WHERE REBOUNDS ARE SECURED ---------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 spots <- rbindlist(lapply(bundles, function(b) {
   s <- b$shot
   if (!(s$grabbed %in% TRUE)) return(NULL)
   p <- b$players[frame == s$rf & canon == s$rcanon]
   if (!nrow(p)) return(NULL)
-  sx <- s$sx - RIM_X; sy <- s$sy
-  rx <- p$x[1] - RIM_X; ry <- p$y[1]
+  sx <- s$sx - RIM_X
+  sy <- s$sy
+  rx <- p$x[1] - RIM_X
+  ry <- p$y[1]
   ang <- atan2(ry, rx) - atan2(sy, sx)
   ang <- (ang + pi) %% (2 * pi) - pi
   data.table(shot_id = b$id, sx = round(sx, 1), sy = round(sy, 1), rx = round(rx, 1), ry = round(ry, 1), r = round(sqrt(rx^2 + ry^2), 2),
@@ -57,7 +75,14 @@ w(spots[, .(n = .N), by = .(angle_bin = cut(angle, seq(0, 180, 30), include.lowe
   "rebound_angle")
 w(spots[, .(n = .N, median_r = median(r)), by = off], "rebound_distance_by_side")
 
-# ---- 3. timing ---------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - TIMING -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 timing <- el[, .(shot_id, shot_dist = round(shot_dist, 1), kind,
                  t_contact = round((contact_frame - f0) / FPS, 2), t_end = round((f1 - f0) / FPS, 2),
                  t_rebound_after_contact = round((rf - fcoalesce(contact_frame, f1)) / FPS, 2),
@@ -66,7 +91,14 @@ w(timing, "timing")
 fit <- lm(t_contact ~ shot_dist, timing[!is.na(t_contact)])
 w(data.table(term = c("intercept", "per_ft", "r2", "n"), value = c(coef(fit), summary(fit)$r.squared, nobs(fit))), "flight_time_fit")
 
-# ---- 4. the ball track -------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - THE BALL TRACK ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 raws <- lapply(games, read_raw)
 minima <- rbindlist(lapply(raws, function(raw) {
   fr <- raw$frames[order(frame)]
@@ -74,6 +106,7 @@ minima <- rbindlist(lapply(raws, function(raw) {
   fr[!is.na(bz) & bz < shift(bz) & bz <= shift(bz, -1L) & vz < -8 & shift(bz, -3L) - bz > 0.3 & bz < 6, .(z = bz)]
 }))
 w(minima[, .(n = .N), by = .(z = floor(z * 5) / 5)][order(z)], "bounce_minima")
+# Each made shot's downward crossing of rim height near the hoop.
 crossings <- rbindlist(lapply(raws, function(raw) {
   sh <- episodes[game_id == raw$shots$game_id[1] & made == TRUE & !is.na(f0) & !is.na(f1)]
   rbindlist(lapply(seq_len(nrow(sh)), function(k) {
@@ -97,7 +130,14 @@ tm <- bundle_times(ex)
 w(data.table(event = c("release", "contact", "first possible touch", "rebound frame", "floor bounce"),
              t = round(c(0, tm$contact, tm$touch, tm$rebound, tm$bounce), 2), shot_id = ex$id), "example_events")
 
-# ---- 5. who gets the ball: position at release -------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - WHO GETS THE BALL: POSITION AT RELEASE ---------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 scenes_all <- readRDS(file.path(cache, "scenes_all.rds"))
 rank_rows <- rbindlist(lapply(names(scenes_all), function(cp) rbindlist(lapply(seq_along(bundles), function(i) {
   sc <- scenes_all[[cp]][[i]]
@@ -124,7 +164,14 @@ inside[, diff := pmin(2, pmax(-4, off_in - def_in))]
 w(rate_table(inside, "diff"), "oreb_by_inside_difference")
 w(rate_table(inside[, off_in := pmin(off_in, 3L)], "off_in"), "oreb_by_offense_inside")
 
-# ---- 6. obstruction at the rim -----------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - OBSTRUCTION AT THE RIM -------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 obs <- rbindlist(lapply(seq_along(bundles), function(i) {
   sc <- scenes_all$rim[[i]]
   if (!length(sc)) return(NULL)
@@ -138,7 +185,14 @@ obs[, net := pmin(2, pmax(-2, def_blocked - off_blocked))]
 w(rate_table(obs, "net"), "oreb_by_net_boxouts")
 w(rate_table(obs[, off_blocked := pmin(off_blocked, 2L)], "off_blocked"), "oreb_by_offense_boxed_out")
 
-# ---- 7. movement in the first 0.48 s -----------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - MOVEMENT IN THE FIRST 0.48 s -------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 mv <- readRDS(file.path(cache, "movement_rows.rds"))
 h <- ANT_FRAMES / FPS
 mv[, `:=`(proj = sqrt((vx0 * h)^2 + (vy0 * h)^2), moved = sqrt((x1 - x0)^2 + (y1 - y0)^2))]
@@ -148,7 +202,14 @@ damp <- fit_damping(mv)
 w(data.table(term = c("position_factor", "velocity_factor"), value = c(damp$pos, damp$vel)), "damping")
 w(mv[, .(n = .N, toward_hoop_ft = mean(dr), moved_ft = mean(moved)), by = role][order(role)], "movement_by_role")
 
-# ---- 8. players: how much evidence each one has ------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 08 - PLAYERS: HOW MUCH EVIDENCE EACH ONE HAS --------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
 pl <- rbindlist(lapply(seq_along(bundles), function(i) {
   sc <- scenes_all$rim[[i]]
   if (!length(sc)) return(NULL)

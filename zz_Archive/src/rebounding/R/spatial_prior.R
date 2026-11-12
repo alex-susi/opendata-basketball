@@ -80,16 +80,16 @@ SPATIAL_MODELS <- c("uniform", "zone_bins", "pooled_kde", "range_kde", "side_ran
 predict_spatial <- function(fit, model, shot_range, side) {
   mix <- function(M) (1 - fit$eps) * M + fit$eps * fit$uniform
   switch(model,
-    uniform = fit$uniform,
-    zone_bins = fit$zone,
-    pooled_kde = mix(fit$pooled),
-    range_kde = mix((1 - fit$w_range) * fit$pooled + fit$w_range * (fit$by_range[[shot_range]] %||% fit$pooled)),
-    side_range_kde = {
-      S <- fit$by_side[[shot_range]] %||% fit$pooled
-      if (side < 0 && !is.null(fit$by_side[[shot_range]])) S <- mirror_map(S)
-      mix((1 - fit$w_side) * fit$pooled + fit$w_side * S)
-    },
-    stop("unknown spatial model ", model))
+         uniform = fit$uniform,
+         zone_bins = fit$zone,
+         pooled_kde = mix(fit$pooled),
+         range_kde = mix((1 - fit$w_range) * fit$pooled + fit$w_range * (fit$by_range[[shot_range]] %||% fit$pooled)),
+         side_range_kde = {
+           S <- fit$by_side[[shot_range]] %||% fit$pooled
+           if (side < 0 && !is.null(fit$by_side[[shot_range]])) S <- mirror_map(S)
+           mix((1 - fit$w_side) * fit$pooled + fit$w_side * S)
+         },
+         stop("unknown spatial model ", model))
 }
 
 #' Scores of one map at one location: negative log density per square foot; u = probability of the cells at least
@@ -105,15 +105,18 @@ score_map <- function(M, grid, cell, levels) {
 
 #' Wilson interval for a proportion.
 wilson <- function(k, n, z = 1.96) {
-  p <- k / n; d <- 1 + z^2 / n
-  c <- (p + z^2 / (2 * n)) / d; h <- z * sqrt(p * (1 - p) / n + z^2 / (4 * n^2)) / d
+  p <- k / n
+  d <- 1 + z^2 / n
+  c <- (p + z^2 / (2 * n)) / d
+  h <- z * sqrt(p * (1 - p) / n + z^2 / (4 * n^2)) / d
   c(lo = max(0, min(p, c - h)), hi = min(1, max(p, c + h)))   # clamped: rounding can leave 0 or 1 just outside
 }
 
 #' Mean negative log density of held-out targets for a list of (train, test) splits under one setting.
 inner_nll <- function(grid, targets, splits, h, w_range, w_side, cfg, model) {
   mean(unlist(lapply(splits, function(f) {
-    tr <- targets[episode_id %in% f$train]; te <- targets[episode_id %in% f$test]
+    tr <- targets[episode_id %in% f$train]
+    te <- targets[episode_id %in% f$test]
     if (!nrow(te)) return(NULL)
     fit <- fit_spatial(grid, tr, h, w_range, w_side, cfg)
     vapply(seq_len(nrow(te)), function(i)
@@ -124,7 +127,8 @@ inner_nll <- function(grid, targets, splits, h, w_range, w_side, cfg, model) {
 #' Settings chosen inside the training games: bandwidth for pooled_kde, then the weights of range_kde and
 #' side_range_kde with that bandwidth; ties go to the smoother setting.
 select_spatial <- function(grid, targets, splits, cfg) {
-  hs <- unlist(cfg$bandwidth_grid_ft); ws <- unlist(cfg$weight_grid)
+  hs <- unlist(cfg$bandwidth_grid_ft)
+  ws <- unlist(cfg$weight_grid)
   hh <- data.table(h = hs, nll = vapply(hs, function(h) inner_nll(grid, targets, splits, h, 0, 0, cfg, "pooled_kde"), 0))
   h <- hh[nll == min(nll)][, max(h)]
   wr <- data.table(w = ws, nll = vapply(ws, function(w) inner_nll(grid, targets, splits, h, w, 0, cfg, "range_kde"), 0))
@@ -139,7 +143,10 @@ select_spatial <- function(grid, targets, splits, cfg) {
 #' credited location (episode_id, tx, ty, cell, shot_range, side). Maps exist for every episode, scores for targets.
 spatial_fold_predictions <- function(grid, episodes, targets, fa, cfg) {
   levels <- unlist(cfg$scores$coverage_levels)
-  scores <- list(); maps <- list(); sel <- list()
+  scores <- list()
+  maps <- list()
+  sel <- list()
+  # Per outer fold: choose the bandwidth and weights on the inner folds, then fit on the training games.
   for (k in sort(unique(fa$outer_fold))) {
     s <- fold_split(fa, k)
     inner <- lapply(s$inner, function(f) list(train = intersect(f$train, targets$episode_id), test = f$test))
@@ -156,10 +163,9 @@ spatial_fold_predictions <- function(grid, episodes, targets, fa, cfg) {
       names(mp) <- te$episode_id
       maps[[m]] <- c(maps[[m]], mp)
       tt <- targets[episode_id %in% te$episode_id]
-      if (nrow(tt)) scores[[length(scores) + 1L]] <- cbind(
-        data.table(model = m, outer_fold = k, test_game = s$test_game, episode_id = tt$episode_id),
-        as.data.table(t(vapply(seq_len(nrow(tt)), function(i) score_map(mp[[tt$episode_id[i]]], grid, tt$cell[i], levels),
-                               numeric(2L + length(levels))))))
+      if (nrow(tt)) scores[[length(scores) + 1L]] <- cbind(data.table(model = m, outer_fold = k, test_game = s$test_game, episode_id = tt$episode_id),
+                                                           as.data.table(t(vapply(seq_len(nrow(tt)), function(i) score_map(mp[[tt$episode_id[i]]], grid, tt$cell[i], levels),
+                                                                                  numeric(2L + length(levels))))))
     }
   }
   list(scores = rbindlist(scores), maps = maps, selection = rbindlist(sel))
@@ -168,17 +174,23 @@ spatial_fold_predictions <- function(grid, episodes, targets, fa, cfg) {
 #' Half-court lines in the attack frame (FIBA, feet): baseline, sidelines, key, free-throw circle, three-point line,
 #' restricted area, backboard and ring.
 draw_half_court <- function(col = "grey35") {
-  base <- COURT_HALF_L; side <- COURT_HALF_W
-  key_w <- 4.9 * FT_PER_M / 2; key_x <- base - 5.8 * FT_PER_M
+  base <- COURT_HALF_L
+  side <- COURT_HALF_W
+  key_w <- 4.9 * FT_PER_M / 2
+  key_x <- base - 5.8 * FT_PER_M
   rect(0, -side, base, side, border = col)
   rect(key_x, -key_w, base, key_w, border = col)
-  th <- seq(-pi / 2, pi / 2, length.out = 60); r_ft <- 1.8 * FT_PER_M
+  th <- seq(-pi / 2, pi / 2, length.out = 60)
+  r_ft <- 1.8 * FT_PER_M
   lines(key_x - r_ft * cos(th), r_ft * sin(th), col = col)
-  r3 <- 6.75 * FT_PER_M; y3 <- side - 0.9 * FT_PER_M
-  a <- asin(y3 / r3); th3 <- seq(-a, a, length.out = 80)
+  r3 <- 6.75 * FT_PER_M
+  y3 <- side - 0.9 * FT_PER_M
+  a <- asin(y3 / r3)
+  th3 <- seq(-a, a, length.out = 80)
   lines(RIM_X - r3 * cos(th3), r3 * sin(th3), col = col)
   segments(RIM_X - r3 * cos(a), c(-y3, y3), base, c(-y3, y3), col = col)
-  thr <- seq(-pi / 2, pi / 2, length.out = 40); rr <- 1.25 * FT_PER_M
+  thr <- seq(-pi / 2, pi / 2, length.out = 40)
+  rr <- 1.25 * FT_PER_M
   lines(RIM_X - rr * cos(thr), rr * sin(thr), col = col)
   segments(BOARD_X, -BOARD_HALF_W, BOARD_X, BOARD_HALF_W, col = col, lwd = 2)
   symbols(RIM_X, 0, circles = RIM_R, inches = FALSE, add = TRUE, fg = col)
@@ -189,7 +201,8 @@ draw_map <- function(M, grid, main = "", levels = c(0.5, 0.8, 0.95), zmax = NULL
   zmax <- zmax %||% max(M)
   image(grid$cx, grid$cy, pmin(M, zmax), col = hcl.colors(40, "Blues 3", rev = TRUE), zlim = c(0, zmax), asp = 1,
         xlab = "", ylab = "", axes = FALSE, main = main, cex.main = 0.85)
-  srt <- sort(as.vector(M), decreasing = TRUE); cs <- cumsum(srt)
+  srt <- sort(as.vector(M), decreasing = TRUE)
+  cs <- cumsum(srt)
   thr <- vapply(levels, function(L) srt[which(cs >= L - 1e-12)[1]], 0)
   contour(grid$cx, grid$cy, M, levels = thr, labels = paste0(levels * 100, "%"), add = TRUE, col = "grey20", lwd = 0.8,
           labcex = 0.55, drawlabels = TRUE)

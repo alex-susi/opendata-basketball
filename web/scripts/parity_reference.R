@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Writes web/tests/parity_reference.json, the reference the Vitest parity test compares against.
 #   Rscript web/scripts/parity_reference.R     (after web/scripts/export_data.R; keep both outputs together)
 #
@@ -6,6 +7,7 @@
 # 2. A few plays' payloads, exactly as the app sends them, are reduced to sums the test recomputes from
 #    the exported binary files.
 # The export's `generated` stamp is stored too, so a stale reference fails the first test.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -15,7 +17,13 @@ a <- load_shiny_app()
 meta <- fromJSON(file.path(a$root, "web", "public", "data", "meta.json"), simplifyVector = FALSE)
 plays <- a$app_data$plays
 
-# ---- filter cases ---------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - FILTER CASES -----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' The inputs a browser sends: every filter present, the unused ones empty.
 inputs <- function(...) {
@@ -25,12 +33,14 @@ inputs <- function(...) {
   utils::modifyList(base, list(...))
 }
 
+# Values for the cases: the busiest offense, two teams, and the player in the most picks.
 games <- as.character(a$app_data$matches$game_id)
 team <- as.character(plays[, .N, by = off_team][order(-N), off_team][1])
 teams <- as.character(a$app_data$teams$team_id[1:2])
 busiest <- a$app_data$actors[type == "pick", .N, by = pid][order(-N), pid][1]
 player <- as.character(busiest)
 
+# One case per branch of filter_plays().
 cases <- list(none = inputs(),
               one_game = inputs(game = games[1]),
               games_and_periods = inputs(game = games[c(2, 7)], period = c("2", "4")),
@@ -54,6 +64,7 @@ cases <- list(none = inputs(),
               oreb_without = inputs(oreb = "without"),
               oreb_team = inputs(oreb = "with", team = team, team_side = "off", period = c("1", "3")))
 
+# Run every case through the real server and record the matching play ids.
 matched <- new.env()
 shiny::testServer(a$server, {
   for (name in names(cases)) {
@@ -69,7 +80,13 @@ filter_cases <- lapply(names(cases), function(name) {
   list(name = name, inputs = sent, ids = I(matched[[name]]))
 })
 
-# ---- payload sums ---------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - PAYLOAD SUMS -----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 total <- function(v) sum(as.numeric(v), na.rm = TRUE)
 present <- function(v) sum(!is.na(v))
@@ -84,11 +101,13 @@ payload_sums <- function(play_id) {
                                                      y = total(pl$y), present = present(pl$x), detected = total(pl$d))))
 }
 
+# Sample plays: the first and last, the longest, the one with most players, and two others.
 roster_size <- vapply(plays$id, function(i) length(unique(c(plays[id == i]$off_ids[[1]], plays[id == i]$def_ids[[1]]))), 0L)
 sample_ids <- unique(c(plays$id[1], plays$id[which.max(plays$n_live)], plays$id[which.max(roster_size)],
                        plays[game_id == as.integer(games[6])]$id[40], plays[period == max(period)]$id[1],
                        plays$id[nrow(plays)]))
 
+# Write the reference.
 reference <- list(export_generated = meta$generated, filters = filter_cases, payloads = lapply(sample_ids, payload_sums))
 out <- file.path(a$root, "web", "tests", "parity_reference.json")
 write_json(reference, out, auto_unbox = TRUE, digits = NA, na = "null", null = "null")

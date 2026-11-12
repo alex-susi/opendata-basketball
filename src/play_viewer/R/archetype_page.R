@@ -6,43 +6,42 @@
 # a reading of the numbers, not something the model produced. An archetype without a note is shown without a
 # definition; a component is matched to its note by position, and its ends by the sign of the `anchor` feature.
 
-ARCHETYPE_NOTES <- list(
-  "Primary Ball Handler" = "Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or goes to the offensive glass.",
-  "Secondary Ball Handler" = "A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups and off-the-dribble threes and many of them contested, and often gets the ball coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.",
-  "Slasher" = "An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions, but handles less and takes fewer pull-up jumpers than a primary ball handler.",
-  "Off Screen Shooter" = "A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes; he rarely scores in the paint. He does less off the dribble than a secondary ball handler.",
-  "Movement Shooter" = "A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group; it includes most of the shooting forwards that BBall Index would call stretch bigs.",
-  "Stationary Shooter" = "A low-usage spacer who waits in the corner. He stands still off the ball more than anyone, shoots off the catch and attacks closeouts all the way to the rim. He takes few shots and touches the ball little.",
-  "Athletic Finisher" = "A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype: it sits near the middle of the two main components.",
-  "Versatile Big" = "A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, goes to the offensive glass and usually finishes without a dribble. The smallest group, and unlike BBall Index's versatile big it is not defined by three-point shooting.",
-  "Post Scorer" = "A big who scores with his back to the basket and around the rim. He has the highest share of hooks and post fadeaways, takes many layups and paint shots, and sets on-ball and off-ball screens. He does not shoot threes or play on the wing.",
-  "Roll & Cut Big" = "A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most on-ball screens and spends his off-ball time in the paint. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.",
-  "Point of Attack" = "Guards the ball. He is assigned to the opposing ball handlers, spends the largest share of his time on the ball, defends the handler in pick-and-roll and picks the ball up furthest from the basket.",
-  "Chaser" = "A perimeter defender whose man is usually off the ball. He follows cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.",
-  "Helper" = "A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position, and is often the defender nearest the rim when the big is drawn away.",
-  "Anchor Big" = "The interior defender. He guards the screeners, defends the screener's side of pick-and-roll and off-ball screens, stays in the paint, helps on drives and is on the defensive glass. He stays close to his own man, who is near the basket.")
+# One paragraph per archetype, shown on its card.
+ARCHETYPE_NOTES <- list("Primary Ball Handler" = "Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or goes to the offensive glass.",
+                        "Secondary Ball Handler" = "A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups and off-the-dribble threes and many of them contested, and often gets the ball coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.",
+                        "Slasher" = "An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions, but handles less and takes fewer pull-up jumpers than a primary ball handler.",
+                        "Off Screen Shooter" = "A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes; he rarely scores in the paint. He does less off the dribble than a secondary ball handler.",
+                        "Movement Shooter" = "A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group; it includes most of the shooting forwards that BBall Index would call stretch bigs.",
+                        "Stationary Shooter" = "A low-usage spacer who waits in the corner. He stands still off the ball more than anyone, shoots off the catch and attacks closeouts all the way to the rim. He takes few shots and touches the ball little.",
+                        "Athletic Finisher" = "A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype: it sits near the middle of the two main components.",
+                        "Versatile Big" = "A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, goes to the offensive glass and usually finishes without a dribble. The smallest group, and unlike BBall Index's versatile big it is not defined by three-point shooting.",
+                        "Post Scorer" = "A big who scores with his back to the basket and around the rim. He has the highest share of hooks and post fadeaways, takes many layups and paint shots, and sets on-ball and off-ball screens. He does not shoot threes or play on the wing.",
+                        "Roll & Cut Big" = "A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most on-ball screens and spends his off-ball time in the paint. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.",
+                        "Point of Attack" = "Guards the ball. He is assigned to the opposing ball handlers, spends the largest share of his time on the ball, defends the handler in pick-and-roll and picks the ball up furthest from the basket.",
+                        "Chaser" = "A perimeter defender whose man is usually off the ball. He follows cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.",
+                        "Helper" = "A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position, and is often the defender nearest the rim when the big is drawn away.",
+                        "Anchor Big" = "The interior defender. He guards the screeners, defends the screener's side of pick-and-roll and off-ball screens, stays in the paint, helps on drives and is on the defensive glass. He stays close to his own man, who is near the basket.")
 
-COMPONENT_NOTES <- list(
-  offense = list(
-    list(anchor = "t_zero_drib_share", context = "The main split in the league: who has the ball and who plays off it.",
-         plus = c("Off-ball screener and finisher", "Catches and shoots or finishes without a dribble, sets screens and goes to the offensive glass. Typical of bigs."),
-         minus = c("On-ball creator", "Handles in pick-and-roll, brings the ball up, dribbles a lot per touch and shoots off the dribble. Typical of point guards.")),
-    list(anchor = "s_corner3_share", context = "Among players off the ball, where they operate: outside or inside.",
-         plus = c("Perimeter spacer", "Lives beyond the arc, especially in the corners, shoots off the catch or off movement and attacks closeouts."),
-         minus = c("Interior scorer", "Scores in the paint with layups, floaters and post moves, and spends his off-ball time at the top of the floor as a screener.")),
-    list(anchor = "s_layup_share", context = "How a player gets his points: jump shots in volume, or occasional attacks on the rim.",
-         plus = c("Low-usage rim attacker", "Shoots little, and mostly layups; his drives end at the rim and he stands still off the ball."),
-         minus = c("High-volume jump-shot scorer", "Takes many shots, with pull-ups, mid-range jumpers and shots coming off off-ball screens.")),
-    list(anchor = "s_drv_iso_share", context = "Players who hunt their own shot on the wing against those who organise from the top.",
-         plus = c("Isolation and off-screen wing scorer", "Drives from isolation, takes contested shots, gets to the rim and shoots a lot."),
-         minus = c("Organiser", "Stays at the top of the floor, starts possessions, runs pick-and-roll in the middle and shoots off the catch."))),
-  defense = list(
-    list(anchor = "d_paint_share", context = "The main split on defense: who protects the paint and who guards the ball.",
-         plus = c("Interior", "Stays in the paint, is the defender nearest the rim, guards the screeners and goes to the defensive glass."),
-         minus = c("On-ball perimeter", "Guards the ball handlers far from the basket, defends the handler in pick-and-roll and picks the ball up high.")),
-    list(anchor = "d_help_share", context = "Whether a defender's job is to sit in help off a shooter or to be directly involved in the action.",
-         plus = c("Sagging helper", "Assigned to three-point shooters, plays well off his man and spends his time in help position."),
-         minus = c("Engaged in the action", "Guards the screener or the ball, moves more and is in the middle of pick-and-roll and off-ball screens."))))
+# Per side, one note per component in order: the anchor feature that fixes its sign, a line of context, and the
+# title and description of each end.
+COMPONENT_NOTES <- list(offense = list(list(anchor = "t_zero_drib_share", context = "The main split in the league: who has the ball and who plays off it.",
+                                            plus = c("Off-ball screener and finisher", "Catches and shoots or finishes without a dribble, sets screens and goes to the offensive glass. Typical of bigs."),
+                                            minus = c("On-ball creator", "Handles in pick-and-roll, brings the ball up, dribbles a lot per touch and shoots off the dribble. Typical of point guards.")),
+                                       list(anchor = "s_corner3_share", context = "Among players off the ball, where they operate: outside or inside.",
+                                            plus = c("Perimeter spacer", "Lives beyond the arc, especially in the corners, shoots off the catch or off movement and attacks closeouts."),
+                                            minus = c("Interior scorer", "Scores in the paint with layups, floaters and post moves, and spends his off-ball time at the top of the floor as a screener.")),
+                                       list(anchor = "s_layup_share", context = "How a player gets his points: jump shots in volume, or occasional attacks on the rim.",
+                                            plus = c("Low-usage rim attacker", "Shoots little, and mostly layups; his drives end at the rim and he stands still off the ball."),
+                                            minus = c("High-volume jump-shot scorer", "Takes many shots, with pull-ups, mid-range jumpers and shots coming off off-ball screens.")),
+                                       list(anchor = "s_drv_iso_share", context = "Players who hunt their own shot on the wing against those who organise from the top.",
+                                            plus = c("Isolation and off-screen wing scorer", "Drives from isolation, takes contested shots, gets to the rim and shoots a lot."),
+                                            minus = c("Organiser", "Stays at the top of the floor, starts possessions, runs pick-and-roll in the middle and shoots off the catch."))),
+                        defense = list(list(anchor = "d_paint_share", context = "The main split on defense: who protects the paint and who guards the ball.",
+                                            plus = c("Interior", "Stays in the paint, is the defender nearest the rim, guards the screeners and goes to the defensive glass."),
+                                            minus = c("On-ball perimeter", "Guards the ball handlers far from the basket, defends the handler in pick-and-roll and picks the ball up high.")),
+                                       list(anchor = "d_help_share", context = "Whether a defender's job is to sit in help off a shooter or to be directly involved in the action.",
+                                            plus = c("Sagging helper", "Assigned to three-point shooters, plays well off his man and spends his time in help position."),
+                                            minus = c("Engaged in the action", "Guards the screener or the ball, moves more and is in the middle of pick-and-roll and off-ball screens."))))
 
 MODEL_WORDS <- c(EII = "round clusters of equal size", VII = "round clusters of different sizes", EEI = "equal-sized clusters sharing one axis-aligned shape",
                  VEI = "clusters of one shape and different sizes", VVI = "axis-aligned clusters of any shape",
@@ -93,6 +92,7 @@ method_steps <- function(out) {
     sprintf("%s: %d clusters as %s (mclust model %s)", tools::toTitleCase(s), ch$clusters, MODEL_WORDS[[ch$model]], ch$model)
   }
   step <- function(title, ...) tags$li(tags$h3(title), p(...))
+  # Five steps, each a heading and a paragraph with the solution's counts filled in.
   tags$ol(class = "steps",
           step("Measure tendencies, not results",
                sprintf("%d features describe what a player does and where he is on the floor: %d on offense and %d on defense. ",
@@ -170,6 +170,7 @@ score_table <- function(side_out, notes, signs) {
     tags$td(div(class = "score", span(class = "num", sprintf("%+.2f", v)),
                 div(class = "bar", div(class = "fill", style = sprintf("width: %.1f%%; left: %.1f%%", width, if (v < 0) 50 - width else 50)))))
   }
+  # One row per archetype: its name and size, then its score on each component.
   cc <- side_out$cluster_components
   tags$table(class = "scores",
              tags$thead(tags$tr(tags$th("Archetype"), tags$th(class = "count", "Players"), lapply(seq_along(pcs), header))),
@@ -218,6 +219,7 @@ archetype_page <- function(root) {
     return(div(class = "doc-inner", tags$h1("Playstyle archetypes"),
                p(class = "lead", "The archetypes have not been built yet. Run src/archetypes/build_features.R and then src/archetypes/cluster_archetypes.R.")))
   }
+  # Introduction, method, the two sides, and the limits.
   div(class = "doc-inner",
       tags$h1("Playstyle archetypes"),
       p(class = "lead", "Every player is described by how he plays, not by how well: where his shots come from, how he uses the ball and screens, where he stands, whom he guards. ",

@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Fit and check the court control model, then save what the play viewer needs to draw it.
 #   Rscript src/court_control/build_control.R [--force]
 #
@@ -9,6 +10,7 @@
 # 3. Refit on all ten games and save the parameters, the court-value grid and reference cases for the
 #    site's own implementation (outputs/court_control/params.json, reference.json).
 #    web/scripts/export_data.R copies them into the site.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -29,12 +31,20 @@ dir.create(report, recursive = TRUE, showWarnings = FALSE)
 
 RELEVANCE_PER_GAME <- 500L   # relevance samples kept per game (each needs a whole control grid)
 
-# ---- tables --------------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - TABLES -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Rebound and relevance tables per game (cached; --force rebuilds), with a fixed sample of relevance rows per game.
 tables_path <- file.path(cache, "tables.rds")
 if (file.exists(tables_path) && !"--force" %in% args) {
   tabs <- readRDS(tables_path)
 } else {
+  # One game at a time: rebound and relevance tables, a fixed sample of relevance rows, and their points.
   tabs <- lapply(games, function(g) {
     message("Tables for game ", g)
     rt <- rebound_table(app, g)
@@ -85,7 +95,13 @@ live_passes <- rbindlist(lapply(ptabs, `[[`, "rows"))
 PP <- stack_P(lapply(ptabs, `[[`, "P"))
 message(sprintf("%d live passes, %d intercepted", nrow(live_passes), sum(live_passes$intercepted)))
 
-# ---- fitting -------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FITTING ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Timing constants from training shots: flight to the rim, bounce out, and team rebounds.
 fit_timing <- function(sh) {
@@ -161,7 +177,13 @@ predict_at_spot <- function(smp, par) {
   offense_control(tau, rebound_time(smp$rx, smp$ry, smp$dist, smp$elapsed, par), par, par$kappa)
 }
 
-# ---- scoring -------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - SCORING ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 log_loss <- function(y, p) {
   p <- pmin(pmax(p, 1e-6), 1 - 1e-6)
@@ -184,7 +206,13 @@ summarise_gain <- function(dt, label) {
              games_better = sum(by_game$gain > 0))
 }
 
-# ---- rebound model: leave one game out -----------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - REBOUND MODEL: LEAVE ONE GAME OUT --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 fold_path <- function(g) file.path(cache, paste0("fold_", g, ".rds"))
 
@@ -198,6 +226,7 @@ fold_params <- function(g) {
   par
 }
 
+# Leave one game out: fit on nine games, then score the tenth's rebound chances at release, halfway and at the rim.
 held <- rbindlist(lapply(games, function(g) {
   par <- fold_params(g)
   if (file.exists(fold_path(g)) && !"--force" %in% args) return(readRDS(fold_path(g)))
@@ -220,6 +249,7 @@ held <- rbindlist(lapply(games, function(g) {
   out
 }))
 
+# Held-out gain over the base rate at each moment.
 rebound_validation <- rbind(summarise_gain(held[moment == "release"], "P(OREB) at release"),
                             summarise_gain(held[moment == "mid"], "P(OREB) halfway to the rim"),
                             summarise_gain(held[moment == "rim"], "P(OREB) as the ball reaches the rim"),
@@ -235,13 +265,27 @@ setorder(cal, moment, bin)
 print(cal)
 fwrite(cal, file.path(report, "calibration_rebound.csv"))
 
-# ---- final rebound and control fit on all ten games ----------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - FINAL REBOUND AND CONTROL FIT ON ALL TEN GAMES -------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 message("Final fit on all games")
 final <- fit_rebound(games)
 str(final)
 
-# ---- live-ball control: fitted on which team took each pass, at the spot it was taken -------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - LIVE-BALL CONTROL ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Fitted on which team took each pass, at the spot it was taken.
 
 #' Offense control at each pass's destination from the players at its release, the ball arriving after
 #' the flight time a pass of that length takes.
@@ -292,8 +336,15 @@ holder_pc <- vapply(seq_len(nrow(rel)), function(i) {
 }, 0)
 message(sprintf("Offense control at the ball: median %.2f, share above 0.5: %.2f", median(holder_pc), mean(holder_pc > 0.5)))
 
-# ---- relevance: where the ball is 1.44 s later --------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - RELEVANCE: WHERE THE BALL IS 1.44 s LATER ------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Control on the general grid at every relevance sample.
 message("Control grids for relevance samples")
 pc_grids <- t(vapply(seq_len(nrow(rel)), function(i) {
   pl <- lapply(RP[c("x", "y", "vx", "vy")], function(m) m[i, ])
@@ -347,7 +398,15 @@ rel_final <- fit_relevance(seq_len(nrow(rel)))
 message(sprintf("Relevance: gain in log density %.3f +/- %.3f per sample, better in %d of 10 games",
                 mean(rel_held$gain), sd(rel_held$gain) / sqrt(10), sum(rel_held$gain > 0)))
 
-# ---- court value: expected points of a shot from each spot ---------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 08 - COURT VALUE ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Expected points of a shot from each spot.
 
 epv_tabs <- readRDS(file.path(app$root, "outputs", "cache", "epv", "tables.rds"))
 epv_shots <- rbindlist(lapply(epv_tabs, `[[`, "shots"), fill = TRUE)[fouled == FALSE]
@@ -370,7 +429,13 @@ setorder(obso_check, quintile)
 print(obso_check)
 fwrite(obso_check, file.path(report, "check_scoring_opportunity.csv"))
 
-# ---- save for the site -------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 09 - SAVE FOR THE SITE ------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' A reference case for the site's tests: one frame's players and what this implementation gives.
 reference_case <- function(i) {
@@ -387,19 +452,18 @@ reference_case <- function(i) {
 }
 pick_cases <- c(which(samples$elapsed == 0)[c(3, 40)], which(samples$elapsed > 0.5)[7])
 
-params <- list(
-  built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
-  court = list(halfL = HALF_L, halfW = HALF_W, hoopX = HOOP_X),
-  integration = list(dt = CONTROL_DT, maxT = CONTROL_MAX_T, tol = CONTROL_TOL),
-  general = c(general, list(cell = GENERAL_CELL)),
-  rebound = c(final[c("react", "sigma", "lambda", "kappa", "vmax", "flight0", "flight1", "bounce0", "bounce1",
-                      "team_share", "team_oreb", "land0", "land1", "shape", "focus", "floor")],
-              list(cell = REBOUND_CELL, reach = REBOUND_REACH)),
-  relevance = list(spread = rel_final$spread, tilt = rel_final$tilt, pull = rel_final$pull,
-                   aheadSeconds = RELEVANCE_AHEAD / 25, obsoRef = OBSO_REF),
-  value = list(cell = GENERAL_CELL, nx = ceiling(2 * HALF_L / GENERAL_CELL), ny = ceiling(2 * HALF_W / GENERAL_CELL),
-               v = I(round(vg$value, 4)))
-)
+# The parameters the site's court-control code reads, with reference cases for its tests.
+params <- list(built = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
+               court = list(halfL = HALF_L, halfW = HALF_W, hoopX = HOOP_X),
+               integration = list(dt = CONTROL_DT, maxT = CONTROL_MAX_T, tol = CONTROL_TOL),
+               general = c(general, list(cell = GENERAL_CELL)),
+               rebound = c(final[c("react", "sigma", "lambda", "kappa", "vmax", "flight0", "flight1", "bounce0", "bounce1",
+                                   "team_share", "team_oreb", "land0", "land1", "shape", "focus", "floor")],
+                           list(cell = REBOUND_CELL, reach = REBOUND_REACH)),
+               relevance = list(spread = rel_final$spread, tilt = rel_final$tilt, pull = rel_final$pull,
+                                aheadSeconds = RELEVANCE_AHEAD / 25, obsoRef = OBSO_REF),
+               value = list(cell = GENERAL_CELL, nx = ceiling(2 * HALF_L / GENERAL_CELL), ny = ceiling(2 * HALF_W / GENERAL_CELL),
+                            v = I(round(vg$value, 4))))
 jsonlite::write_json(params, file.path(report, "params.json"), auto_unbox = TRUE, digits = NA, pretty = FALSE)
 jsonlite::write_json(lapply(pick_cases, reference_case), file.path(report, "reference.json"), auto_unbox = TRUE, digits = NA)
 message("Wrote ", file.path(report, "params.json"))

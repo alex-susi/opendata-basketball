@@ -15,6 +15,7 @@ RATE_PATTERN <- "_rate|_percentage|_pct|_ppp|points_per_|avg_"
 #' @param prefix Added to the count columns so the three files do not collide.
 season_file <- function(root, file, aliases, prefix = "") {
   d <- fread(file.path(root, "data", "aggregates", file))
+  # Keep a traded player's total row only; then sum the count columns (rates dropped) by canonical id.
   d[, has_total := any(team_name == "total"), by = player_id]
   d <- d[team_name == "total" | !has_total]
   if (anyDuplicated(d$player_id)) stop("More than one season row for a player in ", file)
@@ -33,6 +34,7 @@ season_counts <- function(root, aliases) {
   parts <- list(season_file(root, AGGREGATE_FILES[["shots"]], aliases),
                 season_file(root, AGGREGATE_FILES[["drives"]], aliases, "dr_"),
                 season_file(root, AGGREGATE_FILES[["picks"]], aliases, "pk_"))
+  # Join the three files; possessions and games are the largest of the three files' values.
   out <- Reduce(function(a, b) merge(a, b, by = "pid", all = TRUE), parts)
   for (col in setdiff(names(out), "pid")) set(out, which(is.na(out[[col]])), col, 0)
   out[, possessions := pmax(possessions_played, dr_possessions_played, pk_possessions_played)]

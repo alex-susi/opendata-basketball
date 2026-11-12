@@ -37,6 +37,7 @@ prior_fit <- function(raw, den, sigma2) {
   raw <- raw[ok]
   den <- den[ok]
   m <- stats::median(den)
+  # Iterate: weight players by den / (den + m), update the mean and the true-value spread, then set m = sigma2 / tau2.
   for (iter in 1:50) {
     w <- den / (den + m)
     mu <- sum(w * raw) / sum(w)
@@ -55,6 +56,7 @@ estimate_features <- function(spec, total, half0 = NULL, half1 = NULL) {
     f <- spec$feature[i]
     v <- total[feature == f]
     v[, raw := fifelse(den > 0, num / den, NA_real_)]
+    # sigma2: binomial for season features; from the odd and even halves for tracked features.
     if (is.null(half0)) {
       mu0 <- sum(v$num) / sum(v$den)
       sigma2 <- mu0 * (1 - mu0)
@@ -64,6 +66,7 @@ estimate_features <- function(spec, total, half0 = NULL, half1 = NULL) {
       v[, c("den0", "raw0", "den1", "raw1") := .(fcoalesce(a$den, 0), a$num / a$den, fcoalesce(b$den, 0), b$num / b$den)]
       sigma2 <- split_sigma2(v$den0, v$raw0, v$den1, v$raw1)
     }
+    # Prior, then each player's reliability, shrunk value and noise sd, all on the feature's display scale.
     p <- prior_fit(v$raw, v$den, sigma2)
     v[, reliability := fifelse(den > 0, den / (den + p$m), 0)]
     v[, shrunk := p$mu + reliability * (fcoalesce(raw, p$mu) - p$mu)]

@@ -14,7 +14,8 @@ from_hoop <- function(P, hoop) sweep(P, 2, hoop, `+`)
 
 #' Acceleration of N balls (velocities V, N x 3): gravity, plus drag k |v| v and Magnus km (omega x v) when given.
 accel <- function(V, g, drag = 0, omega = NULL, km = 0) {
-  A <- matrix(0, nrow(V), 3); A[, 3] <- -g
+  A <- matrix(0, nrow(V), 3)
+  A[, 3] <- -g
   if (drag > 0) A <- A - drag * sqrt(rowSums(V^2)) * V
   if (!is.null(omega) && km != 0)
     A <- A + km * cbind(omega[, 2] * V[, 3] - omega[, 3] * V[, 2], omega[, 3] * V[, 1] - omega[, 1] * V[, 3],
@@ -24,10 +25,14 @@ accel <- function(V, g, drag = 0, omega = NULL, km = 0) {
 
 #' One RK4 step of positions X and velocities V (N x 3 each) over dt.
 rk4_step <- function(X, V, dt, g, drag = 0, omega = NULL, km = 0) {
-  a1 <- accel(V, g, drag, omega, km); v1 <- V
-  a2 <- accel(V + a1 * dt / 2, g, drag, omega, km); v2 <- V + a1 * dt / 2
-  a3 <- accel(V + a2 * dt / 2, g, drag, omega, km); v3 <- V + a2 * dt / 2
-  a4 <- accel(V + a3 * dt, g, drag, omega, km); v4 <- V + a3 * dt
+  a1 <- accel(V, g, drag, omega, km)
+  v1 <- V
+  a2 <- accel(V + a1 * dt / 2, g, drag, omega, km)
+  v2 <- V + a1 * dt / 2
+  a3 <- accel(V + a2 * dt / 2, g, drag, omega, km)
+  v3 <- V + a2 * dt / 2
+  a4 <- accel(V + a3 * dt, g, drag, omega, km)
+  v4 <- V + a3 * dt
   list(X = X + dt / 6 * (v1 + 2 * v2 + 2 * v3 + v4), V = V + dt / 6 * (a1 + 2 * a2 + 2 * a3 + a4))
 }
 
@@ -40,14 +45,17 @@ collide <- function(X, V, C, ph) {
   hit <- character(nrow(X))
   # rim: nearest point of the ring circle
   rho <- pmax(sqrt(X[, 1]^2 + X[, 2]^2), 1e-9)
-  cx <- RIM_R * X[, 1] / rho; cy <- RIM_R * X[, 2] / rho
+  cx <- RIM_R * X[, 1] / rho
+  cy <- RIM_R * X[, 2] / rho
   D <- cbind(X[, 1] - cx, X[, 2] - cy, X[, 3])
-  dist <- sqrt(rowSums(D^2)); rr <- BALL_R + RIM_TUBE
+  dist <- sqrt(rowSums(D^2))
+  rr <- BALL_R + RIM_TUBE
   N <- D / pmax(dist, 1e-9)
   vn <- rowSums(V * N)
   i <- which(dist < rr & vn < 0)
   if (length(i)) {
-    Vn <- vn[i] * N[i, , drop = FALSE]; Vt <- V[i, , drop = FALSE] - Vn
+    Vn <- vn[i] * N[i, , drop = FALSE]
+    Vt <- V[i, , drop = FALSE] - Vn
     V[i, ] <- Vt * (1 - C$mu_rim[i]) - C$e_rim[i] * Vn
     X[i, ] <- cbind(cx[i], cy[i], 0) + N[i, , drop = FALSE] * rr
     hit[i] <- "RIM"
@@ -57,7 +65,8 @@ collide <- function(X, V, C, ph) {
   j <- which(X[, 1] + BALL_R > bx & X[, 1] < bx + 0.5 & abs(X[, 2]) <= BOARD_HALF_W & X[, 3] >= BOARD_Z0 - RIM_Z &
                X[, 3] <= BOARD_Z1 - RIM_Z & V[, 1] > 0)
   if (length(j)) {
-    V[j, 1] <- -C$e_board[j] * V[j, 1]; V[j, 2:3] <- V[j, 2:3] * (1 - C$mu_board[j])
+    V[j, 1] <- -C$e_board[j] * V[j, 1]
+    V[j, 2:3] <- V[j, 2:3] * (1 - C$mu_board[j])
     X[j, 1] <- bx - BALL_R
     hit[j] <- "BACKBOARD"
   }
@@ -65,7 +74,8 @@ collide <- function(X, V, C, ph) {
   fz <- ph$floor_z_ft - RIM_Z
   k <- which(X[, 3] < fz & V[, 3] < 0)
   if (length(k)) {
-    V[k, 3] <- -ph$floor_restitution * V[k, 3]; V[k, 1:2] <- V[k, 1:2] * (1 - ph$floor_friction)
+    V[k, 3] <- -ph$floor_restitution * V[k, 3]
+    V[k, 1:2] <- V[k, 1:2] * (1 - ph$floor_friction)
     X[k, 3] <- fz
     hit[k] <- "FLOOR"
   }
@@ -77,11 +87,13 @@ collide <- function(X, V, C, ph) {
 simulate_balls <- function(X, V, C, t, g, ph, dt = ph$substep_s) {
   cnt <- matrix(0L, nrow(X), 3, dimnames = list(NULL, c("RIM", "BACKBOARD", "FLOOR")))
   if (t <= 0) return(list(X = X, V = V, contacts = cnt))
-  n <- ceiling(t / dt - 1e-9); h <- t / n
+  n <- ceiling(t / dt - 1e-9)
+  h <- t / n
   for (s in seq_len(n)) {
     st <- rk4_step(X, V, h, g)
     co <- collide(st$X, st$V, C, ph)
-    X <- co$X; V <- co$V
+    X <- co$X
+    V <- co$V
     for (kind in colnames(cnt)) cnt[co$hit == kind, kind] <- cnt[co$hit == kind, kind] + 1L
   }
   list(X = X, V = V, contacts = cnt)
@@ -99,7 +111,8 @@ draw_contact_params <- function(n, ph) {
 two_point_state <- function(obs, t, g) {
   u <- obs[usable_from <= t][order(frame)]
   if (nrow(u) < 2L) return(NULL)
-  a <- u[.N - 1L]; b <- u[.N]
+  a <- u[.N - 1L]
+  b <- u[.N]
   dt <- (b$frame - a$frame) / FPS
   v <- c(b$x - a$x, b$y - a$y, b$z - a$z) / dt
   v[3] <- v[3] - g * dt / 2

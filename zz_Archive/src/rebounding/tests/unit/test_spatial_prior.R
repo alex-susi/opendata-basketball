@@ -47,7 +47,8 @@ test_that("every map is a probability distribution over the domain", {
 test_that("mirroring sends a shot from the other side to the mirrored map", {
   s <- synthetic_spatial()
   fit <- fit_spatial(grid, s$d, 2, 0, 1, cfg)
-  a <- predict_spatial(fit, "side_range_kde", "three", 1L); b <- predict_spatial(fit, "side_range_kde", "three", -1L)
+  a <- predict_spatial(fit, "side_range_kde", "three", 1L)
+  b <- predict_spatial(fit, "side_range_kde", "three", -1L)
   expect_equal(b, mirror_map(a))
   # threes from y >= 0 rebound at negative y in the synthetic data: the map puts most mass there
   expect_gt(sum(a[, grid$cy < 0]), 0.7)
@@ -55,11 +56,14 @@ test_that("mirroring sends a shot from the other side to the mirrored map", {
 })
 
 test_that("scores: negative log density, highest-density coverage and area", {
-  M <- matrix(0, grid$nx, grid$ny); M[1:4] <- c(0.4, 0.3, 0.2, 0.1)
+  M <- matrix(0, grid$nx, grid$ny)
+  M[1:4] <- c(0.4, 0.3, 0.2, 0.1)
   sc <- score_map(M, grid, 2L, c(0.5, 0.8))
-  expect_equal(unname(sc["nll"]), -log(0.3)); expect_equal(unname(sc["u"]), 0.7)
+  expect_equal(unname(sc["nll"]), -log(0.3))
+  expect_equal(unname(sc["u"]), 0.7)
   expect_equal(unname(sc[c("area_0.5", "area_0.8")]), c(2, 3))
-  w <- wilson(8, 10); expect_true(w["lo"] < 0.8 && w["hi"] > 0.8)
+  w <- wilson(8, 10)
+  expect_true(w["lo"] < 0.8 && w["hi"] > 0.8)
 })
 
 test_that("zone bins put each zone's smoothed share on its cells", {

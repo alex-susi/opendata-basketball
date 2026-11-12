@@ -22,8 +22,9 @@ PERMUTATION_LEVEL <- 0.95
 scaled_matrices <- function(values, dictionary, features, pids) {
   v <- values[feature %in% features & pid %in% pids]
   d <- dictionary[match(v$feature, feature)]
+  # Centre on the league mean and divide by the between-player sd; the noise becomes a variance on the same scale.
   v[, c("z_shrunk", "z_raw", "z_noise") := .((shrunk - d$league_mean) / d$between_sd, (raw - d$league_mean) / d$between_sd,
-                                              (noise_sd / d$between_sd)^2)]
+                                             (noise_sd / d$between_sd)^2)]
   wide <- function(col) {
     m <- dcast(v, pid ~ feature, value.var = col)
     out <- as.matrix(m[match(pids, pid), ..features])
@@ -66,8 +67,10 @@ fit_clusters <- function(Z, G, q, models = MIXTURE_MODELS, pca = stats::prcomp(Z
 
 #' Probability of each cluster for every row of `raw`, given each value's own noise variance.
 assign_clusters <- function(fit, raw, noise) {
+  # Each cluster's mean and covariance carried back to feature space.
   mean_k <- lapply(seq_len(fit$G), function(k) fit$centre + drop(fit$loadings %*% fit$means[k, ]))
   cov_k <- lapply(seq_len(fit$G), function(k) fit$loadings %*% fit$sigma[, , k] %*% t(fit$loadings) + diag(fit$residual))
+  # Per player: log density of his observed features under each cluster, with his own noise added to the covariance.
   logp <- t(vapply(seq_len(nrow(raw)), function(i) {
     obs <- which(!is.na(raw[i, ]))
     if (!length(obs)) return(log(fit$weights))
@@ -77,6 +80,7 @@ assign_clusters <- function(fit, raw, noise) {
       log(fit$weights[k]) - sum(log(diag(R))) - 0.5 * sum(resid^2)
     }, 0)
   }, numeric(fit$G)))
+  # Normalise to probabilities.
   p <- exp(logp - apply(logp, 1, max))
   p <- p / rowSums(p)
   dimnames(p) <- list(rownames(raw), paste0("p_", seq_len(fit$G)))

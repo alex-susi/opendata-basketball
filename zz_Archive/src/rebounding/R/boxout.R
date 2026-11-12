@@ -8,7 +8,8 @@
 #' Features of one episode with player `p`'s blocking removed (his row of O set to 0): his blocking_opp becomes 0 and
 #' each opponent's blocked_by_opp loses his part.
 features_without_blocker <- function(O, p) {
-  O2 <- O; O2[as.character(p), ] <- 0
+  O2 <- O
+  O2[as.character(p), ] <- 0
   obstruction_features(O2)
 }
 
@@ -17,7 +18,8 @@ features_without_blocker <- function(O, p) {
 #' @param sf Step 04 player features merged with obstruction features (episode_id, pid, ...).
 counterfactual_rows <- function(sf, O_list, ids) {
   rbindlist(lapply(ids, function(id) {
-    O <- O_list[[id]]; base <- sf[episode_id == id]
+    O <- O_list[[id]]
+    base <- sf[episode_id == id]
     rbindlist(lapply(as.integer(rownames(O)), function(p) {
       f <- features_without_blocker(O, p)
       d <- merge(base[, !OBSTRUCTION_FEATURES, with = FALSE], f, by = "pid")
@@ -52,12 +54,16 @@ contribution_split <- function(pred, pred_cf, choice) {
 #' @param O_list pair matrices; `st` positions and velocities at t (episode_id, pid, off, x, y, vx, vy); `rel`
 #'   positions at release (episode_id, pid, x, y).
 candidate_pairs <- function(O_list, st, rel, pairings) {
+  # Per episode: every attacker-defender pair with its obstruction and the positions at release.
   rbindlist(lapply(names(O_list), function(id) {
-    O <- O_list[[id]]; s <- st[episode_id == id]; r0 <- rel[episode_id == id]
+    O <- O_list[[id]]
+    s <- st[episode_id == id]
+    r0 <- rel[episode_id == id]
     if (nrow(s) != 10L) return(NULL)
     d <- CJ(b = as.integer(rownames(O)), r = as.integer(rownames(O)))
     d <- d[s$off[match(b, s$pid)] != s$off[match(r, s$pid)]]
-    ib <- match(d$b, s$pid); ir <- match(d$r, s$pid)
+    ib <- match(d$b, s$pid)
+    ir <- match(d$r, s$pid)
     d[, `:=`(episode_id = id, o_br = O[cbind(as.character(b), as.character(r))], o_rb = O[cbind(as.character(r), as.character(b))],
              dist = sqrt((s$x[ib] - s$x[ir])^2 + (s$y[ib] - s$y[ir])^2),
              closing = closing_speed(s$x[ib], s$y[ib], s$vx[ib], s$vy[ib], s$x[ir], s$y[ir], s$vx[ir], s$vy[ir]),
@@ -71,7 +77,9 @@ candidate_pairs <- function(O_list, st, rel, pairings) {
 
 #' Velocity component away from the hoop of player rows `i` of a state table.
 radial <- function(s, i) {
-  dx <- s$x[i] - RIM_X; dy <- s$y[i]; r <- pmax(sqrt(dx^2 + dy^2), 1e-6)
+  dx <- s$x[i] - RIM_X
+  dy <- s$y[i]
+  r <- pmax(sqrt(dx^2 + dy^2), 1e-6)
   (dx * s$vx[i] + dy * s$vy[i]) / r
 }
 
@@ -79,14 +87,14 @@ radial <- function(s, i) {
 #' stratum order with a fixed seed. Strata (config step11$labels): strong, ambiguous, close_not_blocking, post,
 #' converging. Each item's two players are shown as A and B in a random order, so the page does not say who blocks.
 review_sample <- function(cp, lb, pc) {
-  strata <- list(
-    strong = cp[o_br >= 0.5],
-    ambiguous = cp[blocker_pairing == "ambiguous" & r == blocker_target],
-    close_not_blocking = cp[dist < 4 & o_br < 0.15 & o_rb < 0.15],
-    post = cp[runner_hoop_release <= 8 & dist < 6],
-    converging = cp[to_hoop_b >= 4 & to_hoop_r >= 4 & dist < 6 & o_br < pc$pair_min & o_rb < pc$pair_min])
+  strata <- list(strong = cp[o_br >= 0.5],
+                 ambiguous = cp[blocker_pairing == "ambiguous" & r == blocker_target],
+                 close_not_blocking = cp[dist < 4 & o_br < 0.15 & o_rb < 0.15],
+                 post = cp[runner_hoop_release <= 8 & dist < 6],
+                 converging = cp[to_hoop_b >= 4 & to_hoop_r >= 4 & dist < 6 & o_br < pc$pair_min & o_rb < pc$pair_min])
   set.seed(lb$seed)
-  used <- character(); out <- list()
+  used <- character()
+  out <- list()
   for (nm in names(strata)) {
     pool <- strata[[nm]][!episode_id %in% used]
     pool <- pool[sample(.N)][!duplicated(episode_id)]

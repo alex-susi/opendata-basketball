@@ -24,7 +24,8 @@ test_that("the candidate is compared with Step 04 on the same episodes, and the 
   expect_true(checks[grepl("reproduces its held-out", check)]$pass)
   expect_true(checks[grepl("same episodes", check)]$pass)
   cmp <- fread(file.path(s11, "comparison.csv"))
-  expect_setequal(cmp$time_point, unlist(th$times)); expect_setequal(cmp$metric, c("ll", "team_ll"))
+  expect_setequal(cmp$time_point, unlist(th$times))
+  expect_setequal(cmp$metric, c("ll", "team_ll"))
   m <- cfg$step03$decision$non_inferiority_margin_nats
   expect_equal(cmp$non_inferior, cmp$hi < m)
   expect_equal(cmp$superior, cmp$hi < 0 & cmp$drop_one_max < 0)

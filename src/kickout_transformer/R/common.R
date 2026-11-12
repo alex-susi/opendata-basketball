@@ -3,6 +3,7 @@
 
 suppressPackageStartupMessages(library(data.table))
 
+# Repository root, from the running script's path (or the working directory when sourced interactively).
 kt_root <- function() {
   args <- commandArgs(trailingOnly = FALSE)
   script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -18,6 +19,7 @@ CLASSES <- if (DROP_OTHER) c("shot", "drive", "pass") else c("shot", "drive", "p
 PROB_COLS <- paste0("p_", CLASSES)
 CLASS_TAG <- paste0(length(CLASSES), " outcomes: ", paste(CLASSES, collapse = " / "))   # for figure titles
 
+# Cache and output folders. The three-class variant writes to *_3class folders; the catch table stays shared.
 kt_paths <- function(root) {
   suffix <- if (DROP_OTHER) "_3class" else ""
   p <- list(base_cache = file.path(root, "outputs", "cache", "kickout_transformer"),

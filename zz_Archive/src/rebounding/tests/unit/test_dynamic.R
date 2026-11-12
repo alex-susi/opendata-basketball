@@ -9,7 +9,7 @@ synthetic_dyn <- function(n = 300L, K = 6L, b_acc = 1.5, seed = 4L) {
   set.seed(seed)
   ids <- sprintf("e%04d", seq_len(n))
   pl <- rbindlist(lapply(seq_len(n), function(e) data.table(episode_id = ids[e], pid = 100L * e + 1:10, off = rep(c(TRUE, FALSE), each = 5),
-    x = RIM_X - runif(10, 1, 22), y = runif(10, -15, 15), vx = rnorm(10, 0, 4), vy = rnorm(10, 0, 4), source_frame = 1L)))
+                                                            x = RIM_X - runif(10, 1, 22), y = runif(10, -15, 15), vx = rnorm(10, 0, 4), vy = rnorm(10, 0, 4), source_frame = 1L)))
   shot <- pl[off == TRUE, .SD[1], by = episode_id][, .(episode_id, shooter_id = pid, sx = x, sy = y)]
   shot[, `:=`(shot_dist = sqrt((sx - RIM_X)^2 + sy^2), rim = FALSE, three = FALSE)]
   sf <- static_features(pl[, .(episode_id, pid, off, x, y, source_frame)], shot)
@@ -17,9 +17,12 @@ synthetic_dyn <- function(n = 300L, K = 6L, b_acc = 1.5, seed = 4L) {
     parts <- data.table(k = seq_len(K), bx = RIM_X - runif(K, 0, 10), by = runif(K, -8, 8), z = runif(K, 5, 10))
     cbind(episode_id = e, access_features(pl[episode_id == e], parts, 1.0, rp))
   }))
-  sc <- fit_scaler(sf, shot, ids); asc <- fit_access_scaler(acc, ids)
+  sc <- fit_scaler(sf, shot, ids)
+  asc <- fit_access_scaler(acc, ids)
   des <- dyn_design(sf, acc, shot, ids, sc, asc)
-  b <- setNames(rep(0, ncol(des$M)), colnames(des$M)); b["access_margin"] <- b_acc; b[c("team_off", "team_def")] <- -2.5
+  b <- setNames(rep(0, ncol(des$M)), colnames(des$M))
+  b["access_margin"] <- b_acc
+  b[c("team_off", "team_def")] <- -2.5
   p <- predict_dyn(list(beta = b), des)
   lab <- p[, .(outcome_id = sample(outcome_id, 1, prob = probability)), by = episode_id]
   off_ids <- as.character(pl[off == TRUE]$pid)
@@ -40,18 +43,30 @@ test_that("the mixture gradient is exact and probabilities are a distribution th
   s <- synthetic_dyn(80L, 4L)
   des <- dyn_design(s$sf, s$acc, s$shot, s$ids, s$sc, s$asc)
   y <- dyn_labels(des, s$labels)
-  b0 <- rnorm(ncol(des$M), 0, 0.3); lam <- 0.7
+  b0 <- rnorm(ncol(des$M), 0, 0.3)
+  lam <- 0.7
   obj <- function(b) {
     p <- predict_dyn(list(beta = setNames(b, colnames(des$M))), des)
     py <- merge(p, s$labels[, .(episode_id, outcome_id)], by = c("episode_id", "outcome_id"))$probability
     -sum(log(py)) + lam / 2 * sum((!colnames(des$M) %in% UNPENALISED) * b^2)
   }
-  num <- vapply(seq_along(b0), function(i) { e <- replace(numeric(length(b0)), i, 1e-5); (obj(b0 + e) - obj(b0 - e)) / 2e-5 }, 0)
-  env_g <- local({ M <- des$M; nb <- nrow(des$blocks); ep <- match(des$blocks$episode_id, unique(des$blocks$episode_id))
-    U <- matrix(M %*% b0, 12L); P <- apply(U, 2, function(u) exp(u - max(u)) / sum(exp(u - max(u))))
-    Y <- matrix(0, 12L, nb); Y[cbind(y, seq_len(nb))] <- 1; py <- P[cbind(y, seq_len(nb))]; num_ <- des$w * py
+  num <- vapply(seq_along(b0), function(i) {
+    e <- replace(numeric(length(b0)), i, 1e-5)
+    (obj(b0 + e) - obj(b0 - e)) / 2e-5
+  }, 0)
+  env_g <- local({
+    M <- des$M
+    nb <- nrow(des$blocks)
+    ep <- match(des$blocks$episode_id, unique(des$blocks$episode_id))
+    U <- matrix(M %*% b0, 12L)
+    P <- apply(U, 2, function(u) exp(u - max(u)) / sum(exp(u - max(u))))
+    Y <- matrix(0, 12L, nb)
+    Y[cbind(y, seq_len(nb))] <- 1
+    py <- P[cbind(y, seq_len(nb))]
+    num_ <- des$w * py
     r <- num_ / as.vector(rowsum(num_, ep))[ep]
-    -as.vector(crossprod(M, as.vector(sweep(Y - P, 2, r, `*`)))) + lam * (!colnames(M) %in% UNPENALISED) * b0 })
+    -as.vector(crossprod(M, as.vector(sweep(Y - P, 2, r, `*`)))) + lam * (!colnames(M) %in% UNPENALISED) * b0
+  })
   expect_equal(env_g, num, tolerance = 1e-5)
   fit <- fit_dyn(des, y, lam)
   p <- predict_dyn(fit, des)
@@ -77,11 +92,15 @@ test_that("access: margins, the best player per particle, and nobody best when t
   parts <- data.table(k = 1:2, bx = c(40, 40), by = 0, z = c(7, 13))
   a <- access_features(st, parts, 1.0, rp)
   expect_equal(a[k == 1 & pid == 1]$access_margin, 1.0 - rp$reaction_s)
-  expect_equal(a[k == 1, sum(best_access)], 1); expect_equal(a[k == 1 & best_access == 1]$pid, 1L)
-  expect_equal(a[k == 2, sum(best_access)], 0); expect_true(all(a[k == 2]$access_margin == -1.5))
+  expect_equal(a[k == 1, sum(best_access)], 1)
+  expect_equal(a[k == 1 & best_access == 1]$pid, 1L)
+  expect_equal(a[k == 2, sum(best_access)], 0)
+  expect_true(all(a[k == 2]$access_margin == -1.5))
   grid <- spatial_grid(list(x_ft = c(0, 46), y_ft = c(-25, 25), cell_ft = 1))
-  M <- matrix(0, grid$nx, grid$ny); M[cell_index(grid, 40.3, 2.6)] <- 1
-  set.seed(1); pm <- particles_from_map(M, grid, 20L)
+  M <- matrix(0, grid$nx, grid$ny)
+  M[cell_index(grid, 40.3, 2.6)] <- 1
+  set.seed(1)
+  pm <- particles_from_map(M, grid, 20L)
   expect_true(all(pm$bx >= 40 & pm$bx <= 41 & pm$by >= 2 & pm$by <= 3))
 })
 
@@ -91,8 +110,10 @@ test_that("predict_rebound returns a coherent distribution and reads inputs only
   fit <- fit_dyn(des, dyn_labels(des, s$labels), 3)
   models <- list(release = list(fit = fit, scaler = s$sc, access_scaler = s$asc, version = "test"))
   calls <- 0L
-  inputs_at <- function(id, t) { calls <<- calls + 1L
-    list(kind = "release", sf = s$sf[episode_id == id], acc = s$acc[episode_id == id], shot = s$shot, flags = character()) }
+  inputs_at <- function(id, t) {
+    calls <<- calls + 1L
+    list(kind = "release", sf = s$sf[episode_id == id], acc = s$acc[episode_id == id], shot = s$shot, flags = character())
+  }
   r <- predict_rebound(s$ids[3], 500L, inputs_at, models)
   expect_equal(calls, 1L)
   expect_equal(sum(r$players$p_player) + sum(r$non_player$probability), 1, tolerance = 1e-12)

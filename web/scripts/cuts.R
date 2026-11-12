@@ -18,6 +18,7 @@
 #           having moved POP_AWAY ft further from the hoop or finishing beyond the arc after running at least
 #           POP_RUN ft. The run is drawn like a cut; the coverage is the one on the screener (scrDefType).
 
+# Thresholds in ft, ft/s and frames (see the definitions above); court geometry in feet.
 CUT_RULES <- list(min_speed = 9, min_toward = 7, min_frames = 12L, gap = 3L, min_gain = 8, max_start = 32, max_end = 14,
                   lead = 12L, after = 50L, settle = 6, max_speed = 35,
                   pop_win = 62L, pop_set = 12, roll_near = 10, roll_gain = 6, pop_end = 16, pop_away = 3, pop_run = 4)
@@ -33,11 +34,13 @@ game_cuts <- function(game_id, ev, screens) {
   trk <- a$get_tracking(a$app_data, game_id)
   gid <- game_id
   roster <- a$app_data$roster[game_id == gid]
+  # The game's possessions (attack direction) and touches.
   ps <- data.table(f0 = ann_int(ev$possessions, "startFrame"), f1 = ann_int(ev$possessions, "endFrame"),
                    off = ann_int(ev$possessions, "offTeamId"), left = ann_lgl(ev$possessions, "leftHoop"))[order(f0)]
   tc <- data.table(pid = ann_int(ev$touches, "playerId"), f0 = ann_int(ev$touches, "startFrame"),
                    f1 = ann_int(ev$touches, "endFrame"))[!is.na(f0) & !is.na(f1)]
 
+  # Attackers' positions inside a possession, with the clock state.
   d <- merge(trk$players[, .(frame, pid, x, y)], trk$frames[, .(frame, stopped)], by = "frame")
   k <- findInterval(d$frame, ps$f0)
   inside <- k > 0L & d$frame <= ps$f1[pmax(k, 1L)]
@@ -51,11 +54,13 @@ game_cuts <- function(game_id, ev, screens) {
   d[, run := cumsum(c(TRUE, diff(frame) != 1L)), by = pid]
   # Smoothed positions: the mean of the frames within 2 either side, in the same run.
   sm <- function(v) {
-    s <- v; n <- rep(1, length(v))
+    s <- v
+    n <- rep(1, length(v))
     for (h in c(-2L, -1L, 1L, 2L)) {
       w <- shift(v, h)
       ok <- !is.na(w)
-      s[ok] <- s[ok] + w[ok]; n[ok] <- n[ok] + 1
+      s[ok] <- s[ok] + w[ok]
+      n[ok] <- n[ok] + 1
     }
     s / n
   }
@@ -70,6 +75,7 @@ game_cuts <- function(game_id, ev, screens) {
   # On the ball: inside one of his touches.
   d[, hold := FALSE]
   d[tc, on = .(pid, frame >= f0, frame <= f1), hold := TRUE]
+  # Speed toward the hoop. A frame qualifies for a basket cut when live, in the frontcourt, off the ball and fast enough.
   d[, hoop := sqrt((CUT_HOOP_X - x)^2 + y^2)]
   d[, toward := fifelse(hoop > 1e-6, (vx * (CUT_HOOP_X - x) - vy * y) / hoop, 0)]
   d[, ok := !stopped & !is.na(speed) & x > 0 & !hold & speed >= R$min_speed & toward >= R$min_toward]
@@ -84,6 +90,7 @@ game_cuts <- function(game_id, ev, screens) {
   # Cuts through off-ball screens.
   obs <- if (is.null(screens)) NULL else screens[kind == "off_ball_screen" & !is.na(use)]
   out <- copy(basket)
+  # Follow each screen's cutter from LEAD frames before the screen until he slows, breaks off or gets the ball.
   for (i in seq_len(if (is.null(obs)) 0L else nrow(obs))) {
     s <- obs[i]
     p <- d[pid == s$use & frame >= s$f - R$lead & frame <= s$f + R$after]
@@ -97,9 +104,16 @@ game_cuts <- function(game_id, ev, screens) {
       if (p$frame[t] - s$f > 6 && !is.na(p$speed[t]) && p$speed[t] < R$settle) break
     }
     # The run starts at the first frame of the unbroken stretch leading into the screen.
-    if (at > 1L) for (t in (at - 1L):1L) { if (p$frame[t + 1L] - p$frame[t] != 1L) { a0 <- t + 1L; break } }
+    if (at > 1L) for (t in (at - 1L):1L) {
+      if (p$frame[t + 1L] - p$frame[t] != 1L) {
+        a0 <- t + 1L
+        break
+      }
+    }
     if (b <= a0) next
-    g0 <- p$frame[a0]; g1 <- p$frame[b]
+    g0 <- p$frame[a0]
+    g1 <- p$frame[b]
+    # A basket cut overlapping this run becomes the screen cut; otherwise the run is added as "in" or "out".
     hit <- which(out$pid == s$use & out$f <= g1 + 6 & out$f1 >= g0 - 6)
     if (length(hit)) {
       j <- hit[1]
@@ -122,7 +136,9 @@ game_cuts <- function(game_id, ev, screens) {
     got <- which(p$hold)
     if (length(got)) p <- p[seq_len(got[1])]
     if (nrow(p) < 10) next
-    h0 <- p$hoop[1]; h1 <- p$hoop[nrow(p)]
+    # Pop rules: set far enough out, never rolls, and ends far enough out after moving away or finishing beyond the arc.
+    h0 <- p$hoop[1]
+    h1 <- p$hoop[nrow(p)]
     if (h0 < R$pop_set || min(p$hoop) <= R$roll_near || h0 - min(p$hoop) >= R$roll_gain || h1 < R$pop_end) next
     dx <- CUT_HOOP_X - p$x[nrow(p)]
     arc <- if (dx <= sqrt(CUT_THREE_R^2 - CUT_THREE_Y^2)) abs(p$y[nrow(p)]) >= CUT_THREE_Y else h1 >= CUT_THREE_R

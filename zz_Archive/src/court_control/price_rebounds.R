@@ -23,6 +23,7 @@ cache <- file.path(app$root, "outputs", "cache", "court_control")
 epv_tabs <- readRDS(file.path(app$root, "outputs", "cache", "epv", "tables.rds"))
 grid <- court_grid(REBOUND_CELL, half = TRUE, reach = REBOUND_REACH)
 
+# One game at a time, skipping games already priced: its fold parameters, then the rebound chance at each EPV row.
 for (k in seq_along(games)) {
   g <- games[k]
   out_path <- file.path(cache, paste0("poreb_", g, ".rds"))

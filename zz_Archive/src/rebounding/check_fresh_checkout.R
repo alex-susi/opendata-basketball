@@ -70,14 +70,13 @@ rec <- if (file.exists(rec_path)) jsonlite::read_json(rec_path) else NULL
 crit <- rec$criteria
 # A copy is not a git checkout and has no fresh-checkout record of its own, so those two criteria are not judged there.
 judged <- crit[setdiff(names(crit), c("under_version_control", "fresh_checkout_reproduces", "isolated_install_runs_tests"))]
-summary <- list(
-  date = format(Sys.time(), "%Y-%m-%d %H:%M"), copy = normalizePath(dir, winslash = "/"), files_copied = length(files),
-  library = normalizePath(lib, winslash = "/"), repository_head = git_out(root, "rev-parse", "HEAD")[1],
-  uncommitted_files_included = length(git_out(root, "ls-files", "--others", "--exclude-standard")),
-  fetch_status = fetch$status, run_status = run$status,
-  fresh_criteria = judged, fresh_status = rec$status %||% NA, fresh_unmet = rec$unmet,
-  reproduced = fetch$status == 0L && !is.null(judged) && all(vapply(judged, isTRUE, NA)),
-  tail = tail(run$output, 6))
+summary <- list(date = format(Sys.time(), "%Y-%m-%d %H:%M"), copy = normalizePath(dir, winslash = "/"), files_copied = length(files),
+                library = normalizePath(lib, winslash = "/"), repository_head = git_out(root, "rev-parse", "HEAD")[1],
+                uncommitted_files_included = length(git_out(root, "ls-files", "--others", "--exclude-standard")),
+                fetch_status = fetch$status, run_status = run$status,
+                fresh_criteria = judged, fresh_status = rec$status %||% NA, fresh_unmet = rec$unmet,
+                reproduced = fetch$status == 0L && !is.null(judged) && all(vapply(judged, isTRUE, NA)),
+                tail = tail(run$output, 6))
 write_gate(file.path(root, "outputs", "rebounding", "gate_results", "00_fresh_checkout.json"), summary)
 cat(tail(fetch$output, 12), sep = "\n")
 cat(tail(run$output, 14), sep = "\n")

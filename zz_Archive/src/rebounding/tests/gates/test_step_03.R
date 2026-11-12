@@ -51,7 +51,8 @@ test_that("re-running with the same settings reproduces the predictions; no unlo
   a <- r$pred[, .(model, episode_id, outcome_id, p = probability)]
   b <- pred[time_point == tp, .(model, episode_id, outcome_id, q = probability)]
   j <- merge(a, b, by = c("model", "episode_id", "outcome_id"))
-  expect_equal(nrow(j), nrow(a)); expect_equal(nrow(j), nrow(b))
+  expect_equal(nrow(j), nrow(a))
+  expect_equal(nrow(j), nrow(b))
   expect_lt(max(abs(j$p - j$q)), 1e-12)
   sel <- fread(file.path(step03, "baseline_selection.csv"))
   expect_equal(sel[selected == TRUE, .N, by = .(time_point, outer_fold)][, unique(N)], 1L)

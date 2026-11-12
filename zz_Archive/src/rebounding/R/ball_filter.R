@@ -11,7 +11,11 @@
 
 H_OBS <- cbind(diag(3), matrix(0, 3, 3))
 
-transition <- function(dt) { Fm <- diag(6); Fm[cbind(1:3, 4:6)] <- dt; Fm }
+transition <- function(dt) {
+  Fm <- diag(6)
+  Fm[cbind(1:3, 4:6)] <- dt
+  Fm
+}
 gravity_offset <- function(dt, g) c(0, 0, -0.5 * g * dt^2, 0, 0, -g * dt)
 process_cov <- function(dt, q) {
   b <- q * matrix(c(dt^3 / 3, dt^2 / 2, dt^2 / 2, dt), 2)
@@ -68,7 +72,11 @@ forecast_state <- function(state, h, par) {
 #' @return list(states = list per origin (NULL before the first observation), innov = data.table of updates).
 run_filter <- function(obs, origins, par) {
   obs <- obs[order(frame)]
-  st <- NULL; k <- 1L; out <- vector("list", length(origins)); inn <- list()
+  st <- NULL
+  k <- 1L
+  out <- vector("list", length(origins))
+  inn <- list()
+  # At each origin, update the filter with every observation usable by then, recording each update's innovation.
   for (j in seq_along(origins)) {
     t <- origins[j]
     while (k <= nrow(obs) && obs$usable_from[k] <= t) {
@@ -88,8 +96,10 @@ run_filter <- function(obs, origins, par) {
 baseline_forecasts <- function(obs, t, h, g) {
   u <- obs[usable_from <= t][order(frame)]
   if (nrow(u) < 2L) return(NULL)
-  a <- u[.N - 1L]; b <- u[.N]
-  dt <- (b$frame - a$frame) / FPS; tau <- (t + h - b$frame) / FPS
+  a <- u[.N - 1L]
+  b <- u[.N]
+  dt <- (b$frame - a$frame) / FPS
+  tau <- (t + h - b$frame) / FPS
   v <- c(b$x - a$x, b$y - a$y, b$z - a$z) / dt
   p <- c(b$x, b$y, b$z)
   vz_end <- v[3] - g * dt / 2                                  # a difference quotient is the velocity at the midpoint

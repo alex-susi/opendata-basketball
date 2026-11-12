@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Step 1: one row per perimeter catch, with what the receiver did next and one "token" per player.
 #   Rscript src/kickout_transformer/01_build_catches.R
 #
@@ -19,6 +20,7 @@
 # distance to the receiver. The transformer does not care about the order; it only makes the tables readable.
 #
 # Writes outputs/cache/kickout_transformer/catches.rds and outputs/kickout_transformer/sample_*.csv.
+## ═════════════════════════════════════════════════════════════════════════════
 
 source(file.path(dirname(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))), "R", "common.R"))
 root <- kt_root()
@@ -33,17 +35,29 @@ HIST_LAGS <- c(6L, 12L, 18L, 25L)      # frames: 0.24, 0.48, 0.72, 1.00 s before
 TOL <- 2L                              # a tracked position may come from a frame at most 2 frames (0.08 s) away
 MAX_REACT <- 25L                       # receiver's touch must start within 1 s of the reception
 
+# The play viewer's app data (plays, rosters), the id aliases and the offensive archetypes.
 app <- load_app_data(root)
 aliases <- fread(file.path(root, "data", "player_id_aliases.csv"))
 arch <- fread(file.path(root, "outputs", "archetypes", "offense_membership.csv"), select = c("pid", "archetype"))
 
 as_dt <- function(x) if (length(x)) as.data.table(x) else data.table()
 
-# ---- labels --------------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - LABELS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# One game's catches: completed passes received beyond the arc, joined to the receiver's next touch and labelled.
 label_game <- function(g) {
   ev <- fromJSON(match_file(root, g, "_dynamic_events.json"), simplifyVector = TRUE)
-  ps <- as_dt(ev$passes); tc <- as_dt(ev$touches); dr <- as_dt(ev$drives); sh <- as_dt(ev$shots)
+  ps <- as_dt(ev$passes)
+  tc <- as_dt(ev$touches)
+  dr <- as_dt(ev$drives)
+  sh <- as_dt(ev$shots)
+  # Completed, non-inbound passes into a three-point region; the receiver's first touch starting at or after the catch.
   ps <- ps[complete %in% TRUE & !(inbounds %in% TRUE) & grepl("three", receiverRegion)]
   tc[, outs := vapply(outcomes, paste, "", collapse = ",")]
   rec <- tc[, .(t_id = id, t_player = playerId, t_start = startFrame, t_outs = outs)]
@@ -53,6 +67,7 @@ label_game <- function(g) {
              passer_region = i.passerRegion, receiver_region = i.receiverRegion, pass_touch = i.touchId,
              shot_clock = i.shotClock, game_clock = i.endGameClock, t_id = x.t_id, t_start = x.t_start,
              t_outs = x.t_outs)]
+  # Label that touch as a drive, shot, pass or other. No touch within MAX_REACT frames leaves the catch unlabelled.
   m[, react := t_start - catch]
   m[, kickout := pass_touch %in% dr[endType == "kickout"]$touchId]
   m[, from_paint := passer_region %in% c("key", "ra")]
@@ -62,15 +77,22 @@ label_game <- function(g) {
                      grepl("PASS|AST", t_outs), "pass",
                      default = "other")]
   m[, other_kind := fifelse(label == "other", fcase(grepl("TO", t_outs), "turnover", grepl("FOU", t_outs), "foul",
-                                                     grepl("TMO", t_outs), "timeout", default = "held / none"), NA_character_)]
+                                                    grepl("TMO", t_outs), "timeout", default = "held / none"), NA_character_)]
   m
 }
 
+# All games; catches with no labelled touch are dropped and counted.
 catches <- rbindlist(lapply(app$matches$game_id, label_game))
 drops <- list(no_touch = catches[is.na(label), .N])
 catches <- catches[!is.na(label)]
 
-# ---- tokens --------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - TOKENS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Nearest tracked position of each (pid, frame) within TOL frames; NA where there is none.
 lookup <- function(pl, pid, frame) {
@@ -81,10 +103,12 @@ lookup <- function(pl, pid, frame) {
   hit
 }
 
+# Token features at the catch, plus each player's position change over the history lags.
 FREEZE_FEATS <- c("hoop_dx", "y", "hoop_dist", "vx", "vy", "speed", "rel_x", "rel_y", "rel_dist",
                   "is_offense", "is_receiver", "is_passer", "detected")
 HIST_FEATS <- c(FREEZE_FEATS, paste0(rep(c("dx_", "dy_"), length(HIST_LAGS)), rep(HIST_LAGS, each = 2)))
 
+# One game's tokens: the ten players at each catch in attack-normalised coordinates, or the reason it was dropped.
 tokens_game <- function(g) {
   cg <- catches[game_id == g]
   if (!nrow(cg)) return(NULL)
@@ -98,14 +122,19 @@ tokens_game <- function(g) {
     r <- cg[i]
     play <- plays[id == r$poss_id]
     if (nrow(play) != 1L) play <- plays[start_frame <= r$catch & end_frame >= r$catch][1]
-    if (!nrow(play) || is.na(play$left_hoop)) { out[[i]] <- list(drop = "no_possession"); next }
+    if (!nrow(play) || is.na(play$left_hoop)) {
+      out[[i]] <- list(drop = "no_possession")
+      next
+    }
     # who is on court: everyone tracked within TOL frames of the catch
     near <- pl[frame >= r$catch - TOL & frame <= r$catch + TOL, .(home = home[1]), by = pid]
     off_home <- play$off_team == play$home_team
     near[, offense := home == off_home]
     if (near[, sum(offense)] != 5L || near[, sum(!offense)] != 5L || !(r$receiver %in% near$pid)) {
-      out[[i]] <- list(drop = "not_5v5_at_catch"); next
+      out[[i]] <- list(drop = "not_5v5_at_catch")
+      next
     }
+    # Positions now and at each history lag, flipped so that the offense attacks toward +x.
     flip <- if (play$left_hoop) -1 else 1
     lag_frames <- c(0L, HIST_LAGS)
     pos <- lapply(lag_frames, function(l) {
@@ -113,9 +142,17 @@ tokens_game <- function(g) {
       h[, c("X", "Y") := .(flip * x, -flip * y)]
       h
     })
-    if (anyNA(pos[[1]]$X)) { out[[i]] <- list(drop = "missing_position_at_catch"); next }
-    if (any(vapply(pos[-1], function(h) anyNA(h$X), NA))) { out[[i]] <- list(drop = "missing_history"); next }
-    now <- pos[[1]]; v0 <- pos[[2]]                         # pos[[2]] is 0.24 s earlier
+    if (anyNA(pos[[1]]$X)) {
+      out[[i]] <- list(drop = "missing_position_at_catch")
+      next
+    }
+    if (any(vapply(pos[-1], function(h) anyNA(h$X), NA))) {
+      out[[i]] <- list(drop = "missing_history")
+      next
+    }
+    # Token features relative to the hoop and to the receiver.
+    now <- pos[[1]]
+    v0 <- pos[[2]]                         # pos[[2]] is 0.24 s earlier
     tok <- data.table(pid = near$pid, is_offense = as.numeric(near$offense),
                       X = now$X, Y = now$Y, detected = as.numeric(now$det),
                       vx = (now$X - v0$X) / (VEL_LAG / 25), vy = (now$Y - v0$Y) / (VEL_LAG / 25))
@@ -123,10 +160,12 @@ tokens_game <- function(g) {
       set(tok, j = paste0("dx_", HIST_LAGS[k]), value = now$X - pos[[k + 1]]$X)
       set(tok, j = paste0("dy_", HIST_LAGS[k]), value = now$Y - pos[[k + 1]]$Y)
     }
-    rx <- tok[pid == r$receiver, X]; ry <- tok[pid == r$receiver, Y]
+    rx <- tok[pid == r$receiver, X]
+    ry <- tok[pid == r$receiver, Y]
     tok[, `:=`(hoop_dx = HOOP_X - X, y = Y, hoop_dist = sqrt((HOOP_X - X)^2 + Y^2), speed = sqrt(vx^2 + vy^2),
                rel_x = X - rx, rel_y = Y - ry, rel_dist = sqrt((X - rx)^2 + (Y - ry)^2),
                is_receiver = as.numeric(pid == r$receiver), is_passer = as.numeric(pid == r$passer))]
+    # Order: the receiver, then the other attackers, then the defenders, each group by distance to the receiver.
     tok[, grp := fifelse(is_receiver == 1, 0L, fifelse(is_offense == 1, 1L, 2L))]
     setorder(tok, grp, rel_dist)
     out[[i]] <- list(drop = NA_character_, tok = tok, flip = flip)
@@ -134,6 +173,7 @@ tokens_game <- function(g) {
   out
 }
 
+# Drop catches without complete tokens (counting the reasons), then stack the tokens into arrays.
 built <- unlist(lapply(app$matches$game_id, tokens_game), recursive = FALSE)
 reason <- vapply(built, `[[`, "", "drop")
 for (rsn in unique(na.omit(reason))) drops[[rsn]] <- sum(reason == rsn, na.rm = TRUE)
@@ -151,26 +191,33 @@ for (i in seq_len(N)) {
   token_pid[i, ] <- toks[[i]]$pid
 }
 
-# ---- simple hand-built features (for the logistic baseline and for reading results) -----------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - SIMPLE HAND-BUILT FEATURES ---------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# For the logistic baseline and for reading results.
 
 catches[, row := .I]
-catches[, `:=`(
-  recv_hoop_dist = freeze[, 1, "hoop_dist"],
-  recv_corner = as.numeric(abs(freeze[, 1, "y"]) > 6.6 * FT_PER_M - 1 & freeze[, 1, "hoop_dx"] < 14),
-  recv_speed = freeze[, 1, "speed"],
-  def1_dist = freeze[, 6, "rel_dist"],                                        # token 6 = defender nearest the receiver
-  # closing speed of that defender: how fast the gap to the receiver is shrinking (ft/s, positive = closing)
-  def1_closing = -((freeze[, 6, "rel_x"] * (freeze[, 6, "vx"] - freeze[, 1, "vx"]) +
-                    freeze[, 6, "rel_y"] * (freeze[, 6, "vy"] - freeze[, 1, "vy"])) / pmax(freeze[, 6, "rel_dist"], 0.5)),
-  def2_dist = freeze[, 7, "rel_dist"],
-  defs_in_paint = rowSums(freeze[, 6:10, "is_offense"] == 0 & freeze[, 6:10, "hoop_dist"] < 16)
-)]
+catches[, `:=`(recv_hoop_dist = freeze[, 1, "hoop_dist"],
+               recv_corner = as.numeric(abs(freeze[, 1, "y"]) > 6.6 * FT_PER_M - 1 & freeze[, 1, "hoop_dx"] < 14),
+               recv_speed = freeze[, 1, "speed"],
+               def1_dist = freeze[, 6, "rel_dist"],                                        # token 6 = defender nearest the receiver
+               # closing speed of that defender: how fast the gap to the receiver is shrinking (ft/s, positive = closing)
+               def1_closing = -((freeze[, 6, "rel_x"] * (freeze[, 6, "vx"] - freeze[, 1, "vx"]) +
+                                 freeze[, 6, "rel_y"] * (freeze[, 6, "vy"] - freeze[, 1, "vy"])) / pmax(freeze[, 6, "rel_dist"], 0.5)),
+               def2_dist = freeze[, 7, "rel_dist"],
+               defs_in_paint = rowSums(freeze[, 6:10, "is_offense"] == 0 & freeze[, 6:10, "hoop_dist"] < 16))]
 # Time to act: whichever runs out first, the shot clock or the game clock (seconds). At the end of a period the shot
 # clock is often off (NA); the game clock then sets the limit. Filling a missing shot clock with 24 made a buzzer-beater
 # look like a fresh possession, so shot_clock_raw keeps the supplied value and time_to_act is the input that matters.
 catches[, shot_clock_raw := shot_clock]
 catches[, time_to_act := pmin(shot_clock_raw, game_clock, 24, na.rm = TRUE)]   # a missing mid-period shot clock counts as 24
 catches[, shot_clock := fifelse(is.na(shot_clock), 24, shot_clock)]
+# The receiver's canonical id and offensive archetype.
 roster <- app$roster[, .(game_id, pid, canon)]
 catches[roster, canon := i.canon, on = .(game_id, receiver = pid)]
 catches[is.na(canon), canon := receiver]
@@ -181,7 +228,13 @@ saveRDS(list(meta = catches, freeze = freeze, hist = hist, token_pid = token_pid
              freeze_feats = FREEZE_FEATS, hist_feats = HIST_FEATS, drops = drops,
              built = Sys.time()), file.path(paths$cache, "catches.rds"))
 
-# ---- reports -------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - REPORTS ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 drop_tab <- data.table(reason = names(drops), catches = unlist(drops))
 fwrite(drop_tab, file.path(paths$out, "sample_drops.csv"))
@@ -191,9 +244,12 @@ fwrite(lab, file.path(paths$out, "sample_labels_all.csv"))
 fwrite(lab_k, file.path(paths$out, "sample_labels_kickout.csv"))
 fwrite(catches[label == "other", .N, by = other_kind], file.path(paths$out, "sample_other_kinds.csv"))
 
-cat("\nDropped:\n"); print(drop_tab)
+cat("\nDropped:\n")
+print(drop_tab)
 cat("\nKept", N, "catches (", catches[kickout == TRUE, .N], "strict kickouts )\n")
 print(catches[, .N, by = label][, share := round(N / sum(N), 3)][])
-cat("\nStrict kickouts:\n"); print(catches[kickout == TRUE, .N, by = label][, share := round(N / sum(N), 3)][])
-cat("\nOther, by kind:\n"); print(catches[label == "other", .N, by = other_kind])
+cat("\nStrict kickouts:\n")
+print(catches[kickout == TRUE, .N, by = label][, share := round(N / sum(N), 3)][])
+cat("\nOther, by kind:\n")
+print(catches[label == "other", .N, by = other_kind])
 cat("\nToken array:", paste(dim(freeze), collapse = " x "), "(catches x players x features)\n")

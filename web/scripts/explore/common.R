@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Shared layer for the site's eight exploration tabs (web/scripts/explore/build.R sources this first).
 #
 # Everything here is descriptive: counting, averaging and simple geometry on the ten tracked games. No model is
@@ -22,6 +23,7 @@
 #   live     it ended in a missed FGA that was not fouled (the ball was live off the rim)
 #   oreb     on a live miss: the offense kept the ball (an offensive rebound or a team rebound to the offense)
 # The population is every chance that did not end the period or in a jump ball.
+## ═════════════════════════════════════════════════════════════════════════════
 
 suppressPackageStartupMessages({
   library(jsonlite)
@@ -40,7 +42,13 @@ EX_CACHE <- file.path(a$root, "outputs", "cache", "explore")
 EX_OUT <- file.path(a$root, "web", "public", "data")
 EX_GAMES <- as.integer(fromJSON(file.path(a$root, "data", "matches.json"))$id)
 
-# ---- geometry ----------------------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - GEOMETRY ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 hoop_dist <- function(x, y) sqrt((HOOP_X - x)^2 + y^2)
 in_paint <- function(x, y) x >= KEY_X & abs(y) <= KEY_HW
@@ -54,31 +62,41 @@ floor_zone <- function(x, y) {
   d <- hoop_dist(x, y)
   dx <- HOOP_X - x
   fifelse(x <= 0, "backcourt",
-  fifelse(d <= 4.1 * 1.0 + 0, "rim",
-  fifelse(in_paint(x, y), "paint",
-  fifelse(!beyond_arc(x, y), "mid-range",
-  fifelse(dx <= sqrt(THREE_R^2 - THREE_Y^2), "corner three",
-  fifelse(d > 31.5, "deep", "above-break three"))))))
+          fifelse(d <= 4.1 * 1.0 + 0, "rim",
+                  fifelse(in_paint(x, y), "paint",
+                          fifelse(!beyond_arc(x, y), "mid-range",
+                                  fifelse(dx <= sqrt(THREE_R^2 - THREE_Y^2), "corner three",
+                                          fifelse(d > 31.5, "deep", "above-break three"))))))
 }
 #' Area of the convex hull of a set of points (shoelace on chull's order); NA for fewer than three points.
 hull_area <- function(x, y) {
   ok <- !is.na(x) & !is.na(y)
-  x <- x[ok]; y <- y[ok]
+  x <- x[ok]
+  y <- y[ok]
   if (length(x) < 3) return(NA_real_)
   h <- chull(x, y)
-  hx <- x[h]; hy <- y[h]
+  hx <- x[h]
+  hy <- y[h]
   abs(sum(hx * c(hy[-1], hy[1]) - c(hx[-1], hx[1]) * hy)) / 2
 }
 #' Distance from points (px, py) to the segment (ax, ay)-(bx, by), and how far along it they project (0-1).
 seg_dist <- function(px, py, ax, ay, bx, by) {
-  vx <- bx - ax; vy <- by - ay
+  vx <- bx - ax
+  vy <- by - ay
   L2 <- pmax(vx^2 + vy^2, 1e-9)
   t <- pmin(1, pmax(0, ((px - ax) * vx + (py - ay) * vy) / L2))
   list(d = sqrt((ax + t * vx - px)^2 + (ay + t * vy - py)^2), t = ((px - ax) * vx + (py - ay) * vy) / L2)
 }
 
-# ---- intervals and summaries --------------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - INTERVALS AND SUMMARIES ------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# z for a 90% interval.
 Z90 <- 1.645
 #' A rate with its 90% Wilson interval.
 wilson <- function(k, n, z = Z90) {
@@ -95,9 +113,11 @@ mrow <- function(label, x) {
   x <- x[!is.na(x)]
   n <- length(x)
   if (n < 2) return(list(label = label, n = n, rate = if (n) mean(x) else NA_real_, lo = NA_real_, hi = NA_real_))
-  m <- mean(x); se <- sd(x) / sqrt(n)
+  m <- mean(x)
+  se <- sd(x) / sqrt(n)
   list(label = label, n = n, rate = m, lo = m - Z90 * se, hi = m + Z90 * se)
 }
+# Rounding and display formats ("–" for a missing value).
 r2 <- function(v, d = 3) round(v, d)
 pct <- function(v, d = 0) ifelse(is.na(v), "–", sprintf(paste0("%.", d, "f%%"), 100 * v))
 num <- function(v, d = 2) ifelse(is.na(v), "–", formatC(v, format = "f", digits = d))
@@ -114,48 +134,55 @@ outcomes_by <- function(ch, by) {
 #' `ch` must carry a column `grp` (labels) and the outcome columns; levels in `order` (all if NULL). `min_n` hides
 #' groups with fewer chances.
 outcome_panel <- function(ch, order = NULL, min_n = 10, base = NULL, title = "", label_width = 170, total = nrow(ch)) {
+  # Groups in the given order with at least min_n chances; each chart compares them with the base population.
   if (is.null(order)) order <- unique(ch$grp)
   order <- order[order %in% ch$grp]
   order <- order[vapply(order, function(o) sum(ch$grp == o) >= min_n, NA)]
   base <- if (is.null(base)) ch else base
   rows <- function(fn) lapply(order, function(o) fn(o, ch[grp == o]))
-  GRID(
-    RATES(paste0(title, if (nzchar(title)) " · " else "", "points per chance"), fmt = "num2", unit = "points per chance",
-          ref = mean(base$pts), refLabel = "all", label_width = label_width,
-          rows = rows(function(o, d) mrow(o, d$pts))),
-    RATES(paste0(title, if (nzchar(title)) " · " else "", "shot quality (xPts per FGA)"), fmt = "num2", unit = "xPts per FGA",
-          ref = mean(base$xpts, na.rm = TRUE), refLabel = "all", label_width = label_width,
-          rows = rows(function(o, d) mrow(o, d$xpts))),
-    RATES(paste0(title, if (nzchar(title)) " · " else "", "turnover rate"), unit = "of chances end in a turnover",
-          ref = mean(base$tov), label_width = label_width, rows = rows(function(o, d) rrow(o, sum(d$tov), nrow(d)))),
-    RATES(paste0(title, if (nzchar(title)) " · " else "", "free-throw trip rate"), unit = "of chances with free throws",
-          ref = mean(base$ftrip), label_width = label_width, rows = rows(function(o, d) rrow(o, sum(d$ftrip), nrow(d)))),
-    RATES(paste0(title, if (nzchar(title)) " · " else "", "offensive rebound rate (live misses)"), unit = "of live misses kept",
-          ref = sum(base$oreb & base$live) / max(1, sum(base$live)), label_width = label_width,
-          rows = rows(function(o, d) rrow(o, sum(d$oreb & d$live), sum(d$live)))),
-    RATES(paste0(title, if (nzchar(title)) " · " else "", "share of chances"), unit = "of chances",
-          ref = NULL, label_width = label_width, rows = rows(function(o, d) rrow(o, nrow(d), total)))
-  )
+  GRID(RATES(paste0(title, if (nzchar(title)) " · " else "", "points per chance"), fmt = "num2", unit = "points per chance",
+             ref = mean(base$pts), refLabel = "all", label_width = label_width,
+             rows = rows(function(o, d) mrow(o, d$pts))),
+       RATES(paste0(title, if (nzchar(title)) " · " else "", "shot quality (xPts per FGA)"), fmt = "num2", unit = "xPts per FGA",
+             ref = mean(base$xpts, na.rm = TRUE), refLabel = "all", label_width = label_width,
+             rows = rows(function(o, d) mrow(o, d$xpts))),
+       RATES(paste0(title, if (nzchar(title)) " · " else "", "turnover rate"), unit = "of chances end in a turnover",
+             ref = mean(base$tov), label_width = label_width, rows = rows(function(o, d) rrow(o, sum(d$tov), nrow(d)))),
+       RATES(paste0(title, if (nzchar(title)) " · " else "", "free-throw trip rate"), unit = "of chances with free throws",
+             ref = mean(base$ftrip), label_width = label_width, rows = rows(function(o, d) rrow(o, sum(d$ftrip), nrow(d)))),
+       RATES(paste0(title, if (nzchar(title)) " · " else "", "offensive rebound rate (live misses)"), unit = "of live misses kept",
+             ref = sum(base$oreb & base$live) / max(1, sum(base$live)), label_width = label_width,
+             rows = rows(function(o, d) rrow(o, sum(d$oreb & d$live), sum(d$live)))),
+       RATES(paste0(title, if (nzchar(title)) " · " else "", "share of chances"), unit = "of chances",
+             ref = NULL, label_width = label_width, rows = rows(function(o, d) rrow(o, nrow(d), total))))
 }
 #' The same outcomes as one table (columns tinted against the whole population).
 outcome_table <- function(ch, by, base = ch, min_n = 10, label = "Group", limit = 20, title = "", sort = "n") {
+  # Groups with at least min_n chances, sorted by `sort`; each column is tinted against the whole population.
   t <- outcomes_by(ch, by)[n >= min_n]
   setnames(t, by[1], "grp")
   setorderv(t, sort, -1)
   ref <- outcomes_by(copy(base)[, all := 1L], "all")
-  TABLE(title, limit = limit, rows = t, cols = list(
-    col("grp", label),
-    col("n", "Chances", "int"),
-    col("ppc", "Pts/chance", "num2", ref = ref$ppc, scale = 0.25),
-    col("xpts", "xPts/FGA", "num2", ref = ref$xpts, scale = 0.15),
-    col("efg", "eFG%", "pct", ref = ref$efg, scale = 0.12),
-    col("tov", "TOV%", "pct", ref = ref$tov, scale = 0.08, low = TRUE),
-    col("ftrip", "FT trip%", "pct", ref = ref$ftrip, scale = 0.08),
-    col("oreb", "OREB%", "pct", ref = ref$oreb, scale = 0.1),
-    col("live", "Live misses", "int")))
+  TABLE(title, limit = limit, rows = t, cols = list(col("grp", label),
+                                                    col("n", "Chances", "int"),
+                                                    col("ppc", "Pts/chance", "num2", ref = ref$ppc, scale = 0.25),
+                                                    col("xpts", "xPts/FGA", "num2", ref = ref$xpts, scale = 0.15),
+                                                    col("efg", "eFG%", "pct", ref = ref$efg, scale = 0.12),
+                                                    col("tov", "TOV%", "pct", ref = ref$tov, scale = 0.08, low = TRUE),
+                                                    col("ftrip", "FT trip%", "pct", ref = ref$ftrip, scale = 0.08),
+                                                    col("oreb", "OREB%", "pct", ref = ref$oreb, scale = 0.1),
+                                                    col("live", "Live misses", "int")))
 }
 
-# ---- document blocks (rendered by web/src/components/explore/Block.svelte) ----------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - DOCUMENT BLOCKS --------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Rendered by web/src/components/explore/Block.svelte.
 
 #' One short paragraph (its pieces are pasted together).
 P <- function(...) list(type = "p", text = paste0(...))
@@ -222,8 +249,15 @@ save_doc <- function(doc) {
   message("Wrote ", path, " (", round(file.size(path) / 1024), " KB)")
 }
 
-# ---- the per-game bundle ------------------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - THE PER-GAME BUNDLE ----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Record-field helpers, as in annotations.R.
 xf <- function(recs, f) a$num_field(recs, f)
 xi <- function(recs, f) a$int_field(recs, f)
 xc <- function(recs, f) a$chr_field(recs, f)
@@ -231,7 +265,10 @@ xl <- function(recs, f) a$lgl_field(recs, f)
 xlist <- function(recs, f) lapply(recs, function(r) as.character(unlist(r[[f]])))
 #' An event location field in the viewer's frame.
 xloc <- function(recs, f) {
-  m <- vapply(recs, function(r) { v <- unlist(r[[f]]); if (length(v) < 2) c(NA_real_, NA_real_) else c(-1, 1) * as.numeric(v[1:2]) }, c(0, 0))
+  m <- vapply(recs, function(r) {
+    v <- unlist(r[[f]])
+    if (length(v) < 2) c(NA_real_, NA_real_) else c(-1, 1) * as.numeric(v[1:2])
+  }, c(0, 0))
   list(m[1, ], m[2, ])
 }
 tbl <- function(recs, build) if (length(recs)) build(recs) else data.table()
@@ -239,6 +276,7 @@ tbl <- function(recs, build) if (length(recs)) build(recs) else data.table()
 #' Build (or read from outputs/cache/explore/) one game's bundle: events as tables keyed by chance, the chance
 #' outcomes, the site's own cuts, screens and rebounding roles, and the tracking in the viewer's frame.
 game_bundle <- function(g, rebuild = FALSE) {
+  # Use the cached bundle unless asked to rebuild.
   path <- file.path(EX_CACHE, sprintf("bundle_%d.rds", g))
   if (!rebuild && file.exists(path)) return(readRDS(path))
   message("Building bundle for game ", g)
@@ -247,9 +285,10 @@ game_bundle <- function(g, rebuild = FALSE) {
   gid <- g
   roster <- a$app_data$roster[game_id == gid, .(pid, team = team_id, canon, name, jersey, team_name)]
 
+  # Possessions and chances; a chance's span (c0 to c1) is ordered even when its frames are reversed.
   PS <- data.table(poss = xc(ev$possessions, "id"), off = xi(ev$possessions, "offTeamId"), def = xi(ev$possessions, "defTeamId"),
-                     f0 = xi(ev$possessions, "startFrame"), f1 = xi(ev$possessions, "endFrame"),
-                     left = xl(ev$possessions, "leftHoop"), period = xi(ev$possessions, "period"))[order(f0)]
+                   f0 = xi(ev$possessions, "startFrame"), f1 = xi(ev$possessions, "endFrame"),
+                   left = xl(ev$possessions, "leftHoop"), period = xi(ev$possessions, "period"))[order(f0)]
   ch <- data.table(chance = xc(ev$chances, "id"), poss = xc(ev$chances, "possessionId"), period = xi(ev$chances, "period"),
                    f0 = xi(ev$chances, "startFrame"), f1 = xi(ev$chances, "endFrame"),
                    off = xi(ev$chances, "offTeamId"), def = xi(ev$chances, "defTeamId"),
@@ -262,21 +301,22 @@ game_bundle <- function(g, rebuild = FALSE) {
   ch[, left := PS$left[match(ch$poss, PS$poss)]]
   ch[, game := g]
 
+  # Shots with their value, SkillCorner xPts and a coarse zone (rim, paint, mid-range, three).
   sl <- xloc(ev$shots, "location")
-  shots <- tbl(ev$shots, function(s) data.table(
-    shot = xc(s, "id"), chance = xc(s, "chanceId"), poss = xc(s, "possessionId"), f = xi(s, "startFrame"), f1 = xi(s, "endFrame"),
-    pid = xi(s, "shooterId"), team = xi(s, "offTeamId"), made = xl(s, "outcome"), three = xl(s, "three"), fouled = xl(s, "fouled"),
-    blocked = xl(s, "blocked"), assisted = xl(s, "assisted"), sq = xf(s, "shotQuality"), x = sl[[1]], y = sl[[2]],
-    dist = xf(s, "distance"), region = xc(s, "region"), cl = xc(s, "contestLevel"),
-    def = suppressWarnings(as.integer(xc(s, "closestDefId"))), defDist = xf(s, "closestDefDist"), rt = xf(s, "releaseTime"),
-    drb = xi(s, "dribblesBefore"), cst = xc(s, "complexShotType"), stype = xc(s, "shotType"), cns = xl(s, "catchAndShoot"),
-    touch = xc(s, "touchId"), sc = xf(s, "shotClock")))
+  shots <- tbl(ev$shots, function(s) data.table(shot = xc(s, "id"), chance = xc(s, "chanceId"), poss = xc(s, "possessionId"), f = xi(s, "startFrame"), f1 = xi(s, "endFrame"),
+                                                pid = xi(s, "shooterId"), team = xi(s, "offTeamId"), made = xl(s, "outcome"), three = xl(s, "three"), fouled = xl(s, "fouled"),
+                                                blocked = xl(s, "blocked"), assisted = xl(s, "assisted"), sq = xf(s, "shotQuality"), x = sl[[1]], y = sl[[2]],
+                                                dist = xf(s, "distance"), region = xc(s, "region"), cl = xc(s, "contestLevel"),
+                                                def = suppressWarnings(as.integer(xc(s, "closestDefId"))), defDist = xf(s, "closestDefDist"), rt = xf(s, "releaseTime"),
+                                                drb = xi(s, "dribblesBefore"), cst = xc(s, "complexShotType"), stype = xc(s, "shotType"), cns = xl(s, "catchAndShoot"),
+                                                touch = xc(s, "touchId"), sc = xf(s, "shotClock")))
   shots[, `:=`(fga = !(fouled & !made), value = fifelse(three, 3L, 2L))]
   shots[, xpts := sq / 100 * value]
   shots[, zone := fifelse(three, "three", fifelse(region %in% "ra" | (is.na(region) & dist <= 4.1), "rim",
-                   fifelse(region %in% "key", "paint", "mid-range")))]
+                                                  fifelse(region %in% "key", "paint", "mid-range")))]
   shots[, zone := fifelse(three, "three", zone)]
 
+  # Free throws, rebounds, turnovers (with annotations.R's kind), fouls, touches and passes.
   ft <- tbl(ev$free_throws, function(r) data.table(chance = xc(r, "chanceId"), team = xi(r, "offTeamId"), made = xl(r, "outcome"),
                                                    shot = xc(r, "shotId"), foul = xc(r, "foulId"), f = xi(r, "frame")))
   rb <- tbl(ev$rebounds, function(r) {
@@ -291,16 +331,17 @@ game_bundle <- function(g, rebuild = FALSE) {
   fo <- tbl(ev$fouls, function(r) data.table(chance = xc(r, "chanceId"), f = xi(r, "frame"), by = xi(r, "foulerId"),
                                              on = xi(r, "fouledId"), shooting = xl(r, "shooting"), type = xc(r, "foulType"),
                                              fouled_team = xi(r, "fouledTeamId"), shot = xc(r, "shotId")))
-  tl0 <- xloc(ev$touches, "location"); tl1 <- xloc(ev$touches, "endLoc")
-  touches <- tbl(ev$touches, function(r) data.table(
-    touch = xc(r, "id"), chance = xc(r, "chanceId"), pid = xi(r, "playerId"), team = xi(r, "offTeamId"),
-    f0 = xi(r, "startFrame"), f1 = xi(r, "endFrame"), x0 = tl0[[1]], y0 = tl0[[2]], x1 = tl1[[1]], y1 = tl1[[2]],
-    ndrb = xi(r, "numDribbles"), def = xi(r, "defenderId"), shot_touch = xl(r, "ledToShot"), ttime = xf(r, "touchTime"),
-    regions = vapply(xlist(r, "regionsIn"), paste, "", collapse = "|"), outs = vapply(xlist(r, "outcomes"), paste, "", collapse = "|")))
+  tl0 <- xloc(ev$touches, "location")
+  tl1 <- xloc(ev$touches, "endLoc")
+  touches <- tbl(ev$touches, function(r) data.table(touch = xc(r, "id"), chance = xc(r, "chanceId"), pid = xi(r, "playerId"), team = xi(r, "offTeamId"),
+                                                    f0 = xi(r, "startFrame"), f1 = xi(r, "endFrame"), x0 = tl0[[1]], y0 = tl0[[2]], x1 = tl1[[1]], y1 = tl1[[2]],
+                                                    ndrb = xi(r, "numDribbles"), def = xi(r, "defenderId"), shot_touch = xl(r, "ledToShot"), ttime = xf(r, "touchTime"),
+                                                    regions = vapply(xlist(r, "regionsIn"), paste, "", collapse = "|"), outs = vapply(xlist(r, "outcomes"), paste, "", collapse = "|")))
   touches[, vendor_paint := grepl("(^|\\|)(key|ra)(\\||$)", regions)]
   passes <- tbl(ev$passes, function(r) data.table(chance = xc(r, "chanceId"), f0 = xi(r, "startFrame"), f1 = xi(r, "endFrame"),
                                                   passer = xi(r, "passerId"), receiver = xi(r, "receiverId"),
                                                   complete = xl(r, "complete"), turnover = xl(r, "turnover"), touch = xc(r, "touchId")))
+  # Action markings: actor and defender, frames, location, touch and direct flag, plus extra fields per family.
   act <- function(recs, kind, actor, def, f0 = "frame", f1 = NULL, extra = NULL) tbl(recs, function(r) {
     l <- xloc(r, "location")
     out <- data.table(id = xc(r, "id"), kind = kind, chance = xc(r, "chanceId"), f0 = xi(r, f0),
@@ -327,7 +368,9 @@ game_bundle <- function(g, rebuild = FALSE) {
   isos <- act(ev$isolations, "iso", "ballhandlerId", "ballhandlerDefId", f0 = "startFrame", f1 = "endFrame")
   posts <- act(ev$posts, "post-up", "ballhandlerId", "ballhandlerDefId", f0 = "startFrame", f1 = "endFrame")
   co <- tbl(ev$closeouts, function(r) {
-    l0 <- xloc(r, "startLoc"); l1 <- xloc(r, "endLoc"); lb <- xloc(r, "location")
+    l0 <- xloc(r, "startLoc")
+    l1 <- xloc(r, "endLoc")
+    lb <- xloc(r, "location")
     data.table(id = xc(r, "id"), chance = xc(r, "chanceId"), ft = xi(r, "touchFrame"), f0 = xi(r, "startFrame"), f1 = xi(r, "endFrame"),
                actor = xi(r, "ballhandlerId"), adef = xi(r, "ballhandlerDefId"), x = lb[[1]], y = lb[[2]],
                dx0 = l0[[1]], dy0 = l0[[2]], dx1 = l1[[1]], dy1 = l1[[2]],
@@ -338,9 +381,15 @@ game_bundle <- function(g, rebuild = FALSE) {
   # The site's corrected screen locations (annotations.R fixes the y sign of these tables).
   if (!is.null(an$screens) && nrow(an$screens)) {
     sc <- an$screens
-    fix <- function(dt, k) if (nrow(dt)) { s <- sc[kind == k]; if (nrow(s) == nrow(dt)) dt[, `:=`(x = s$x, y = s$y)] }
-    fix(picks, "pick"); fix(handoffs, "handoff"); fix(obs, "off_ball_screen")
+    fix <- function(dt, k) if (nrow(dt)) {
+      s <- sc[kind == k]
+      if (nrow(s) == nrow(dt)) dt[, `:=`(x = s$x, y = s$y)]
+    }
+    fix(picks, "pick")
+    fix(handoffs, "handoff")
+    fix(obs, "off_ball_screen")
   }
+  # Matchups, on-court players, and the site's cuts and rebounding roles.
   mu <- tbl(ev$matchups, function(r) data.table(chance = xc(r, "chanceId"), f0 = xi(r, "startFrame"), f1 = xi(r, "endFrame"),
                                                 def = xi(r, "defPlayerId"), off = xi(r, "offPlayerId")))[!is.na(def) & !is.na(off)]
   cp <- tbl(ev$chance_players, function(r) data.table(chance = xc(r, "chanceId"), pid = xi(r, "playerId"), offense = xl(r, "offense")))
@@ -353,6 +402,7 @@ game_bundle <- function(g, rebuild = FALSE) {
   fp <- ft[made == TRUE, .(p = .N), by = .(chance, team)]
   allp <- rbind(sp, fp)[, .(p = sum(p)), by = .(chance, team)]
   ch[allp, on = .(chance, off = team), pts := as.integer(i.p)]
+  # Shot quality, eFG points, turnovers, free-throw trips, and offensive rebounds of live misses.
   ch[, fga := chance %in% shots[fga == TRUE]$chance]
   xp <- shots[fga == TRUE, .(xpts = mean(xpts, na.rm = TRUE), efg_pts = sum(made * fifelse(three, 1.5, 1)),
                              nfga = .N), by = chance]
@@ -376,16 +426,19 @@ game_bundle <- function(g, rebuild = FALSE) {
   P0 <- trk$players[, .(frame, pid, x, y, det)]
   k <- findInterval(P0$frame, PS$f0)
   ok <- k > 0L & P0$frame <= PS$f1[pmax(k, 1L)]
-  P0 <- P0[ok]; k <- k[ok]
+  P0 <- P0[ok]
+  k <- k[ok]
   P0[, `:=`(poss = PS$poss[k], sgn = fifelse(PS$left[k], -1, 1), off_team = PS$off[k])]
   P0[, team := roster$team[match(pid, roster$pid)]]
   P0[, `:=`(x = sgn * x, y = -sgn * y, off = team == off_team)]
   P0[, c("sgn", "off_team", "team") := NULL]
   setkey(P0, frame, pid)
+  # Frames inside a possession, with the ball in the viewer's frame.
   Fr <- trk$frames[, .(frame, period, gc, sc, stopped, bx, by, bz)]
   k <- findInterval(Fr$frame, PS$f0)
   ok <- k > 0L & Fr$frame <= PS$f1[pmax(k, 1L)]
-  Fr <- Fr[ok]; k <- k[ok]
+  Fr <- Fr[ok]
+  k <- k[ok]
   Fr[, `:=`(poss = PS$poss[k], s = fifelse(PS$left[k], -1, 1))]
   Fr[, `:=`(bx = s * bx, by = -s * by)][, s := NULL]
   # Chance and ball holder of each frame.
@@ -397,6 +450,7 @@ game_bundle <- function(g, rebuild = FALSE) {
   Fr[tco, on = .(frame >= f0, frame <= f1), holder := i.pid]
   setkey(Fr, frame)
 
+  # Save the bundle.
   B <- list(game = g, roster = roster, poss = PS, ch = ch, shots = shots, ft = ft, rb = rb, to = to, fo = fo,
             touches = touches, passes = passes, picks = picks, handoffs = handoffs, obs = obs, drives = drives,
             isos = isos, posts = posts, co = co, mu = mu, cp = cp, cuts = cuts, glass = glass, P = P0, Fr = Fr)
@@ -433,10 +487,15 @@ all_chances <- function(BL) rbindlist(lapply(BL, function(B) B$ch[in_pop == TRUE
 
 #' Season aggregate profile per canonical player: shooting, driving, archetype (for priors and labels).
 season_profiles <- function() {
+  # Season rows: a traded player's total row when he has one, else his per-team rows; then sums per canonical player.
   al <- fread(file.path(a$root, "data", "player_id_aliases.csv"))
-  canon <- function(p) { m <- al$canonical_player_id[match(p, al$player_id)]; fifelse(is.na(m), p, m) }
+  canon <- function(p) {
+    m <- al$canonical_player_id[match(p, al$player_id)]
+    fifelse(is.na(m), p, m)
+  }
   pick_rows <- function(d) {
-    d <- copy(d); d[, canon := canon(player_id)]
+    d <- copy(d)
+    d[, canon := canon(player_id)]
     tot <- d[is.na(team_id) | team_name == "total"]
     d[!(canon %in% tot$canon) | is.na(team_id) | team_name == "total"]
   }
@@ -460,7 +519,13 @@ season_profiles <- function() {
   out
 }
 
-# ---- team geometry at given frames --------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - TEAM GEOMETRY AT GIVEN FRAMES ------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Team shape at each frame (only frames with all ten players tracked):
 #'   def_paint / off_paint   defenders / attackers inside the key
@@ -470,6 +535,7 @@ season_profiles <- function() {
 #'   holder_open             the ball holder's distance to the nearest defender (NA when no holder)
 #'   det                     share of the ten positions detected on camera (not extrapolated)
 frame_geom <- function(B, frames) {
+  # Frames with all ten players tracked, then team shape and openness.
   W <- players_at(B, frames)
   W <- W[, if (.N == 10L && sum(off) == 5L) .SD, by = frame]
   if (!nrow(W)) return(data.table())

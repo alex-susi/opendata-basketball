@@ -201,6 +201,7 @@ explain_xfg <- function(m, dt) {
   p <- plogis(start)
   tree_mean <- numeric(nrow(dt))
   phi <- matrix(0, nrow(dt), length(XFG_FEATURES), dimnames = list(NULL, paste0("eff_", XFG_FEATURES)))
+  # Per zone: tree contributions of the zone's features; features the zone does not use stay NA.
   for (z in ZONES) {
     rows <- which(dt$zone == z)
     used <- paste0("eff_", zone_features(z))

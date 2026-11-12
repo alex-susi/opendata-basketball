@@ -31,6 +31,7 @@ ball_track <- function(frames, s, from, to) {
 #' Where made shots cross rim height on the way down, per game and end: the ball-frame hoop centre.
 #' Ends are named by possessions.leftHoop (TRUE: the camera's left basket).
 hoop_calibration <- function(raws) {
+  # Each made shot's downward crossing of rim height near the hoop, per game and end.
   cr <- rbindlist(lapply(raws, function(raw) {
     sh <- raw$shots[made == TRUE & !is.na(f0) & !is.na(f1)]
     rbindlist(lapply(seq_len(nrow(sh)), function(k) {
@@ -109,6 +110,7 @@ miss_timeline <- function(raw, s, rb, hoop) {
   # players after release: touch possible, control proxy, nearest player at each ball frame
   start <- if (is.na(out$contact_frame)) s$f0 + 10L else out$contact_frame
   pl <- window_players(raw, s, w$frame[w$frame >= start])
+  # After contact: the player nearest the ball at each frame, and the first frame one is within touching reach.
   if (nrow(pl)) {
     j <- merge(pl[, !c("x", "y")], w[, .(frame, x, y, z, vx, vy, vz)], by = "frame")
     j[, d := sqrt((px - x)^2 + (py - y)^2)]
@@ -179,25 +181,22 @@ episode_audit <- function(raw, hoops) {
 
 #' The episode population and why each shot is in or out of the rebound models.
 classify_episodes <- function(ep) {
-  ep[, status := fcase(
-    made == TRUE, "made",
-    fouled == TRUE, "fouled miss",
-    n_reb == 0L, "miss without rebound row",
-    !(tracked %in% TRUE), "miss, ball not tracked",
-    ball_cover < 0.8 | max_gap > 12L, "miss, poor ball coverage",
-    default = "eligible")]
-  ep[, outcome := fcase(
-    status != "eligible" & status != "miss, poor ball coverage", NA_character_,
-    grabbed == TRUE & defensive == FALSE, "off player",
-    grabbed == TRUE & defensive == TRUE, "def player",
-    grabbed == FALSE & defensive == FALSE, "off team award",
-    grabbed == FALSE & defensive == TRUE, "def team award")]
-  ep[, kind := fcase(
-    blocked == TRUE, "blocked",
-    putback == TRUE, "putback or tip",
-    contact_kind == "none", "airball or no contact",
-    contact_kind == "board", "backboard first",
-    default = "rim first")]
+  ep[, status := fcase(made == TRUE, "made",
+                       fouled == TRUE, "fouled miss",
+                       n_reb == 0L, "miss without rebound row",
+                       !(tracked %in% TRUE), "miss, ball not tracked",
+                       ball_cover < 0.8 | max_gap > 12L, "miss, poor ball coverage",
+                       default = "eligible")]
+  ep[, outcome := fcase(status != "eligible" & status != "miss, poor ball coverage", NA_character_,
+                        grabbed == TRUE & defensive == FALSE, "off player",
+                        grabbed == TRUE & defensive == TRUE, "def player",
+                        grabbed == FALSE & defensive == FALSE, "off team award",
+                        grabbed == FALSE & defensive == TRUE, "def team award")]
+  ep[, kind := fcase(blocked == TRUE, "blocked",
+                     putback == TRUE, "putback or tip",
+                     contact_kind == "none", "airball or no contact",
+                     contact_kind == "board", "backboard first",
+                     default = "rim first")]
   ep[, range := cut(shot_dist, c(-Inf, 10, 22, Inf), labels = c("short (<10 ft)", "mid (10-22 ft)", "long (22+ ft)"))]
   ep[]
 }
@@ -216,25 +215,24 @@ audit_counts <- function(ep, chance_players) {
   r <- ep[n_reb > 0L]
   cp <- unique(chance_players[, .(game_id, canon)])
   games_per <- cp[, .N, by = canon]
-  data.table(
-    quantity = c("Shot records, including fouled misses", "Made shot records", "Missed records including fouled attempts",
-                 "Fouled misses", "Non-fouled misses", "Linked field-goal rebound records", "Player-secured field-goal rebounds",
-                 "Offensive player rebounds", "Defensive player rebounds", "Team field-goal rebounds",
-                 "Offensive team rebounds (delivered flag)", "Defensive team rebounds (delivered flag)",
-                 "Non-fouled misses without a rebound row",
-                 "Blocked, non-fouled misses", "Canonical players appearing in chance_players",
-                 "Players appearing in one game", "Players appearing in two games",
-                 "Rebound rows pointing to a made or fouled shot", "Shots with more than one rebound row",
-                 "Offensive team rebounds (side by teamId)", "Defensive team rebounds (side by teamId)"),
-    count = c(nrow(ep), sum(ep$made), nrow(m), sum(m$fouled), sum(!m$fouled), sum(ep$n_reb),
-              sum(r$grabbed %in% TRUE), sum(r$grabbed %in% TRUE & r$defensive %in% FALSE),
-              sum(r$grabbed %in% TRUE & r$defensive %in% TRUE), sum(r$grabbed %in% FALSE),
-              sum(r$grabbed %in% FALSE & r$defensive_flag %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive_flag %in% TRUE),
-              sum(!m$fouled & m$n_reb == 0L), sum(!m$fouled & m$blocked), nrow(games_per),
-              sum(games_per$N == 1L), sum(games_per$N == 2L),
-              sum(r$made | r$fouled), sum(ep$n_reb > 1L),
-              sum(r$grabbed %in% FALSE & r$defensive %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive %in% TRUE)),
-    framework = c(1459, 606, 853, 111, 742, 713, 635, 177, 458, 78, 54, 24, 29, 51, 205, 180, 25, NA, NA, NA, NA))
+  data.table(quantity = c("Shot records, including fouled misses", "Made shot records", "Missed records including fouled attempts",
+                          "Fouled misses", "Non-fouled misses", "Linked field-goal rebound records", "Player-secured field-goal rebounds",
+                          "Offensive player rebounds", "Defensive player rebounds", "Team field-goal rebounds",
+                          "Offensive team rebounds (delivered flag)", "Defensive team rebounds (delivered flag)",
+                          "Non-fouled misses without a rebound row",
+                          "Blocked, non-fouled misses", "Canonical players appearing in chance_players",
+                          "Players appearing in one game", "Players appearing in two games",
+                          "Rebound rows pointing to a made or fouled shot", "Shots with more than one rebound row",
+                          "Offensive team rebounds (side by teamId)", "Defensive team rebounds (side by teamId)"),
+             count = c(nrow(ep), sum(ep$made), nrow(m), sum(m$fouled), sum(!m$fouled), sum(ep$n_reb),
+                       sum(r$grabbed %in% TRUE), sum(r$grabbed %in% TRUE & r$defensive %in% FALSE),
+                       sum(r$grabbed %in% TRUE & r$defensive %in% TRUE), sum(r$grabbed %in% FALSE),
+                       sum(r$grabbed %in% FALSE & r$defensive_flag %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive_flag %in% TRUE),
+                       sum(!m$fouled & m$n_reb == 0L), sum(!m$fouled & m$blocked), nrow(games_per),
+                       sum(games_per$N == 1L), sum(games_per$N == 2L),
+                       sum(r$made | r$fouled), sum(ep$n_reb > 1L),
+                       sum(r$grabbed %in% FALSE & r$defensive %in% FALSE), sum(r$grabbed %in% FALSE & r$defensive %in% TRUE)),
+             framework = c(1459, 606, 853, 111, 742, 713, 635, 177, 458, 78, 54, 24, 29, 51, 205, 180, 25, NA, NA, NA, NA))
 }
 
 #' A stratified sample of episodes for review against the play viewer (framework section 5): every kind and

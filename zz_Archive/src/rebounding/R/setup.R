@@ -38,6 +38,7 @@ bundle_game <- vapply(bundles, function(b) b$game_id, 0L)
 #' Launch library: every tracked attempt of the given games, made or missed (framework section 12: fit launch
 #' and flight priors on all usable attempts, then condition simulations on a miss).
 launch_path <- file.path(cache, "launch_rows.rds")
+# Launch rows for every shot (cached): the ball's first frames after release, relative to its hoop.
 if (file.exists(launch_path)) {
   launch_rows_all <- readRDS(launch_path)
 } else {

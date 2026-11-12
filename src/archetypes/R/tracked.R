@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Event and tracking counts behind the playstyle archetype features (the ten tracked games).
 #
 # Everything here is a count or a sum per player, per game, per half of the game's chances (odd or even in
@@ -7,6 +8,7 @@
 # Tracking positions are rotated so the offense attacks the hoop at +x (as in src/archetypes/R/tracking_state.R).
 # Event coordinates put the offensive hoop at -x, so they are rotated by 180 degrees to match.
 # Requires src/play_viewer/R/data.R and src/archetypes/R/tracking_state.R.
+## ═════════════════════════════════════════════════════════════════════════════
 
 KEY_HALF_W <- 2.45 * FT_PER_M      # half the width of the key
 KEY_LEN <- 5.8 * FT_PER_M          # baseline to free-throw line
@@ -75,6 +77,7 @@ chance_table <- function(ev) {
                    gc1 = num_field(ev$chances, "endGameClock"), start = chr_field(ev$chances, "startType"),
                    transition = lgl_field(ev$chances, "transition"), fc = int_field(ev$chances, "frontcourtFrame"))
   ch <- ch[!is.na(f0) & !is.na(f1) & f1 >= f0][order(f0)]
+  # Chances alternate between halves 0 and 1 in start order; secs is the game clock elapsed in the chance.
   ch[, half := seq_len(.N) %% 2L]
   ch[, secs := pmax(fcoalesce(gc0 - gc1, 0), 0)]
   shot <- data.table(id = chr_field(ev$shots, "chanceId"), frame = int_field(ev$shots, "startFrame"))[, .(frame = min(frame)), by = id]
@@ -82,11 +85,18 @@ chance_table <- function(ev) {
   ch
 }
 
-# ---- events --------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - EVENTS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Counts that need only the event file.
 #' @return list(counts, touches, picks, shots, off_screens): the tables the tracking step reuses.
 event_counts <- function(ev, ch) {
+  # Helpers: a record's half, and a tally of one player-id field per record (only where keep is true).
   half_of <- function(recs) ch$half[match(chr_field(recs, "chanceId"), ch$id)]
   per <- function(recs, field, key, value = 1, keep = TRUE) {
     tally(fifelse(rep_len(keep, length(recs)), int_field(recs, field), NA_integer_), half_of(recs), key, value)
@@ -101,6 +111,7 @@ event_counts <- function(ev, ch) {
                         tally(cp$pid, cp$half, fifelse(cp$off, "off_secs", "def_secs"), cp$secs))
 
   # touches
+  # Touch locations rotated 180 degrees into attack-+x coordinates.
   loc <- -ev_xy(ev$touches, "location")
   tu <- data.table(id = chr_field(ev$touches, "id"), pid = int_field(ev$touches, "playerId"),
                    chance = chr_field(ev$touches, "chanceId"), half = half_of(ev$touches),
@@ -130,7 +141,7 @@ event_counts <- function(ev, ch) {
                    drop = lgl_field(ev$passes, "inbounds") | lgl_field(ev$passes, "turnover"))
   pa <- pa[!drop & !is.na(to) & pid != to & !is.na(pass_len)]
   pa[, c("passes", "pass_inside", "pass_kickout") := .(1L, as.integer(to_region %in% c("key", "ra")),
-                                                         as.integer(from_region %in% c("key", "ra") & grepl("three", to_region)))]
+                                                       as.integer(from_region %in% c("key", "ra") & grepl("three", to_region)))]
   out$passes <- tally_cols(pa, c("passes", "pass_len", "pass_inside", "pass_kickout", "pass_to_shot"))
 
   # on-ball screens, with the coverage each defender played
@@ -197,6 +208,7 @@ event_counts <- function(ev, ch) {
   sw[, half := ch$half[match(chance, ch$id)]]
   out$switching <- rbind(tally(sw$pid, sw$half, "d_mu_ch"), tally(sw$pid, sw$half, "d_mu_switch", sw$men - 1L))
 
+  # Event tables the tracking steps reuse.
   picks <- data.table(frame = int_field(ev$picks, "frame"), half = half_of(ev$picks), scr = int_field(ev$picks, "screenerId"),
                       scr_def = int_field(ev$picks, "screenerDefId"))
   off_screens <- data.table(frame = int_field(ob, "frame"), half = half_of(ob), cutter = int_field(ob, "cutterId"))
@@ -206,7 +218,13 @@ event_counts <- function(ev, ch) {
        matchups = mu, on_court = cp)
 }
 
-# ---- tracking at event frames -------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - TRACKING AT EVENT FRAMES -----------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Counts that need a player's position at a particular frame: roll or pop after a screen, the cutter's
 #' path after an off-ball screen, the screener defender's depth, shooter speed, help on drives.
@@ -277,7 +295,13 @@ frame_counts <- function(trk, plays, E) {
   rbindlist(out)
 }
 
-# ---- tracking on the grid ------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - TRACKING ON THE GRID ---------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' One side of a game state as a long table: one row per player per grid frame.
 side_long <- function(side, fr) {
@@ -295,6 +319,7 @@ side_long <- function(side, fr) {
 grid_counts <- function(app, g, ch, E) {
   S <- game_state(app, g)
   fr <- S$fr
+  # Each grid frame's chance and half, whether play is live, and whether it is a set (half-court) frame.
   ci <- findInterval(fr$frame, ch$f0)
   cj <- pmax(ci, 1L)
   inside <- ci > 0L & fr$frame <= ch$f1[cj]
@@ -303,6 +328,7 @@ grid_counts <- function(app, g, ch, E) {
   fr[, live := inside & !stopped]
   fr[, set := (live & !ch$transition[cj] & frame >= ch$fc[cj] & bx > 0 &
                  (is.na(ch$shot_frame[cj]) | frame <= ch$shot_frame[cj])) %in% TRUE]
+  # Who holds the ball at each frame, and how far from the hoop he caught it.
   tl <- E$touches[order(f0)]
   ti <- pmax(findInterval(fr$frame, tl$f0), 1L)
   in_touch <- fr$frame >= tl$f0[ti] & fr$frame <= tl$f1[ti]
@@ -340,6 +366,7 @@ grid_counts <- function(app, g, ch, E) {
   # defense: location, and position relative to the assigned man
   D <- side_long(S$def, fr)
   mu <- E$matchups[order(def, f0)]
+  # Each defender's assigned man at each frame, from the matchup intervals.
   D[, man := {
     m <- mu[def == .BY$pid]
     i <- findInterval(frame, m$f0)
@@ -348,6 +375,7 @@ grid_counts <- function(app, g, ch, E) {
   }, by = pid]
   him <- O[.(D$row, D$man), on = .(row, pid), .(x, y, d)]
   D[, c("d", "zone", "gap", "man_d") := .(hoop_dist(x, y), court_zone(x, y), sqrt((x - him$x)^2 + (y - him$y)^2), him$d)]
+  # The defender nearest the hoop on each frame, and whether each defender is on the ball or off it.
   D[, last := d == min(d), by = row]
   D[, state := fifelse(is.na(gap) | is.na(holder), NA_character_, fifelse(man == holder, "on", "off"))]
   ds <- D[set == TRUE]

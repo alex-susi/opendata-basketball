@@ -8,7 +8,8 @@
 #' Seconds until a player (position p, velocity v; vectors over players) can be within the catch radius of a
 #' target floor point.
 arrival_time <- function(px, py, vx, vy, tx, ty, rp) {
-  rx <- px + vx * rp$reaction_s; ry <- py + vy * rp$reaction_s
+  rx <- px + vx * rp$reaction_s
+  ry <- py + vy * rp$reaction_s
   rp$reaction_s + pmax(0, sqrt((tx - rx)^2 + (ty - ry)^2) - rp$catch_radius_ft) / rp$v_max
 }
 
@@ -24,12 +25,15 @@ player_margins <- function(st, path, t, rp) {
   avail <- (path$frame - t) / FPS
   M <- vapply(seq_len(nrow(path)), function(k)
     avail[k] - arrival_time(st$x, st$y, st$vx, st$vy, path$bx[k], path$by[k], rp) - height_cost(path$z[k], rp),
-    numeric(nrow(st)))
+              numeric(nrow(st)))
   M <- matrix(M, nrow = nrow(st))
   best <- apply(M, 1, max)
   data.table(pid = st$pid, off = st$off, margin = best,
              best_frame = path$frame[apply(M, 1, which.max)],
-             first_feasible = vapply(seq_len(nrow(st)), function(i) { j <- which(M[i, ] >= 0)[1]; if (is.na(j)) NA_integer_ else path$frame[j] }, 0L))
+             first_feasible = vapply(seq_len(nrow(st)), function(i) {
+               j <- which(M[i, ] >= 0)[1]
+               if (is.na(j)) NA_integer_ else path$frame[j]
+             }, 0L))
 }
 
 #' Point where every made shot crosses rim height on the way down (attack frame), per camera end (audit.R's
@@ -37,11 +41,13 @@ player_margins <- function(st, path, t, rp) {
 made_crossings <- function(raw, g) {
   sh <- raw$shots[made == TRUE & !is.na(f0) & !is.na(f1)]
   rbindlist(lapply(seq_len(nrow(sh)), function(k) {
-    s <- sh[k]; w <- ball_track(raw$frames, s, s$f0, s$f1 + MADE_AFTER)
+    s <- sh[k]
+    w <- ball_track(raw$frames, s, s$f0, s$f1 + MADE_AFTER)
     if (nrow(w) < 5L) return(NULL)
     i <- which(w$z[-1] < RIM_Z & w$z[-nrow(w)] >= RIM_Z & hoop_dist(w$x[-1], w$y[-1]) < 4)
     if (!length(i)) return(NULL)
-    i <- i[1]; a <- (w$z[i] - RIM_Z) / (w$z[i] - w$z[i + 1])
+    i <- i[1]
+    a <- (w$z[i] - RIM_Z) / (w$z[i] - w$z[i + 1])
     data.table(game_id = g, left_hoop = s$left_hoop, x = w$x[i] + a * (w$x[i + 1] - w$x[i]), y = w$y[i] + a * (w$y[i + 1] - w$y[i]))
   }))
 }

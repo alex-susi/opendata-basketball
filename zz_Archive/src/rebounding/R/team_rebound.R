@@ -8,11 +8,15 @@
 fit_oreb <- function(ef, labels, ids, lambda, maxit = 1000L) {
   tr <- merge(ef[episode_id %in% ids], labels[, .(episode_id, y_off)], by = "episode_id")
   mu <- vapply(EPISODE_FEATURES, function(f) mean(tr[[f]]), 0)
-  s <- vapply(EPISODE_FEATURES, function(f) sd(tr[[f]]), 0); s <- ifelse(s > 1e-8, s, 1)
+  s <- vapply(EPISODE_FEATURES, function(f) sd(tr[[f]]), 0)
+  s <- ifelse(s > 1e-8, s, 1)
   X <- cbind(1, sweep(sweep(as.matrix(tr[, ..EPISODE_FEATURES]), 2, mu), 2, s, `/`))
   y <- as.numeric(tr$y_off)
   pen <- c(0, rep(1, length(EPISODE_FEATURES)))
-  fn <- function(b) { eta <- X %*% b; sum(log1p(exp(-abs(eta))) + pmax(eta, 0) - y * eta) + lambda / 2 * sum(pen * b^2) }
+  fn <- function(b) {
+    eta <- X %*% b
+    sum(log1p(exp(-abs(eta))) + pmax(eta, 0) - y * eta) + lambda / 2 * sum(pen * b^2)
+  }
   gr <- function(b) as.vector(crossprod(X, plogis(X %*% b) - y)) + lambda * pen * b
   o <- optim(rep(0, ncol(X)), fn, gr, method = "BFGS", control = list(maxit = maxit, reltol = 1e-12))
   list(beta = setNames(o$par, c("intercept", EPISODE_FEATURES)), mean = mu, sd = s, lambda = lambda,
@@ -34,7 +38,10 @@ binary_log_loss <- function(p, y, floor = 1e-12) {
 oreb_fold_predictions <- function(ef, labels, fa, grid, maxit) {
   fa <- fa[episode_id %in% ef$episode_id]
   y_of <- function(ids) as.numeric(labels$y_off[match(ids, labels$episode_id)])
-  out <- list(); lam <- list(); coefs <- list()
+  out <- list()
+  lam <- list()
+  coefs <- list()
+  # Per outer fold: choose the ridge penalty on the inner folds, then fit and predict the test game.
   for (k in sort(unique(fa$outer_fold))) {
     s <- fold_split(fa, k)
     inner <- rbindlist(lapply(grid, function(l) {

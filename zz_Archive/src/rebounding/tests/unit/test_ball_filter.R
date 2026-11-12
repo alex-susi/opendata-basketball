@@ -7,7 +7,8 @@ source(file.path(here, "R", "ball_noise.R"))
 # Gaussian noise of sd r per axis on the measured positions.
 flight <- function(n = 30L, g = 28.3, r = c(0, 0, 0), seed = 1L, f0 = 100L) {
   set.seed(seed)
-  f <- f0 + 0:(n - 1L); tt <- (f - f0) / FPS
+  f <- f0 + 0:(n - 1L)
+  tt <- (f - f0) / FPS
   data.table(frame = f, x = 20 + 20 * tt + rnorm(n, 0, r[1]), y = 3 - 2 * tt + rnorm(n, 0, r[2]),
              z = 7 + 15 * tt - 0.5 * g * tt^2 + rnorm(n, 0, r[3]), usable_from = f + 1L)
 }
@@ -62,7 +63,9 @@ test_that("the state at t is the same whether or not later frames are in the dat
     cut <- run_filter(o[usable_from <= t], t, p)$states[[1]]
     poisoned <- copy(o)[usable_from > t, z := z + 50]
     pois <- run_filter(poisoned, t, p)$states[[1]]
-    expect_identical(full$m, cut$m); expect_identical(full$P, cut$P); expect_identical(full$m, pois$m)
+    expect_identical(full$m, cut$m)
+    expect_identical(full$P, cut$P)
+    expect_identical(full$m, pois$m)
   }
 })
 
@@ -93,6 +96,8 @@ test_that("origins before the first usable observation return an empty state in 
   o <- flight(n = 10L, f0 = 100L)
   r <- run_filter(o, c(95L, 99L, 101L, 105L), par0)
   expect_length(r$states, 4L)
-  expect_null(r$states[[1]]); expect_null(r$states[[2]])
-  expect_equal(r$states[[3]]$frame, 101L); expect_equal(r$states[[4]]$frame, 105L)
+  expect_null(r$states[[1]])
+  expect_null(r$states[[2]])
+  expect_equal(r$states[[3]]$frame, 101L)
+  expect_equal(r$states[[4]]$frame, 105L)
 })

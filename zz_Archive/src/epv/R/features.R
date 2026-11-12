@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Feature layer for the expected possession value (EPV) model.
 #
 # Everything here is computed from tracking positions at or before the frame being priced, in feet,
@@ -5,6 +6,7 @@
 # (shots, passes) and for hypothetical ones (any player shooting now, any pass the holder could throw),
 # so the component models are trained and applied on identical definitions.
 # Requires src/play_viewer/R/data.R (tracking cache, play index, record helpers).
+## ═════════════════════════════════════════════════════════════════════════════
 
 FT_PER_M <- 3.28084
 HALF_L <- 14 * FT_PER_M
@@ -28,7 +30,13 @@ ARC_MARGIN <- 1          # ft: tracked release positions sit inside the painted 
 CONTEXT_COLS <- c("dist", "three", "x", "y", "ay", "def1", "def2", "n6", "between", "rim_def", "closing",
                   "speed", "bound", "off_rim", "def_rim", "ahead", "def_spread")
 
-# ---- small matrix helpers ------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - SMALL MATRIX HELPERS ---------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 row_min <- function(m) do.call(pmin, lapply(seq_len(ncol(m)), function(j) m[, j]))
 row_max <- function(m) do.call(pmax, lapply(seq_len(ncol(m)), function(j) m[, j]))
@@ -40,7 +48,13 @@ row_min2 <- function(m) {
   row_min(m)
 }
 
-# ---- state -----------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - STATE ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Backward-difference velocities for every tracked player, clipped to MAX_SPEED.
 add_velocity <- function(players) {
@@ -99,7 +113,13 @@ add_holder <- function(S, touches, dribble_frames) {
   S
 }
 
-# ---- features ------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - FEATURES ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Court and defensive context of one offensive player per row.
 #' @param px,py,pvx,pvy Position and velocity vectors (one element per row).
@@ -159,7 +179,13 @@ pass_features <- function(px, py, rx, ry, rvx, rvy, D, flight) {
              recv_hoop = sqrt((HOOP_X - ax)^2 + ay^2), backcourt = as.integer(px < 0))
 }
 
-# ---- per-game tables -----------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - PER-GAME TABLES --------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' The event tables the EPV model needs, straight from one game's dynamic events file.
 game_events <- function(root, g) {

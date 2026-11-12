@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Build the EPV model end to end.
 #   Rscript src/epv/build_epv.R [--force] [--refit] [--constant-oreb]
 #
@@ -11,6 +12,7 @@
 #    Leave-one-game-out: for each game, fit every component on the other nine and price the held-out game.
 # 3. Save per-frame prices and, for every tracked shot, the steps behind its xFG to
 #    outputs/cache/epv/epv_{gameId}.rds (read by the play viewer), and held-out validation tables to outputs/epv/.
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -28,7 +30,13 @@ report <- file.path(app$root, "outputs", "epv")
 dir.create(cache, recursive = TRUE, showWarnings = FALSE)
 dir.create(report, recursive = TRUE, showWarnings = FALSE)
 
-# ---- features ------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - FEATURES ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Pass duration as a linear function of pass length, from completed passes in the event data.
 pass_flight <- function() {
@@ -37,6 +45,7 @@ pass_flight <- function() {
   unname(coef(lm(I((end_frame - frame) / 25) ~ len_ev, data = pa)))
 }
 
+# Feature tables per game (cached; --force rebuilds), built with the pass flight-time fit.
 tables_path <- file.path(cache, "tables.rds")
 if (file.exists(tables_path) && !"--force" %in% args) {
   tabs <- readRDS(tables_path)
@@ -63,6 +72,7 @@ ft <- bind("ft")
 # each game priced with rebound parameters fitted without it (src/court_control/price_rebounds.R). A pass
 # receiver takes his chance at the frame the pass is priced, from where he stands then.
 poreb_files <- file.path(app$root, "outputs", "cache", "court_control", paste0("poreb_", games, ".rds"))
+# Offensive-rebound prices: a training-games constant with --constant-oreb, else the court-control prices per row.
 if ("--constant-oreb" %in% args) {
   message("Offensive-rebound rate: the training games' constant (--constant-oreb)")
 } else if (!all(file.exists(poreb_files))) {
@@ -92,7 +102,13 @@ holders[, train := frame %% TRAIN_STEP == 0L]
 message(sprintf("%d priced frames, %d shots, %d passes (%d intercepted)", nrow(holders), nrow(shots), nrow(passes),
                 sum(passes$turnover)))
 
-# ---- fixed effects from the season aggregates --------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FIXED EFFECTS FROM THE SEASON AGGREGATES -------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 # The same two effects for every fold: they are built from season outcomes outside the tracked games, and from
 # the tracked games' labels and positions only.
@@ -102,7 +118,13 @@ print(season$detail, digits = 4)
 message(sprintf("Jump shots: %.4f log-odds per foot of closest-defender distance up to %d ft, %.4f for a catch-and-shoot attempt",
                 season$fixed[["def1"]], DEF_CAP, season$fixed[["cs"]]))
 
-# ---- leave-one-game-out --------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - LEAVE-ONE-GAME-OUT -----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Held-out score of one component in one game, against the training base rate and the GAM alone.
 score_component <- function(name, model, test, y, base, test_game) {

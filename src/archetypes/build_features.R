@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Build the playstyle archetype feature tables.
 #   Rscript src/archetypes/build_features.R [--force]
 #
@@ -6,6 +7,7 @@
 # 3. Features = ratios of counts (R/spec.R), each with its sampling noise and a value shrunk to the league mean.
 # 4. Reliability of every feature; features under RELIABILITY_BAR are kept but not offered for clustering.
 # Writes outputs/archetypes/*.csv and outputs/cache/archetypes/features.rds (read by cluster_archetypes.R).
+## ═════════════════════════════════════════════════════════════════════════════
 
 args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
@@ -18,6 +20,7 @@ MIN_CHANCES <- 40L        # tracked chances on one side of the ball for a player
 MIN_ATTEMPTS <- 50L       # season attempts, likewise (offense)
 RELIABILITY_BAR <- 0.7    # median reliability among those players for a feature to enter the clustering
 
+# App data (games, rosters, plays), output folders, id aliases and the feature specification.
 app <- load_app_data()
 root <- app$root
 games <- app$matches$game_id
@@ -28,8 +31,15 @@ dir.create(report, recursive = TRUE, showWarnings = FALSE)
 aliases <- fread(file.path(root, "data", "player_id_aliases.csv"))
 spec <- feature_spec()
 
-# ---- counts --------------------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - COUNTS -----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Tracked counts per game, cached; each player's counts are summed by canonical id, half and game.
 per_game <- lapply(games, function(g) {
   path <- file.path(cache, paste0("counts_", g, ".rds"))
   if (file.exists(path) && !"--force" %in% args) return(readRDS(path))
@@ -41,13 +51,20 @@ per_game <- lapply(games, function(g) {
 tracked <- rbindlist(lapply(per_game, `[[`, "counts"))
 tracked[, pid := canon_id(pid, aliases)]
 tracked <- tracked[, .(value = sum(value)), by = .(pid, half, game_id, stat)]
+# Defender-attacker assignment pairs, then season counts and identities for every player.
 pairs <- rbindlist(lapply(per_game, `[[`, "pairs"))
 pairs[, c("def", "off") := .(canon_id(def, aliases), canon_id(off, aliases))]
 season <- season_counts(root, aliases)
 people <- season_people(root, aliases)
 if (!all(tracked$pid %in% season$pid)) stop("A tracked player is missing from the season aggregates")
 
-# ---- features ------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FEATURES ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 by_tier <- function(side_name, tier_name) spec[side == side_name & tier == tier_name]
 #' Estimates for tracked features from long counts: totals plus the odd and even halves.
@@ -55,6 +72,7 @@ tracked_estimates <- function(sp, counts) {
   estimate_features(sp, feature_values(sp, wide_counts(counts)), feature_values(sp, wide_counts(counts[half == 0L])),
                     feature_values(sp, wide_counts(counts[half == 1L])))
 }
+# Offensive features from the season files and from the tracked games.
 off_season <- estimate_features(by_tier("offense", "season"), feature_values(by_tier("offense", "season"), season))
 off_tracked <- tracked_estimates(by_tier("offense", "tracked"), tracked)
 
@@ -71,7 +89,13 @@ def_tracked <- tracked_estimates(by_tier("defense", "tracked"), tracked)
 values <- rbind(off_season$values, off_tracked$values, def_tracked$values, fill = TRUE)
 priors <- rbind(off_season$priors, off_tracked$priors, def_tracked$priors)
 
-# ---- players -------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - PLAYERS ----------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 exposure <- wide_counts(tracked[stat %in% c("off_ch", "def_ch", "touches", "shots")])
 exposure <- merge(exposure, tracked[stat %in% c("off_ch", "def_ch"), .(tracked_games = uniqueN(game_id)), by = pid], by = "pid")
@@ -83,7 +107,13 @@ players[, fit_offense := tracked_off_chances >= MIN_CHANCES & season_attempts >=
 players[, fit_defense := tracked_def_chances >= MIN_CHANCES]
 setorder(players, player)
 
-# ---- reliability ---------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - RELIABILITY ------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Game-by-game raw values for players seen in two tracked games.
 two_game <- function(sp) {
@@ -92,18 +122,26 @@ two_game <- function(sp) {
   per[, as.list(pair_cor(first, second)), by = feature][, .(feature, two_game_n = n, two_game_r = r)]
 }
 fit_ids <- function(side_name) players[[paste0("fit_", side_name)]]
+# Per feature: players with data, median denominator, median reliability and split-half correlation over the fit players.
 reliability <- values[, {
   fit <- pid %in% players$pid[fit_ids(spec$side[match(feature, spec$feature)])]
   halves <- pair_cor(raw0[fit], raw1[fit])
   .(players_with_data = sum(den > 0), median_denominator = stats::median(den[fit]), reliability = stats::median(reliability[fit]),
     split_half_r = halves[["r"]], split_half_stepped = halves[["stepped"]])
 }, by = feature]
+# The dictionary: spec, priors and reliability. Features below RELIABILITY_BAR stay out of the clustering.
 dictionary <- Reduce(function(a, b) merge(a, b, by = "feature", all.x = TRUE, sort = FALSE),
                      list(spec, priors, reliability, two_game(spec[tier == "tracked"])))
 dictionary[, clustering := fifelse(use != "cluster", use, fifelse(reliability < RELIABILITY_BAR, "low_reliability", "cluster"))]
 setnames(dictionary, c("num", "den"), c("numerator", "denominator"))
 
-# ---- write ---------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - WRITE ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' One row per player, one column per feature of a side; tracked columns are empty for untracked players.
 wide_table <- function(side_name, column) {
@@ -112,6 +150,7 @@ wide_table <- function(side_name, column) {
   setcolorder(w, c("pid", keep))
   merge(players, w, by = "pid", all.x = side_name == "offense")[order(player)]
 }
+# Write the dictionary, the wide tables (shrunk and raw) per side, the long values table, and the cache.
 round_cols <- function(dt, digits = 4) dt[, lapply(.SD, function(v) if (is.double(v)) round(v, digits) else v)]
 fwrite(round_cols(dictionary[, .(feature, side, tier, clustering, definition, numerator, denominator, scale, league_mean, between_sd, unit_sd,
                                  prior_strength, players_with_data, median_denominator, reliability, split_half_r, split_half_stepped,
@@ -124,6 +163,7 @@ long <- merge(players[, .(pid, player)], values[, .(pid, feature, num, den, raw,
 fwrite(round_cols(long[order(player, feature)], 5), file.path(report, "feature_values.csv"))
 saveRDS(list(players = players, values = values, dictionary = dictionary, pairs = pairs), file.path(cache, "features.rds"))
 
+# Summary of players and features.
 message(sprintf("%d players: %d tracked, %d define the offensive clusters, %d the defensive ones.", nrow(players),
                 players[tracked_off_chances + tracked_def_chances > 0, .N], sum(players$fit_offense), sum(players$fit_defense)))
 print(dictionary[, .N, by = .(side, tier, clustering)][order(side, tier, clustering)])

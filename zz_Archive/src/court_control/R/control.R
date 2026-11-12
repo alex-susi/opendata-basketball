@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Court control: who would get to the ball if it went to a spot, where a missed shot is rebounded, and where
 # the ball goes next. Adapted from soccer's pitch control (Spearman 2016, 2017, 2018; Fernandez and Bornn
 # 2018) to the basketball court.
@@ -5,6 +6,7 @@
 # Coordinates are feet, the offense attacking the hoop at (HOOP_X, 0). Every function here has a twin in
 # web/src/lib/control.ts that the site runs live; web/tests/control.test.ts checks the two agree.
 # Requires src/epv/R/features.R for the court constants.
+## ═════════════════════════════════════════════════════════════════════════════
 
 CONTROL_DT <- 0.04       # s, integration step (one tracking frame)
 CONTROL_MAX_T <- 6       # s of integration after the ball arrives
@@ -13,7 +15,13 @@ GENERAL_CELL <- 2        # ft, grid for control, relevance and scoring opportuni
 REBOUND_CELL <- 1.5      # ft, grid for the rebound surface
 REBOUND_REACH <- 35      # ft from the hoop beyond which no rebound is counted
 
-# ---- grids ---------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - GRIDS ------------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Cell centres covering the court, offense attacking +x.
 #' @param cell Cell size in feet.
@@ -31,7 +39,13 @@ court_grid <- function(cell, half = FALSE, reach = NULL) {
   g
 }
 
-# ---- physics: time to arrive and control ---------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - PHYSICS: TIME TO ARRIVE AND CONTROL ------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Seconds each player needs to reach each spot: he keeps his velocity for the reaction time, then runs
 #' straight there at top speed (Spearman's time to intercept).
@@ -88,7 +102,13 @@ grid_control <- function(pl, grid, t_ball, par, kappa = 1) {
 #' Ball travel time from (bx, by) to each spot: a pass's flight time is linear in its length.
 ball_time <- function(bx, by, qx, qy, par) par$ball0 + par$ball1 * sqrt((qx - bx)^2 + (qy - by)^2)
 
-# ---- rebounds ------------------------------------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - REBOUNDS ---------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Seconds from release until a shot reaches the rim, linear in shot distance.
 flight_time <- function(dist, par) par$flight0 + par$flight1 * pmin(dist, 40)
@@ -138,6 +158,7 @@ rebound_chance_many <- function(P, sx, sy, grid, par, chunk = 40L) {
   n <- length(sx)
   nc <- nrow(grid)
   out <- numeric(n)
+  # In chunks of shots: every shot paired with every grid cell.
   for (start in seq(1L, n, by = chunk)) {
     idx <- start:min(n, start + chunk - 1L)
     rows <- rep(idx, each = nc)
@@ -154,7 +175,13 @@ rebound_chance_many <- function(P, sx, sy, grid, par, chunk = 40L) {
   out
 }
 
-# ---- relevance and scoring opportunity -----------------------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - RELEVANCE AND SCORING OPPORTUNITY --------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
 
 #' Where the ball is likely to be RELEVANCE_AHEAD frames from now, as a distribution over the grid:
 #' a Gaussian around the ball, tilted toward spots the offense controls and toward the hoop.

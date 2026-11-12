@@ -1,3 +1,4 @@
+## ═════════════════════════════════════════════════════════════════════════════
 # Screen coverage, first step: can the call be FORECAST before the screen, or only RECOGNISED as it happens?
 #   Rscript src/screen_coverage/01_lead_time_baseline.R
 #
@@ -49,14 +50,20 @@
 # commitment_auc.csv, worked_example.csv, film_check.csv (10-player model), film_check_4players.csv, penalty_check.csv,
 # figures/lead_time_scores.png,
 # figures/worked_example_fall_marcos.png.
+## ═════════════════════════════════════════════════════════════════════════════
 
-suppressPackageStartupMessages({ library(data.table); library(nnet); library(ggplot2) })
+suppressPackageStartupMessages({
+  library(data.table)
+  library(nnet)
+  library(ggplot2)
+})
 args <- commandArgs(FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 root <- normalizePath(file.path(dirname(normalizePath(script)), "..", ".."), winslash = "/")
 out_dir <- file.path(root, "outputs", "screen_coverage")
 dir.create(file.path(out_dir, "figures"), recursive = TRUE, showWarnings = FALSE)
 
+# Cutoffs are seconds from the screen tag; VLAG is the velocity lag in frames; PRIOR_W weights the league mix.
 FPS <- 25
 FT_PER_M <- 3.28084
 HOOP_X <- (14 - 1.575) * FT_PER_M
@@ -70,6 +77,7 @@ hoop_dist <- function(x, y) sqrt((HOOP_X - x)^2 + y^2)
 games <- as.integer(jsonlite::fromJSON(file.path(root, "data", "matches.json"))$id)
 bundle <- function(g) readRDS(file.path(root, "outputs", "cache", "explore", sprintf("bundle_%d.rds", g)))
 
+# Position of each (frame, player) pair, falling back to the nearest frame within two either side.
 pos_at <- function(B, frames, pids) {
   out <- data.table(x = rep(NA_real_, length(frames)), y = NA_real_, poss = NA_character_)
   for (d in c(0L, -1L, 1L, -2L, 2L)) {
@@ -81,6 +89,7 @@ pos_at <- function(B, frames, pids) {
   out
 }
 
+# Columns for the other six players: slots o1-o3 (attackers) and x1-x3 (defenders), each with position and velocity.
 SIX_SLOTS <- c(paste0("o", 1:3), paste0("x", 1:3))
 SIX <- as.vector(t(outer(SIX_SLOTS, c("_x", "_y", "_vx", "_vy"), paste0)))
 
@@ -91,6 +100,7 @@ others_at <- function(B, p, frames, sx, sy) {
   n <- nrow(p)
   found <- data.table()
   left <- seq_len(n)
+  # Use the first frame offset at which three attackers and three defenders besides the four are tracked.
   for (d in c(0L, -1L, 1L, -2L, 2L)) {
     if (!length(left)) break
     q <- data.table(i = left, frame = frames[left] + d)
@@ -102,27 +112,39 @@ others_at <- function(B, p, frames, sx, sy) {
   }
   out <- matrix(NA_real_, n, length(SIX), dimnames = list(NULL, SIX))
   if (!nrow(found)) return(out)
+  # Velocity over VLAG frames; mirror y so the screener is at y >= 0; slot each side by distance to the screener.
   bef <- pos_at(B, found$frame - VLAG, found$pid)
   found[, `:=`(vx = (x - bef$x) / (VLAG / FPS), vy = (y - bef$y) / (VLAG / FPS), bposs = bef$poss)]
   found <- found[!is.na(vx) & bposs == poss]
   found[, flip := fifelse(sy[i] < 0, -1, 1)]
   found[, `:=`(yy = flip * y, vyy = flip * vy, ds = sqrt((x - sx[i])^2 + (y - sy[i])^2))]
   found[, slot := paste0(fifelse(off, "o", "x"), frank(ds, ties.method = "first")), by = .(i, off)]
+  # Fill the output only for picks with all six slots.
   complete <- found[, .N, by = i][N == 6L]$i
   for (s in SIX_SLOTS) {
     r <- found[slot == s & i %in% complete]
-    out[r$i, paste0(s, "_x")] <- r$x; out[r$i, paste0(s, "_y")] <- r$yy
-    out[r$i, paste0(s, "_vx")] <- r$vx; out[r$i, paste0(s, "_vy")] <- r$vyy
+    out[r$i, paste0(s, "_x")] <- r$x
+    out[r$i, paste0(s, "_y")] <- r$yy
+    out[r$i, paste0(s, "_vx")] <- r$vx
+    out[r$i, paste0(s, "_vy")] <- r$vyy
   }
   out
 }
 
-# ---- picks and their measures at each cutoff ----------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 01 - PICKS AND THEIR MEASURES AT EACH CUTOFF --------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# One game's picks: the four players and the call, then their positions and measures at each cutoff.
 build_game <- function(g) {
   B <- bundle(g)
   p <- B$picks[, .(id, chance, f0, H = actor, BD = adef, S = screener, SD = sdef, cov, scov, spot, touch)]
   if (!nrow(p)) return(NULL)
+  # Shot clock, defending team and period come from the event file; the possession comes from the chance.
   ev <- jsonlite::fromJSON(file.path(root, "data", "matches", g, paste0(g, "_dynamic_events.json")))$picks
   p[as.data.table(ev)[, .(id, sc = shotClock, def_team = defTeamId, period)], on = "id", `:=`(sc = i.sc, def_team = i.def_team, period = i.period)]
   p[B$ch, on = "chance", poss := i.poss]
@@ -130,6 +152,7 @@ build_game <- function(g) {
   roster <- B$roster
   nm <- function(id) roster$name[match(id, roster$pid)]
   p[, `:=`(h_name = nm(H), s_name = nm(S), bd_name = nm(BD), sd_name = nm(SD))]
+  # At each cutoff: the four now and VLAG frames earlier, their distances, levels relative to the screener and rates.
   feats <- rbindlist(lapply(CUTS, function(cut) {
     f <- p$f0 + as.integer(round(cut * FPS))
     look <- function(role, ff) pos_at(B, ff, p[[role]])
@@ -138,6 +161,7 @@ build_game <- function(g) {
     ok <- Reduce(`&`, lapply(c(now, bef), function(h) !is.na(h$x) & !is.na(h$poss) & h$poss == p$poss))
     lv <- function(P, role) hoop_dist(P[[role]]$x, P[[role]]$y) - hoop_dist(P$S$x, P$S$y)
     dd <- function(P, a, b) sqrt((P[[a]]$x - P[[b]]$x)^2 + (P[[a]]$y - P[[b]]$y)^2)
+    # The other six players, and whether all six are tracked.
     six <- others_at(B, p, f, now$S$x, now$S$y)
     cbind(data.table(id = p$id, cut = cut, tracked = ok, tracked6 = !apply(is.na(six), 1, any),
                      d_hs = dd(now, "H", "S"), d_bd = dd(now, "H", "BD"), d_sd = dd(now, "H", "SD"), d_def = dd(now, "BD", "SD"),
@@ -152,6 +176,7 @@ build_game <- function(g) {
   list(p = p, f = feats)
 }
 
+# Keep picks with one of the five calls and all ten players tracked at every cutoff. A missing shot clock counts as 24.
 built <- lapply(games, build_game)
 P <- rbindlist(lapply(built, `[[`, "p"))
 Fe <- rbindlist(lapply(built, `[[`, "f"))
@@ -163,14 +188,23 @@ P <- P[id %in% full[ten == TRUE]$id]
 P[, sc := fifelse(is.na(sc), 24, sc)]
 cat("Scored set (all ten players tracked at every cutoff):", nrow(P), "picks\n")
 
-# ---- frequency baselines -------------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 02 - FREQUENCY BASELINES ----------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# "Defense so far": each defense's earlier calls in the game, shrunk toward the league mix of the other games.
 cnt <- function(v) as.numeric(table(factor(v, CALLS)))
 SOFAR <- paste0("so_far_", seq_along(CALLS))
 P[, (SOFAR) := NA_real_]
 league_p <- matrix(NA_real_, nrow(P), length(CALLS))
+# League mix from the other nine games; then, per defense in order, its earlier calls plus PRIOR_W picks of that mix.
 for (g in unique(P$game_id)) {
-  lg <- cnt(P[game_id != g]$call); lg <- lg / sum(lg)
+  lg <- cnt(P[game_id != g]$call)
+  lg <- lg / sum(lg)
   rows <- which(P$game_id == g)
   league_p[rows, ] <- matrix(lg, length(rows), length(CALLS), byrow = TRUE)
   for (dt in unique(P$def_team[rows])) {
@@ -183,18 +217,26 @@ for (g in unique(P$game_id)) {
   }
 }
 so_far_p <- as.matrix(P[, ..SOFAR])
+# Log shares are the model inputs.
 LSF <- paste0("lsf_", seq_along(CALLS))
 for (k in seq_along(SOFAR)) set(P, j = LSF[k], value = log(P[[SOFAR[k]]]))
 
+# Inputs: the four players' geometry and the shot clock, optionally with the other six and the defense so far.
 GEOM <- c("d_hs", "d_bd", "d_sd", "d_def", "bd_lvl", "sd_lvl", "h_lvl", "s_hoop", "bd_lvl_v", "sd_lvl_v", "sc")
 MODELS <- list(`4 players` = GEOM, `4 players + so far` = c(GEOM, LSF),
                `10 players` = c(GEOM, SIX), `10 players + so far` = c(GEOM, SIX, LSF))
 
+# Leave-one-game-out multinomial logit on standardised inputs. Returns held-out probabilities and mean |coef| per input.
 logo_logit <- function(d, feats) {
-  Pm <- matrix(NA_real_, nrow(d), length(CALLS)); W <- list()
+  Pm <- matrix(NA_real_, nrow(d), length(CALLS))
+  W <- list()
   for (g in unique(d$game_id)) {
-    tr <- d$game_id != g; te <- !tr
-    X <- as.matrix(d[tr, ..feats]); mu <- colMeans(X); sdv <- apply(X, 2, sd); sdv[sdv == 0] <- 1
+    tr <- d$game_id != g
+    te <- !tr
+    X <- as.matrix(d[tr, ..feats])
+    mu <- colMeans(X)
+    sdv <- apply(X, 2, sd)
+    sdv[sdv == 0] <- 1
     fit <- multinom(y ~ ., data = data.frame(y = factor(d$call[tr], CALLS), scale(X, mu, sdv)),
                     decay = DECAY, trace = FALSE, maxit = 2000, MaxNWts = 5000)
     Pm[te, ] <- predict(fit, newdata = data.frame(scale(as.matrix(d[te, ..feats]), mu, sdv)), type = "probs")[, CALLS, drop = FALSE]
@@ -203,18 +245,31 @@ logo_logit <- function(d, feats) {
   }
   list(P = Pm, W = rbindlist(W)[, .(weight = mean(weight)), by = feature])
 }
+# ll_of: per-pick log loss of the true call. boot_ci: the mean with a 95% interval from resampling whole games.
 ll_of <- function(Pm, y) -log(pmax(Pm[cbind(seq_along(y), match(y, CALLS))], 1e-12))
 boot_ci <- function(score, game, reps = 2000L) {
-  set.seed(1); s <- split(score, game); sums <- vapply(s, sum, 0); ns <- lengths(s)
-  b <- replicate(reps, { k <- sample(names(s), length(s), TRUE); sum(sums[k]) / sum(ns[k]) })
+  set.seed(1)
+  s <- split(score, game)
+  sums <- vapply(s, sum, 0)
+  ns <- lengths(s)
+  b <- replicate(reps, {
+    k <- sample(names(s), length(s), TRUE)
+    sum(sums[k]) / sum(ns[k])
+  })
   c(mean(score), quantile(b, c(0.025, 0.975)))
 }
 
-scores <- list(); probs <- list(); lls <- list(); weights <- list()
+# Score every model at every cutoff against the baselines. lls keeps per-pick losses for the paired comparisons.
+scores <- list()
+probs <- list()
+lls <- list()
+weights <- list()
 y <- P$call
 base_ll <- ll_of(so_far_p, y)
+# Record a model's log loss, accuracy, and difference from "defense so far" with its game-bootstrap interval.
 add <- function(model, cut, Pm) {
-  ll <- ll_of(Pm, y); ci <- boot_ci(ll - base_ll, P$game_id)
+  ll <- ll_of(Pm, y)
+  ci <- boot_ci(ll - base_ll, P$game_id)
   lls[[paste(model, cut)]] <<- ll
   scores[[length(scores) + 1]] <<- data.table(model = model, cut = cut, n = length(y), logloss = mean(ll),
                                               accuracy = mean(max.col(Pm, ties.method = "first") == match(y, CALLS)),
@@ -222,6 +277,7 @@ add <- function(model, cut, Pm) {
 }
 add("league", NA, league_p)
 add("defense so far", NA, so_far_p)
+# At each cutoff: join that cutoff's measures to the picks and fit all four position models.
 for (k_cut in CUTS) {
   d <- merge(P, Fe[cut == k_cut, c("id", setdiff(GEOM, "sc"), SIX), with = FALSE], by = "id", sort = FALSE)
   stopifnot(identical(d$id, P$id))
@@ -233,6 +289,7 @@ for (k_cut in CUTS) {
     if (mn == "10 players + so far") weights[[length(weights) + 1]] <- fit$W[, cut := k_cut]
   }
 }
+# Round and write the score table.
 S <- rbindlist(scores)
 S[, (c("logloss", "accuracy", "vs_so_far", "lo", "hi")) := lapply(.SD, round, 4), .SDcols = c("logloss", "accuracy", "vs_so_far", "lo", "hi")]
 fwrite(S, file.path(out_dir, "lead_time_scores.csv"))
@@ -241,7 +298,8 @@ print(S)
 
 # paired: does adding the other six players help? (same picks, same held-out games)
 six_eff <- rbindlist(lapply(CUTS, function(k) rbindlist(lapply(c("", " + so far"), function(sfx) {
-  a <- lls[[paste0("10 players", sfx, " ", k)]]; b <- lls[[paste0("4 players", sfx, " ", k)]]
+  a <- lls[[paste0("10 players", sfx, " ", k)]]
+  b <- lls[[paste0("4 players", sfx, " ", k)]]
   ci <- boot_ci(a - b, P$game_id)
   data.table(cut = k, comparison = paste0("10 players", sfx, " minus 4 players", sfx),
              change = round(ci[1], 4), lo = round(ci[2], 4), hi = round(ci[3], 4),
@@ -258,28 +316,52 @@ fwrite(W[order(cut, -weight)][, weight := round(weight, 3)], file.path(out_dir, 
 cat("\nFull model: average |standardised coefficient| per input, by group (higher = leans on it more):\n")
 print(dcast(W[, .(mean_weight = round(mean(weight), 3), top = round(max(weight), 3)), by = .(cut, group)],
             group ~ cut, value.var = "mean_weight"))
-cat("\nTop 8 inputs at -0.4 s:\n"); print(W[cut == -0.4][order(-weight)][1:8, .(feature, group, weight = round(weight, 3))])
+cat("\nTop 8 inputs at -0.4 s:\n")
+print(W[cut == -0.4][order(-weight)][1:8, .(feature, group, weight = round(weight, 3))])
 
-# ---- when do the defenders commit? -----------------------------------------------------------------
 
-auc <- function(x, g) { ok <- !is.na(x); x <- x[ok]; g <- g[ok]; r <- rank(x); n1 <- sum(g); n0 <- sum(!g)
-  (sum(r[g]) - n1 * (n1 + 1) / 2) / (n1 * n0) }
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 03 - WHEN DO THE DEFENDERS COMMIT? ------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# AUC of one measure for a two-way split (rank-sum form), with NAs dropped.
+auc <- function(x, g) {
+  ok <- !is.na(x)
+  x <- x[ok]
+  g <- g[ok]
+  r <- rank(x)
+  n1 <- sum(g)
+  n0 <- sum(!g)
+  (sum(r[g]) - n1 * (n1 + 1) / 2) / (n1 * n0)
+}
+# At each cutoff: does one defender's position already separate the calls?
 FA <- merge(Fe[id %in% P$id], P[, .(id, cov, scov)], by = "id")
-com <- rbind(
-  FA[cov %in% c("over", "under"), .(question = "over vs under, from BD's level (bd_lvl)", auc = auc(bd_lvl, cov == "over"), n = .N), by = cut],
-  FA[scov %in% c("show", "soft") & cov %in% c("over", "under"), .(question = "show vs soft, from SD's level (sd_lvl)", auc = auc(sd_lvl, scov == "show"), n = .N), by = cut],
-  FA[, .(question = "switch vs not, from BD-SD distance (closer = switch)", auc = auc(-d_def, cov == "switch"), n = .N), by = cut])
+com <- rbind(FA[cov %in% c("over", "under"), .(question = "over vs under, from BD's level (bd_lvl)", auc = auc(bd_lvl, cov == "over"), n = .N), by = cut],
+             FA[scov %in% c("show", "soft") & cov %in% c("over", "under"), .(question = "show vs soft, from SD's level (sd_lvl)", auc = auc(sd_lvl, scov == "show"), n = .N), by = cut],
+             FA[, .(question = "switch vs not, from BD-SD distance (closer = switch)", auc = auc(-d_def, cov == "switch"), n = .N), by = cut])
 com[, auc := round(auc, 3)]
 fwrite(com, file.path(out_dir, "commitment_auc.csv"))
 cat("\nHow well one defender's position separates the calls at each cutoff (AUC, 0.5 = no sign yet):\n")
 print(dcast(com, question ~ cut, value.var = "auc"))
 
-# ---- worked example: Fall screens for Marcos, under + soft ------------------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - WORKED EXAMPLE ---------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Fall screens for Marcos, under + soft.
 
 FULL <- "10 players + so far"
 ex <- P[game_id == 188630 & S == 59165 & call == "under + soft" & grepl("Marcos", h_name)]
 ex <- ex[order(f0)][1]
 if (nrow(ex)) {
+  # Each model's probability of under + soft for this pick at the four cutoffs, and the full model's top call.
   i <- match(ex$id, P$id)
   j_us <- match("under + soft", CALLS)
   wx <- Fe[id == ex$id]
@@ -287,6 +369,7 @@ if (nrow(ex)) {
   wx[, `:=`(p_so_far = so_far_p[i, j_us], p_4 = pk("4 players"), p_4_so_far = pk("4 players + so far"),
             p_10 = pk("10 players"), p_10_so_far = pk(FULL))]
   wx[, top_call_full := vapply(as.character(cut), function(k) CALLS[which.max(probs[[k]][[FULL]][i, ])], "")]
+  # Save and print the example's measures and probabilities.
   fwrite(cbind(ex[, .(id, poss, call, h_name, s_name, bd_name, sd_name)],
                wx[, .(cut, bd_lvl, sd_lvl, d_hs, d_bd, d_sd, bd_lvl_v, sd_lvl_v, p_so_far, p_4, p_4_so_far, p_10,
                       p_10_so_far, top_call_full)]),
@@ -306,6 +389,7 @@ if (nrow(ex)) {
   ot <- rbindlist(lapply(SIX_SLOTS, function(s) wx[, .(cut, slot = s, x = get(paste0(s, "_x")), y = get(paste0(s, "_y")))]))
   ot[flip, on = "cut", y := y * i.flip]
   ot[, side := fifelse(substr(slot, 1, 1) == "o", "Offense", "Defense")]
+  # Labels: each player's surname and role. Each panel's title gives the full model's probability at that cutoff.
   last <- function(s) sub(".* ", "", s)
   who <- c(H = paste0(last(ex$h_name), " (ball)"), S = paste0(last(ex$s_name), " (screener)"),
            BD = paste0(last(ex$bd_name), " (on ball)"), SD = paste0(last(ex$sd_name), " (on screener)"))
@@ -314,8 +398,10 @@ if (nrow(ex)) {
   sn[, panel := factor(lab(cut), levels = lab(CUTS))]
   ot[, panel := factor(lab(cut), levels = lab(CUTS))]
   sn[, side := fifelse(role %in% c("H", "S"), "Offense", "Defense")]
+  # The three-point arc in front of the hoop, then the plot.
   arc <- data.table(a = seq(-pi / 2, pi / 2, length.out = 100))[, .(x = HOOP_X - 6.75 * FT_PER_M * cos(a), y = 6.75 * FT_PER_M * sin(a))]
-  allx <- c(sn$x, ot$x, HOOP_X); ally <- c(sn$y, ot$y)
+  allx <- c(sn$x, ot$x, HOOP_X)
+  ally <- c(sn$y, ot$y)
   pe <- ggplot(sn, aes(x, y)) +
     geom_path(data = arc[x <= HOOP_X], colour = "grey70") +
     annotate("point", x = HOOP_X, y = 0, shape = 21, size = 3, colour = "grey40") +
@@ -336,8 +422,17 @@ if (nrow(ex)) {
   ggsave(file.path(out_dir, "figures", "worked_example_fall_marcos.png"), pe, width = 15, height = 5.6, dpi = 150, bg = "white")
 }
 
-# ---- film check: picks to watch, where the -0.4 s forecast was confident ------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 05 - FILM CHECK -------------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Picks to watch, where the -0.4 s forecast was confident.
+
+# The full and four-player models' -0.4 s forecasts for every pick, with the measures a viewer would check.
 pf <- probs[["-0.4"]][[FULL]]
 p4 <- probs[["-0.4"]][["4 players + so far"]]
 fc <- P[, .(id, poss, game_id, period, call, h_name, s_name, bd_name, sd_name)]
@@ -346,6 +441,7 @@ fc[, `:=`(forecast_call = CALLS[max.col(pf, ties.method = "first")], forecast_p 
 fc[, `:=`(right = forecast_call == call, dashboard = paste0("#/play/", poss))]
 fa <- Fe[cut == -0.4, .(id, bd_lvl_at_minus0.4 = round(bd_lvl, 1), sd_lvl_at_minus0.4 = round(sd_lvl, 1))]
 fc <- merge(fc, fa, by = "id")
+# Six confident right and six confident wrong forecasts, drawn reproducibly.
 pick_film <- function(fc) {
   set.seed(3)
   rbind(fc[forecast_p >= 0.6 & right == TRUE][sample(.N, min(.N, 6))],
@@ -361,10 +457,21 @@ fwrite(pick_film(f4), file.path(out_dir, "film_check_4players.csv"))
 cat("Confident -0.4 s forecasts (4 players + so far): ", f4[forecast_p >= 0.6, .N], ", ",
     sprintf("%.0f%% right", 100 * f4[forecast_p >= 0.6, mean(right)]), "\n", sep = "")
 
-# ---- penalty check: is the six-player loss overfitting, or no information? -------------------------------
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 06 - PENALTY CHECK ----------------------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Is the six-player loss overfitting, or no information?
+
 # Refit at -0.4 s with a stronger ridge penalty. If a heavier penalty closes the gap, the six players were adding
 # noise the model chased; if 10 players never beats 4, they carry little the four don't already have.
 d <- merge(P, Fe[cut == -0.4, c("id", setdiff(GEOM, "sc"), SIX), with = FALSE], by = "id", sort = FALSE)
+# For each ridge strength: held-out loss of the four- and ten-player models and their paired difference.
+# logo_logit reads the global DECAY, so it is set for each run and restored afterwards.
 pen <- rbindlist(lapply(c(1, 5, 20, 50), function(dc) {
   DECAY <<- dc
   a <- ll_of(logo_logit(d, MODELS[["4 players + so far"]])$P, y)
@@ -375,15 +482,24 @@ pen <- rbindlist(lapply(c(1, 5, 20, 50), function(dc) {
 }))
 DECAY <- 1
 fwrite(pen, file.path(out_dir, "penalty_check.csv"))
-cat("\nPenalty check at -0.4 s (both with 'so far'; decay = ridge strength, 1 is the main run):\n"); print(pen)
+cat("\nPenalty check at -0.4 s (both with 'so far'; decay = ridge strength, 1 is the main run):\n")
+print(pen)
 
-# ---- figure: log loss by cutoff ---------------------------------------------------------------------
 
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 07 - FIGURE: LOG LOSS BY CUTOFF ---------------------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# Model curves by cutoff, with the two position-free baselines as dashed lines.
 lines <- S[!is.na(cut)][, model := factor(model, levels = names(MODELS))]
 flat <- S[is.na(cut)]
 pl <- ggplot(lines, aes(cut, logloss, colour = model)) +
   geom_hline(data = flat, aes(yintercept = logloss, colour = model), linetype = "dashed") +
-  geom_line(linewidth = 0.9) + geom_point(size = 2.6) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2.6) +
   geom_vline(xintercept = 0, colour = "grey60") +
   annotate("text", x = -0.6, y = min(S$logloss) - 0.02, label = "forecast (before the tag)", size = 3.4, colour = "grey30") +
   annotate("text", x = 0.2, y = min(S$logloss) - 0.02, label = "recognition", size = 3.4, colour = "grey30") +

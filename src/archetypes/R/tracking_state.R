@@ -3,6 +3,7 @@
 # archived, so the archetypes no longer depend on it. Only what tracked.R uses is kept; the definitions are unchanged.
 # Requires src/play_viewer/R/data.R (tracking cache, play index).
 
+# Court geometry in feet (FIBA metres converted).
 FT_PER_M <- 3.28084
 HALF_L <- 14 * FT_PER_M
 HALF_W <- 7.5 * FT_PER_M
@@ -34,6 +35,7 @@ add_velocity <- function(players) {
 game_state <- function(app, g, extra_frames = integer(0)) {
   trk <- readRDS(tracking_cache_path(app$root, g))
   plays <- app$plays[game_id == g][order(start_frame)]
+  # Grid frames inside a possession, with velocities, flipped so that the offense attacks toward +x.
   fr <- trk$frames[frame %% GRID_STEP == 0L | frame %in% extra_frames]
   fr[, play := findInterval(frame, plays$start_frame)]
   fr <- fr[play > 0L][frame <= plays$end_frame[play]]
@@ -42,6 +44,7 @@ game_state <- function(app, g, extra_frames = integer(0)) {
   pl[, flip := fifelse(plays$left_hoop[play], -1, 1)]
   pl[, role := fifelse(home == (plays$off_team[play] == plays$home_team[play]), 1L, 2L)]
   for (col in c("x", "y", "vx", "vy")) set(pl, j = col, value = pl[[col]] * pl$flip)
+  # Keep frames with exactly five players per side, then split them into per-team matrices.
   five <- pl[, .(n_off = sum(role == 1L), n_def = sum(role == 2L)), by = frame][n_off == 5L & n_def == 5L, frame]
   fr <- fr[frame %in% five]
   pl <- pl[frame %in% five]
@@ -51,6 +54,7 @@ game_state <- function(app, g, extra_frames = integer(0)) {
     lapply(c(x = "x", y = "y", vx = "vx", vy = "vy", pid = "pid", det = "det"),
            function(col) matrix(pl[[col]][rows], ncol = 5L, byrow = TRUE))
   }
+  # Ball position in the same frame; a missing shot clock falls back to the game clock (at most 24 s).
   fr[, flip := fifelse(plays$left_hoop[play], -1, 1)]
   fr[, c("bx", "by", "poss_id", "game_id") := .(bx * flip, by * flip, plays$id[play], g)]
   fr[, sc := fifelse(is.na(sc), pmin(gc, 24), sc)]
