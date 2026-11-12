@@ -1,6 +1,6 @@
 // Live screen-coverage probabilities for the Coverage Read card (Annotations.svelte).
 //
-// coverage_frames.json is written by src/screen_coverage/07_export_live.R (live model: the time-aware transformer with
+// coverage_frames.json is written by screen_coverage/01_scripts/06_export_live.R (live model: the time-aware transformer with
 // two linked heads, 10_train_seq_transformer.R, unless another is exported): for every on-ball screen it scored, the
 // held-out probability of each joint call (over + show, over + soft, under + soft, under + show, switch) at every
 // frame from 2 s before the screen tag to 1 s after it. The live model (named in the file's `model`) is never told when
@@ -73,7 +73,7 @@ export function coverageAt(cov: CoverageFile, possession: string, frame: number)
 }
 
 // ---- the live model's attention (the Display panel's Model Attention toggle) -----------------------------------
-// coverage_attention.json (07_export_live.R): for each screen, its players (r, the four of the screen first) and, at
+// coverage_attention.json (06_export_live.R): for each screen, its players (r, the four of the screen first) and, at
 // every frame of the window, which roster player sits in token rows 5-10 (k, indices into r) and the whole-percent
 // share of the four screen players' attention going to each of the ten rows (w). Attention says which players' rows
 // the model mixed in, not which players caused the call.

@@ -444,11 +444,11 @@ topic_coverage <- function(BL) {
   ho <- rbindlist(lapply(BL, function(B) B$handoffs[, .(cov)]))
   ho_tab <- sort(table(ho$cov), decreasing = TRUE)
 
-  # ---- rare calls and screen geometry: features from src/screen_coverage/08_geometry_context.R ----
-  feat_path <- file.path(a$root, "outputs", "screen_coverage", "context", "screen_features.csv")
-  test_path <- file.path(a$root, "outputs", "screen_coverage", "context", "predictive_test.csv")
+  # ---- rare calls and screen geometry: features from screen_coverage/zz_Archive/01_scripts/08_geometry_context.R (archived) ----
+  feat_path <- file.path(a$root, "screen_coverage", "zz_Archive", "03_outputs", "context", "screen_features.csv")
+  test_path <- file.path(a$root, "screen_coverage", "zz_Archive", "03_outputs", "context", "predictive_test.csv")
   rare_sec <- SECTION("cv-rare", "Ice and blitz: when do the rare calls happen?",
-                      CAVEAT("Run Rscript src/screen_coverage/08_geometry_context.R to build the screen features this section uses"))
+                      CAVEAT("The screen features this section uses come from the archived screen_coverage/zz_Archive/01_scripts/08_geometry_context.R (screen_coverage/zz_Archive/03_outputs/context/)"))
   geo_sec <- NULL
   if (file.exists(feat_path)) {
     FT <- fread(feat_path)
@@ -493,7 +493,7 @@ topic_coverage <- function(BL) {
     left_all <- G[!call %in% c("ice", "blitz"), mean(side_left)]
 
     rare_sec <- SECTION("cv-rare", "Ice and blitz: when do the rare calls happen?",
-                        P("Ice and blitz were left out of the models because there are only a handful. This section asks whether they come in recognisable situations: where the screen is set, how it is angled, the clock, the defense and the attacker. Screen position and angle are measured at the screen tag from the tracking (src/screen_coverage/08_geometry_context.R)."),
+                        P("Ice and blitz were left out of the models because there are only a handful. This section asks whether they come in recognisable situations: where the screen is set, how it is angled, the clock, the defense and the attacker. Screen position and angle are measured at the screen tag from the tracking (screen_coverage/zz_Archive/01_scripts/08_geometry_context.R)."),
                         KPIS(KPI("Ice", sprintf("%d screens", n_ice), sprintf("%s of the ten games' screens", pct(ice_all, 1))),
                              KPI("Blitz", sprintf("%d screens", n_blz), sprintf("%s of the ten games' screens", pct(n_blz / n_g, 1))),
                              KPI("Season, direct picks", sprintf("%s ice · %s blitz", pct(sea_ice, 1), pct(sea_blz, 1)), sprintf("of %s direct picks in 293 games", int(sum(S$h_tot)))),

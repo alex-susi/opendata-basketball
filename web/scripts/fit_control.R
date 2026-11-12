@@ -18,7 +18,7 @@
 #   limits    each player's sprint speed, acceleration and braking (sample.json; sample_stats.R)
 # and compared leaving one game out at a time: the grid point and logistic are chosen on nine games and scored on
 # the tenth. The players' limits come from all ten games' tracking (movement only, not pass outcomes).
-# Writes outputs/court_control/fit_control.csv (the grid), fit_control_games.csv (held-out games) and prints the
+# Writes web/outputs/court_control/fit_control.csv (the grid), fit_control_games.csv (held-out games) and prints the
 # chosen constants.
 ## ═════════════════════════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ args <- commandArgs(trailingOnly = FALSE)
 script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 source(file.path(if (length(script)) dirname(script) else "web/scripts", "load_app.R"))
 a <- load_shiny_app()
-out_dir <- file.path(a$root, "outputs", "court_control")
+out_dir <- file.path(a$root, "web", "outputs", "court_control")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 # Constants of control.ts: top speed (ft/s), ball flight (s per ft), time step and cap (s), and default limits.

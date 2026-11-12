@@ -16,7 +16,7 @@
   --bar: 41px;          /* height of the tab bar */
   /* Archetype colours: the roster tags, the tags on the court and the Archetypes tab. One hue per archetype,
      offensive and defensive alike, so no two different tags share a colour (slots set in
-     src/play_viewer/R/data.R, ARCHETYPE_TAGS). Ordered round the colour wheel. */
+     play_viewer/01_app/R/data.R, ARCHETYPE_TAGS). Ordered round the colour wheel. */
   --arch-post: #E04848;
   --arch-versatile: #F07C2A;
   --arch-big: #D19A1E;
@@ -512,7 +512,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 
 /* ---- Archetypes tab: a reading page on the same dark surface. Its markup comes from the Shiny app
-   (public/data/archetypes.html), so these rules mirror src/play_viewer/www/style.css. ---- */
+   (public/data/archetypes.html), so these rules mirror play_viewer/01_app/www/style.css. ---- */
 .doc { height: calc(100vh - var(--bar)); overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 .doc-inner { max-width: 1080px; margin: 0 auto; padding: 28px 20px 56px; font-size: 16px; line-height: 1.55; }
 .doc h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }

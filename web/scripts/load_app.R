@@ -1,6 +1,6 @@
 # Shared by export_data.R and parity_reference.R.
 # Loads the Shiny play viewer's own objects and functions without launching it, so everything the static
-# site ships is produced by the app's code. src/play_viewer/ is read, never modified.
+# site ships is produced by the app's code. play_viewer/01_app/ is read, never modified.
 
 suppressPackageStartupMessages({
   library(shiny)
@@ -22,7 +22,7 @@ repo_root <- function() {
 #' app.R's final shinyApp() call only returns an object; nothing is started.
 #' @return Environment holding app_data, choices, server and the data-layer functions.
 load_shiny_app <- function(root = repo_root()) {
-  app_dir <- file.path(root, "src", "play_viewer")
+  app_dir <- file.path(root, "play_viewer", "01_app")
   a <- new.env()
   for (f in sort(list.files(file.path(app_dir, "R"), "[.][Rr]$", full.names = TRUE))) sys.source(f, envir = a)
   old <- setwd(app_dir)

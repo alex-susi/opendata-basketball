@@ -42,7 +42,7 @@
   const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame) : null);
   // A player as the card names him: jersey number, then last name ("#12 Steinbergs").
   const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
-  // Calls coloured as in the strips (src/screen_coverage/02_per_frame.R), stepped for the dark card.
+  // Calls coloured as in the strips (screen_coverage/01_scripts/R/strips.R), stepped for the dark card.
   const COV_COL: Record<string, string> = { "over + show": "#3987e5", "over + soft": "#d95926", "under + soft": "#199e70",
                                             "under + show": "#c98500", switch: "#d55181" };
   const fmtT = (t: number) => `${t >= 0 ? "+" : "−"}${Math.abs(t).toFixed(2)} s`;

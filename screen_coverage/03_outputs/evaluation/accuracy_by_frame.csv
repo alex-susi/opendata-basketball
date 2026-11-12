@@ -1,0 +1,457 @@
+model,off,t,accuracy
+"live transformer, v1 (until 2026-11-12)",-50,-2,0.4067
+"live transformer, v1 (until 2026-11-12)",-49,-1.96,0.4108
+"live transformer, v1 (until 2026-11-12)",-48,-1.92,0.4087
+"live transformer, v1 (until 2026-11-12)",-47,-1.88,0.3992
+"live transformer, v1 (until 2026-11-12)",-46,-1.84,0.3971
+"live transformer, v1 (until 2026-11-12)",-45,-1.8,0.3999
+"live transformer, v1 (until 2026-11-12)",-44,-1.76,0.3999
+"live transformer, v1 (until 2026-11-12)",-43,-1.72,0.4012
+"live transformer, v1 (until 2026-11-12)",-42,-1.68,0.4005
+"live transformer, v1 (until 2026-11-12)",-41,-1.64,0.4053
+"live transformer, v1 (until 2026-11-12)",-40,-1.6,0.404
+"live transformer, v1 (until 2026-11-12)",-39,-1.56,0.4101
+"live transformer, v1 (until 2026-11-12)",-38,-1.52,0.4142
+"live transformer, v1 (until 2026-11-12)",-37,-1.48,0.419
+"live transformer, v1 (until 2026-11-12)",-36,-1.44,0.4224
+"live transformer, v1 (until 2026-11-12)",-35,-1.4,0.4211
+"live transformer, v1 (until 2026-11-12)",-34,-1.36,0.4197
+"live transformer, v1 (until 2026-11-12)",-33,-1.32,0.4197
+"live transformer, v1 (until 2026-11-12)",-32,-1.28,0.4231
+"live transformer, v1 (until 2026-11-12)",-31,-1.24,0.4252
+"live transformer, v1 (until 2026-11-12)",-30,-1.2,0.4347
+"live transformer, v1 (until 2026-11-12)",-29,-1.16,0.4395
+"live transformer, v1 (until 2026-11-12)",-28,-1.12,0.4457
+"live transformer, v1 (until 2026-11-12)",-27,-1.08,0.4484
+"live transformer, v1 (until 2026-11-12)",-26,-1.04,0.4511
+"live transformer, v1 (until 2026-11-12)",-25,-1,0.4552
+"live transformer, v1 (until 2026-11-12)",-24,-0.96,0.4566
+"live transformer, v1 (until 2026-11-12)",-23,-0.92,0.4586
+"live transformer, v1 (until 2026-11-12)",-22,-0.88,0.4641
+"live transformer, v1 (until 2026-11-12)",-21,-0.84,0.4689
+"live transformer, v1 (until 2026-11-12)",-20,-0.8,0.4716
+"live transformer, v1 (until 2026-11-12)",-19,-0.76,0.4744
+"live transformer, v1 (until 2026-11-12)",-18,-0.72,0.4764
+"live transformer, v1 (until 2026-11-12)",-17,-0.68,0.4764
+"live transformer, v1 (until 2026-11-12)",-16,-0.64,0.4839
+"live transformer, v1 (until 2026-11-12)",-15,-0.6,0.4983
+"live transformer, v1 (until 2026-11-12)",-14,-0.56,0.5051
+"live transformer, v1 (until 2026-11-12)",-13,-0.52,0.5154
+"live transformer, v1 (until 2026-11-12)",-12,-0.48,0.529
+"live transformer, v1 (until 2026-11-12)",-11,-0.44,0.5379
+"live transformer, v1 (until 2026-11-12)",-10,-0.4,0.5489
+"live transformer, v1 (until 2026-11-12)",-9,-0.36,0.5557
+"live transformer, v1 (until 2026-11-12)",-8,-0.32,0.5701
+"live transformer, v1 (until 2026-11-12)",-7,-0.28,0.5803
+"live transformer, v1 (until 2026-11-12)",-6,-0.24,0.5947
+"live transformer, v1 (until 2026-11-12)",-5,-0.2,0.6083
+"live transformer, v1 (until 2026-11-12)",-4,-0.16,0.6241
+"live transformer, v1 (until 2026-11-12)",-3,-0.12,0.635
+"live transformer, v1 (until 2026-11-12)",-2,-0.08,0.6425
+"live transformer, v1 (until 2026-11-12)",-1,-0.04,0.6562
+"live transformer, v1 (until 2026-11-12)",0,0,0.6726
+"live transformer, v1 (until 2026-11-12)",1,0.04,0.6808
+"live transformer, v1 (until 2026-11-12)",2,0.08,0.6924
+"live transformer, v1 (until 2026-11-12)",3,0.12,0.7027
+"live transformer, v1 (until 2026-11-12)",4,0.16,0.7109
+"live transformer, v1 (until 2026-11-12)",5,0.2,0.7143
+"live transformer, v1 (until 2026-11-12)",6,0.24,0.7232
+"live transformer, v1 (until 2026-11-12)",7,0.28,0.7259
+"live transformer, v1 (until 2026-11-12)",8,0.32,0.7225
+"live transformer, v1 (until 2026-11-12)",9,0.36,0.7211
+"live transformer, v1 (until 2026-11-12)",10,0.4,0.7218
+"live transformer, v1 (until 2026-11-12)",11,0.44,0.7198
+"live transformer, v1 (until 2026-11-12)",12,0.48,0.7177
+"live transformer, v1 (until 2026-11-12)",13,0.52,0.7081
+"live transformer, v1 (until 2026-11-12)",14,0.56,0.7157
+"live transformer, v1 (until 2026-11-12)",15,0.6,0.715
+"live transformer, v1 (until 2026-11-12)",16,0.64,0.7088
+"live transformer, v1 (until 2026-11-12)",17,0.68,0.7075
+"live transformer, v1 (until 2026-11-12)",18,0.72,0.6992
+"live transformer, v1 (until 2026-11-12)",19,0.76,0.6945
+"live transformer, v1 (until 2026-11-12)",20,0.8,0.6883
+"live transformer, v1 (until 2026-11-12)",21,0.84,0.6856
+"live transformer, v1 (until 2026-11-12)",22,0.88,0.6863
+"live transformer, v1 (until 2026-11-12)",23,0.92,0.6842
+"live transformer, v1 (until 2026-11-12)",24,0.96,0.6828
+"live transformer, v1 (until 2026-11-12)",25,1,0.6828
+"live transformer, v2 (past-only)",-50,-2,0.4053
+"live transformer, v2 (past-only)",-49,-1.96,0.406
+"live transformer, v2 (past-only)",-48,-1.92,0.406
+"live transformer, v2 (past-only)",-47,-1.88,0.4046
+"live transformer, v2 (past-only)",-46,-1.84,0.4033
+"live transformer, v2 (past-only)",-45,-1.8,0.3999
+"live transformer, v2 (past-only)",-44,-1.76,0.4005
+"live transformer, v2 (past-only)",-43,-1.72,0.4067
+"live transformer, v2 (past-only)",-42,-1.68,0.4046
+"live transformer, v2 (past-only)",-41,-1.64,0.4081
+"live transformer, v2 (past-only)",-40,-1.6,0.4149
+"live transformer, v2 (past-only)",-39,-1.56,0.4183
+"live transformer, v2 (past-only)",-38,-1.52,0.4211
+"live transformer, v2 (past-only)",-37,-1.48,0.4197
+"live transformer, v2 (past-only)",-36,-1.44,0.4176
+"live transformer, v2 (past-only)",-35,-1.4,0.4238
+"live transformer, v2 (past-only)",-34,-1.36,0.4258
+"live transformer, v2 (past-only)",-33,-1.32,0.4306
+"live transformer, v2 (past-only)",-32,-1.28,0.4252
+"live transformer, v2 (past-only)",-31,-1.24,0.4299
+"live transformer, v2 (past-only)",-30,-1.2,0.4327
+"live transformer, v2 (past-only)",-29,-1.16,0.4388
+"live transformer, v2 (past-only)",-28,-1.12,0.4409
+"live transformer, v2 (past-only)",-27,-1.08,0.4443
+"live transformer, v2 (past-only)",-26,-1.04,0.4532
+"live transformer, v2 (past-only)",-25,-1,0.4504
+"live transformer, v2 (past-only)",-24,-0.96,0.4518
+"live transformer, v2 (past-only)",-23,-0.92,0.4566
+"live transformer, v2 (past-only)",-22,-0.88,0.4552
+"live transformer, v2 (past-only)",-21,-0.84,0.4627
+"live transformer, v2 (past-only)",-20,-0.8,0.4737
+"live transformer, v2 (past-only)",-19,-0.76,0.473
+"live transformer, v2 (past-only)",-18,-0.72,0.4757
+"live transformer, v2 (past-only)",-17,-0.68,0.4812
+"live transformer, v2 (past-only)",-16,-0.64,0.4846
+"live transformer, v2 (past-only)",-15,-0.6,0.4935
+"live transformer, v2 (past-only)",-14,-0.56,0.5085
+"live transformer, v2 (past-only)",-13,-0.52,0.5167
+"live transformer, v2 (past-only)",-12,-0.48,0.5256
+"live transformer, v2 (past-only)",-11,-0.44,0.54
+"live transformer, v2 (past-only)",-10,-0.4,0.5496
+"live transformer, v2 (past-only)",-9,-0.36,0.5666
+"live transformer, v2 (past-only)",-8,-0.32,0.5714
+"live transformer, v2 (past-only)",-7,-0.28,0.5824
+"live transformer, v2 (past-only)",-6,-0.24,0.5974
+"live transformer, v2 (past-only)",-5,-0.2,0.6056
+"live transformer, v2 (past-only)",-4,-0.16,0.6213
+"live transformer, v2 (past-only)",-3,-0.12,0.6316
+"live transformer, v2 (past-only)",-2,-0.08,0.6446
+"live transformer, v2 (past-only)",-1,-0.04,0.6651
+"live transformer, v2 (past-only)",0,0,0.6781
+"live transformer, v2 (past-only)",1,0.04,0.6869
+"live transformer, v2 (past-only)",2,0.08,0.6938
+"live transformer, v2 (past-only)",3,0.12,0.6972
+"live transformer, v2 (past-only)",4,0.16,0.7068
+"live transformer, v2 (past-only)",5,0.2,0.7054
+"live transformer, v2 (past-only)",6,0.24,0.7143
+"live transformer, v2 (past-only)",7,0.28,0.7136
+"live transformer, v2 (past-only)",8,0.32,0.7218
+"live transformer, v2 (past-only)",9,0.36,0.7259
+"live transformer, v2 (past-only)",10,0.4,0.7191
+"live transformer, v2 (past-only)",11,0.44,0.715
+"live transformer, v2 (past-only)",12,0.48,0.7191
+"live transformer, v2 (past-only)",13,0.52,0.7136
+"live transformer, v2 (past-only)",14,0.56,0.7157
+"live transformer, v2 (past-only)",15,0.6,0.717
+"live transformer, v2 (past-only)",16,0.64,0.7129
+"live transformer, v2 (past-only)",17,0.68,0.7129
+"live transformer, v2 (past-only)",18,0.72,0.7054
+"live transformer, v2 (past-only)",19,0.76,0.6999
+"live transformer, v2 (past-only)",20,0.8,0.6986
+"live transformer, v2 (past-only)",21,0.84,0.691
+"live transformer, v2 (past-only)",22,0.88,0.6883
+"live transformer, v2 (past-only)",23,0.92,0.6835
+"live transformer, v2 (past-only)",24,0.96,0.6856
+"live transformer, v2 (past-only)",25,1,0.6822
+"logistic baseline, v2",-50,-2,0.3766
+"logistic baseline, v2",-49,-1.96,0.3821
+"logistic baseline, v2",-48,-1.92,0.3848
+"logistic baseline, v2",-47,-1.88,0.3841
+"logistic baseline, v2",-46,-1.84,0.3869
+"logistic baseline, v2",-45,-1.8,0.393
+"logistic baseline, v2",-44,-1.76,0.3999
+"logistic baseline, v2",-43,-1.72,0.4026
+"logistic baseline, v2",-42,-1.68,0.404
+"logistic baseline, v2",-41,-1.64,0.4053
+"logistic baseline, v2",-40,-1.6,0.4108
+"logistic baseline, v2",-39,-1.56,0.4149
+"logistic baseline, v2",-38,-1.52,0.4176
+"logistic baseline, v2",-37,-1.48,0.4211
+"logistic baseline, v2",-36,-1.44,0.4252
+"logistic baseline, v2",-35,-1.4,0.4217
+"logistic baseline, v2",-34,-1.36,0.4211
+"logistic baseline, v2",-33,-1.32,0.4197
+"logistic baseline, v2",-32,-1.28,0.4204
+"logistic baseline, v2",-31,-1.24,0.4217
+"logistic baseline, v2",-30,-1.2,0.4217
+"logistic baseline, v2",-29,-1.16,0.4258
+"logistic baseline, v2",-28,-1.12,0.4272
+"logistic baseline, v2",-27,-1.08,0.4265
+"logistic baseline, v2",-26,-1.04,0.434
+"logistic baseline, v2",-25,-1,0.4327
+"logistic baseline, v2",-24,-0.96,0.4347
+"logistic baseline, v2",-23,-0.92,0.4375
+"logistic baseline, v2",-22,-0.88,0.4402
+"logistic baseline, v2",-21,-0.84,0.4443
+"logistic baseline, v2",-20,-0.8,0.4422
+"logistic baseline, v2",-19,-0.76,0.4484
+"logistic baseline, v2",-18,-0.72,0.4573
+"logistic baseline, v2",-17,-0.68,0.4634
+"logistic baseline, v2",-16,-0.64,0.4668
+"logistic baseline, v2",-15,-0.6,0.4744
+"logistic baseline, v2",-14,-0.56,0.4792
+"logistic baseline, v2",-13,-0.52,0.4812
+"logistic baseline, v2",-12,-0.48,0.4887
+"logistic baseline, v2",-11,-0.44,0.499
+"logistic baseline, v2",-10,-0.4,0.5072
+"logistic baseline, v2",-9,-0.36,0.5174
+"logistic baseline, v2",-8,-0.32,0.5222
+"logistic baseline, v2",-7,-0.28,0.5284
+"logistic baseline, v2",-6,-0.24,0.54
+"logistic baseline, v2",-5,-0.2,0.553
+"logistic baseline, v2",-4,-0.16,0.5646
+"logistic baseline, v2",-3,-0.12,0.5755
+"logistic baseline, v2",-2,-0.08,0.5899
+"logistic baseline, v2",-1,-0.04,0.6008
+"logistic baseline, v2",0,0,0.6138
+"logistic baseline, v2",1,0.04,0.6268
+"logistic baseline, v2",2,0.08,0.6364
+"logistic baseline, v2",3,0.12,0.6432
+"logistic baseline, v2",4,0.16,0.6507
+"logistic baseline, v2",5,0.2,0.6603
+"logistic baseline, v2",6,0.24,0.6664
+"logistic baseline, v2",7,0.28,0.6692
+"logistic baseline, v2",8,0.32,0.6774
+"logistic baseline, v2",9,0.36,0.6753
+"logistic baseline, v2",10,0.4,0.6822
+"logistic baseline, v2",11,0.44,0.689
+"logistic baseline, v2",12,0.48,0.6842
+"logistic baseline, v2",13,0.52,0.6767
+"logistic baseline, v2",14,0.56,0.6705
+"logistic baseline, v2",15,0.6,0.6658
+"logistic baseline, v2",16,0.64,0.6562
+"logistic baseline, v2",17,0.68,0.6541
+"logistic baseline, v2",18,0.72,0.6398
+"logistic baseline, v2",19,0.76,0.6329
+"logistic baseline, v2",20,0.8,0.6241
+"logistic baseline, v2",21,0.84,0.6193
+"logistic baseline, v2",22,0.88,0.6118
+"logistic baseline, v2",23,0.92,0.607
+"logistic baseline, v2",24,0.96,0.5967
+"logistic baseline, v2",25,1,0.5906
+always over + show,-50,-2,0.3397
+always over + show,-49,-1.96,0.3397
+always over + show,-48,-1.92,0.3397
+always over + show,-47,-1.88,0.3397
+always over + show,-46,-1.84,0.3397
+always over + show,-45,-1.8,0.3397
+always over + show,-44,-1.76,0.3397
+always over + show,-43,-1.72,0.3397
+always over + show,-42,-1.68,0.3397
+always over + show,-41,-1.64,0.3397
+always over + show,-40,-1.6,0.3397
+always over + show,-39,-1.56,0.3397
+always over + show,-38,-1.52,0.3397
+always over + show,-37,-1.48,0.3397
+always over + show,-36,-1.44,0.3397
+always over + show,-35,-1.4,0.3397
+always over + show,-34,-1.36,0.3397
+always over + show,-33,-1.32,0.3397
+always over + show,-32,-1.28,0.3397
+always over + show,-31,-1.24,0.3397
+always over + show,-30,-1.2,0.3397
+always over + show,-29,-1.16,0.3397
+always over + show,-28,-1.12,0.3397
+always over + show,-27,-1.08,0.3397
+always over + show,-26,-1.04,0.3397
+always over + show,-25,-1,0.3397
+always over + show,-24,-0.96,0.3397
+always over + show,-23,-0.92,0.3397
+always over + show,-22,-0.88,0.3397
+always over + show,-21,-0.84,0.3397
+always over + show,-20,-0.8,0.3397
+always over + show,-19,-0.76,0.3397
+always over + show,-18,-0.72,0.3397
+always over + show,-17,-0.68,0.3397
+always over + show,-16,-0.64,0.3397
+always over + show,-15,-0.6,0.3397
+always over + show,-14,-0.56,0.3397
+always over + show,-13,-0.52,0.3397
+always over + show,-12,-0.48,0.3397
+always over + show,-11,-0.44,0.3397
+always over + show,-10,-0.4,0.3397
+always over + show,-9,-0.36,0.3397
+always over + show,-8,-0.32,0.3397
+always over + show,-7,-0.28,0.3397
+always over + show,-6,-0.24,0.3397
+always over + show,-5,-0.2,0.3397
+always over + show,-4,-0.16,0.3397
+always over + show,-3,-0.12,0.3397
+always over + show,-2,-0.08,0.3397
+always over + show,-1,-0.04,0.3397
+always over + show,0,0,0.3397
+always over + show,1,0.04,0.3397
+always over + show,2,0.08,0.3397
+always over + show,3,0.12,0.3397
+always over + show,4,0.16,0.3397
+always over + show,5,0.2,0.3397
+always over + show,6,0.24,0.3397
+always over + show,7,0.28,0.3397
+always over + show,8,0.32,0.3397
+always over + show,9,0.36,0.3397
+always over + show,10,0.4,0.3397
+always over + show,11,0.44,0.3397
+always over + show,12,0.48,0.3397
+always over + show,13,0.52,0.3397
+always over + show,14,0.56,0.3397
+always over + show,15,0.6,0.3397
+always over + show,16,0.64,0.3397
+always over + show,17,0.68,0.3397
+always over + show,18,0.72,0.3397
+always over + show,19,0.76,0.3397
+always over + show,20,0.8,0.3397
+always over + show,21,0.84,0.3397
+always over + show,22,0.88,0.3397
+always over + show,23,0.92,0.3397
+always over + show,24,0.96,0.3397
+always over + show,25,1,0.3397
+"baseline: defense so far, v1",-50,-2,0.3999
+"baseline: defense so far, v1",-49,-1.96,0.3999
+"baseline: defense so far, v1",-48,-1.92,0.3999
+"baseline: defense so far, v1",-47,-1.88,0.3999
+"baseline: defense so far, v1",-46,-1.84,0.3999
+"baseline: defense so far, v1",-45,-1.8,0.3999
+"baseline: defense so far, v1",-44,-1.76,0.3999
+"baseline: defense so far, v1",-43,-1.72,0.3999
+"baseline: defense so far, v1",-42,-1.68,0.3999
+"baseline: defense so far, v1",-41,-1.64,0.3999
+"baseline: defense so far, v1",-40,-1.6,0.3999
+"baseline: defense so far, v1",-39,-1.56,0.3999
+"baseline: defense so far, v1",-38,-1.52,0.3999
+"baseline: defense so far, v1",-37,-1.48,0.3999
+"baseline: defense so far, v1",-36,-1.44,0.3999
+"baseline: defense so far, v1",-35,-1.4,0.3999
+"baseline: defense so far, v1",-34,-1.36,0.3999
+"baseline: defense so far, v1",-33,-1.32,0.3999
+"baseline: defense so far, v1",-32,-1.28,0.3999
+"baseline: defense so far, v1",-31,-1.24,0.3999
+"baseline: defense so far, v1",-30,-1.2,0.3999
+"baseline: defense so far, v1",-29,-1.16,0.3999
+"baseline: defense so far, v1",-28,-1.12,0.3999
+"baseline: defense so far, v1",-27,-1.08,0.3999
+"baseline: defense so far, v1",-26,-1.04,0.3999
+"baseline: defense so far, v1",-25,-1,0.3999
+"baseline: defense so far, v1",-24,-0.96,0.3999
+"baseline: defense so far, v1",-23,-0.92,0.3999
+"baseline: defense so far, v1",-22,-0.88,0.3999
+"baseline: defense so far, v1",-21,-0.84,0.3999
+"baseline: defense so far, v1",-20,-0.8,0.3999
+"baseline: defense so far, v1",-19,-0.76,0.3999
+"baseline: defense so far, v1",-18,-0.72,0.3999
+"baseline: defense so far, v1",-17,-0.68,0.3999
+"baseline: defense so far, v1",-16,-0.64,0.3999
+"baseline: defense so far, v1",-15,-0.6,0.3999
+"baseline: defense so far, v1",-14,-0.56,0.3999
+"baseline: defense so far, v1",-13,-0.52,0.3999
+"baseline: defense so far, v1",-12,-0.48,0.3999
+"baseline: defense so far, v1",-11,-0.44,0.3999
+"baseline: defense so far, v1",-10,-0.4,0.3999
+"baseline: defense so far, v1",-9,-0.36,0.3999
+"baseline: defense so far, v1",-8,-0.32,0.3999
+"baseline: defense so far, v1",-7,-0.28,0.3999
+"baseline: defense so far, v1",-6,-0.24,0.3999
+"baseline: defense so far, v1",-5,-0.2,0.3999
+"baseline: defense so far, v1",-4,-0.16,0.3999
+"baseline: defense so far, v1",-3,-0.12,0.3999
+"baseline: defense so far, v1",-2,-0.08,0.3999
+"baseline: defense so far, v1",-1,-0.04,0.3999
+"baseline: defense so far, v1",0,0,0.3999
+"baseline: defense so far, v1",1,0.04,0.3999
+"baseline: defense so far, v1",2,0.08,0.3999
+"baseline: defense so far, v1",3,0.12,0.3999
+"baseline: defense so far, v1",4,0.16,0.3999
+"baseline: defense so far, v1",5,0.2,0.3999
+"baseline: defense so far, v1",6,0.24,0.3999
+"baseline: defense so far, v1",7,0.28,0.3999
+"baseline: defense so far, v1",8,0.32,0.3999
+"baseline: defense so far, v1",9,0.36,0.3999
+"baseline: defense so far, v1",10,0.4,0.3999
+"baseline: defense so far, v1",11,0.44,0.3999
+"baseline: defense so far, v1",12,0.48,0.3999
+"baseline: defense so far, v1",13,0.52,0.3999
+"baseline: defense so far, v1",14,0.56,0.3999
+"baseline: defense so far, v1",15,0.6,0.3999
+"baseline: defense so far, v1",16,0.64,0.3999
+"baseline: defense so far, v1",17,0.68,0.3999
+"baseline: defense so far, v1",18,0.72,0.3999
+"baseline: defense so far, v1",19,0.76,0.3999
+"baseline: defense so far, v1",20,0.8,0.3999
+"baseline: defense so far, v1",21,0.84,0.3999
+"baseline: defense so far, v1",22,0.88,0.3999
+"baseline: defense so far, v1",23,0.92,0.3999
+"baseline: defense so far, v1",24,0.96,0.3999
+"baseline: defense so far, v1",25,1,0.3999
+"baseline: defense so far, v2",-50,-2,0.4005
+"baseline: defense so far, v2",-49,-1.96,0.4005
+"baseline: defense so far, v2",-48,-1.92,0.4005
+"baseline: defense so far, v2",-47,-1.88,0.4005
+"baseline: defense so far, v2",-46,-1.84,0.4005
+"baseline: defense so far, v2",-45,-1.8,0.3999
+"baseline: defense so far, v2",-44,-1.76,0.3999
+"baseline: defense so far, v2",-43,-1.72,0.3999
+"baseline: defense so far, v2",-42,-1.68,0.4005
+"baseline: defense so far, v2",-41,-1.64,0.4005
+"baseline: defense so far, v2",-40,-1.6,0.4005
+"baseline: defense so far, v2",-39,-1.56,0.4005
+"baseline: defense so far, v2",-38,-1.52,0.4005
+"baseline: defense so far, v2",-37,-1.48,0.4005
+"baseline: defense so far, v2",-36,-1.44,0.4005
+"baseline: defense so far, v2",-35,-1.4,0.4005
+"baseline: defense so far, v2",-34,-1.36,0.4005
+"baseline: defense so far, v2",-33,-1.32,0.4005
+"baseline: defense so far, v2",-32,-1.28,0.4012
+"baseline: defense so far, v2",-31,-1.24,0.4012
+"baseline: defense so far, v2",-30,-1.2,0.4012
+"baseline: defense so far, v2",-29,-1.16,0.4012
+"baseline: defense so far, v2",-28,-1.12,0.4005
+"baseline: defense so far, v2",-27,-1.08,0.4005
+"baseline: defense so far, v2",-26,-1.04,0.4005
+"baseline: defense so far, v2",-25,-1,0.4005
+"baseline: defense so far, v2",-24,-0.96,0.4005
+"baseline: defense so far, v2",-23,-0.92,0.4005
+"baseline: defense so far, v2",-22,-0.88,0.4005
+"baseline: defense so far, v2",-21,-0.84,0.4005
+"baseline: defense so far, v2",-20,-0.8,0.4005
+"baseline: defense so far, v2",-19,-0.76,0.4005
+"baseline: defense so far, v2",-18,-0.72,0.4005
+"baseline: defense so far, v2",-17,-0.68,0.4005
+"baseline: defense so far, v2",-16,-0.64,0.4005
+"baseline: defense so far, v2",-15,-0.6,0.4012
+"baseline: defense so far, v2",-14,-0.56,0.4012
+"baseline: defense so far, v2",-13,-0.52,0.4012
+"baseline: defense so far, v2",-12,-0.48,0.4012
+"baseline: defense so far, v2",-11,-0.44,0.4012
+"baseline: defense so far, v2",-10,-0.4,0.4005
+"baseline: defense so far, v2",-9,-0.36,0.4005
+"baseline: defense so far, v2",-8,-0.32,0.4005
+"baseline: defense so far, v2",-7,-0.28,0.4005
+"baseline: defense so far, v2",-6,-0.24,0.4005
+"baseline: defense so far, v2",-5,-0.2,0.4005
+"baseline: defense so far, v2",-4,-0.16,0.4005
+"baseline: defense so far, v2",-3,-0.12,0.4005
+"baseline: defense so far, v2",-2,-0.08,0.4005
+"baseline: defense so far, v2",-1,-0.04,0.4005
+"baseline: defense so far, v2",0,0,0.4012
+"baseline: defense so far, v2",1,0.04,0.4012
+"baseline: defense so far, v2",2,0.08,0.4012
+"baseline: defense so far, v2",3,0.12,0.4012
+"baseline: defense so far, v2",4,0.16,0.4012
+"baseline: defense so far, v2",5,0.2,0.4012
+"baseline: defense so far, v2",6,0.24,0.4012
+"baseline: defense so far, v2",7,0.28,0.4005
+"baseline: defense so far, v2",8,0.32,0.4005
+"baseline: defense so far, v2",9,0.36,0.4005
+"baseline: defense so far, v2",10,0.4,0.4005
+"baseline: defense so far, v2",11,0.44,0.4005
+"baseline: defense so far, v2",12,0.48,0.4005
+"baseline: defense so far, v2",13,0.52,0.4005
+"baseline: defense so far, v2",14,0.56,0.4005
+"baseline: defense so far, v2",15,0.6,0.4005
+"baseline: defense so far, v2",16,0.64,0.4005
+"baseline: defense so far, v2",17,0.68,0.4005
+"baseline: defense so far, v2",18,0.72,0.4005
+"baseline: defense so far, v2",19,0.76,0.4005
+"baseline: defense so far, v2",20,0.8,0.4005
+"baseline: defense so far, v2",21,0.84,0.4005
+"baseline: defense so far, v2",22,0.88,0.4005
+"baseline: defense so far, v2",23,0.92,0.4005
+"baseline: defense so far, v2",24,0.96,0.4005
+"baseline: defense so far, v2",25,1,0.4005

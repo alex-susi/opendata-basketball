@@ -1,0 +1,19 @@
+model,window,logloss,logloss_at_minus_0.4s
+"live transformer, v2 (past-only)",at and after the screen (0 to +1.0 s),0.7596,1.1275
+"live transformer, v1 (until 2026-11-12)",at and after the screen (0 to +1.0 s),0.7614,1.1264
+"logistic baseline, v2",at and after the screen (0 to +1.0 s),0.9003,1.2187
+"logistic baseline, v1",at and after the screen (0 to +1.0 s),0.9033,1.224
+"logistic baseline without so far, v2",at and after the screen (0 to +1.0 s),0.9075,1.249
+"baseline: defense so far, v1",at and after the screen (0 to +1.0 s),1.4445,1.4445
+"baseline: defense so far, v2",at and after the screen (0 to +1.0 s),1.4482,1.4484
+baseline: league mix,at and after the screen (0 to +1.0 s),1.4598,1.4598
+baseline: even split,at and after the screen (0 to +1.0 s),1.6094,1.6094
+"live transformer, v1 (until 2026-11-12)",before the screen (-2.0 to -0.04 s),1.2761,1.1264
+"live transformer, v2 (past-only)",before the screen (-2.0 to -0.04 s),1.2781,1.1275
+"logistic baseline, v2",before the screen (-2.0 to -0.04 s),1.336,1.2187
+"logistic baseline, v1",before the screen (-2.0 to -0.04 s),1.3412,1.224
+"logistic baseline without so far, v2",before the screen (-2.0 to -0.04 s),1.3737,1.249
+"baseline: defense so far, v1",before the screen (-2.0 to -0.04 s),1.4445,1.4445
+"baseline: defense so far, v2",before the screen (-2.0 to -0.04 s),1.4481,1.4484
+baseline: league mix,before the screen (-2.0 to -0.04 s),1.4598,1.4598
+baseline: even split,before the screen (-2.0 to -0.04 s),1.6094,1.6094

@@ -1,20 +1,20 @@
 # Each player's playstyle for the site's player card (sourced by export_data.R, which defines `a`): his archetype
-# probabilities on offense and defense (outputs/archetypes/*_membership.csv) and his scores on the principal
+# probabilities on offense and defense (archetypes/03_outputs/*_membership.csv) and his scores on the principal
 # components the Archetypes tab describes.
 #
-# The archetype script (src/archetypes/cluster_archetypes.R) saves the components' loadings and each archetype's
+# The archetype script (archetypes/01_scripts/cluster_archetypes.R) saves the components' loadings and each archetype's
 # centre, not the players' scores, so they are rebuilt here the same way: the same feature cache and scaling
-# (src/archetypes/R/cluster.R, scaled_matrices), the PCA refitted on the same fit players, every player projected
+# (archetypes/01_scripts/R/cluster.R, scaled_matrices), the PCA refitted on the same fit players, every player projected
 # onto the kept components and divided by each component's standard deviation (the units of the tab's score
 # table). Signs follow the tab (component_signs), so "+" is the end its notes name. The refit's loadings must
 # match the saved ones, which the function checks.
 
 playstyle_figures <- function() {
-  arch_dir <- file.path(a$root, "src", "archetypes")
+  arch_dir <- file.path(a$root, "archetypes", "01_scripts")
   env <- new.env()
   sys.source(file.path(arch_dir, "R", "cluster.R"), envir = env)
-  built <- readRDS(file.path(a$root, "outputs", "cache", "archetypes", "features.rds"))
-  out_dir <- file.path(a$root, "outputs", "archetypes")
+  built <- readRDS(file.path(a$root, "archetypes", "02_cache", "features.rds"))
+  out_dir <- file.path(a$root, "archetypes", "03_outputs")
   fit_rules <- list(offense = function(pool) pool$tracked_off_chances >= 25 & pool$season_attempts >= 30,
                     defense = function(pool) pool$fit_defense)
 

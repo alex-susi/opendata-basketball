@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Screen Coverage Reads</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column like a scouting report, with full-width tables, diagrams and one chart. This page is
+   also the project log: current status at the top, dated changes at the bottom. */
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --fg: #142030;
+  --muted: #5a6577;
+  --line: #d9dfe8;
+  --accent: #1f5fd1;
+  --new: #c7374a;
+  --good: #1d7a4f;
+  --defense: #d4512b;
+  --offense: #2a78d6;
+  --soft-fill: #e9eff9;
+  --future: #eef0f3;
+  --chart-a: #c7374a;
+  --chart-b: #1f5fd1;
+  --c-overshow: #2a78d6;
+  --c-oversoft: #eb6834;
+  --c-undersoft: #1baf7a;
+  --c-undershow: #c98500;
+  --c-switch: #d55181;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141d; --surface: #151d29; --fg: #e5ebf3; --muted: #9aa6b8; --line: #2a3546;
+    --accent: #6b9bf0; --new: #f06a7d; --good: #4cc38a; --defense: #f07a52; --offense: #3987e5; --soft-fill: #1b2638;
+    --future: #1a212c; --chart-a: #e5576c; --chart-b: #5a8ee8;
+    --c-overshow: #3987e5; --c-oversoft: #d95926; --c-undersoft: #199e70; --c-undershow: #c98500; --c-switch: #d55181;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141d; --surface: #151d29; --fg: #e5ebf3; --muted: #9aa6b8; --line: #2a3546;
+  --accent: #6b9bf0; --new: #f06a7d; --good: #4cc38a; --defense: #f07a52; --offense: #3987e5; --soft-fill: #1b2638;
+  --future: #1a212c; --chart-a: #e5576c; --chart-b: #5a8ee8;
+  --c-overshow: #3987e5; --c-oversoft: #d95926; --c-undersoft: #199e70; --c-undershow: #c98500; --c-switch: #d55181;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
+.page { max-width: 880px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 48px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); text-transform: uppercase; }
+h2 { font-size: 1.9rem; text-transform: uppercase; }
+h3 { font-size: 1.3rem; }
+p { margin: 0; max-width: 68ch; }
+section { display: flex; flex-direction: column; gap: 16px; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.15rem; color: var(--fg); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--font-mono); font-size: .8rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--surface); white-space: nowrap; }
+.chip.live { color: var(--new); border-color: var(--new); }
+.chip.ok { color: var(--good); border-color: var(--good); }
+header { display: flex; flex-direction: column; gap: 16px; border-bottom: 3px solid var(--fg); padding-bottom: 24px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-size: .9rem; }
+tr.live td { background: var(--soft-fill); }
+tr.old td { color: var(--muted); }
+tr.group td { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); padding-top: 16px; border-bottom-color: var(--accent); }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 1px; }
+.findings { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 720px) { .findings { grid-template-columns: 1fr; } }
+.finding { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.finding .stat { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.finding p { font-size: .97rem; color: var(--muted); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.panel.status { border-left: 4px solid var(--accent); }
+ol.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+ol.steps > li { counter-increment: step; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 12px; }
+ol.steps > li::before { content: counter(step, decimal-leading-zero); font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: var(--accent); line-height: 1.2; }
+ol.steps.plain > li::before { content: counter(step); }
+ol.steps h3 { margin-bottom: 2px; }
+ol.steps p { font-size: .98rem; }
+code, .file { font-family: var(--font-mono); font-size: .84em; background: var(--soft-fill); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.figure svg { width: 100%; height: auto; display: block; }
+.caption { font-size: .88rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .88rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { width: 22px; height: 0; border-top: 3px solid; display: inline-block; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 32px; }
+@media (max-width: 720px) { .cols { grid-template-columns: 1fr; } }
+.cols h3 { color: var(--accent); margin-bottom: 6px; }
+ul.tight { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; }
+ul.tight li { font-size: .97rem; }
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
+@media (max-width: 760px) { .flow { grid-template-columns: 1fr; } }
+.flow .box { background: var(--soft-fill); border-radius: 8px; padding: 12px 12px 12px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.flow .box b { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: .01em; }
+.flow .box span { font-size: .88rem; color: var(--muted); line-height: 1.4; }
+.flow .box .n { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.flow .box:not(:last-child)::after { content: "→"; position: absolute; right: -10px; top: 50%; transform: translate(50%, -50%); color: var(--muted); font-size: 1.1rem; }
+@media (max-width: 760px) { .flow .box:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -10px; transform: translate(50%, 50%); } }
+.log { display: flex; flex-direction: column; gap: 22px; }
+.log .entry { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+@media (max-width: 560px) { .log .entry { grid-template-columns: 1fr; gap: 4px; } }
+.log time { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); padding-top: 2px; }
+.log h3 { margin-bottom: 6px; }
+footer { font-size: .88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+svg text { font-family: var(--font-mono); }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header>
+    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-12</span>
+    <h1>Screen Coverage Reads</h1>
+    <p class="lede">Can tracking data tell a ball handler how an on-ball screen will be defended, and how early? This page is the project's running record: where things stand, what the live model sees, what it shows, how it was checked, what comes next, and a dated log of every change.</p>
+    <div class="meta">
+      <span class="chip">10 tracked games</span>
+      <span class="chip">1,496 tagged screens · 1,463 scored</span>
+      <span class="chip">5 coverage calls</span>
+      <span class="chip">every result held out by game</span>
+      <span class="chip ok">past-only inputs, tested</span>
+      <span class="chip live">live: time-aware transformer, v2</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Current status</h2>
+    <div class="panel status">
+      <p><b>As of 2026-11-12.</b> The live model uses only what had happened by the moment of each prediction (the <b>v2</b>, past-only rules), a test confirms it, and it is now on the play viewer's Coverage Read card. It is compared with one baseline only: a logistic model that, like it, is never told when the screen comes.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Piece</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td>Live model: time-aware transformer, two heads</td><td>v2, trained on all 10 held-out games, exported to the Coverage Read card (<span class="file">06_export_live.R</span>).</td></tr>
+            <tr><td>Baseline: logistic, never told the timing</td><td>v2, plus a version without the defense's calls so far.</td></tr>
+            <tr><td>"Future can't change the past" test</td><td>Passes: 180 of 180 sampled prediction rows, for both models (<span class="file">05_test_past_only.R</span>).</td></tr>
+            <tr><td>Project folder</td><td><span class="file">screen_coverage/</span>: <span class="file">01_scripts/</span> (six pipeline scripts, <span class="file">01_…</span> to <span class="file">06_…</span>), <span class="file">02_cache/</span>, <span class="file">03_outputs/</span>, <span class="file">04_docs/</span> (this page) and <span class="file">zz_Archive/</span> (earlier models and tests, same layout).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The question</h2>
+    <div class="split">
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <p>On every tagged ball screen SkillCorner records how both defenders played it: the ball handler's defender (over, under, switch) and the screener's defender (show, soft, switch). Together they make one call. Ice (14) and blitz (4) are too rare to learn yet and are left out of the models.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Call</th><th class="num">Screens</th><th class="num">Share</th></tr></thead>
+            <tbody>
+              <tr><td><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num">502</td><td class="num">34%</td></tr>
+              <tr><td><span class="swatch" style="background:var(--c-oversoft)"></span>over + soft</td><td class="num">496</td><td class="num">33%</td></tr>
+              <tr><td><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num">218</td><td class="num">15%</td></tr>
+              <tr><td><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num">167</td><td class="num">11%</td></tr>
+              <tr><td><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num">113</td><td class="num">8%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <figure class="figure">
+        <svg viewBox="0 0 360 250" role="img" aria-label="Half-court diagram: the four players of a screen and the screener's level line">
+          <rect x="1" y="1" width="358" height="248" rx="6" fill="var(--soft-fill)" stroke="var(--line)"/>
+          <circle cx="330" cy="125" r="6" fill="none" stroke="var(--fg)" stroke-width="2"/>
+          <path d="M 330 -27 A 152 152 0 0 0 330 277" fill="none" stroke="var(--muted)" stroke-dasharray="5 5" stroke-width="1.5"/>
+          <text x="352" y="236" font-size="10" fill="var(--muted)" text-anchor="end">screener's distance from the hoop</text>
+          <text x="20" y="28" font-size="11" fill="var(--fg)" font-weight="500">+ level: over / show</text>
+          <text x="236" y="28" font-size="11" fill="var(--fg)" font-weight="500" text-anchor="middle">− level</text>
+          <text x="236" y="42" font-size="11" fill="var(--fg)" font-weight="500" text-anchor="middle">under / soft</text>
+          <g font-size="11" font-weight="500" text-anchor="middle">
+            <circle cx="112" cy="70" r="14" fill="var(--c-overshow)"/><text x="112" y="74" fill="#ffffff">H</text>
+            <circle cx="183" cy="104" r="14" fill="var(--c-overshow)"/><text x="183" y="108" fill="#ffffff">S</text>
+            <circle cx="140" cy="88" r="14" fill="var(--defense)"/><text x="140" y="92" fill="#ffffff">BD</text>
+            <circle cx="232" cy="140" r="14" fill="var(--defense)"/><text x="232" y="144" fill="#ffffff">SD</text>
+          </g>
+          <g font-size="9.5" fill="var(--muted)">
+            <text x="60" y="58">ball handler</text>
+            <text x="196" y="96">screener</text>
+            <text x="60" y="114">his defender</text>
+            <text x="250" y="160">screener's defender</text>
+          </g>
+        </svg>
+        <figcaption class="caption">The key idea is each defender's <b>level</b>: how much farther from the hoop he stands than the screener. Above the dashed line means over (ball defender) or show (big); below means under or soft.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>What the live model sees</h2>
+    <p>The live model watches the ten players move, the way a coach would on film, and every 0.04 s gives a probability for each of the five calls. It gets no names, no scouting labels and no warning of when the screen will land. Everything it uses had already happened at that moment. Here is one real moment, then the full list.</p>
+
+    <h3>One moment from a real play</h3>
+    <figure class="figure">
+      <div class="legend">
+        <span><i class="dot" style="background:var(--offense)"></i>screen's attackers</span>
+        <span><i class="dot" style="background:var(--defense)"></i>screen's defenders</span>
+        <span><i class="dot" style="border:2px solid var(--offense)"></i><i class="dot" style="border:2px solid var(--defense)"></i>the other six</span>
+        <span><i class="key" style="border-color:var(--muted);border-top-style:dashed"></i>screener's level</span>
+        <span>· · · last 1.6 s, a dot every 0.2 s</span>
+      </div>
+      <svg viewBox="0 0 520 404" role="img" aria-label="Half court 0.4 seconds before Fall's screen for Marcos: Jefferson 1 foot above the screener's level, Tobey 4.6 feet below it and stepping up, with each player's last 1.6 seconds of movement">
+        <defs>
+          <clipPath id="crt"><rect x="14" y="14" width="492" height="388"/></clipPath>
+        </defs>
+        <!-- court: baseline at the top, offense attacking upward -->
+        <rect x="14" y="14" width="492" height="388" fill="var(--soft-fill)" stroke="var(--line)" stroke-width="1.5"/>
+        <g fill="none" stroke="var(--muted)" stroke-width="1.2" opacity="0.7">
+          <rect x="179.6" y="14" width="160.8" height="190.3"/>
+          <circle cx="260" cy="204.3" r="59"/>
+          <path d="M 43.5 14 L 43.5 112.5 A 221.5 221.5 0 0 0 476.5 112.5 L 476.5 14"/>
+          <path d="M 219 65.7 A 41 41 0 0 0 301 65.7"/>
+          <line x1="230.5" y1="53.4" x2="289.5" y2="53.4" stroke-width="2.5"/>
+        </g>
+        <circle cx="260" cy="65.7" r="7" fill="none" stroke="var(--fg)" stroke-width="2"/>
+        <!-- the screener's level: every point as far from the hoop as Fall (25.8 ft) -->
+        <circle cx="260" cy="65.7" r="258" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="6 5" clip-path="url(#crt)"/>
+        <text x="22" y="140" font-size="11" fill="var(--muted)">screener's level</text>
+        <text x="22" y="154" font-size="11" fill="var(--muted)">(25.8 ft from hoop)</text>
+        <!-- the other six, now -->
+        <g stroke-width="2" fill="var(--surface)">
+          <circle cx="101.5" cy="178.6" r="7" stroke="var(--offense)"/>
+          <circle cx="385.3" cy="268.9" r="7" stroke="var(--offense)"/>
+          <circle cx="493.7" cy="51.5" r="7" stroke="var(--offense)"/>
+          <circle cx="145.2" cy="190.9" r="7" stroke="var(--defense)"/>
+          <circle cx="342.4" cy="209.4" r="7" stroke="var(--defense)"/>
+          <circle cx="410.4" cy="66.1" r="7" stroke="var(--defense)"/>
+        </g>
+        <!-- trails: the last 1.6 s of the four screen players -->
+        <g fill="none" stroke-width="1.5" opacity="0.55">
+          <polyline stroke="var(--offense)" points="344,340.3 344,344.3 342,345.3 341,347.3 340,348.3 339,350.3 338,352.3 334,355.3 326,359.3"/>
+          <polyline stroke="var(--offense)" points="228,312.3 223,314.3 218,317.3 216,320.3 218,323.3 225,323.3 236,322.3 247,321.3 258,323.3"/>
+          <polyline stroke="var(--defense)" points="327,282.3 332,293.3 334,302.3 335,308.3 334,311.3 334,315.3 333,318.3 332,322.3 328,325.3"/>
+          <polyline stroke="var(--defense)" points="263,213.3 261,221.3 259,227.3 256,234.3 254,242.3 252,251.3 250,260.3 249,269.3 248,277.3"/>
+        </g>
+        <g opacity="0.6">
+          <g fill="var(--offense)">
+            <circle cx="344" cy="340.3" r="2.2"/><circle cx="344" cy="344.3" r="2.2"/><circle cx="342" cy="345.3" r="2.2"/><circle cx="341" cy="347.3" r="2.2"/><circle cx="340" cy="348.3" r="2.2"/><circle cx="339" cy="350.3" r="2.2"/><circle cx="338" cy="352.3" r="2.2"/><circle cx="334" cy="355.3" r="2.2"/>
+            <circle cx="228" cy="312.3" r="2.2"/><circle cx="223" cy="314.3" r="2.2"/><circle cx="218" cy="317.3" r="2.2"/><circle cx="216" cy="320.3" r="2.2"/><circle cx="218" cy="323.3" r="2.2"/><circle cx="225" cy="323.3" r="2.2"/><circle cx="236" cy="322.3" r="2.2"/><circle cx="247" cy="321.3" r="2.2"/>
+          </g>
+          <g fill="var(--defense)">
+            <circle cx="327" cy="282.3" r="2.2"/><circle cx="332" cy="293.3" r="2.2"/><circle cx="334" cy="302.3" r="2.2"/><circle cx="335" cy="308.3" r="2.2"/><circle cx="334" cy="311.3" r="2.2"/><circle cx="334" cy="315.3" r="2.2"/><circle cx="333" cy="318.3" r="2.2"/><circle cx="332" cy="322.3" r="2.2"/>
+            <circle cx="263" cy="213.3" r="2.2"/><circle cx="261" cy="221.3" r="2.2"/><circle cx="259" cy="227.3" r="2.2"/><circle cx="256" cy="234.3" r="2.2"/><circle cx="254" cy="242.3" r="2.2"/><circle cx="252" cy="251.3" r="2.2"/><circle cx="250" cy="260.3" r="2.2"/><circle cx="249" cy="269.3" r="2.2"/>
+          </g>
+        </g>
+        <!-- handler-screener distance -->
+        <line x1="326" y1="359.3" x2="258" y2="323.3" stroke="var(--fg)" stroke-width="1" stroke-dasharray="2 3"/>
+        <text x="292" y="362" font-size="11" fill="var(--fg)" text-anchor="middle">7.7 ft</text>
+        <!-- the four screen players, now -->
+        <g font-size="11" font-weight="500" text-anchor="middle" fill="#ffffff">
+          <circle cx="326" cy="359.3" r="11" fill="var(--offense)"/><text x="326" y="363">H</text>
+          <circle cx="258" cy="323.3" r="11" fill="var(--offense)"/><text x="258" y="327">S</text>
+          <circle cx="328" cy="325.3" r="11" fill="var(--defense)"/><text x="328" y="329">BD</text>
+          <circle cx="248" cy="277.3" r="11" fill="var(--defense)"/><text x="248" y="281">SD</text>
+        </g>
+        <g font-size="12" fill="var(--fg)">
+          <text x="346" y="322" font-weight="600">Jefferson (on the ball)</text>
+          <text x="346" y="337" fill="var(--muted)">+1.0 ft above the level</text>
+          <text x="180" y="266" font-weight="600" text-anchor="end">Tobey (on the screener)</text>
+          <text x="180" y="281" fill="var(--muted)" text-anchor="end">−4.6 ft, stepping up</text>
+          <text x="232" y="350" font-weight="600" text-anchor="end">Fall (screener)</text>
+          <text x="352" y="388" font-weight="600">Marcos (ball handler)</text>
+        </g>
+      </svg>
+      <figcaption class="caption">Real tracking, Barcelona vs Gran Canaria (game 188630), 0.4 s before Youssoupha Fall's screen for Juan Ignacio Marcos. The hoop is at the top. Tobey is sitting 4.6 ft below Fall's level while stepping up toward it; Jefferson is 1 ft above it. The tag says <b>under + soft</b>: Jefferson went under at contact.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>What the model reads at −0.4 s</th><th class="num">Handler</th><th class="num">Screener</th><th class="num">On the ball</th><th class="num">On the screener</th></tr></thead>
+        <tbody>
+          <tr><td>Level vs the screener (ft; + = above)</td><td class="num">+4.3</td><td class="num">0</td><td class="num">+1.0</td><td class="num">−4.6</td></tr>
+          <tr><td>Level changing (ft per s; + = moving up)</td><td class="num">+0.2</td><td class="num">0</td><td class="num">+0.1</td><td class="num">+3.3</td></tr>
+          <tr><td>Held the same side of the level for</td><td class="num">1.6 s+</td><td class="num">–</td><td class="num">0.4 s</td><td class="num">1.6 s+</td></tr>
+          <tr><td>Speed (ft per s)</td><td class="num">4.4</td><td class="num">5.3</td><td class="num">2.2</td><td class="num">4.0</td></tr>
+          <tr><td>Speeding up (+) or slowing (−)</td><td class="num">+9.9</td><td class="num">−2.1</td><td class="num">+1.4</td><td class="num">−3.2</td></tr>
+          <tr><td>Change of direction in the last 0.2 s</td><td class="num">15°</td><td class="num">12°</td><td class="num">35°</td><td class="num">5°</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Plus, for the screen as a whole: <b>13.1 s</b> to act on the shot clock; the handler and screener are <b>7.7 ft</b> apart and closer now than at any point in the last 2 s; and Gran Canaria's <b>6</b> readable coverages so far tonight. With those, the model leaned <b>over + soft 64%</b>: right about the big (soft), wrong about the guard. At the tag it was split between over + soft and under + soft (43% / 44%), and by +0.4 s it had moved to <b>under + soft 60%</b>.</p>
+
+    <h3>What "past-only" means on the clock</h3>
+    <figure class="figure">
+      <svg viewBox="0 0 640 232" role="img" aria-label="Timeline for a prediction 0.4 seconds before the screen: the model reads the last 1.6 seconds of movement and 2 seconds of contact memory; a re-screen tagged 1.2 seconds before is not counted until 1 second after its tag; everything after the prediction moment is never used">
+        <defs>
+          <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="var(--line)" stroke-width="3"/>
+          </pattern>
+          <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--muted)"/>
+          </marker>
+        </defs>
+        <!-- the future: never used -->
+        <rect x="429.6" y="16" width="170.4" height="176" fill="url(#hatch)"/>
+        <text x="514.8" y="34" font-size="12" fill="var(--muted)" text-anchor="middle">after this moment:</text>
+        <text x="514.8" y="49" font-size="12" fill="var(--muted)" text-anchor="middle">never used</text>
+        <!-- row 1: movement history -->
+        <text x="40" y="78" font-size="12" fill="var(--fg)">each player's last 1.6 s</text>
+        <rect x="234.8" y="66" width="194.8" height="16" rx="3" fill="var(--chart-b)" opacity="0.25"/>
+        <g fill="var(--chart-b)">
+          <circle cx="234.8" cy="74" r="3.5"/><circle cx="259.2" cy="74" r="3.5"/><circle cx="283.5" cy="74" r="3.5"/><circle cx="307.9" cy="74" r="3.5"/><circle cx="332.2" cy="74" r="3.5"/>
+          <circle cx="356.6" cy="74" r="3.5"/><circle cx="380.9" cy="74" r="3.5"/><circle cx="405.3" cy="74" r="3.5"/><circle cx="429.6" cy="74" r="3.5"/>
+        </g>
+        <!-- row 2: contact memory -->
+        <text x="40" y="112" font-size="12" fill="var(--fg)">contact memory, 2 s</text>
+        <rect x="186.1" y="100" width="243.5" height="16" rx="3" fill="var(--chart-b)" opacity="0.25"/>
+        <!-- row 3: calls so far -->
+        <text x="40" y="146" font-size="12" fill="var(--fg)">a re-screen just before</text>
+        <circle cx="332.2" cy="142" r="5" fill="var(--defense)"/>
+        <line x1="338" y1="142" x2="449" y2="142" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="455" y="137" font-size="11" fill="var(--fg)">readable here:</text>
+        <text x="455" y="153" font-size="11" fill="var(--fg)">not counted yet</text>
+        <text x="40" y="176" font-size="12" fill="var(--fg)">earlier screens tonight</text>
+        <circle cx="222" cy="172" r="5" fill="var(--defense)"/>
+        <line x1="228" y1="172" x2="423" y2="172" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#arr)"/>
+        <text x="236" y="165" font-size="11" fill="var(--fg)">readable long before: counted</text>
+        <!-- the moment and the tag -->
+        <line x1="429.6" y1="10" x2="429.6" y2="196" stroke="var(--new)" stroke-width="2.5"/>
+        <text x="425" y="12" font-size="12" fill="var(--new)" text-anchor="end" font-weight="600">prediction moment −0.4 s</text>
+        <line x1="478.3" y1="56" x2="478.3" y2="196" stroke="var(--fg)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="482" y="70" font-size="11" fill="var(--fg)">screen tag</text>
+        <!-- axis -->
+        <line x1="40" y1="200" x2="600" y2="200" stroke="var(--muted)" stroke-width="1"/>
+        <g font-size="11" fill="var(--muted)" text-anchor="middle">
+          <text x="40" y="218">−3.6 s</text><text x="113" y="218">−3</text><text x="234.8" y="218">−2</text><text x="356.6" y="218">−1</text>
+          <text x="478.3" y="218">0</text><text x="600" y="218">+1 s</text>
+        </g>
+      </svg>
+      <figcaption class="caption">For a prediction at −0.4 s, the model reads each player's movement from −2.0 s to −0.4 s and the handler–screener contact memory from −2.4 s. A coverage counts in tonight's tendencies only from 1 s after its own screen (so a re-screen's first coverage, tagged at −1.2 s, is not counted until −0.2 s). Nothing to the right of the red line enters, which <span class="file">05_test_past_only.R</span> checks by scrambling it.</figcaption>
+    </figure>
+
+    <h3>How it turns that into a call</h3>
+    <div class="flow" role="img" aria-label="Model flow: ten players' recent movement, each player looks back over his own 1.6 seconds, the players look at each other, the four screen players are read with the screen-level numbers, three questions give the five calls">
+      <div class="box"><span class="n">1 · in</span><b>10 players × 9 moments</b><span>16 measures for each player at now, 0.2 s ago … 1.6 s ago</span></div>
+      <div class="box"><span class="n">2 · each player</span><b>Looks back</b><span>at his own last 1.6 s: sliding, turning, holding his level</span></div>
+      <div class="box"><span class="n">3 · together</span><b>Players compared</b><span>the four in the screen take in where the other six are</span></div>
+      <div class="box"><span class="n">4 · read</span><b>Screen four + 9 numbers</b><span>time to act, tonight's tendencies, closeness, contact memory</span></div>
+      <div class="box"><span class="n">5 · out</span><b>Three questions</b><span>switch? if not: under or over? show or soft? → the five calls</span></div>
+    </div>
+
+    <h3>The full feature list</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Feature</th><th>What it means on the floor</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="2">Each player, at each of 9 moments (now, 0.2 s ago … 1.6 s ago)</td></tr>
+          <tr><td>Role</td><td>Ball handler, screener, the handler's defender, the screener's defender, another attacker, or another defender. Names and player types are not given.</td></tr>
+          <tr><td>Court position · distance from the hoop</td><td>Where he is (ft). The court is flipped so the screener is always on the same side.</td></tr>
+          <tr><td>Position relative to the screener</td><td>How far in front of, behind or beside the screen he is.</td></tr>
+          <tr><td>Position relative to the ball handler</td><td>Where he is compared with the ball; for the screener, the path of his approach.</td></tr>
+          <tr><td>Level</td><td>His distance from the hoop minus the screener's: + is above the screen (over / show), − below it (under / soft).</td></tr>
+          <tr><td>Level changing</td><td>How fast he is moving up toward the screen or sinking toward the hoop (ft per s).</td></tr>
+          <tr><td>Held his level for</td><td>How long he has stayed on the same side of the screener's level (up to 1.6 s): "Jefferson has been high for a second, now sliding".</td></tr>
+          <tr><td>Velocity · speed</td><td>Direction and pace over the last 0.2 s (ft per s).</td></tr>
+          <tr><td>Speeding up or slowing</td><td>Change in speed over the last 0.2 s: a defender gathering to jump the screen, or settling.</td></tr>
+          <tr><td>Change of direction</td><td>How sharply he has turned in the last 0.2 s.</td></tr>
+          <tr><td>Present</td><td>Whether he was tracked then. A gap of up to 0.08 s is filled from the frames before, never after; longer gaps are marked missing.</td></tr>
+          <tr class="group"><td colspan="2">The screen as a whole (9 numbers, at the prediction moment)</td></tr>
+          <tr><td>Time to act</td><td>The shot clock or the game clock, whichever runs out first (at most 24 s).</td></tr>
+          <tr><td>Tonight's tendencies (5)</td><td>This defense's share of each call on its earlier screens tonight, counting only coverages a bench could already have read (1 s after each screen). Early in a game they are blended with an even 20% split; no other game's coverages are used.</td></tr>
+          <tr><td>Closeness</td><td>How close the handler is to the screener, as a 0-1 scale: about 1 at the screen, 0.25 at 15 ft.</td></tr>
+          <tr><td>Contact memory (2)</td><td>The closest the handler and screener have been in the last 2 s, and how long ago that was.</td></tr>
+          <tr class="group"><td colspan="2">Not given to the model</td></tr>
+          <tr><td colspan="2">When the screen will land · who the players are (names, archetypes, season stats) · the ball · anything that happens after the prediction moment · other games' coverages · the outcome of the play. The one thing it does know is which four players make up the coming screen, taken from the tag.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">In all, 1,440 numbers about the players (10 players × 9 moments × 16 measures) and 9 about the screen. Code: <span class="file">R/past_only.R</span> (measures), <span class="file">02_build_sequences.R</span>, <span class="file">R/seq_transformer.R</span> (model). The logistic baseline reads a smaller set: the four screen players at the moment and 0.24 s before (distances, levels, how fast the levels change), time to act, tonight's tendencies and closeness.</p>
+  </section>
+
+  <section>
+    <h2>What we learned</h2>
+    <div class="findings">
+      <div class="finding">
+        <span class="stat">Movement history pays</span>
+        <p>Against a logistic model that is also never told when the screen comes, reading each player's last 1.6 s is better by 0.058 before the screen (8 of 10 held-out games) and by 0.141 after it (all 10).</p>
+      </div>
+      <div class="finding">
+        <span class="stat">No leak was doing the work</span>
+        <p>Rebuilt so that nothing after the prediction moment can reach it, the live model scores 1.278 before the screen (was 1.276) and 0.760 after it (was 0.761). Both changes are well inside the noise.</p>
+      </div>
+      <div class="finding">
+        <span class="stat">Tonight's habits still count</span>
+        <p>Counting only the coverages readable so far, with no other game's data, the defense's earlier calls improve the logistic baseline before the screen by 0.038 (95% interval 0.011 to 0.065; better in 8 of 10 games).</p>
+      </div>
+      <div class="finding">
+        <span class="stat">The big tips it early</span>
+        <p>Before the screen the screener's defender is read right 58.5% of the time (habit alone: 51.5%). The ball defender's over-or-under choice barely beats "expect over" (67.5% vs 67.0%) until contact, as in the Fall–Marcos example above.</p>
+      </div>
+      <div class="finding">
+        <span class="stat">Ice has a signature</span>
+        <p>Ice comes on screens set on the screener's middle shoulder near the sideline, and from four defenses. Even so, a rule built on it would be wrong most of the time. Blitz has no pattern in four cases.</p>
+      </div>
+      <div class="finding">
+        <span class="stat">Geometry adds nothing</span>
+        <p>Screen location, angle, side of the floor, re-screens and the clock did not help the main five calls: the defenders' own positions already carry them (archived test, before the rebuild).</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The pipeline</h2>
+    <ol class="steps">
+      <li><div><h3>Screens, frame rows and the logistic baseline</h3><p><span class="file">01_logistic_baseline.R</span>. The 1,463 screens with all four players tracked from −2 s to +1 s, one row per screen and frame, the four-player measures and tonight's tendencies at each frame, and the baseline: a logistic model never told when the screen comes (with and without the tendencies).</p></div></li>
+      <li><div><h3>Movement histories</h3><p><span class="file">02_build_sequences.R</span>. The ten players' measures at every frame from −3.6 s to +1 s, past-only.</p></div></li>
+      <li><div><h3>Train the live model</h3><p><span class="file">03_train_transformer.R</span>, once per held-out game: the next game validates, eight train. Saves its predictions and networks.</p></div></li>
+      <li><div><h3>Evaluate</h3><p><span class="file">04_evaluate.R</span>. Scores against the baseline and against v1, each defender's read, each call, the left-out screens, and probability strips for the film-check screens (<span class="file">screen_coverage/03_outputs/evaluation/</span>).</p></div></li>
+      <li><div><h3>Test that the future can't change the past</h3><p><span class="file">05_test_past_only.R</span>. Details in the audit section.</p></div></li>
+      <li><div><h3>Export to the play viewer</h3><p><span class="file">06_export_live.R</span>. The Coverage Read card shows each defender's call (on the ball: over, under, switch; on the screener: show, soft, switch) and the most likely combination, ticking the tagged call once the screen is set; a Model Attention toggle rings the players the model mixes in.</p></div></li>
+    </ol>
+    <p class="caption">Earlier work, now in <span class="file">screen_coverage/zz_Archive/</span>: the snapshot model at four moments, the ten-player token transformers and their comparisons, the screen-geometry test, and the logistic models fitted separately at each moment (they know exactly how far away the screen is, a kind of hindsight, so they are no longer a fair comparison). Their findings are in the change log.</p>
+  </section>
+
+  <section>
+    <h2>Leakage audit and the past-only rebuild</h2>
+    <p>An outside review flagged two ways the models might have used information from after the moment they predict. Both turned out to be real in the code but tiny in the data. The models were rebuilt anyway so that no leak is possible, and then tested.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>What was flagged</th><th>What we found (v1)</th><th>v2 rule</th></tr></thead>
+        <tbody>
+          <tr><td><b>Positions filled from the future.</b> A missing position could be filled from up to two frames (0.08 s) later.</td><td>Never happened at a predicted moment: every graded screen is tracked throughout, so the fill never fired there. In 49 screens it did fire before −2 s, still in the past for every prediction.</td><td>Fill a gap only from the two frames before; a position missing for longer is marked absent.</td></tr>
+          <tr><td><b>Coverages counted before they happened.</b> Tonight's tendencies counted every earlier screen, even one tagged after the prediction moment (re-screens).</td><td>60 screens at −2 s, 4 at −0.4 s. The earlier screen's call matched the re-screen only 30% of the time (any earlier screen: 32%), so it gave nothing away.</td><td>A screen's call counts only from 1 s after its tag, once a bench could have read it.</td></tr>
+          <tr><td><b>Other games' data in the tendencies.</b> Early-game tendencies leaned on the league mix of the other nine games, which included the game being tested.</td><td>Shifted training rows' tendencies by at most 2.5 percentage points, early in games.</td><td>Lean on an even split (20% each, worth 5 screens): no other game's coverages at all.</td></tr>
+          <tr><td>The live model's "other six" players were read at the screen tag.</td><td>Same six players in all 1,463 screens.</td><td>Read at −2 s, the earliest moment ever predicted.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>The test: the future can't change the past</h3>
+    <p>For 30 screens (20 of them re-screens, where the old rule leaked) at six moments from −2 s to +1 s, <span class="file">05_test_past_only.R</span> rebuilds every input from the raw data twice: as delivered, and after scrambling everything later than the prediction moment (later positions moved up to 12 ft and 30% deleted, later clocks replaced, the calls of every screen not yet readable replaced at random). It then reruns the live model and refits the baseline.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Check</th><th class="num">Rows passing</th></tr></thead>
+        <tbody>
+          <tr><td>Rebuilt inputs equal the ones the models were trained and scored on (baseline; live model)</td><td class="num">180 / 180; 180 / 180</td></tr>
+          <tr><td>Inputs identical after scrambling the future (baseline; live model)</td><td class="num">180 / 180; 180 / 180</td></tr>
+          <tr><td>Predictions identical after scrambling the future, and equal to the saved held-out ones (baseline refit; live model's saved networks)</td><td class="num">180 / 180; 180 / 180</td></tr>
+          <tr><td>Control: scrambling the prediction moment itself changes the inputs</td><td class="num">180 / 180</td></tr>
+          <tr><td>Control: the old tendency rule sees the scrambled future</td><td class="num">56 rows</td></tr>
+          <tr><td>Control: the old position lookup sees the scrambled future when two frames are missing (the new one never does)</td><td class="num">180 vs 0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">The controls show the test has teeth: it catches the old rules. One screen left the graded set (1,464 to 1,463) because one of its positions 0.24 s back could only be filled from a later frame. <span class="file">screen_coverage/03_outputs/past_only_test/</span></p>
+    <h3>What remains on purpose</h3>
+    <ul class="tight">
+      <li><b>The screen is known.</b> Which four players are in the screen, and that a screen is coming, come from the tag. Every result reads "given that this screen is coming".</li>
+      <li><b>SkillCorner's own positions.</b> About 1 in 5 positions are estimated by the vendor rather than seen on camera, and their method may use later frames. Our code can only promise its own steps.</li>
+      <li><b>Which screens are graded.</b> See the next section.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The screens left out</h2>
+    <p>33 of the 1,496 five-call screens are not graded, because at least one of the four screen players is untracked somewhere between −2 s and +1 s. This is not mainly about losing tracking after the screen:</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Why left out</th><th class="num">Screens</th><th>Looks ahead?</th></tr></thead>
+        <tbody>
+          <tr><td>Untracked early in the window (from −2 s for 1 to 44 frames), tracked from then on. 9 of these screens come less than 2 s into the possession.</td><td class="num">30</td><td>No: at any later moment it is already known.</td></tr>
+          <tr><td>Tracking stops after +0.8 s because the possession ends within a second of the screen</td><td class="num">3</td><td>Yes: dropping them uses what happens later.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>All 33 are tracked at the screen tag, and 1,986 of their 2,508 frames are fully tracked, so the models <b>can</b> predict on most of them. The baseline needs the four players at that frame and 0.24 s before; the live model's <code>present</code> flags already cover missing players, though it has rarely seen a screen player missing.</p>
+    <p><b>If they were added, frame by frame:</b> the decision whether to predict would be made from the past only (are the four players tracked now and just before?), which is how a live system would work. It would add the 3 quick-outcome screens, removing the only look-ahead in the selection, and early-possession screens such as drags in transition, which the graded set under-represents. It would barely move the overall scores (2% of screens), and early-window scores would be reported both ways. <span class="file">evaluation/left_out_screens.csv</span></p>
+  </section>
+
+  <section>
+    <h2>Results</h2>
+    <h3>Probability scores (held-out log loss, lower is better)</h3>
+    <p>Each screen's frames are averaged within the window, then averaged across screens; 1,463 screens. Neither model is told when the screen comes. Baselines that ignore positions score 1.609 (even split), 1.460 (league mix of the other games) and 1.448 (the defense's readable calls so far).</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Model</th><th class="num">Before screen</th><th class="num">At −0.4 s</th><th class="num">After screen</th></tr></thead>
+        <tbody>
+          <tr class="live"><td><b>Time-aware transformer, two heads, v2</b> <span class="chip live">live</span></td><td class="num"><b>1.278</b></td><td class="num"><b>1.127</b></td><td class="num"><b>0.760</b></td></tr>
+          <tr class="old"><td>Same model, v1 (live until 2026-11-12)</td><td class="num">1.276</td><td class="num">1.126</td><td class="num">0.761</td></tr>
+          <tr><td>Logistic baseline, v2</td><td class="num">1.336</td><td class="num">1.219</td><td class="num">0.900</td></tr>
+          <tr><td>Logistic baseline without tonight's tendencies, v2</td><td class="num">1.374</td><td class="num">1.249</td><td class="num">0.908</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">"Before" is −2.0 to −0.04 s around the screen tag; "after" is 0 to +1.0 s. Live model minus baseline: −0.058 before (95% interval −0.086 to −0.029, better in 8 of 10 games) and −0.141 after (−0.164 to −0.113, all 10). v2 minus v1 for the live model: +0.002 before (−0.006 to +0.011) and −0.002 after (−0.016 to +0.012). <span class="file">screen_coverage/03_outputs/evaluation/</span></p>
+
+    <h3>How often the top call is right</h3>
+    <figure class="figure">
+      <div class="legend">
+        <span><i class="key" style="border-color:var(--chart-a)"></i>live model, v2</span>
+        <span><i class="key" style="border-color:var(--chart-b)"></i>live model, v1</span>
+        <span><i class="key" style="border-color:var(--muted);border-top-style:dashed"></i>logistic baseline, v2</span>
+        <span><i class="key" style="border-color:var(--line)"></i>baselines without positions</span>
+      </div>
+      <svg viewBox="0 0 600 262" role="img" aria-label="Accuracy of the top call from 1 second before the screen to 0.4 seconds after: the live model v2 and v1 overlap and sit above the logistic baseline">
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="48" y1="220" x2="540" y2="220"/><line x1="48" y1="180" x2="540" y2="180"/><line x1="48" y1="140" x2="540" y2="140"/>
+          <line x1="48" y1="100" x2="540" y2="100"/><line x1="48" y1="60" x2="540" y2="60"/><line x1="48" y1="20" x2="540" y2="20"/>
+        </g>
+        <g font-size="11" fill="var(--muted)" text-anchor="end">
+          <text x="40" y="224">30%</text><text x="40" y="184">40%</text><text x="40" y="144">50%</text>
+          <text x="40" y="104">60%</text><text x="40" y="64">70%</text><text x="40" y="24">80%</text>
+        </g>
+        <g font-size="11" fill="var(--muted)" text-anchor="middle">
+          <text x="48" y="240">−1.0 s</text><text x="118.3" y="240">−0.8</text><text x="188.6" y="240">−0.6</text><text x="258.9" y="240">−0.4</text>
+          <text x="329.1" y="240">−0.2</text><text x="399.4" y="240">screen</text><text x="469.7" y="240">+0.2</text><text x="540" y="240">+0.4 s</text>
+        </g>
+        <line x1="399.4" y1="20" x2="399.4" y2="220" stroke="var(--muted)" stroke-width="1"/>
+        <line x1="48" y1="179.6" x2="540" y2="179.6" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="2 4"/>
+        <line x1="48" y1="204" x2="540" y2="204" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="2 4"/>
+        <text x="536" y="173.6" font-size="10.5" fill="var(--muted)" text-anchor="end">defense's readable habit so far 40%</text>
+        <text x="536" y="198" font-size="10.5" fill="var(--muted)" text-anchor="end">always over + show 34%</text>
+        <polyline fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 4"
+          points="48,166.8 188.6,150.4 258.9,137.2 329.1,118.8 399.4,94.4 540,67.2"/>
+        <polyline fill="none" stroke="var(--chart-b)" stroke-width="2"
+          points="48,158 188.6,140.8 258.9,120.4 329.1,96.8 399.4,70.8 540,51.2"/>
+        <polyline fill="none" stroke="var(--chart-a)" stroke-width="2.75"
+          points="48,160 188.6,142.4 258.9,120 329.1,97.6 399.4,68.8 540,52.4"/>
+        <g fill="var(--chart-a)" stroke="var(--surface)" stroke-width="2">
+          <circle cx="48" cy="160" r="5"><title>−1.0 s: live v2 45.0%, v1 45.5%, baseline 43.3%</title></circle>
+          <circle cx="188.6" cy="142.4" r="5"><title>−0.6 s: live v2 49.4%, v1 49.8%, baseline 47.4%</title></circle>
+          <circle cx="258.9" cy="120" r="5"><title>−0.4 s: live v2 55.0%, v1 54.9%, baseline 50.7%</title></circle>
+          <circle cx="329.1" cy="97.6" r="5"><title>−0.2 s: live v2 60.6%, v1 60.8%, baseline 55.3%</title></circle>
+          <circle cx="399.4" cy="68.8" r="5"><title>screen: live v2 67.8%, v1 67.3%, baseline 61.4%</title></circle>
+          <circle cx="540" cy="52.4" r="5"><title>+0.4 s: live v2 71.9%, v1 72.2%, baseline 68.2%</title></circle>
+        </g>
+        <g font-size="11" fill="var(--fg)" font-weight="500" text-anchor="middle">
+          <text x="62" y="148">45%</text><text x="250" y="108">55%</text><text x="384" y="58">68%</text>
+        </g>
+      </svg>
+      <figcaption class="caption">Share of screens where the model's most likely call was the one that happened, out of five calls. 1,463 screens, every game predicted by a model that never saw it. The v1 and v2 lines lie on top of each other. Hover a dot for the values.</figcaption>
+    </figure>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Before the screen</th><th class="num">Live model, v2</th><th class="num">Logistic baseline</th><th class="num">Best simple guess</th></tr></thead>
+        <tbody>
+          <tr><td>Ball defender: over, under or switch</td><td class="num">67.5%</td><td class="num">66.9%</td><td class="num">67.0% (always over)</td></tr>
+          <tr><td>Big: show, soft or switch</td><td class="num">58.5%</td><td class="num">56.7%</td><td class="num">51.5% (defense's readable habit)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>At −0.4 s the live model catches 36% of under + soft screens, 19% of switches and 19% of under + show. Over + show and over + soft are caught about 70% of the time.</p>
+  </section>
+
+  <section>
+    <h2>Ice and blitz</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>At the screen</th><th class="num">Ice (14)</th><th class="num">Other five calls</th></tr></thead>
+        <tbody>
+          <tr><td>Screener toward the middle of the handler's line to the hoop</td><td class="num">4.0 ft</td><td class="num">0.4 ft</td></tr>
+          <tr><td>Distance to the nearer sideline</td><td class="num">12.6 ft</td><td class="num">18.1 ft</td></tr>
+          <tr><td>From the four icing defenses</td><td class="num">12 of 14</td><td class="num">–</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The shoulder alone ranks an ice above another screen 87% of the time, but ice is 1% of screens: flagging every middle-shoulder screen within 15 ft of a sideline catches 4 ices among 30 screens. Blitz (4 screens) has no pattern, and season-wide no ball handler is blitzed on more than 1.5% of his picks. Both stay out of the models for now; a separate ice detector built on the shoulder, the sideline and the defense is plausible. (Descriptive, measured at the screen tag; archived test.)</p>
+  </section>
+
+  <section>
+    <h2>Limits to keep in mind</h2>
+    <ul class="tight">
+      <li><b>Small sample.</b> Ten games: about 1,320 training screens per held-out game for the baseline, about 1,170 for the live model once its validation game is set aside.</li>
+      <li><b>Vendor labels and positions.</b> The coverage calls are SkillCorner's tags, not a staff's, and some positions are the vendor's estimates.</li>
+      <li><b>The screen is known.</b> Every model is told which four players are in the screen, which is only certain afterwards. A live system would also need to detect the screen coming.</li>
+      <li><b>When a call becomes readable.</b> Tonight's tendencies assume a coverage is known 1 s after its tag. That is a judgment, not something the data states.</li>
+      <li><b>Drift after the screen.</b> Even with its memory of contact, the live model's read slips back after about +0.5 s (log loss 0.72 at +0.4 s, 0.84 at +1 s).</li>
+      <li><b>Attention is not an explanation.</b> The model's attention is spread almost evenly across the ten players, so the attention rings show little.</li>
+      <li><b>What 55% means.</b> It is a lean toward the likely coverage, not a prediction to bet on.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How to improve it</h2>
+    <div class="cols">
+      <div><h3>Model structure</h3><ul class="tight">
+        <li>A longer history (2-3 s) or an explicit "the screen has happened" detector, to stop the drift after contact.</li>
+        <li>A version on the four screen players only, to separate the architecture's gain from the other six players' gain.</li>
+        <li>An ice detector as a separate output once more games are available.</li>
+      </ul></div>
+      <div><h3>Training and tuning</h3><ul class="tight">
+        <li>A small search over width, layers, heads, dropout and learning rate, inside the training games only.</li>
+        <li>More random starts, averaged; temperature scaling so 70% means 70%.</li>
+        <li>Class weights if catching switches and under + show matters more than overall scores.</li>
+        <li>Pretraining on all tracking frames (for example, predicting where players move next) before learning the calls.</li>
+      </ul></div>
+      <div><h3>New inputs</h3><ul class="tight">
+        <li>Ball position and height.</li>
+        <li>Personnel threat: the screener's pop rate and the handler's pull-up rate, built without leaking the season's own outcomes.</li>
+        <li>Explicit help-defender measures, such as distance to the roll lane and the nearest tagger.</li>
+      </ul></div>
+      <div><h3>Making it live and checking it</h3><ul class="tight">
+        <li>A screen-detection step ("a screen is coming, from this teammate") so the card switches on without the tag.</li>
+        <li>Results by team, screen location and shot clock, plus calibration curves.</li>
+        <li>A test on new games, since ten games may not carry over to other matchups.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Using it with a staff</h2>
+    <div class="cols">
+      <div><h3>Scout</h3><ul class="tight">
+        <li>Coverage tendencies by context: which defenses ice side screens, how often the big drops against roll men.</li>
+        <li>The earliest tell for each team, such as "their big sits 5 ft below the screener at the step-up, so expect drop".</li>
+      </ul></div>
+      <div><h3>Coach and film room</h3><ul class="tight">
+        <li>The strips and the live card show the moment each defender's coverage becomes readable, the basis for clip libraries of each cue.</li>
+        <li>Self-scouting: if the model reads our big's coverage at −0.8 s, we are tipping it and can disguise or delay the commitment.</li>
+      </ul></div>
+      <div><h3>Ball handler</h3><ul class="tight">
+        <li>Read the big first: whether he is up at the level or sitting back is visible before contact.</li>
+        <li>"Expect over, read your man's hips at contact." The guard's choice is not readable earlier, so cue cards should not pretend it is.</li>
+      </ul></div>
+      <div><h3>In-game, later</h3><ul class="tight">
+        <li>Today, broadcast tracking and after-the-fact tags rule out real-time use. Tonight's tendencies can be summarised at timeouts, and the model uses them exactly as a bench would: only the coverages already seen.</li>
+        <li>With live tracking and a screen detector, the card could run during play.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Suggested next steps</h2>
+    <ol class="steps plain">
+      <li><div><p><b>Film-check the strips</b> in <span class="file">screen_coverage/03_outputs/evaluation/figures/strips/</span>: 12 screens, now drawn with the live v2 model and its own −0.4 s call.</p></div></li>
+      <li><div><p><b>Grade the 33 left-out screens frame by frame</b>, deciding from the past only whether each moment can be predicted; report both versions.</p></div></li>
+      <li><div><p><b>Check the 1 s "readable" assumption</b>: rerun with 0 s, 2 s and "once the trip is over" to see whether the tendency gain depends on it.</p></div></li>
+      <li><div><p><b>Fix the drift after the screen</b> with a longer history or a contact detector.</p></div></li>
+      <li><div><p><b>Calibrate and tune</b> with a small search inside the training games.</p></div></li>
+      <li><div><p><b>Add screen detection</b> if a truly live version matters; <b>revisit ice</b> as its own detector when more games are available.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Change log</h2>
+    <div class="log">
+      <div class="entry">
+        <time datetime="2026-11-12">2026-11-12 (latest)</time>
+        <div>
+          <h3>Repository reorganised by project</h3>
+          <ul class="tight">
+            <li>Everything for this model now lives in one top-level folder, <span class="file">screen_coverage/</span>: <span class="file">01_scripts/</span> (was <span class="file">src/screen_coverage/</span>), <span class="file">02_cache/</span> (was <span class="file">outputs/cache/screen_coverage/</span>), <span class="file">03_outputs/</span> (was <span class="file">outputs/screen_coverage/</span>), <span class="file">04_docs/</span> for this page, and <span class="file">zz_Archive/</span> with the same slots. The per-game bundles the scripts read moved to <span class="file">web/cache/explore/</span>. Paths on this page and in every script were updated; older log entries below now show the new locations.</li>
+            <li>No model, input or result changed: the evaluation's CSVs were regenerated byte-identical from the new location, and the past-only test passes (180/180).</li>
+            <li>The live model's fold files had recorded their saved networks by full path; the test now finds them by name in the current cache folder, and the stored paths were updated.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-12">2026-11-12 (later)</time>
+        <div>
+          <h3>Archive, renumbering, one fair baseline, v2 live</h3>
+          <ul class="tight">
+            <li>Archived to <span class="file">screen_coverage/zz_Archive/</span> (outputs and caches to matching <span class="file">zz_Archive/</span> folders): the snapshot model (old 01), the token transformers and their comparisons (old 03-06, 11), the geometry test (old 08) and the token-transformer module. The site's ice/blitz section now reads the archived geometry output.</li>
+            <li>Renumbered the live pipeline: <span class="file">01_logistic_baseline</span> (was 02_per_frame), <span class="file">02_build_sequences</span> (09), <span class="file">03_train_transformer</span> (10), <span class="file">04_evaluate</span> (13), <span class="file">05_test_past_only</span> (12), <span class="file">06_export_live</span> (07).</li>
+            <li>Dropped every logistic model told when the screen comes (one model per moment, plus the archetype and hindsight variants): that knowledge is hindsight, so they are not a fair comparison. The only baseline is now the logistic model never told the timing (v2: 1.336 before, 0.900 after), with a version without tonight's tendencies (1.374, 0.908).</li>
+            <li>Rebuilt sequences checked byte-identical to the ones the live model was trained on, so it was not retrained. Past-only test rerun against the new baseline: 180/180.</li>
+            <li>v2 made live on the Coverage Read card (<span class="file">06_export_live.R</span>, which now exports only the live model).</li>
+            <li>Added the "What the live model sees" section: a real moment from Fall's screen for Marcos, the past-only timeline, the model flow and the full feature list.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-12">2026-11-12</time>
+        <div>
+          <h3>Leakage audit and past-only rebuild (v2)</h3>
+          <ul class="tight">
+            <li>Verified the outside review's two claims against the data: the forward position fill never fired at a predicted moment; 60 screens at −2 s (4 at −0.4 s) counted a call tagged later, carrying no signal; the league-mix prior mixed in the test game's calls (at most 2.5 points).</li>
+            <li>New <span class="file">R/past_only.R</span>: one set of rules for every input. Backward-only position fill (at most 2 frames) with a missing flag; tendencies count calls readable 1 s after their tag and lean on an even split instead of the league mix; the live model's other six read at −2 s.</li>
+            <li>Rebuilt the logistic models and the live transformer (all 10 folds, networks now saved). 1,463 screens graded (one fewer).</li>
+            <li>New past-only test (passes 180/180) and v2-vs-v1 comparison (live transformer +0.002 before, −0.002 after).</li>
+            <li>v1 caches kept in <span class="file">screen_coverage/02_cache/v1_2026-11-11/</span>. Loaders refuse fold files built under other rules.</li>
+            <li>This page became the project's running log and status.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-11">2026-11-11</time>
+        <div>
+          <h3>Rare calls, geometry, time to act, and the time-aware transformer</h3>
+          <ul class="tight">
+            <li>EDA on ice and blitz; a test of screen geometry, re-screens and context: no gain for the five calls.</li>
+            <li>Time to act (shot clock or game clock, whichever runs out first) replaced the shot clock in every model.</li>
+            <li>Time-aware, two-head transformer: 1.276 before the screen vs 1.325 for the previous live (token) transformer; made live. The Coverage Read card shows each defender separately; attention toggle and probability strips.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-10">2026-11-10</time>
+        <div>
+          <h3>Per-frame models and the first transformers</h3>
+          <ul class="tight">
+            <li>The other six players as raw coordinates made the snapshot model worse (+0.04 log loss).</li>
+            <li>Logistic models from −2 s to +1 s (1,464 screens): one per moment, which know the exact time to the screen, and pooled ones that don't. Player archetypes did not help. The "hindsight test" found knowing the timing helped little from −1 s to −0.6 s but much more at −2 s and after the tag.</li>
+            <li>Ten-player token transformers; "no timing, + closeness" became the first live model in the play viewer.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-09">2026-11-09</time>
+        <div>
+          <h3>First look</h3>
+          <ul class="tight">
+            <li>"Pick coverage" EDA tab on the site.</li>
+            <li>First model: logistic on the four screen players at −0.8, −0.4, 0 and +0.4 s; most of the signal is recognition at contact. Worked example: Fall's screen for Marcos, game 188630.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Tracking and event data: SkillCorner open data, Liga ACB 2025-26 (10 games). Code in <span class="file">screen_coverage/01_scripts/</span>; results in <span class="file">screen_coverage/03_outputs/</span>.</span>
+    <span>A learning exercise built in R (nnet, torch). Every number on this page comes from leave-one-game-out predictions on the same 1,463 screens unless stated otherwise (v1 and archived rows are marked).</span>
+  </footer>
+</div>
+</body>
+</html>

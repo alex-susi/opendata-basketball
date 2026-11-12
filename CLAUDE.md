@@ -91,7 +91,7 @@ Match IDs: `114243`, `114234`, `114169`, `114099`, `114086`, `178442`, `179612`,
 
 Tracking is stored with Git LFS. An already-downloaded `.jsonl.gz` must contain actual gzip data, not a small LFS pointer. Only run `git lfs pull` if missing bytes justify it. Read compressed JSONL directly or stream it; do not treat it as one JSON array. Avoid loading and exploding all 10 games into memory before selecting the required frame windows. Empty player arrays and an empty ball object are valid records.
 
-Keep `data/` exclusively for supplied datasets. Suggested additions are `src/`, `notebooks/`, `outputs/`, and `docs/project/` for new work. Put progress, research specification, decision log, and submission checklist in `docs/project/` to keep them separate from upstream documentation. These are proposed additions, not existing upstream files.
+Keep `data/` exclusively for supplied datasets. New work goes in per-project top-level folders (layout under "Project files and working method"), plus `notebooks/` and `docs/project/`. Put progress, research specification, decision log, and submission checklist in `docs/project/` to keep them separate from upstream documentation. These are proposed additions, not existing upstream files.
 
 ## Coordinates clocks and tracking quality
 
@@ -281,7 +281,7 @@ After the January 8 finalist announcement, prepare the Boston presentation if se
 
 ### Project files and working method
 
-Use the existing repository layout if present. Keep new implementation in `src/`, exploratory work in `notebooks/`, figures in `outputs/figures/`, and planning records in `docs/project/`; retain upstream `data/` and `docs/` paths. File paths here are proposed destinations, not a claim that those files already exist. Keep SkillCorner data, models, and fitted results separate from NFL; only generic utilities and lessons may transfer.
+Use the existing repository layout. Each piece of work is its own top-level folder (`archetypes/`, `kickout_transformer/`, `play_viewer/`, `screen_coverage/`) with the same numbered slots inside: `01_scripts/` (numbered pipeline scripts, helpers in `01_scripts/R/`; `01_app/` for the Shiny play viewer), `02_cache/` (git-ignored intermediates), `03_outputs/` (results and figures), `04_docs/` (write-ups) and `zz_Archive/` (retired work, same slots). The site lives in `web/`, with its R-built cache in `web/cache/` and outputs in `web/outputs/`. Keep planning records in `docs/project/` and exploratory work in `notebooks/`; retain upstream `data/` and `docs/` paths. Until 2026-11-12 code lived in `src/` and results in `outputs/`; older decision-log entries use those paths. Keep SkillCorner data, models, and fitted results separate from NFL; only generic utilities and lessons may transfer.
 
 Maintain `docs/project/progress.md` for the phase, completed deliverables, next action, blockers, and milestone status. Keep `docs/project/research_spec.md` for the fixed question and definitions, `docs/project/decision_log.md` for changes and evidence, and `docs/project/submission_checklist.md` for current rules and final checks. Update these after meaningful work without adding duplicate planning files.
 

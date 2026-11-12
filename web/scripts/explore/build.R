@@ -4,7 +4,7 @@
 #   Rscript web/scripts/explore/build.R --rebuild       rebuild the per-game bundles first (after an export change)
 #   Rscript web/scripts/explore/build.R --bundles       only (re)build the bundles
 #
-# Writes web/public/data/explore_<topic>.json. Bundles are cached in outputs/cache/explore/ (git-ignored); each
+# Writes web/public/data/explore_<topic>.json. Bundles are cached in web/cache/explore/ (git-ignored); each
 # takes 20-60 s to build, mostly the site's cuts and rebounding roles (web/scripts/cuts.R, glass.R), which are
 # reused unchanged so the tabs agree with the play viewer.
 

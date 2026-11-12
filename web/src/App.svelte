@@ -3,7 +3,7 @@
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
-  // shots. Static counterpart of src/play_viewer/app.R.
+  // shots. Static counterpart of play_viewer/01_app/app.R.
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
   import Controls from "./components/Controls.svelte";

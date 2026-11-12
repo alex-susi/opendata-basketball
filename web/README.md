@@ -1,6 +1,6 @@
 # PySport Analytics Cup play viewer — static site
 
-The Shiny play viewer in `src/play_viewer/` as a static site: no server, loads one game period at a time,
+The Shiny play viewer in `play_viewer/01_app/` as a static site: no server, loads one game period at a time,
 and works on phones. R still does all the data work and modelling; this folder only draws what R exports.
 
 Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
@@ -11,7 +11,7 @@ Built with Vite, Svelte 5 and TypeScript. Tests run with Vitest.
 | --- | --- |
 | `scripts/export_data.R` | Writes `public/data/` from the Shiny app's caches, through the app's own functions |
 | `scripts/parity_reference.R` | Runs filter cases through the real Shiny server and writes `tests/parity_reference.json` |
-| `scripts/load_app.R` | Loads `src/play_viewer/` without launching it (shared by both scripts) |
+| `scripts/load_app.R` | Loads `play_viewer/01_app/` without launching it (shared by both scripts) |
 | `scripts/annotations.R` | The annotations the site draws and the Shiny app does not: event locations and context from the event files, season counts from `data/aggregates/` |
 | `public/data/` | `meta.json`, `plays.json`, `season.json`, `sample.json` (per-player figures over the ten tracked games, `scripts/sample_stats.R`), `playstyle.json` (archetype probabilities and component scores, `scripts/playstyle.R`), `archetypes.html`, and one `.json` + `.bin` pair per game period |
 | `public/logos/` | Optional team logos: `logos.json` maps a team id to an image file in the folder. Without it the scoreboard shows colour dots and the court has no midcourt logo |
@@ -43,9 +43,9 @@ Rscript web/scripts/export_data.R
 Rscript web/scripts/parity_reference.R
 ```
 
-The export needs the viewer's caches (`outputs/cache/play_viewer/`, built on the Shiny app's first start). The archetype tags beside each player's name
-and the Archetypes tab come from `outputs/archetypes/` (`Rscript src/archetypes/build_features.R`, then
-`Rscript src/archetypes/cluster_archetypes.R`); rerun the export after changing the clusters.
+The export needs the viewer's caches (`play_viewer/02_cache/`, built on the Shiny app's first start). The archetype tags beside each player's name
+and the Archetypes tab come from `archetypes/03_outputs/` (`Rscript archetypes/01_scripts/build_features.R`, then
+`Rscript archetypes/01_scripts/cluster_archetypes.R`); rerun the export after changing the clusters.
 
 The Rebounding tab reads `public/data/rebounding_eda.json`: descriptive tables of the ten games' misses, frozen on
 2026-11-06 from the rebounding pipeline when it was archived (`zz_Archive/src/rebounding/`; see
@@ -69,18 +69,18 @@ Rscript web/scripts/explore/build.R paint gravity  # some topics
 Rscript web/scripts/explore/build.R --rebuild      # rebuild the per-game bundles first
 ```
 
-`common.R` builds one cached bundle per game (`outputs/cache/explore/`, git-ignored): event tables, chance
+`common.R` builds one cached bundle per game (`web/cache/explore/`, git-ignored): event tables, chance
 outcomes, the export's cuts, screens and rebounding roles (`cuts.R`, `glass.R`, `annotations.R`, reused unchanged)
 and the tracking in the viewer's frame. Rerun with `--rebuild` after changing those scripts.
 
-To change only the wording of the Archetypes tab, edit `src/play_viewer/R/archetype_page.R` and rewrite the page
+To change only the wording of the Archetypes tab, edit `play_viewer/01_app/R/archetype_page.R` and rewrite the page
 alone. This leaves the play data and its stamp untouched, so the parity reference stays valid.
 
 ```bash
 Rscript web/scripts/export_data.R --page
 ```
 
-Team colours (`TEAM_COLORS` in `src/play_viewer/R/data.R`) are written into each play, so a colour change needs
+Team colours (`TEAM_COLORS` in `play_viewer/01_app/R/data.R`) are written into each play, so a colour change needs
 the full export.
 
 ## Deploying
@@ -95,7 +95,7 @@ to `main` that touches `web/`. One-time setup: in the repository's Settings, Pag
 - The selected play is in the address (`#/play/<id>`), so a view can be shared as a link; the Archetypes tab is `#/archetypes`, the Rebounding tab `#/rebounding` and the exploration tabs `#/explore/<topic>`.
 - The Rebounding tab, the trace panel under the court and the resizable left column exist only on the site.
 - The Archetypes tab is the Shiny app's page exported as HTML, so its text and numbers are edited in
-  `src/play_viewer/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.
+  `play_viewer/01_app/R/archetype_page.R`, not here. `public/data/archetypes.html` is overwritten by every export.
 - On narrow screens the court comes first, then options and rosters, then filters and the play list.
 - Coordinates are stored as scaled integers at the precision the Shiny app already rounds to.
 

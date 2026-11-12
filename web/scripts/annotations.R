@@ -4,7 +4,7 @@
 #
 # Every location is in the viewer's frame. The event tables put the offense's hoop at negative x and its left at
 # positive y; the viewer stores a top-down court with the offense attacking +x (see play_payload() in
-# src/play_viewer/R/data.R), so an event location (x, y) is drawn at (-x, y). Over the ten games this puts shots,
+# play_viewer/01_app/R/data.R), so an event location (x, y) is drawn at (-x, y). Over the ten games this puts shots,
 # passes, dribbles, drives, closeouts, fouls, rebounds, turnovers and touches on the actor's tracked position
 # (median gap under 0.01 ft).
 #

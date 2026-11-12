@@ -1,0 +1,7 @@
+model,window,top_call,ball_defender,big
+"live transformer, v1 (until 2026-11-12)",before the screen,0.4743,0.676,0.5857
+"live transformer, v2 (past-only)",before the screen,0.4753,0.6754,0.5847
+"logistic baseline, v2",before the screen,0.4528,0.6693,0.5671
+always over + show,before the screen,0.3397,0.6699,0.4142
+"baseline: defense so far, v1",before the screen,0.3999,0.6664,0.5174
+"baseline: defense so far, v2",before the screen,0.4006,0.6633,0.5151

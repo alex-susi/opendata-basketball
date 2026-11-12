@@ -22,7 +22,7 @@ export function emptyFilters(): FilterState {
            player: "", playerRole: "any", oreb: "any" };
 }
 
-// R: filter_plays() in src/play_viewer/R/data.R. Checks run in the same order; an empty selection means
+// R: filter_plays() in play_viewer/01_app/R/data.R. Checks run in the same order; an empty selection means
 // "no restriction", exactly as length(f[["..."]]) == 0 does there.
 export function filterPlays(plays: PlayRow[], f: FilterState): PlayRow[] {
   const games = f.game.map(Number), periods = f.period.map(Number), teams = f.team.map(Number);

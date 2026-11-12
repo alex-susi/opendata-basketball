@@ -52,7 +52,7 @@ export interface PlayRow {
 
 export type Role = "off" | "def";
 
-/** A player's playstyle archetype on the side of the ball he is on in this play (built by src/archetypes/). */
+/** A player's playstyle archetype on the side of the ball he is on in this play (built by archetypes/01_scripts/). */
 export interface Archetype {
   name: string;
   /** Short label for the roster tag. */

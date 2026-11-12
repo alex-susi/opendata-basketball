@@ -1,5 +1,5 @@
 // Team colours as the viewer draws them. A play's kits come with its export (team_kit and side_colors in
-// src/play_viewer/R/data.R): the away team wears its secondary colour when the two primaries are alike. A player's
+// play_viewer/01_app/R/data.R): the away team wears its secondary colour when the two primaries are alike. A player's
 // dot is his team's primary alone, numbered in white (dark on a light primary). The secondary colour marks a
 // player: the glow round the ball handler, and the ring round a selected player and his nearest opponent.
 

@@ -1,0 +1,16 @@
+model,call,screens,caught
+"live transformer, v1 (until 2026-11-12)",over + show,497,0.7042
+"live transformer, v1 (until 2026-11-12)",over + soft,483,0.6936
+"live transformer, v1 (until 2026-11-12)",under + soft,163,0.3681
+"live transformer, v1 (until 2026-11-12)",under + show,109,0.1468
+"live transformer, v1 (until 2026-11-12)",switch,211,0.1991
+"live transformer, v2 (past-only)",over + show,497,0.7022
+"live transformer, v2 (past-only)",over + soft,483,0.6936
+"live transformer, v2 (past-only)",under + soft,163,0.3558
+"live transformer, v2 (past-only)",under + show,109,0.1927
+"live transformer, v2 (past-only)",switch,211,0.1943
+"logistic baseline, v2",over + show,497,0.7103
+"logistic baseline, v2",over + soft,483,0.6853
+"logistic baseline, v2",under + soft,163,0.1104
+"logistic baseline, v2",under + show,109,0.0826
+"logistic baseline, v2",switch,211,0.1469

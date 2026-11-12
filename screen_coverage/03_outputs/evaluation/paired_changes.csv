@@ -1,0 +1,9 @@
+window,comparison,change,lo,hi,games_lower,games
+before the screen (-2.0 to -0.04 s),live transformer: v2 minus v1,0.002,-0.0056,0.0111,5,10
+at and after the screen (0 to +1.0 s),live transformer: v2 minus v1,-0.0018,-0.0155,0.0124,6,10
+before the screen (-2.0 to -0.04 s),logistic baseline: v2 minus v1,-0.0052,-0.0106,-1e-04,6,10
+at and after the screen (0 to +1.0 s),logistic baseline: v2 minus v1,-0.003,-0.0067,6e-04,6,10
+before the screen (-2.0 to -0.04 s),v2: live transformer minus logistic baseline,-0.0579,-0.0863,-0.0289,8,10
+at and after the screen (0 to +1.0 s),v2: live transformer minus logistic baseline,-0.1407,-0.1641,-0.1128,10,10
+before the screen (-2.0 to -0.04 s),v2 logistic baseline: without so far minus with,0.0377,0.0113,0.0645,2,10
+at and after the screen (0 to +1.0 s),v2 logistic baseline: without so far minus with,0.0071,-0.0069,0.0205,4,10

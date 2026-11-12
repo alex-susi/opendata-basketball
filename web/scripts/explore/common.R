@@ -38,7 +38,7 @@ THREE_R <- 6.75 * M_FT
 THREE_Y <- 6.6 * M_FT
 FPS <- 25
 
-EX_CACHE <- file.path(a$root, "outputs", "cache", "explore")
+EX_CACHE <- file.path(a$root, "web", "cache", "explore")
 EX_OUT <- file.path(a$root, "web", "public", "data")
 EX_GAMES <- as.integer(fromJSON(file.path(a$root, "data", "matches.json"))$id)
 
@@ -273,7 +273,7 @@ xloc <- function(recs, f) {
 }
 tbl <- function(recs, build) if (length(recs)) build(recs) else data.table()
 
-#' Build (or read from outputs/cache/explore/) one game's bundle: events as tables keyed by chance, the chance
+#' Build (or read from web/cache/explore/) one game's bundle: events as tables keyed by chance, the chance
 #' outcomes, the site's own cuts, screens and rebounding roles, and the tracking in the viewer's frame.
 game_bundle <- function(g, rebuild = FALSE) {
   # Use the cached bundle unless asked to rebuild.
@@ -512,7 +512,7 @@ season_profiles <- function() {
   # Shrunk three-point percentage: 100 league-average attempts of prior weight.
   lg <- sum(out$three_made, na.rm = TRUE) / sum(out$three_att, na.rm = TRUE)
   out[, three_shrunk := (three_made + 100 * lg) / (three_att + 100)]
-  mem <- tryCatch(fread(file.path(a$root, "outputs", "archetypes", "offense_membership.csv"))[, .(canon = pid, archetype)],
+  mem <- tryCatch(fread(file.path(a$root, "archetypes", "03_outputs", "offense_membership.csv"))[, .(canon = pid, archetype)],
                   error = function(e) data.table(canon = integer(), archetype = character()))
   out <- merge(out, mem, by = "canon", all.x = TRUE)
   attr(out, "league_three") <- lg

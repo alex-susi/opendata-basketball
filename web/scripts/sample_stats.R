@@ -28,7 +28,7 @@
 #                    sprint speed  his 99th percentile of speed (the archived model's league-wide VMAX statistic)
 #                    acceleration  his 99th percentile of the change in speed between velocities 6 frames apart
 #                    braking       the same for the fall in speed (his 1st percentile, sign flipped)
-#                  Each is shrunk toward the average of his offensive archetype (outputs/archetypes/
+#                  Each is shrunk toward the average of his offensive archetype (archetypes/03_outputs/
 #                  offense_membership.csv; frame-weighted over its players), with PRIOR_FRAMES frames (10 minutes of
 #                  live play) of the archetype's weight, or toward the league for a player with no archetype. Sprint
 #                  speeds are then scaled so their frame-weighted average is the archived VMAX, which the model's
@@ -272,7 +272,7 @@ sample_figures <- function() {
   q <- function(v, p) unname(quantile(v, p, na.rm = TRUE))
   pooled <- c(v = q(S$v6, 0.99), a = q(S$a6, 0.99), d = -q(S$a6, 0.01))
   Sp <- S[, .(v99 = q(v6, 0.99), acc = q(a6, 0.99), dec = -q(a6, 0.01), n = .N), by = key]
-  mem <- fread(file.path(a$root, "outputs", "archetypes", "offense_membership.csv"), select = c("pid", "archetype"))
+  mem <- fread(file.path(a$root, "archetypes", "03_outputs", "offense_membership.csv"), select = c("pid", "archetype"))
   Sp[, arch := mem$archetype[match(as.integer(sub(":.*", "", key)), mem$pid)]]
   prior <- Sp[!is.na(arch), .(pv = weighted.mean(v99, n), pa = weighted.mean(acc, n), pd = weighted.mean(dec, n)), by = arch]
   Sp <- merge(Sp, prior, by = "arch", all.x = TRUE)

@@ -9,7 +9,7 @@
 #   plays.json           one light record per possession: list text plus the fields the filters need
 #   g<game>_p<period>.json   per-play header for one game period: players, events, touches, byte offsets
 #   g<game>_p<period>.bin    that period's tracking
-#   archetypes.html      the app's Archetypes tab, as the app renders it (needs outputs/archetypes/)
+#   archetypes.html      the app's Archetypes tab, as the app renders it (needs archetypes/03_outputs/)
 #   season.json          season counts per person and team from data/aggregates/ (annotations.R)
 #   sample.json          per person and team over the ten tracked games: box score, ratings, shot quality,
 #                        tracking and points per action (sample_stats.R)

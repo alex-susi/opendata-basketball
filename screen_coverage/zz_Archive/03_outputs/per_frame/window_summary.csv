@@ -1,0 +1,5 @@
+window,screens,4 players + so far,"4 players, no so far",no_so_far_change,no_so_far_lo,no_so_far_hi,+ archetypes,"pooled, no timing",archetypes_change,archetypes_lo,archetypes_hi,no_timing_change,no_timing_lo,no_timing_hi,"pooled, no timing, + closeness",closeness_change,closeness_lo,closeness_hi,baseline: defense so far
+forecast: -2.0 to -0.04 s,1463,1.2691,1.3077,0.0386,0.0099,0.0689,1.2781,1.3421,0.0091,-0.0091,0.0294,0.0731,0.0553,0.0909,1.336,0.0669,0.0452,0.0894,1.4481
+recognition: 0 to +1.0 s,1463,0.6872,0.6984,0.0112,-0.001,0.0244,0.6957,1.0192,0.0085,-0.0052,0.0246,0.332,0.2987,0.3688,0.9003,0.2131,0.1898,0.2373,1.4482
+baseline: league,1463,1.4598,,,,,,,,,,,,,,,,,
+baseline: even split,1463,1.6094,,,,,,,,,,,,,,,,,

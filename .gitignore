@@ -24,8 +24,10 @@ notebooks/exploratory/
 site/
 .cache/
 
-# Play viewer cache (derived from the competition tracking data)
-outputs/cache/
+# Project caches (derived from the competition tracking data): each project's 02_cache/, including archived ones,
+# and the site's per-game bundles. Until 2026-11-12 these all lived under outputs/cache/.
+**/02_cache/
+web/cache/
 .Rproj.user
 .Rproj.user
 

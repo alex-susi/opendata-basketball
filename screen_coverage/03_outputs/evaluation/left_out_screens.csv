@@ -1,0 +1,34 @@
+id,game_id,call,gap_where,missing_frames,first_missing_s,last_missing_s,tracked_at_tag,possession_starts_after_minus_2s,possession_ends_before_plus_1s
+pick-114086-1-35,114086,under + soft,before the tag,1,-2,-2,TRUE,FALSE,FALSE
+pick-114086-2-46,114086,under + show,before the tag,41,-2,-0.4,TRUE,FALSE,FALSE
+pick-114086-3-96,114086,over + soft,before the tag,31,-2,-0.8,TRUE,FALSE,FALSE
+pick-114099-1-30,114099,over + soft,before the tag,21,-2,-1.2,TRUE,FALSE,FALSE
+pick-114099-2-45,114099,switch,before the tag,18,-2,-1.32,TRUE,FALSE,FALSE
+pick-114099-3-104,114099,over + soft,before the tag,32,-2,-0.76,TRUE,TRUE,FALSE
+pick-114169-3-133,114169,switch,after the tag,4,0.88,1,TRUE,FALSE,TRUE
+pick-114169-4-156,114169,over + soft,before the tag,4,-2,-1.88,TRUE,FALSE,FALSE
+pick-114169-4-172,114169,over + soft,before the tag,12,-2,-1.56,TRUE,TRUE,FALSE
+pick-114234-1-8,114234,over + show,before the tag,11,-2,-1.6,TRUE,FALSE,FALSE
+pick-114234-3-83,114234,over + soft,before the tag,14,-2,-1.48,TRUE,FALSE,FALSE
+pick-114234-3-102,114234,over + soft,before the tag,25,-2,-1.04,TRUE,TRUE,FALSE
+pick-114243-1-19,114243,over + soft,before the tag,4,-2,-1.88,TRUE,FALSE,FALSE
+pick-114243-2-53,114243,over + soft,after the tag,3,0.92,1,TRUE,FALSE,TRUE
+pick-114243-4-102,114243,over + show,before the tag,11,-2,-1.6,TRUE,FALSE,FALSE
+pick-178442-2-47,178442,over + soft,before the tag,4,-2,-1.88,TRUE,FALSE,FALSE
+pick-178442-2-68,178442,over + show,before the tag,44,-2,-0.28,TRUE,TRUE,FALSE
+pick-178442-3-77,178442,over + show,after the tag,6,0.8,1,TRUE,FALSE,TRUE
+pick-178442-5-155,178442,over + soft,before the tag,9,-2,-1.68,TRUE,TRUE,FALSE
+pick-179612-1-0,179612,over + show,before the tag,39,-2,-0.48,TRUE,TRUE,FALSE
+pick-179612-2-72,179612,under + show,before the tag,24,-2,-1.08,TRUE,FALSE,FALSE
+pick-179612-4-125,179612,switch,before the tag,36,-2,-0.6,TRUE,FALSE,FALSE
+pick-184439-4-151,184439,switch,before the tag,19,-2,-1.28,TRUE,FALSE,FALSE
+pick-184439-4-154,184439,switch,before the tag,16,-2,-1.4,TRUE,FALSE,FALSE
+pick-184439-4-171,184439,over + soft,before the tag,4,-2,-1.88,TRUE,FALSE,FALSE
+pick-188630-4-104,188630,under + soft,before the tag,11,-2,-1.6,TRUE,FALSE,FALSE
+pick-188630-4-107,188630,under + soft,before the tag,19,-2,-1.28,TRUE,FALSE,FALSE
+pick-191313-1-13,191313,switch,before the tag,19,-2,-1.28,TRUE,TRUE,FALSE
+pick-191313-3-76,191313,switch,before the tag,8,-2,-1.72,TRUE,FALSE,FALSE
+pick-191313-3-102,191313,under + show,before the tag,6,-2,-1.8,TRUE,FALSE,FALSE
+pick-191313-4-124,191313,under + show,before the tag,6,-2,-1.8,TRUE,FALSE,FALSE
+pick-191313-4-146,191313,over + soft,before the tag,11,-2,-1.6,TRUE,TRUE,FALSE
+pick-191313-4-147,191313,under + soft,before the tag,9,-2,-1.68,TRUE,TRUE,FALSE

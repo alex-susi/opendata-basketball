@@ -101,7 +101,7 @@
   const hovered = $derived<TraceSample | null>(hoverK == null ? null : samples.find((s) => s.k === hoverK) ?? null);
   // The moment the readout names, on every tab: the hovered sample while the pointer is over the chart, otherwise the
   // playback position. Seconds are the timeline's (playback seconds); the frame is the tracking frame (25 per second,
-  // the frame column of exported tables such as outputs/screen_coverage/per_frame/strips.csv).
+  // the frame column of exported tables such as screen_coverage/zz_Archive/03_outputs/per_frame/strips.csv).
   const frameAt = (k: number) => (play && seq.length ? play.frames[seq[clamp(Math.round(k), 0, seq.length - 1)]] : null);
   const moment = $derived(hovered ? { t: hovered.t, f: frameAt(hovered.k) } : { t: tNow, f: frameAt(viewer.pos) });
   const name = (p: PlayerTrack | null | undefined) => (p ? `#${p.jersey} ${p.name}` : "–");

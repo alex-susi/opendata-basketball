@@ -1,6 +1,6 @@
 <script lang="ts">
   // The Archetypes tab: how the playstyle clusters are built and what each archetype and component means.
-  // The content is the Shiny app's own page (src/play_viewer/R/archetype_page.R), exported as an HTML fragment
+  // The content is the Shiny app's own page (play_viewer/01_app/R/archetype_page.R), exported as an HTML fragment
   // by web/scripts/export_data.R, so the two never drift apart. It is our own build output, not user input.
   import { loadArchetypes } from "../lib/data";
 
