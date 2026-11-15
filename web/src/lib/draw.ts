@@ -5,7 +5,8 @@
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
 import { controlAt, drawControl, motionLimits } from "./control";
 import { logoImage } from "./logos.svelte";
-import { COLORS, HEADER_TOP, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
+import { COLORS, HEADER_TOP, HOOP_X, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
+import type { LaneFrame } from "./coverage";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
@@ -33,6 +34,84 @@ export interface DrawOptions {
   hoverPid: number | null;
   /** The live coverage model's attention share (0-1) per player id at this frame, or null (coverage.ts). */
   attention?: Map<number, number> | null;
+  /** The roll-lane experiment's screener and off-ball defenders with their lane values at this frame, or null. */
+  lanes?: LaneFrame | null;
+}
+
+const LANE_COLOR = "#c98500";
+const LANE_HELP = "#1f5fd1";
+const LANE_STEP = 5;   // frames: the closing speed's 0.2 s
+// The roll-lane experiment: the lane from the screener to the rim, each off-ball defender's nearest point on it and
+// an arrow for his last 0.2 s, drawn under the dots. The geometry comes from the positions on screen; the gap and
+// closing speed printed are the experiment's own inputs (labels drawn later, over the dots).
+function drawLanesUnder(ctx: CanvasRenderingContext2D, L: Layout, play: Play, dots: Dot[], c: Cursor, lf: LaneFrame): void {
+  const s = dots.find((d) => d.p.id === lf.screener);
+  if (!s) return;
+  const vx = HOOP_X - s.x, vy = -s.y, len2 = vx * vx + vy * vy;
+  if (len2 < 1e-6) return;
+  ctx.save();
+  ctx.strokeStyle = LANE_COLOR;
+  ctx.lineWidth = 3;
+  ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.moveTo(px(L, s.x), py(L, s.y));
+  ctx.lineTo(px(L, HOOP_X), py(L, 0));
+  ctx.stroke();
+  for (const h of lf.helpers) {
+    const d = dots.find((q) => q.p.id === h.pid);
+    if (!d) continue;
+    // Nearest point on the lane, and the defender's position 0.2 s earlier (when the footage runs unbroken).
+    const u = Math.min(1, Math.max(0, ((d.x - s.x) * vx + (d.y - s.y) * vy) / len2));
+    const nx = s.x + u * vx, ny = s.y + u * vy;
+    if (h.d != null) {
+      ctx.strokeStyle = "#6b6b68";
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      ctx.moveTo(px(L, d.x), py(L, d.y));
+      ctx.lineTo(px(L, nx), py(L, ny));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = LANE_COLOR;
+      ctx.beginPath();
+      ctx.arc(px(L, nx), py(L, ny), 3.5, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    const i = c.i0 - LANE_STEP;
+    if (i >= 0 && play.frames[c.i0] - play.frames[i] === LANE_STEP) {
+      const x0 = d.p.x[i], y0 = d.p.y[i];
+      if (!Number.isNaN(x0) && !Number.isNaN(y0) && Math.hypot(d.x - x0, d.y - y0) > 0.3) {
+        drawArrow(ctx, px(L, x0), py(L, y0), px(L, d.x), py(L, d.y), LANE_HELP);
+      }
+    }
+  }
+  ctx.restore();
+}
+function drawArrow(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, color: string): void {
+  const a = Math.atan2(y1 - y0, x1 - x0), head = 7;
+  ctx.setLineDash([]);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x1 - head * Math.cos(a - 0.45), y1 - head * Math.sin(a - 0.45));
+  ctx.lineTo(x1 - head * Math.cos(a + 0.45), y1 - head * Math.sin(a + 0.45));
+  ctx.closePath();
+  ctx.fill();
+}
+/** Labels over the dots: each off-ball defender's gap to the lane and closing speed, or n/a when not valid. */
+function drawLanesOver(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: number, lf: LaneFrame): void {
+  for (const h of lf.helpers) {
+    const d = dots.find((q) => q.p.id === h.pid);
+    if (!d) continue;
+    const text = h.d == null ? "lane n/a" : `${h.d.toFixed(1)} ft · ${h.c != null && h.c >= 0 ? "+" : ""}${h.c?.toFixed(1) ?? "?"} ft/s`;
+    drawTag(ctx, px(L, d.x), py(L, d.y) + r + 12, text, LANE_HELP, 10);
+  }
 }
 
 const ATT_COLOR = "#9b5de5";
@@ -394,6 +473,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   if (o.showTrails) for (const d of all) drawTrail(ctx, L, play, d, c, r, play.colors[d.p.role]);
   const k = annContext(ctx, L, play, c, r, all);
   drawAnnotationsUnder(k, o.ann);
+  if (o.lanes) drawLanesUnder(ctx, L, play, all, c, o.lanes);
   // The followed player and his nearest opponent: joined by a line under the dots, each ringed in his team's
   // secondary colour over the dots (the followed player's ring thicker), the distance on top of everything.
   let pair: { a: Dot; b: Dot; dist: number } | null = null;
@@ -407,6 +487,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   }
   for (const d of all) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o, o.ann.quality && d.p.d[c.i0] === 0);
   if (o.attention) drawAttention(ctx, L, all, r, o.attention);
+  if (o.lanes) drawLanesOver(ctx, L, all, r, o.lanes);
   if (pair) {
     for (const [d, width] of [[pair.a, 3], [pair.b, 2]] as const) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
   }

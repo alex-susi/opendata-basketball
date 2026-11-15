@@ -22,6 +22,11 @@
 # the test on rows where they looked ahead.
 #
 # Writes screen_coverage/03_outputs/past_only_test/past_only_test.csv and stops with an error if any check fails.
+#
+# Lane experiment (2026-11-15): with --variant=A|B|C the transformer checks use that variant's sequences and fitted
+# folds (seeds 1-2, R/lane_variants.R), the rebuilt inputs include its roll-lane channels, and one more control
+# must hold: scrambling the prediction frame changes the roll-lane channels on rows where an off-ball defender has a
+# valid lane value. Writes screen_coverage/03_outputs/experiments/lanes/past_only_test_<variant>.csv.
 ## ═════════════════════════════════════════════════════════════════════════════
 
 suppressPackageStartupMessages({
@@ -36,6 +41,21 @@ source(file.path(root, "screen_coverage", "01_scripts", "R", "seq_transformer.R"
 torch_set_num_threads(1L)
 cache_dir <- file.path(root, "screen_coverage", "02_cache")
 out_dir <- file.path(root, "screen_coverage", "03_outputs", "past_only_test")
+hit <- grep("^--variant=", commandArgs(TRUE), value = TRUE)
+VARIANT <- if (length(hit)) sub("^--variant=", "", hit[1]) else NA_character_
+seq_path <- file.path(cache_dir, "sequences.rds")
+tf_dir <- file.path(cache_dir, "tf")
+out_csv <- file.path(out_dir, "past_only_test.csv")
+EXTRA <- character(0)
+if (!is.na(VARIANT)) {
+  source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_geometry.R"))
+  source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_variants.R"))
+  seq_path <- file.path(lane_dir(root, VARIANT), "sequences.rds")
+  tf_dir <- lane_tf_dir(root, VARIANT, 1:2)
+  out_dir <- lane_out_dir(root)
+  out_csv <- file.path(out_dir, sprintf("past_only_test_%s.csv", VARIANT))
+  EXTRA <- LANE_VARIANTS[[VARIANT]]
+}
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 
@@ -60,8 +80,10 @@ BASELINE <- "no timing, + closeness"
 TOL <- 1e-6
 
 L <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))
-SQ <- readRDS(file.path(cache_dir, "sequences.rds"))
+SQ <- readRDS(seq_path)
 stopifnot(identical(L$rules, PAST_ONLY_RULES), identical(SQ$rules, PAST_ONLY_RULES), identical(SQ$screen_ids, L$P$id))
+FEATS_SEQ <- SQ$feats
+stopifnot(identical(FEATS_SEQ, c(SEQ_FEATS, EXTRA)))
 P <- L$P
 X <- L$X
 CALLS <- L$calls
@@ -69,7 +91,7 @@ cached <- readRDS(file.path(cache_dir, "per_frame_features.rds"))
 P5 <- cached$P[order(game_id, f0)][call %in% CALLS]           # every five-call screen, as counted by "so far"
 NS <- nrow(P)
 FLAT <- matrix(SQ$base, nrow = NS * dim(SQ$base)[2])
-K_STEPS <- readRDS(file.path(cache_dir, "tf", sprintf("seqheads_%d.rds", P$game_id[1])))$k_steps
+K_STEPS <- readRDS(file.path(tf_dir, sprintf("seqheads_%d.rds", P$game_id[1])))$k_steps
 
 # Sample: per game, screens with an earlier same-defense screen tagged within 2 s first (the old leak), then random.
 set.seed(20261112)
@@ -107,7 +129,8 @@ seq_inputs <- function(B, scr, p, off) {
   ro <- c(p$H, p$S, p$BD, p$SD, other_six(B, p, p$f0 + ROSTER_OFF))
   pos <- ten_player_positions(B, p, matrix(ro, 1L))
   base <- sequence_base(pos$PX, pos$PY)
-  hist <- seq_history(matrix(base, nrow = dim(base)[2]), 1L, 1L, off, K_STEPS)
+  if (length(EXTRA)) base <- append_lane_channels(base, pos$PX, pos$PY, EXTRA)$base
+  hist <- seq_history(matrix(base, nrow = dim(base)[2]), 1L, 1L, off, K_STEPS, feats = FEATS_SEQ)
   mem <- contact_memory(pos$PX, pos$PY, 1L, off)
   li <- logistic_inputs(B, scr, p, p$f0 + off)
   d_hs <- li[["d_hs"]]
@@ -178,19 +201,19 @@ fit_fold <- function(g) {
 }
 # The live transformer's saved networks for one held-out game, averaged over random starts.
 seq_predictor <- function(g) {
-  o <- readRDS(file.path(cache_dir, "tf", sprintf("seqheads_%d.rds", g)))
+  o <- readRDS(file.path(tf_dir, sprintf("seqheads_%d.rds", g)))
   # The fold file records each network's full path when it was trained; look them up by name in this cache folder so
   # the check still works after the repository is moved or reorganised.
-  nets <- lapply(file.path(cache_dir, "tf", basename(o$nets)), torch_load)
+  nets <- lapply(file.path(tf_dir, basename(o$nets)), torch_load)
   for (n in nets) n$eval()
   nm <- o$norm
   function(inp) {
-    xt <- (torch_tensor(inp$hist) - torch_tensor(nm$mu)) / torch_tensor(nm$sdv)
+    xt <- standardise_history(inp$hist, nm)
     ct <- torch_tensor(matrix((inp$ctx[colnames(SQ$ctx)] - nm$cmu) / nm$csd, 1))
     Reduce(`+`, lapply(nets, function(n) as_array(with_no_grad(joint_logp(n(xt, ct))$exp())))) / length(nets)
   }
 }
-seq_cached <- function(g) readRDS(file.path(cache_dir, "tf", sprintf("seqheads_%d.rds", g)))
+seq_cached <- function(g) readRDS(file.path(tf_dir, sprintf("seqheads_%d.rds", g)))
 
 
 
@@ -223,7 +246,7 @@ for (g in unique(pick$game_id)) {
       si2 <- seq_inputs(S2$B, S2$scr, p, o)
       # Check 1: the rebuilt inputs are the cached ones.
       c1_log <- same(li[FEATS], X[r, FEATS, with = FALSE])
-      c1_seq <- same(si$hist, seq_history(FLAT, NS, k, o, K_STEPS)) && same(si$ctx, SQ$ctx[r, names(si$ctx)]) &&
+      c1_seq <- same(si$hist, seq_history(FLAT, NS, k, o, K_STEPS, feats = FEATS_SEQ)) && same(si$ctx, SQ$ctx[r, names(si$ctx)]) &&
         identical(as.integer(si$roster), as.integer(SQ$roster[k, ]))
       # Check 2: scrambling the future leaves the inputs identical.
       c2_log <- identical(li, li2)
@@ -239,6 +262,17 @@ for (g in unique(pick$game_id)) {
       # able to see the scrambled future on rows where they looked ahead.
       S3 <- scramble(B, P5, at, seed, at_frame_only = TRUE)
       nc_now <- !identical(li, logistic_inputs(S3$B, S3$scr, p, at))
+      # Lane variants: the roll-lane channels at the prediction frame must move when that frame is scrambled (NA when
+      # no off-ball defender has a valid lane value there, or the variant has no lane channels).
+      nc_roll <- NA
+      if (length(EXTRA)) {
+        ri <- match(EXTRA, FEATS_SEQ)
+        vi <- match("roll_lane_valid", FEATS_SEQ)
+        if (any(si$hist[1, 8:10, 1, vi] == 1)) {
+          si3 <- seq_inputs(S3$B, S3$scr, p, o)
+          nc_roll <- !identical(si$hist[1, 8:10, 1, ri], si3$hist[1, 8:10, 1, ri])
+        }
+      }
       rows1 <- data.table(game_id = p$game_id, def_team = p$def_team, f0 = p$f0, frame = at)
       nc_old_so_far <- !identical(so_far_old_rule(P5, rows1, CALLS), so_far_old_rule(S2$scr, rows1, CALLS))
       Bgap <- B
@@ -251,13 +285,15 @@ for (g in unique(pick$game_id)) {
           future_scrambled_inputs_same_transformer = c2_seq, future_scrambled_prediction_same_logistic = c3_log,
           future_scrambled_prediction_same_transformer = c3_seq, control_scrambling_now_changes_inputs = nc_now,
           control_old_so_far_rule_sees_future = nc_old_so_far, control_old_lookup_sees_future = nc_old_pos,
-          new_lookup_sees_future = nc_new_pos)
+          new_lookup_sees_future = nc_new_pos, control_scrambling_now_changes_roll_lane = nc_roll)
     }
   }
   cat("Game", g, "done\n")
 }
 R <- rbindlist(res)
-fwrite(R, file.path(out_dir, "past_only_test.csv"))
+# The live test keeps its original columns; the lane variants add the roll-lane control.
+if (!length(EXTRA)) R[, control_scrambling_now_changes_roll_lane := NULL]
+fwrite(R, out_csv)
 
 
 
@@ -276,7 +312,14 @@ cat("\nRows checked:", nrow(R), "\nPassing rows per check:\n")
 print(melt(summ, measure.vars = names(summ), variable.name = "check", value.name = "rows_true"))
 cat("\nOld 'so far' rule saw the scrambled future on", R[, sum(control_old_so_far_rule_sees_future)], "rows (",
     R[rescreen == TRUE & off < 0, sum(control_old_so_far_rule_sees_future)], "of them before the tag of a re-screen)\n")
+if (length(EXTRA)) {
+  cat("Roll-lane control: scrambling the prediction frame changed the lane channels on",
+      R[, sum(control_scrambling_now_changes_roll_lane, na.rm = TRUE)], "of", R[, sum(!is.na(control_scrambling_now_changes_roll_lane))],
+      "rows with a valid lane value\n")
+}
 fail <- c(must_all[!vapply(must_all, function(m) all(R[[m]]), NA)],
+          if (length(EXTRA) && !isTRUE(all(R$control_scrambling_now_changes_roll_lane, na.rm = TRUE))) "control_scrambling_now_changes_roll_lane",
+          if (length(EXTRA) && !any(!is.na(R$control_scrambling_now_changes_roll_lane))) "control_scrambling_now_changes_roll_lane (never checked)",
           if (any(R$new_lookup_sees_future)) "new_lookup_sees_future",
           if (!any(R$control_old_lookup_sees_future)) "control_old_lookup_sees_future (never triggered)",
           if (!any(R$control_old_so_far_rule_sees_future)) "control_old_so_far_rule_sees_future (never triggered)")

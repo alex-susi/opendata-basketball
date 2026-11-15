@@ -119,13 +119,34 @@ ul.tight li { font-size: .97rem; }
 .log h3 { margin-bottom: 6px; }
 footer { font-size: .88rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 6px; }
 svg text { font-family: var(--font-mono); }
+/* "Under the hood": collapsible reference sections. A fold is a card; a step inside it is a ruled row. */
+details.fold { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+details.fold > summary, details.step > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+details.fold > summary::-webkit-details-marker, details.step > summary::-webkit-details-marker { display: none; }
+details.fold > summary { padding: 16px 20px; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.15; }
+details.fold > summary small { display: block; font-family: var(--font-body); font-weight: 400; font-size: .92rem; color: var(--muted); margin-top: 4px; }
+details.fold > summary::after, details.step > summary::after { content: "+"; font-family: var(--font-mono); font-size: 1.1rem; color: var(--accent); flex: none; }
+details.fold[open] > summary::after, details.step[open] > summary::after { content: "−"; }
+details.fold > summary:focus-visible, details.step > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.fold-body { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+details.step { border-top: 1px solid var(--line); }
+details.step > summary { padding: 12px 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.step-body { padding: 0 0 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.mathbox { background: var(--soft-fill); border-radius: 8px; padding: 12px 14px; overflow-x: auto; display: flex; flex-direction: column; gap: 10px; }
+math { font-size: 1.08em; color: var(--fg); }
+math[display="block"] { margin: 0; }
+.shape { font-family: var(--font-mono); font-size: .86rem; white-space: nowrap; }
+.barcell { display: flex; align-items: center; gap: 8px; min-width: 11rem; }
+.bar { display: inline-block; height: 8px; border-radius: 2px; background: var(--accent); flex: none; }
+.ci { color: var(--muted); font-size: .8rem; }
+td.strong { font-weight: 700; }
 </style>
 </head>
 <body>
 
 <div class="page">
   <header>
-    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-12</span>
+    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-15</span>
     <h1>Screen Coverage Reads</h1>
     <p class="lede">Can tracking data tell a ball handler how an on-ball screen will be defended, and how early? This page is the project's running record: where things stand, what the live model sees, what it shows, how it was checked, what comes next, and a dated log of every change.</p>
     <div class="meta">
@@ -141,7 +162,7 @@ svg text { font-family: var(--font-mono); }
   <section>
     <h2>Current status</h2>
     <div class="panel status">
-      <p><b>As of 2026-11-12.</b> The live model uses only what had happened by the moment of each prediction (the <b>v2</b>, past-only rules), a test confirms it, and it is now on the play viewer's Coverage Read card. It is compared with one baseline only: a logistic model that, like it, is never told when the screen comes.</p>
+      <p><b>As of 2026-11-15.</b> The live model uses only what had happened by the moment of each prediction (the <b>v2</b>, past-only rules), a test confirms it, and it is now on the play viewer's Coverage Read card. It is compared with one baseline only: a logistic model that, like it, is never told when the screen comes. The lane experiment (roll lane, pop space, drive lanes) is <b>closed</b>: none of it was adopted, and the live model is unchanged.</p>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Piece</th><th>State</th></tr></thead>
@@ -149,6 +170,8 @@ svg text { font-family: var(--font-mono); }
             <tr><td>Live model: time-aware transformer, two heads</td><td>v2, trained on all 10 held-out games, exported to the Coverage Read card (<span class="file">06_export_live.R</span>).</td></tr>
             <tr><td>Baseline: logistic, never told the timing</td><td>v2, plus a version without the defense's calls so far.</td></tr>
             <tr><td>"Future can't change the past" test</td><td>Passes: 180 of 180 sampled prediction rows, for both models (<span class="file">05_test_past_only.R</span>).</td></tr>
+            <tr><td>Lane experiment, stage 1: roll lanes (variant B)</td><td>Tested 2026-11-15, not adopted (experiment closed): the big's score at −0.4 s moved by −0.004 (95% interval −0.016 to +0.011), less than retraining the live model with two other random starts moves it (−0.007). Passes the past-only test (180/180). Outputs: <span class="file">screen_coverage/03_outputs/experiments/lanes/</span>.</td></tr>
+            <tr><td>Lane experiment, stages 2-3: pop and drive options (screened)</td><td>Screened 2026-11-15 with the logistic baseline instead of training transformers. Both technically pass the gate set beforehand, each at one moment only and by tiny amounts: pop helps the big at −0.8 s by 0.0025 (not at −0.4 s); drive routes help the guard at −0.4 s by 0.0038 (not at −0.8 s). Both are below what a transformer comparison can resolve, and the pop pass gap mostly re-measures the two screen defenders. Closed by the owner on 2026-11-15 without training transformer variants. Outputs: <span class="file">experiments/lanes/screening/</span>.</td></tr>
             <tr><td>Project folder</td><td><span class="file">screen_coverage/</span>: <span class="file">01_scripts/</span> (six pipeline scripts, <span class="file">01_…</span> to <span class="file">06_…</span>), <span class="file">02_cache/</span>, <span class="file">03_outputs/</span>, <span class="file">04_docs/</span> (this page) and <span class="file">zz_Archive/</span> (earlier models and tests, same layout).</td></tr>
           </tbody>
         </table>
@@ -404,6 +427,10 @@ svg text { font-family: var(--font-mono); }
         <p>Before the screen the screener's defender is read right 58.5% of the time (habit alone: 51.5%). The ball defender's over-or-under choice barely beats "expect over" (67.5% vs 67.0%) until contact, as in the Fall–Marcos example above.</p>
       </div>
       <div class="finding">
+        <span class="stat">Helpers barely tip the big</span>
+        <p>Telling the model how far each off-ball defender is from the screener's straight path to the rim, and how fast he is closing on it, did not improve the big's forecast at −0.4 s (−0.004, interval −0.016 to +0.011, 6 of 10 games) or −0.8 s (+0.000); two more random starts of the unchanged model move it by −0.007. The reason is mostly a weak link, not that the model already knew: when the nearest helper is within 6 ft of the lane, switches are more common (19% vs 10-14%) and soft less so (38-40% vs 46-52%), but the gap alone predicts the big's call no better than no inputs on held-out games, and adding it to the logistic baseline, which cannot see the helpers, gains only −0.002.</p>
+      </div>
+      <div class="finding">
         <span class="stat">Ice has a signature</span>
         <p>Ice comes on screens set on the screener's middle shoulder near the sideline, and from four defenses. Even so, a rule built on it would be wrong most of the time. Blitz has no pattern in four cases.</p>
       </div>
@@ -424,6 +451,7 @@ svg text { font-family: var(--font-mono); }
       <li><div><h3>Test that the future can't change the past</h3><p><span class="file">05_test_past_only.R</span>. Details in the audit section.</p></div></li>
       <li><div><h3>Export to the play viewer</h3><p><span class="file">06_export_live.R</span>. The Coverage Read card shows each defender's call (on the ball: over, under, switch; on the screener: show, soft, switch) and the most likely combination, ticking the tagged call once the screen is set; a Model Attention toggle rings the players the model mixes in.</p></div></li>
     </ol>
+    <p class="caption">Lane experiment (2026-11-15), alongside the live pipeline and never exported as the live model: <span class="file">02_build_sequences.R --variant=A|B|C</span> and <span class="file">03_train_transformer.R --variant=… --seeds=…</span> build and train each variant in <span class="file">02_cache/experiments/lanes/</span> (without <span class="file">--variant</span> both behave exactly as before); <span class="file">07_test_lane_geometry.R</span> checks the geometry on hand-made cases and that the variants' movement inputs equal the live ones; <span class="file">05_test_past_only.R --variant=B</span> runs the past-only test on them; <span class="file">08_evaluate_lanes.R</span> scores them against the live model; <span class="file">09_lane_figures.R</span> draws the stills and the viewer's Roll Lanes overlay file; <span class="file">10_lane_diagnostics.R</span> checks why: the big's call by the nearest helper's gap, and the logistic baseline with that gap added; <span class="file">11_screen_pop_drive.R</span> screens the pop and drive options the same way before any transformer is trained.</p>
     <p class="caption">Earlier work, now in <span class="file">screen_coverage/zz_Archive/</span>: the snapshot model at four moments, the ten-player token transformers and their comparisons, the screen-geometry test, and the logistic models fitted separately at each moment (they know exactly how far away the screen is, a kind of hindsight, so they are no longer a fair comparison). Their findings are in the change log.</p>
   </section>
 
@@ -558,6 +586,250 @@ svg text { font-family: var(--font-mono); }
   </section>
 
   <section>
+    <h2>Under the hood</h2>
+    <p>Reference material for checking the models step by step. Open a section to read it; nothing here changes the results above.</p>
+
+    <details class="fold">
+      <summary><span>Logistic baseline: what it leans on<small>The model's formula, which inputs it relies on when predicting a game it never saw, and which way each input pushes</small></span></summary>
+      <div class="fold-body">
+        <details class="step" open>
+          <summary>The model</summary>
+          <div class="step-body">
+            <p>At every frame from −2 s to +1 s, the baseline turns 26 numbers about the screen into a probability for each of the five calls. It is a multinomial logistic regression with over + show as the reference call:</p>
+            <div class="mathbox">
+              <math display="block"><mi>P</mi><mo>(</mo><mi>y</mi><mo>=</mo><mi>k</mi><mo>∣</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>exp</mi><mo>(</mo><msub><mi>β</mi><mrow><mi>k</mi><mn>0</mn></mrow></msub><mo>+</mo><msubsup><mi mathvariant="bold">β</mi><mi>k</mi><mo>⊤</mo></msubsup><mover><mi mathvariant="bold">x</mi><mo>~</mo></mover><mo>)</mo></mrow><mrow><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mn>5</mn></munderover><mi>exp</mi><mo>(</mo><msub><mi>β</mi><mrow><mi>j</mi><mn>0</mn></mrow></msub><mo>+</mo><msubsup><mi mathvariant="bold">β</mi><mi>j</mi><mo>⊤</mo></msubsup><mover><mi mathvariant="bold">x</mi><mo>~</mo></mover><mo>)</mo></mrow></mfrac><mo>,</mo><mspace width="1em"></mspace><msub><mi mathvariant="bold">β</mi><mtext>over + show</mtext></msub><mo>=</mo><mn mathvariant="bold">0</mn></math>
+              <math display="block"><msub><mover><mi>x</mi><mo>~</mo></mover><mi>f</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>f</mi></msub><mo>−</mo><msub><mi>μ</mi><mi>f</mi></msub></mrow><msub><mi>σ</mi><mi>f</mi></msub></mfrac><mo>,</mo><mspace width="1em"></mspace><mi mathvariant="bold">x</mi><mo>∈</mo><msup><mi>ℝ</mi><mn>26</mn></msup></math>
+            </div>
+            <p>The 26 inputs are the 11 four-player measures (distances, levels, how fast the levels change, the screener's distance from the hoop, time to act), the logs of the defense's five readable call shares so far, closeness <math><mi>c</mi><mo>=</mo><mn>1</mn><mo>/</mo><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>d</mi><mtext>hs</mtext></msub><mo>/</mo><mn>5</mn><mo>)</mo></math>, and 9 of the measures multiplied by closeness, so that a position can count more as the handler reaches the screen without the model being told the time. The means <math><msub><mi>μ</mi><mi>f</mi></msub></math> and spreads <math><msub><mi>σ</mi><mi>f</mi></msub></math> come from the training games only.</p>
+            <p>Fitting maximises the weighted log-likelihood minus an L2 penalty (nnet's <code>decay = 1</code>). Every frame gets weight 1/76, so each screen counts once however many frames it has. One fit per held-out game, on the other nine.</p>
+          </div>
+        </details>
+
+        <details class="step" open>
+          <summary>Which inputs it relies on (held out by game)</summary>
+          <div class="step-body">
+            <p>For each held-out game, the fitted model predicts that game twice: as it is, and with one input group shuffled across the game's rows, which breaks that input's link to the call while keeping its values realistic. The rise in log loss is how much the model relies on that input. A measure and its "× closeness" twin are shuffled together; the five call shares are one group. Five shuffles per group, averaged; mean over the 10 games, with a 95% interval from resampling games for the first column.</p>
+            <div class="tablewrap">
+              <table>
+                <thead><tr><th>Input group</th><th>Before the tag, five calls</th><th class="num">−0.4 s, big</th><th class="num">−0.4 s, guard</th><th class="num">Tag to +1 s</th></tr></thead>
+                <tbody>
+                  <tr><td>Big's level</td><td><div class="barcell"><i class="bar" style="width:6rem"></i><span class="shape">0.200</span><span class="ci">0.171-0.230</span></div></td><td class="num strong">0.210</td><td class="num">0.012</td><td class="num">0.367</td></tr>
+                  <tr><td>Ball defender's level</td><td><div class="barcell"><i class="bar" style="width:5.48rem"></i><span class="shape">0.183</span><span class="ci">0.159-0.204</span></div></td><td class="num">0.025</td><td class="num strong">0.192</td><td class="num">0.229</td></tr>
+                  <tr><td>Ball defender's level changing</td><td><div class="barcell"><i class="bar" style="width:2.91rem"></i><span class="shape">0.097</span><span class="ci">0.089-0.105</span></div></td><td class="num">0.047</td><td class="num">0.076</td><td class="num">0.070</td></tr>
+                  <tr><td>Between the two defenders</td><td><div class="barcell"><i class="bar" style="width:1.72rem"></i><span class="shape">0.057</span><span class="ci">0.043-0.072</span></div></td><td class="num">0.020</td><td class="num">0.032</td><td class="num">0.047</td></tr>
+                  <tr><td>Handler's level</td><td><div class="barcell"><i class="bar" style="width:1.68rem"></i><span class="shape">0.056</span><span class="ci">0.041-0.070</span></div></td><td class="num">0.022</td><td class="num">0.019</td><td class="num">0.058</td></tr>
+                  <tr><td>Defense's calls so far (5 shares)</td><td><div class="barcell"><i class="bar" style="width:1.4rem"></i><span class="shape">0.047</span><span class="ci">0.022-0.078</span></div></td><td class="num">0.038</td><td class="num">0.023</td><td class="num">0.034</td></tr>
+                  <tr><td>Big's level changing</td><td><div class="barcell"><i class="bar" style="width:1.31rem"></i><span class="shape">0.044</span><span class="ci">0.037-0.052</span></div></td><td class="num">0.055</td><td class="num">0.008</td><td class="num">0.054</td></tr>
+                  <tr><td>Screener's distance from the hoop</td><td><div class="barcell"><i class="bar" style="width:1.25rem"></i><span class="shape">0.042</span><span class="ci">0.029-0.053</span></div></td><td class="num">0.016</td><td class="num">0.016</td><td class="num">0.026</td></tr>
+                  <tr><td>Handler to his defender</td><td><div class="barcell"><i class="bar" style="width:1.22rem"></i><span class="shape">0.041</span><span class="ci">0.027-0.053</span></div></td><td class="num">0.015</td><td class="num">0.037</td><td class="num">0.108</td></tr>
+                  <tr><td>Closeness (handler to screener, 0-1)</td><td><div class="barcell"><i class="bar" style="width:1.07rem"></i><span class="shape">0.036</span><span class="ci">0.022-0.050</span></div></td><td class="num">0.008</td><td class="num">0.009</td><td class="num">0.046</td></tr>
+                  <tr><td>Time to act</td><td><div class="barcell"><i class="bar" style="width:0.89rem"></i><span class="shape">0.030</span><span class="ci">0.019-0.040</span></div></td><td class="num">0.029</td><td class="num">0.029</td><td class="num">0.025</td></tr>
+                  <tr><td>Handler to the screener's defender</td><td><div class="barcell"><i class="bar" style="width:0.62rem"></i><span class="shape">0.021</span><span class="ci">0.009-0.032</span></div></td><td class="num">0.014</td><td class="num">0.016</td><td class="num">0.038</td></tr>
+                  <tr><td>Handler to screener distance</td><td><div class="barcell"><i class="bar" style="width:0.53rem"></i><span class="shape">0.018</span><span class="ci">0.011-0.024</span></div></td><td class="num">0.006</td><td class="num">0.005</td><td class="num">0.015</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Rise in held-out log loss when the group is shuffled (higher = relied on more). The two defenders' levels dominate, and each mostly feeds its own defender's call: the big's level drives the big's read (0.210 at −0.4 s, the guard's only 0.012), the ball defender's level drives the guard's (0.192 against 0.025). Every group raises the loss in at least 8 of the 10 games.</p>
+            <ul class="tight">
+              <li><b>Reliance, not cause.</b> This says what this model uses, not what makes a defense choose a coverage.</li>
+              <li><b>Correlated inputs share credit.</b> Handler-to-screener distance looks unimportant partly because closeness and the "× closeness" terms carry the same information; shuffling one leaves the others in place.</li>
+              <li><b>Shuffling makes unusual combinations</b> (a big at the level while far from the handler), so the rises are larger than what dropping a group and refitting would cost.</li>
+            </ul>
+            <details class="step">
+              <summary>Coefficients: which way each input pushes</summary>
+              <div class="step-body">
+                <p>One fit on all ten games. Each number is the change in the log-odds of that call against over + show for one standard deviation more of the input, others held fixed. Read the sign for direction; magnitudes of correlated inputs trade off against each other. Bold: |value| ≥ 0.5.</p>
+                <div class="tablewrap">
+                  <table>
+                    <thead><tr><th>Input</th><th>Term</th><th class="num">over + soft</th><th class="num">under + soft</th><th class="num">under + show</th><th class="num">switch</th></tr></thead>
+                    <tbody>
+                      <tr class="group"><td colspan="6">Measures at the frame</td></tr>
+                      <tr><td>Handler to screener distance</td><td>plain</td><td class="num">−0.23</td><td class="num">−0.08</td><td class="num">0.19</td><td class="num">0.15</td></tr>
+                      <tr><td>Handler to his defender</td><td>plain</td><td class="num">0.16</td><td class="num">−0.32</td><td class="num">−0.42</td><td class="num">0.02</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">−0.15</td><td class="num strong">0.61</td><td class="num strong">0.79</td><td class="num strong">0.57</td></tr>
+                      <tr><td>Handler to the screener's defender</td><td>plain</td><td class="num">−0.24</td><td class="num">−0.08</td><td class="num">−0.20</td><td class="num">−0.08</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">−0.09</td><td class="num">−0.04</td><td class="num">−0.22</td><td class="num">−0.46</td></tr>
+                      <tr><td>Between the two defenders</td><td>plain</td><td class="num">0.19</td><td class="num strong">0.74</td><td class="num">0.46</td><td class="num">0.21</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">−0.09</td><td class="num">−0.46</td><td class="num">−0.16</td><td class="num">0.36</td></tr>
+                      <tr><td>Ball defender's level</td><td>plain</td><td class="num">−0.16</td><td class="num">−0.02</td><td class="num">0.06</td><td class="num">0.00</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">0.22</td><td class="num strong">−1.14</td><td class="num strong">−1.22</td><td class="num strong">−0.77</td></tr>
+                      <tr><td>Big's level</td><td>plain</td><td class="num">−0.12</td><td class="num">−0.13</td><td class="num">−0.23</td><td class="num">−0.05</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num strong">−1.42</td><td class="num strong">−1.01</td><td class="num">0.15</td><td class="num strong">−0.62</td></tr>
+                      <tr><td>Handler's level</td><td>plain</td><td class="num">0.13</td><td class="num">0.31</td><td class="num">0.45</td><td class="num">−0.04</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">0.25</td><td class="num">0.48</td><td class="num">0.27</td><td class="num strong">0.58</td></tr>
+                      <tr><td>Screener's distance from the hoop</td><td>plain</td><td class="num">0.17</td><td class="num">0.41</td><td class="num">0.19</td><td class="num">−0.14</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">−0.16</td><td class="num strong">−0.70</td><td class="num">0.09</td><td class="num">−0.22</td></tr>
+                      <tr><td>Ball defender's level changing</td><td>plain</td><td class="num">−0.03</td><td class="num">−0.08</td><td class="num">−0.14</td><td class="num">0.06</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num">0.49</td><td class="num">−0.28</td><td class="num">−0.48</td><td class="num">−0.27</td></tr>
+                      <tr><td>Big's level changing</td><td>plain</td><td class="num">−0.04</td><td class="num">−0.07</td><td class="num">0.11</td><td class="num">−0.06</td></tr>
+                      <tr><td></td><td>× closeness</td><td class="num strong">−0.54</td><td class="num">−0.31</td><td class="num">−0.05</td><td class="num">0.09</td></tr>
+                      <tr><td>Time to act</td><td>plain</td><td class="num">0.20</td><td class="num">0.41</td><td class="num">0.24</td><td class="num">−0.24</td></tr>
+                      <tr><td>Closeness</td><td>plain</td><td class="num">−0.35</td><td class="num">0.34</td><td class="num">−0.22</td><td class="num">0.02</td></tr>
+                      <tr class="group"><td colspan="6">Log share of each call so far tonight</td></tr>
+                      <tr><td>Share of over + show</td><td>so far</td><td class="num">−0.07</td><td class="num">−0.41</td><td class="num">−0.28</td><td class="num">0.21</td></tr>
+                      <tr><td>Share of over + soft</td><td>so far</td><td class="num">0.37</td><td class="num">0.13</td><td class="num">−0.19</td><td class="num strong">0.62</td></tr>
+                      <tr><td>Share of under + soft</td><td>so far</td><td class="num">0.27</td><td class="num">0.13</td><td class="num">0.31</td><td class="num">0.22</td></tr>
+                      <tr><td>Share of under + show</td><td>so far</td><td class="num">−0.10</td><td class="num">0.04</td><td class="num">−0.25</td><td class="num">−0.01</td></tr>
+                      <tr><td>Share of switch</td><td>so far</td><td class="num">0.12</td><td class="num">0.10</td><td class="num">0.02</td><td class="num strong">0.55</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>The biggest numbers are the "× closeness" terms, which matter near contact. Near the screen, a big higher above the screener's level makes soft calls much less likely than over + show (−1.42 and −1.01), and a ball defender higher above the level makes under calls and switches less likely (−1.14, −1.22, −0.77). Tonight's switch share pushes toward another switch (0.55).</p>
+              </div>
+            </details>
+            <p class="caption">Code: <span class="file">12_baseline_importance.R</span>. Results: <span class="file">screen_coverage/03_outputs/logistic/importance/</span> (permutation_importance.csv also has −0.4 s and after-tag intervals and the number of games hurt).</p>
+          </div>
+        </details>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary><span>Live transformer: the math<small>Every tensor, weight matrix and formula from the raw measures to the five probabilities, and how it is trained</small></span></summary>
+      <div class="fold-body">
+        <p>Notation: <i>B</i> is the number of prediction rows in a batch, <i>p</i> = 1…10 a player (1 handler, 2 screener, 3 handler's defender, 4 screener's defender, 5-7 other attackers, 8-10 other defenders), <i>t</i> = 1…9 a history step (1 = now, 9 = 1.6 s ago), <i>d</i> = 32 the width of every hidden vector. All shapes are from <span class="file">R/seq_transformer.R</span> and the saved networks.</p>
+
+        <details class="step" open>
+          <summary>Shapes at a glance</summary>
+          <div class="step-body">
+            <div class="tablewrap">
+              <table>
+                <thead><tr><th>Step</th><th>Tensor</th><th>Shape</th></tr></thead>
+                <tbody>
+                  <tr><td>Player histories in</td><td>standardised measures</td><td class="shape">[B, 10, 9, 16]</td></tr>
+                  <tr><td>Screen-level context in</td><td>time to act, 5 log shares, closeness, contact memory (2)</td><td class="shape">[B, 9]</td></tr>
+                  <tr><td>Embedding</td><td>one 32-wide vector per player and step</td><td class="shape">[B, 10, 9, 32]</td></tr>
+                  <tr><td>Attention along time</td><td>each player's 9 steps, separately</td><td class="shape">[B·10, 9, 32]</td></tr>
+                  <tr><td>Keep "now"</td><td>step 1 of each player, after looking back</td><td class="shape">[B, 10, 32]</td></tr>
+                  <tr><td>Attention across players (×2)</td><td>10 rows look at each other; weights per head</td><td class="shape">[B, 10, 32]; [B, 4, 10, 10]</td></tr>
+                  <tr><td>Read-out input</td><td>rows 1-4 flattened, then the context</td><td class="shape">[B, 128 + 9 = 137]</td></tr>
+                  <tr><td>Hidden layer</td><td>ReLU</td><td class="shape">[B, 64]</td></tr>
+                  <tr><td>Three scores</td><td>switch, under, show</td><td class="shape">[B, 3]</td></tr>
+                  <tr><td>Five calls</td><td>joint probabilities</td><td class="shape">[B, 5]</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>1 · Inputs and standardisation</summary>
+          <div class="step-body">
+            <p>Each prediction row is a tensor <math><mi mathvariant="bold">X</mi><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>10</mn><mo>×</mo><mn>9</mn><mo>×</mo><mn>16</mn></mrow></msup></math> (players × steps × measures: x, y, position relative to the screener and to the handler, distance from the hoop, level, velocity, speed, speeding up, turning, level changing, time held at a level, present) and a context vector <math><mi mathvariant="bold">c</mi><mo>∈</mo><msup><mi>ℝ</mi><mn>9</mn></msup></math>. Before anything else the y-type columns are multiplied by −1 when needed so the screener is on the y ≥ 0 side at the prediction frame. Then each measure is standardised with the training screens only:</p>
+            <div class="mathbox">
+              <math display="block"><msub><mover><mi>x</mi><mo>~</mo></mover><mrow><mi>p</mi><mo>,</mo><mi>t</mi><mo>,</mo><mi>f</mi></mrow></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mrow><mi>p</mi><mo>,</mo><mi>t</mi><mo>,</mo><mi>f</mi></mrow></msub><mo>−</mo><msub><mi>μ</mi><mi>f</mi></msub></mrow><msub><mi>σ</mi><mi>f</mi></msub></mfrac><mo>,</mo><mspace width="1em"></mspace><msub><mover><mi>c</mi><mo>~</mo></mover><mi>m</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>c</mi><mi>m</mi></msub><mo>−</mo><msub><mi>μ</mi><mi>m</mi></msub></mrow><msub><mi>σ</mi><mi>m</mi></msub></mfrac></math>
+            </div>
+            <p><math><msub><mi>μ</mi><mi>f</mi></msub></math> and <math><msub><mi>σ</mi><mi>f</mi></msub></math> are taken over present player-frames of the eight training games; the mirrored columns keep <math><msub><mi>μ</mi><mi>f</mi></msub><mo>=</mo><mn>0</mn></math> so their sign survives, and "present" keeps <math><mi>μ</mi><mo>=</mo><mn>0</mn><mo>,</mo><mi>σ</mi><mo>=</mo><mn>1</mn></math>. A missing player has raw zeros and present = 0.</p>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>2 · Embedding: measures to 32-wide vectors</summary>
+          <div class="step-body">
+            <div class="mathbox">
+              <math display="block"><msubsup><mi mathvariant="bold">h</mi><mrow><mi>p</mi><mo>,</mo><mi>t</mi></mrow><mrow><mo>(</mo><mn>0</mn><mo>)</mo></mrow></msubsup><mo>=</mo><msub><mi mathvariant="bold">W</mi><mi>e</mi></msub><msub><mover><mi mathvariant="bold">x</mi><mo>~</mo></mover><mrow><mi>p</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>+</mo><msub><mi mathvariant="bold">b</mi><mi>e</mi></msub><mo>+</mo><msub><mi mathvariant="bold">s</mi><mi>t</mi></msub><mo>+</mo><msub><mi mathvariant="bold">r</mi><mrow><mi>ρ</mi><mo>(</mo><mi>p</mi><mo>)</mo></mrow></msub></math>
+              <math display="block"><msub><mi mathvariant="bold">W</mi><mi>e</mi></msub><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>32</mn><mo>×</mo><mn>16</mn></mrow></msup><mo>,</mo><mspace width="0.6em"></mspace><msub><mi mathvariant="bold">s</mi><mi>t</mi></msub><mo>∈</mo><msup><mi>ℝ</mi><mn>32</mn></msup><mspace width="0.3em"></mspace><mo>(</mo><mi>t</mi><mo>=</mo><mn>1</mn><mo>…</mo><mn>9</mn><mo>)</mo><mo>,</mo><mspace width="0.6em"></mspace><msub><mi mathvariant="bold">r</mi><mi>ρ</mi></msub><mo>∈</mo><msup><mi>ℝ</mi><mn>32</mn></msup><mspace width="0.3em"></mspace><mo>(</mo><mn>6</mn><mtext> roles</mtext><mo>)</mo></math>
+            </div>
+            <p>A linear map turns each player's 16 measures at one step into a 32-wide vector. Two learned vectors are added: <b>s</b><sub>t</sub> says which step it is (now, 0.2 s ago, …) and <b>r</b> says which role the player has (<i>ρ</i> maps players 5-7 to "other attacker" and 8-10 to "other defender", so those six share embeddings and their order does not matter).</p>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>3 · One attention layer (used three times)</summary>
+          <div class="step-body">
+            <p>A layer takes <i>n</i> rows <math><mi mathvariant="bold">H</mi><mo>∈</mo><msup><mi>ℝ</mi><mrow><mi>n</mi><mo>×</mo><mn>32</mn></mrow></msup></math> (9 steps of one player, or 10 players) and returns rows of the same shape. It has 4 heads of width <math><msub><mi>d</mi><mi>k</mi></msub><mo>=</mo><mn>32</mn><mo>/</mo><mn>4</mn><mo>=</mo><mn>8</mn></math>, normalises before each part ("pre-norm") and adds each part back onto its input:</p>
+            <div class="mathbox">
+              <math display="block"><mi mathvariant="bold">Z</mi><mo>=</mo><mi>LN</mi><mo>(</mo><mi mathvariant="bold">H</mi><mo>)</mo><mo>,</mo><mspace width="1em"></mspace><msub><mi mathvariant="bold">Q</mi><mi>j</mi></msub><mo>=</mo><mi mathvariant="bold">Z</mi><msubsup><mi mathvariant="bold">W</mi><mi>j</mi><mi>Q</mi></msubsup><mo>,</mo><mspace width="0.6em"></mspace><msub><mi mathvariant="bold">K</mi><mi>j</mi></msub><mo>=</mo><mi mathvariant="bold">Z</mi><msubsup><mi mathvariant="bold">W</mi><mi>j</mi><mi>K</mi></msubsup><mo>,</mo><mspace width="0.6em"></mspace><msub><mi mathvariant="bold">V</mi><mi>j</mi></msub><mo>=</mo><mi mathvariant="bold">Z</mi><msubsup><mi mathvariant="bold">W</mi><mi>j</mi><mi>V</mi></msubsup><mspace width="1em"></mspace><mo>(</mo><mi>j</mi><mo>=</mo><mn>1</mn><mo>…</mo><mn>4</mn><mo>,</mo><mspace width="0.3em"></mspace><mn>32</mn><mo>×</mo><mn>8</mn><mspace width="0.4em"></mspace><mtext>each, with biases</mtext><mo>)</mo></math>
+              <math display="block"><msub><mi mathvariant="bold">A</mi><mi>j</mi></msub><mo>=</mo><mi>softmax</mi><mrow><mo stretchy="true">(</mo><mfrac><mrow><msub><mi mathvariant="bold">Q</mi><mi>j</mi></msub><msubsup><mi mathvariant="bold">K</mi><mi>j</mi><mo>⊤</mo></msubsup></mrow><msqrt><mn>8</mn></msqrt></mfrac><mo stretchy="true">)</mo></mrow><mo>∈</mo><msup><mi>ℝ</mi><mrow><mi>n</mi><mo>×</mo><mi>n</mi></mrow></msup><mo>,</mo><mspace width="1em"></mspace><mi mathvariant="bold">O</mi><mo>=</mo><mo>[</mo><msub><mi mathvariant="bold">A</mi><mn>1</mn></msub><msub><mi mathvariant="bold">V</mi><mn>1</mn></msub><mspace width="0.2em"></mspace><mo>∣</mo><mo>…</mo><mo>∣</mo><mspace width="0.2em"></mspace><msub><mi mathvariant="bold">A</mi><mn>4</mn></msub><msub><mi mathvariant="bold">V</mi><mn>4</mn></msub><mo>]</mo><msup><mi mathvariant="bold">W</mi><mi>O</mi></msup></math>
+              <math display="block"><msup><mi mathvariant="bold">H</mi><mo>′</mo></msup><mo>=</mo><mi mathvariant="bold">H</mi><mo>+</mo><mi mathvariant="bold">O</mi><mo>,</mo><mspace width="1em"></mspace><msup><mi mathvariant="bold">H</mi><mo>″</mo></msup><mo>=</mo><msup><mi mathvariant="bold">H</mi><mo>′</mo></msup><mo>+</mo><mi>ReLU</mi><mo>(</mo><mi>LN</mi><mo>(</mo><msup><mi mathvariant="bold">H</mi><mo>′</mo></msup><mo>)</mo><msub><mi mathvariant="bold">W</mi><mn>1</mn></msub><mo>+</mo><msub><mi mathvariant="bold">b</mi><mn>1</mn></msub><mo>)</mo><msub><mi mathvariant="bold">W</mi><mn>2</mn></msub><mo>+</mo><msub><mi mathvariant="bold">b</mi><mn>2</mn></msub></math>
+              <math display="block"><mi>LN</mi><mo>(</mo><mi mathvariant="bold">u</mi><mo>)</mo><mo>=</mo><mi mathvariant="bold">γ</mi><mo>⊙</mo><mfrac><mrow><mi mathvariant="bold">u</mi><mo>−</mo><mover><mi>u</mi><mo>‾</mo></mover></mrow><msqrt><mrow><msubsup><mi>s</mi><mi>u</mi><mn>2</mn></msubsup><mo>+</mo><mi>ε</mi></mrow></msqrt></mfrac><mo>+</mo><mi mathvariant="bold">β</mi><mo>,</mo><mspace width="1em"></mspace><msub><mi mathvariant="bold">W</mi><mn>1</mn></msub><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>32</mn><mo>×</mo><mn>64</mn></mrow></msup><mo>,</mo><mspace width="0.6em"></mspace><msub><mi mathvariant="bold">W</mi><mn>2</mn></msub><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>64</mn><mo>×</mo><mn>32</mn></mrow></msup></math>
+            </div>
+            <p>In words: each row asks a question (query), every row offers a label (key), and the softmax of their dot products gives weights that sum to 1 across the rows. The row then receives that weighted average of the rows' values. Each of the 4 heads can look for something different; <b>W</b><sup>O</sup> (32 × 32) mixes them back together. A small two-layer network then works on each row alone. During training, dropout (rate 0.2) zeroes a random fifth of the attention weights and of each part's output.</p>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>4 · Attention along time, then across players</summary>
+          <div class="step-body">
+            <div class="mathbox">
+              <math display="block"><msub><mi mathvariant="bold">u</mi><mi>p</mi></msub><mo>=</mo><msub><mrow><mo>[</mo><msub><mi>Layer</mi><mtext>time</mtext></msub><mo>(</mo><msubsup><mi mathvariant="bold">h</mi><mrow><mi>p</mi><mo>,</mo><mn>1</mn><mo>:</mo><mn>9</mn></mrow><mrow><mo>(</mo><mn>0</mn><mo>)</mo></mrow></msubsup><mo>)</mo><mo>]</mo></mrow><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow></msub><mo>∈</mo><msup><mi>ℝ</mi><mn>32</mn></msup><mo>,</mo><mspace width="1em"></mspace><mi mathvariant="bold">U</mi><mo>=</mo><mo>[</mo><msub><mi mathvariant="bold">u</mi><mn>1</mn></msub><mo>;</mo><mo>…</mo><mo>;</mo><msub><mi mathvariant="bold">u</mi><mn>10</mn></msub><mo>]</mo><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>10</mn><mo>×</mo><mn>32</mn></mrow></msup></math>
+              <math display="block"><msup><mi mathvariant="bold">U</mi><mo>′</mo></msup><mo>=</mo><msubsup><mi>Layer</mi><mtext>players</mtext><mrow><mo>(</mo><mn>2</mn><mo>)</mo></mrow></msubsup><mo>(</mo><msubsup><mi>Layer</mi><mtext>players</mtext><mrow><mo>(</mo><mn>1</mn><mo>)</mo></mrow></msubsup><mo>(</mo><mi mathvariant="bold">U</mi><mo>)</mo><mo>)</mo><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>10</mn><mo>×</mo><mn>32</mn></mrow></msup></math>
+            </div>
+            <p><b>Along time</b> (one layer, its own weights, shared by all ten players): each player's 9 steps attend to each other, a 9 × 9 weight matrix per head, and only his "now" row is kept. It now carries a summary of his last 1.6 s (sliding, turning, holding a level). <b>Across players</b> (two layers, each with its own weights): the ten "now" rows attend to each other, a 10 × 10 weight matrix per head. The Model Attention toggle shows the last layer's weights for rows 1-4, averaged over heads. No row is masked, so every player sees every player.</p>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>5 · Read-out: three questions, five calls</summary>
+          <div class="step-body">
+            <div class="mathbox">
+              <math display="block"><mi mathvariant="bold">g</mi><mo>=</mo><mo>[</mo><mi>LN</mi><mo>(</mo><msubsup><mi mathvariant="bold">u</mi><mn>1</mn><mo>′</mo></msubsup><mo>)</mo><mo>;</mo><mspace width="0.2em"></mspace><mi>LN</mi><mo>(</mo><msubsup><mi mathvariant="bold">u</mi><mn>2</mn><mo>′</mo></msubsup><mo>)</mo><mo>;</mo><mspace width="0.2em"></mspace><mi>LN</mi><mo>(</mo><msubsup><mi mathvariant="bold">u</mi><mn>3</mn><mo>′</mo></msubsup><mo>)</mo><mo>;</mo><mspace width="0.2em"></mspace><mi>LN</mi><mo>(</mo><msubsup><mi mathvariant="bold">u</mi><mn>4</mn><mo>′</mo></msubsup><mo>)</mo><mo>;</mo><mspace width="0.2em"></mspace><mover><mi mathvariant="bold">c</mi><mo>~</mo></mover><mo>]</mo><mo>∈</mo><msup><mi>ℝ</mi><mn>137</mn></msup></math>
+              <math display="block"><mi mathvariant="bold">ℓ</mi><mo>=</mo><msub><mi mathvariant="bold">W</mi><mi>b</mi></msub><mspace width="0.2em"></mspace><mi>ReLU</mi><mo>(</mo><msub><mi mathvariant="bold">W</mi><mi>a</mi></msub><mi mathvariant="bold">g</mi><mo>+</mo><msub><mi mathvariant="bold">b</mi><mi>a</mi></msub><mo>)</mo><mo>+</mo><msub><mi mathvariant="bold">b</mi><mi>b</mi></msub><mo>=</mo><mo>(</mo><msub><mi>ℓ</mi><mtext>sw</mtext></msub><mo>,</mo><msub><mi>ℓ</mi><mtext>un</mtext></msub><mo>,</mo><msub><mi>ℓ</mi><mtext>sh</mtext></msub><mo>)</mo><mo>,</mo><mspace width="1em"></mspace><msub><mi mathvariant="bold">W</mi><mi>a</mi></msub><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>64</mn><mo>×</mo><mn>137</mn></mrow></msup><mo>,</mo><mspace width="0.6em"></mspace><msub><mi mathvariant="bold">W</mi><mi>b</mi></msub><mo>∈</mo><msup><mi>ℝ</mi><mrow><mn>3</mn><mo>×</mo><mn>64</mn></mrow></msup></math>
+              <math display="block"><msub><mi>p</mi><mtext>sw</mtext></msub><mo>=</mo><mi>σ</mi><mo>(</mo><msub><mi>ℓ</mi><mtext>sw</mtext></msub><mo>)</mo><mo>,</mo><mspace width="0.6em"></mspace><msub><mi>p</mi><mtext>un</mtext></msub><mo>=</mo><mi>σ</mi><mo>(</mo><msub><mi>ℓ</mi><mtext>un</mtext></msub><mo>)</mo><mo>,</mo><mspace width="0.6em"></mspace><msub><mi>p</mi><mtext>sh</mtext></msub><mo>=</mo><mi>σ</mi><mo>(</mo><msub><mi>ℓ</mi><mtext>sh</mtext></msub><mo>)</mo><mo>,</mo><mspace width="1em"></mspace><mi>σ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>z</mi></mrow></msup></mrow></mfrac></math>
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead><tr><th>Call</th><th>Probability</th></tr></thead>
+                <tbody>
+                  <tr><td>over + show</td><td><math><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sw</mtext></msub><mo>)</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>un</mtext></msub><mo>)</mo><msub><mi>p</mi><mtext>sh</mtext></msub></math></td></tr>
+                  <tr><td>over + soft</td><td><math><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sw</mtext></msub><mo>)</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>un</mtext></msub><mo>)</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sh</mtext></msub><mo>)</mo></math></td></tr>
+                  <tr><td>under + soft</td><td><math><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sw</mtext></msub><mo>)</mo><msub><mi>p</mi><mtext>un</mtext></msub><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sh</mtext></msub><mo>)</mo></math></td></tr>
+                  <tr><td>under + show</td><td><math><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sw</mtext></msub><mo>)</mo><msub><mi>p</mi><mtext>un</mtext></msub><msub><mi>p</mi><mtext>sh</mtext></msub></math></td></tr>
+                  <tr><td>switch</td><td><math><msub><mi>p</mi><mtext>sw</mtext></msub></math></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>The read-out sees only the four screen players' rows (which have already taken in the other six through attention) and the nine context numbers. Its three scores are three yes/no questions: switch? If not, did the ball defender go under? Did the big show? The five probabilities always sum to 1, and each defender's own call follows by adding: big shows <math><mo>=</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sw</mtext></msub><mo>)</mo><msub><mi>p</mi><mtext>sh</mtext></msub></math>, guard goes under <math><mo>=</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mtext>sw</mtext></msub><mo>)</mo><msub><mi>p</mi><mtext>un</mtext></msub></math>. Because the two defenders share <math><msub><mi>p</mi><mtext>sw</mtext></msub></math>, and under + show uses the same <math><msub><mi>p</mi><mtext>un</mtext></msub></math> and <math><msub><mi>p</mi><mtext>sh</mtext></msub></math> as every other call, the rare joint calls borrow strength from the common ones.</p>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>6 · Training</summary>
+          <div class="step-body">
+            <div class="mathbox">
+              <math display="block"><mi mathvariant="script">L</mi><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mi>B</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>B</mi></munderover><mi>log</mi><mspace width="0.2em"></mspace><mi>P</mi><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>∣</mo><msub><mi mathvariant="bold">X</mi><mi>i</mi></msub><mo>,</mo><msub><mi mathvariant="bold">c</mi><mi>i</mi></msub><mo>)</mo><mo>,</mo><mspace width="1em"></mspace><mi>log</mi><mspace width="0.2em"></mspace><mi>σ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mtext> and </mtext><mi>log</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>σ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>)</mo><mo>=</mo><mi>log</mi><mspace width="0.2em"></mspace><mi>σ</mi><mo>(</mo><mo>−</mo><mi>z</mi><mo>)</mo><mtext> summed per call</mtext></math>
+              <math display="block"><msub><mi>P</mi><mtext>final</mtext></msub><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>(</mo><msup><mi>P</mi><mrow><mo>(</mo><mtext>seed 1</mtext><mo>)</mo></mrow></msup><mo>+</mo><msup><mi>P</mi><mrow><mo>(</mo><mtext>seed 2</mtext><mo>)</mo></mrow></msup><mo>)</mo></math>
+            </div>
+            <div class="tablewrap">
+              <table>
+                <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+                <tbody>
+                  <tr><td>Split, per held-out game</td><td>8 games train, the next game in order validates, the held-out game is predicted</td></tr>
+                  <tr><td>Rows per epoch</td><td>3 random frames per training screen (about 3,500), shuffled into batches of 128</td></tr>
+                  <tr><td>Optimiser</td><td>AdamW, learning rate 5 × 10<sup>−4</sup>, weight decay 0.05</td></tr>
+                  <tr><td>Stopping</td><td>validation log loss on every third frame of the validation game; keep the best epoch; stop after 15 epochs without improvement (at most 150)</td></tr>
+                  <tr><td>Dropout</td><td>0.2 in every attention layer and before the last read-out layer</td></tr>
+                  <tr><td>Random starts</td><td>2 (seeds 1 and 2); their probabilities are averaged</td></tr>
+                  <tr><td>Typical run</td><td>best epochs around 40-60; about 14 minutes per held-out game on one CPU thread</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+
+        <details class="step">
+          <summary>7 · Every learned number</summary>
+          <div class="step-body">
+            <div class="tablewrap">
+              <table>
+                <thead><tr><th>Block</th><th>Weights</th><th class="num">Parameters</th></tr></thead>
+                <tbody>
+                  <tr><td>Embedding</td><td><span class="shape">W<sub>e</sub> 32×16 + b<sub>e</sub> 32 + steps 9×32 + roles 6×32</span></td><td class="num">1,024</td></tr>
+                  <tr><td>Attention along time (1 layer)</td><td><span class="shape">4 × (32×32 + 32) + 2 norms 2×32 + FFN 32×64 + 64 + 64×32 + 32</span></td><td class="num">8,544</td></tr>
+                  <tr><td>Attention across players (2 layers)</td><td>the same, twice</td><td class="num">17,088</td></tr>
+                  <tr><td>Final norm</td><td><span class="shape">γ, β 32 each</span></td><td class="num">64</td></tr>
+                  <tr><td>Read-out</td><td><span class="shape">64×137 + 64 + 3×64 + 3</span></td><td class="num">9,027</td></tr>
+                  <tr><td><b>Total</b></td><td>per random start</td><td class="num"><b>35,747</b></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>About 35,700 numbers learned from about 1,170 training screens per held-out game, which is why the model uses dropout, weight decay, early stopping and averaged random starts.</p>
+          </div>
+        </details>
+      </div>
+    </details>
+  </section>
+
+  <section>
     <h2>Ice and blitz</h2>
     <div class="tablewrap">
       <table>
@@ -602,7 +874,7 @@ svg text { font-family: var(--font-mono); }
       <div><h3>New inputs</h3><ul class="tight">
         <li>Ball position and height.</li>
         <li>Personnel threat: the screener's pop rate and the handler's pull-up rate, built without leaking the season's own outcomes.</li>
-        <li>Explicit help-defender measures, such as distance to the roll lane and the nearest tagger.</li>
+        <li>Explicit help-defender measures: distance to the roll lane and closing speed were tested on 2026-11-15 and added nothing measurable. The pop (catch space beyond the arc, passing-lane clearance) and drive (direct, screen-side and reject lanes) options passed a logistic screen only narrowly, and the experiment was closed. If revisited: a pass gap that ignores defenders beside the handler, and the screener's shooting threat.</li>
       </ul></div>
       <div><h3>Making it live and checking it</h3><ul class="tight">
         <li>A screen-detection step ("a screen is coming, from this teammate") so the card switches on without the tag.</li>
@@ -637,6 +909,7 @@ svg text { font-family: var(--font-mono); }
   <section>
     <h2>Suggested next steps</h2>
     <ol class="steps plain">
+      <li><div><p><b>Average more random starts</b>: two more starts of the unchanged model moved its scores by about as much as the roll lanes did (after the tag: −0.014, interval −0.028 to 0.000). Averaging four starts may be a cheap gain; any later comparison should be judged against this noise.</p></div></li>
       <li><div><p><b>Film-check the strips</b> in <span class="file">screen_coverage/03_outputs/evaluation/figures/strips/</span>: 12 screens, now drawn with the live v2 model and its own −0.4 s call.</p></div></li>
       <li><div><p><b>Grade the 33 left-out screens frame by frame</b>, deciding from the past only whether each moment can be predicted; report both versions.</p></div></li>
       <li><div><p><b>Check the 1 s "readable" assumption</b>: rerun with 0 s, 2 s and "once the trip is over" to see whether the tendency gain depends on it.</p></div></li>
@@ -650,7 +923,37 @@ svg text { font-family: var(--font-mono); }
     <h2>Change log</h2>
     <div class="log">
       <div class="entry">
-        <time datetime="2026-11-12">2026-11-12 (latest)</time>
+        <time datetime="2026-11-15">2026-11-15 (latest)</time>
+        <div>
+          <h3>"Under the hood" reference section</h3>
+          <ul class="tight">
+            <li>New collapsible section after the results. <b>Logistic baseline</b>: its formula and fitting, held-out permutation importance by input group (new <span class="file">12_baseline_importance.R</span>, results in <span class="file">03_outputs/logistic/importance/</span>), and the coefficients of one fit on all ten games. The two defenders' levels dominate, each mostly for its own defender's call.</li>
+            <li><b>Live transformer</b>: every tensor shape, the embedding, attention-layer, read-out and joint-probability formulas, the training settings and the parameter count (35,747 per random start, read from the saved networks).</li>
+            <li>No model, input or result changed.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-15">2026-11-15</time>
+        <div>
+          <h3>Lane experiment: roll, pop and drive tested; closed, none adopted</h3>
+          <ul class="tight">
+            <li>Following the owner's runbook ("Roll, pop, and drive lanes for screen coverage"). Variant B adds three channels to each off-ball defender's token at every history step: his gap to the segment from the screener to the rim at that moment (ft), how much that gap shrank over the last 0.2 s measured against the same current segment (ft/s), and a validity flag. The gap and closing speed are scaled from valid training entries only and set to 0 wherever the flag is 0. Everything else (screens, rows, context, folds, settings, two seeds) is the live model's.</li>
+            <li>Checks before fitting: 32 hand-made geometry cases pass (<span class="file">07_test_lane_geometry.R</span>: the runbook's 2 ft / 0.4 / +5 ft/s case, sqrt(13) ft beyond the rim, a still defender beside a moving screener closes at 0, mirroring and reordering, missing data); the variants' 16 movement features, context and roster are identical to the live cache; variant A retrained on game 114243 reproduced the live fold exactly (same probabilities, same best epochs), so the live folds serve as A. The past-only test passes on B (180/180), and scrambling the prediction frame changes the lane values on all 180 rows. The live test still passes (180/180) after the shared code changes.</li>
+            <li>Primary score, the big's call at −0.4 s, held out by game on the same 1,463 screens: 0.7934 (live) and 0.7897 (B), change −0.0037 (95% game-bootstrap interval −0.0163 to +0.0113), better in 6 of 10 games (per game −0.030 to +0.037). At −0.8 s: +0.0001 (−0.0101 to +0.0115). Over the whole window before the screen: +0.0030. Guard and five-call scores also moved by less than 0.006 either way. Lane values were available on essentially every scored row (all three defenders valid on 100% of rows at −0.4 s), so availability does not explain it.</li>
+            <li>Seed-noise control (the owner's request): the live model retrained with random starts 3-4 moves the same primary score by −0.0071 (−0.0158 to +0.0020), more than B does. Decision, per the runbook's rule: the live model stays the reference and B is recorded as tested. Variant C (distance without closing speed) was not run: with no gain from B it could not change the choice. The pop and drive stages wait for the owner's review.</li>
+            <li>Why no gain (<span class="file">10_lane_diagnostics.R</span>, <span class="file">experiments/lanes/diagnostics/</span>), using the nearest helper to the lane at each moment. Descriptive: with him within 6 ft at −0.4 s the big switches on 19% of screens and plays soft on 38-39%; beyond 9 ft, 10-13% and 48-50%; show stays near 40% throughout. Held out by game, the gap alone does not beat no inputs for the big's call (−0.4 s: +0.001, −0.006 to +0.009). Added to the logistic baseline, which sees only the four screen players: big at −0.4 s −0.002 (−0.007 to +0.002, 4 of 10 games); with closing speed −0.003 (−0.007 to +0.001, 6 of 10). So the helpers carry at most a small signal about the big's call before the screen, whichever model gets it; the transformer's lack of gain is mainly a weak link plus a sample too small to see a gain under about 0.01, not mainly redundancy. The refit baseline reproduced the cached one exactly.</li>
+            <li>Pop and drive screened cheaply first, at the owner's request (<span class="file">11_screen_pop_drive.R</span>, <span class="file">experiments/lanes/screening/</span>), with the runbook's geometry at each row's frame (<span class="file">R/lane_geometry.R</span>: <span class="file">pop_option</span>, <span class="file">drive_options</span>; 10 new hand-made checks, mirroring included; a past-only spot check 150/150 with a working control). Availability at −0.4 s: a pop spot on 89% of screens, the screener's side known on 91%. Gate set beforehand: the targeted defender at −0.4 s or −0.8 s, with an interval below zero or a gain over 0.004 in 7+ games.</li>
+            <li>Pop (big): baseline + pop −0.0025 at −0.8 s (−0.0039 to −0.0012, 9 of 10 games), −0.0011 at −0.4 s (−0.0030 to +0.0010). The clearest pattern is screens with no reachable open spot (11%): soft 64% vs about 40%; these are likely screens far from the arc, which the baseline already sees through the screener's distance to the hoop. The pass gap is set by the handler's own defender in 73% of rows and the screener's defender in 25%: at −0.4 s the pass would leave from inside the screen, so "open space" mostly re-measures the two screen defenders.</li>
+            <li>Drive (guard): direct lane −0.0013 at −0.4 s (not significant). Direct + screen-side and reject routes: −0.0038 at −0.4 s (−0.0065 to −0.0009, 8 of 10), −0.0011 at −0.8 s, but they make the big's −0.8 s score worse (+0.0034 against direct alone, 1 of 10 games better). Alone, the routes predict the guard's call well (−0.028 vs no inputs), so most of what they carry the baseline's four-player positions already have.</li>
+            <li>Reading: two passes out of six gate tests, each at one moment only and at 0.003-0.004, below the transformer comparison's noise (seed noise 0.007, interval ±0.013). No transformer variant trained for pop or drive.</li>
+            <li><b>Closed</b> by the owner the same day: none of the lane features is adopted, the live model and its Coverage Read card are unchanged, and C, pop and drive transformer variants were not trained. Code, caches and outputs stay in place (<span class="file">experiments/lanes/</span>) so any part can be rerun; the viewer's Roll Lanes toggle remains as a descriptive overlay of the tested geometry.</li>
+            <li>Added: <span class="file">R/lane_geometry.R</span>, <span class="file">R/lane_variants.R</span>, <span class="file">07</span>-<span class="file">11</span> scripts, <span class="file">--variant</span>/<span class="file">--seeds</span> options on <span class="file">02</span>, <span class="file">03</span> and <span class="file">05</span> (default behaviour unchanged), stills of six screens at −0.8 s, −0.4 s and the tag, and a "Roll Lanes (experiment)" toggle on the play viewer that draws the lane, each helper's nearest point and last 0.2 s, and the experiment's input values.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-12">2026-11-12 (last)</time>
         <div>
           <h3>Repository reorganised by project</h3>
           <ul class="tight">

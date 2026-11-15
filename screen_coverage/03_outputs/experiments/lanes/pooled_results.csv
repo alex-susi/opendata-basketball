@@ -1,0 +1,25 @@
+comparison,variant,reference,metric,horizon,loss_reference,loss_variant,delta,lo,hi,screens,games_improved,games,top_game_share,primary
+roll lanes: B minus A,B,A,big,-0.8 s,0.891,0.8911,1e-04,-0.0101,0.0115,1463,6,10,31.9207,FALSE
+roll lanes: B minus A,B,A,big,-0.4 s,0.7934,0.7897,-0.0037,-0.0163,0.0113,1463,6,10,0.8776,TRUE
+roll lanes: B minus A,B,A,big,before the tag (forecast),0.882,0.885,0.003,-0.0038,0.0105,1463,5,10,1.0353,FALSE
+roll lanes: B minus A,B,A,big,tag to +1 s (recognition),0.5823,0.576,-0.0063,-0.0236,0.0119,1463,8,10,0.9085,FALSE
+roll lanes: B minus A,B,A,guard,-0.8 s,0.8199,0.8144,-0.0055,-0.0189,0.0061,1463,5,10,1.0085,FALSE
+roll lanes: B minus A,B,A,guard,-0.4 s,0.7183,0.7202,0.0019,-0.0073,0.0103,1463,4,10,1.265,FALSE
+roll lanes: B minus A,B,A,guard,before the tag (forecast),0.7898,0.7919,0.002,-0.0047,0.0094,1463,5,10,1.1375,FALSE
+roll lanes: B minus A,B,A,guard,tag to +1 s (recognition),0.4871,0.4882,0.0011,-0.0142,0.0177,1463,5,10,5.5424,FALSE
+roll lanes: B minus A,B,A,joint,-0.8 s,1.3153,1.3102,-0.0052,-0.0179,0.0039,1463,6,10,1.0185,FALSE
+roll lanes: B minus A,B,A,joint,-0.4 s,1.1275,1.1278,4e-04,-0.0156,0.02,1463,5,10,21.77,FALSE
+roll lanes: B minus A,B,A,joint,before the tag (forecast),1.2781,1.2831,0.005,-0.006,0.0165,1463,5,10,0.8663,FALSE
+roll lanes: B minus A,B,A,joint,tag to +1 s (recognition),0.7596,0.7595,-1e-04,-0.0247,0.0289,1463,5,10,44.4585,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,big,-0.8 s,0.891,0.8884,-0.0025,-0.0109,0.0055,1463,6,10,0.9008,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,big,-0.4 s,0.7934,0.7863,-0.0071,-0.0158,0.002,1463,6,10,0.4291,TRUE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,big,before the tag (forecast),0.882,0.8818,-1e-04,-0.0047,0.005,1463,6,10,7.0511,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,big,tag to +1 s (recognition),0.5823,0.5679,-0.0144,-0.0283,1e-04,1463,8,10,0.3484,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,guard,-0.8 s,0.8199,0.817,-0.0029,-0.0136,0.0076,1463,4,10,1.1098,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,guard,-0.4 s,0.7183,0.7186,3e-04,-0.0105,0.0119,1463,5,10,9.9585,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,guard,before the tag (forecast),0.7898,0.7902,4e-04,-0.0047,0.0062,1463,6,10,5.1246,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,guard,tag to +1 s (recognition),0.4871,0.4782,-0.0089,-0.0197,0.0038,1463,7,10,0.4332,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,joint,-0.8 s,1.3153,1.3122,-0.0032,-0.0146,0.0075,1463,4,10,1.289,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,joint,-0.4 s,1.1275,1.122,-0.0055,-0.02,0.0086,1463,6,10,0.9673,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,joint,before the tag (forecast),1.2781,1.2794,0.0014,-0.0057,0.0088,1463,5,10,1.5788,FALSE
+seed noise: A (seeds 3-4) minus A (seeds 1-2),A seeds 3-4,A,joint,tag to +1 s (recognition),0.7596,0.7427,-0.0169,-0.0345,8e-04,1463,7,10,0.389,FALSE

@@ -18,6 +18,11 @@
 # training curves, the standardisation, and the rules the inputs were built under; and the trained networks,
 # tf/seqheads_<gameId>_seed<k>.pt, so that 05_test_past_only.R can rerun a prediction from changed inputs.
 # Since 2026-11-12 the inputs are past-only (R/past_only.R) and the defense's calls so far use an even-split prior.
+#
+# Lane experiment (2026-11-15): --variant=A|B|C [--seeds=1,2] trains on
+# screen_coverage/02_cache/experiments/lanes/<variant>/sequences.rds (02_build_sequences.R --variant) and writes to
+# that folder's tf_s<seeds>/. The roll-lane distance and closing speed are standardised with the valid training
+# entries only and set to 0 (in standardised space) wherever their flag is 0. Without --variant nothing changes.
 ## ═════════════════════════════════════════════════════════════════════════════
 
 source_root <- function() {
@@ -35,8 +40,19 @@ arg <- function(name, default = NULL) {
   if (length(hit)) sub(paste0("^--", name, "="), "", hit[1]) else default
 }
 FOLD <- as.integer(arg("fold"))
+VARIANT <- arg("variant", NA_character_)
+SEEDS <- as.integer(strsplit(arg("seeds", "1,2"), ",")[[1]])
 cache_dir <- file.path(root, "screen_coverage", "02_cache")
-out_path <- file.path(cache_dir, "tf", sprintf("seqheads_%d.rds", FOLD))
+seq_path <- file.path(cache_dir, "sequences.rds")
+tf_dir <- file.path(cache_dir, "tf")
+if (!is.na(VARIANT)) {
+  source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_variants.R"))
+  if (!VARIANT %in% names(LANE_VARIANTS)) stop("Unknown --variant: ", VARIANT)
+  seq_path <- file.path(lane_dir(root, VARIANT), "sequences.rds")
+  tf_dir <- lane_tf_dir(root, VARIANT, SEEDS)
+} else if (!identical(SEEDS, 1:2)) stop("--seeds is for the lane experiment only (with --variant)")
+dir.create(tf_dir, recursive = TRUE, showWarnings = FALSE)
+out_path <- file.path(tf_dir, sprintf("seqheads_%d.rds", FOLD))
 if (file.exists(out_path) && !"--force" %in% commandArgs(TRUE)) quit(save = "no")
 
 
@@ -47,8 +63,9 @@ if (file.exists(out_path) && !"--force" %in% commandArgs(TRUE)) quit(save = "no"
 ## 01 - SETTINGS ---------------------------------------------------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-# Training: random starts averaged, epoch cap, early-stopping patience, batch size, learning rate, weight decay.
-N_SEEDS <- 2L
+# Training: random starts averaged (seeds 1 and 2 unless --seeds), epoch cap, early-stopping patience, batch size,
+# learning rate, weight decay.
+N_SEEDS <- length(SEEDS)
 MAX_EPOCHS <- 150L
 PATIENCE <- 15L
 BATCH <- 128L
@@ -70,9 +87,12 @@ K_STEPS <- 9L
 
 # Step-1 rows and step-2 histories. `flat` reshapes the base array so that one row is one (frame, screen) pair.
 L <- readRDS(file.path(cache_dir, "logistic_per_frame.rds"))
-SQ <- readRDS(file.path(cache_dir, "sequences.rds"))
+SQ <- readRDS(seq_path)
 if (!identical(L$rules, PAST_ONLY_RULES) || !identical(SQ$rules, PAST_ONLY_RULES) || !identical(SQ$screen_ids, L$P$id)) {
   stop("Inputs were built under other rules or for other screens: rerun 01_logistic_baseline.R and 02_build_sequences.R")
+}
+if (!is.na(VARIANT) && (!identical(SQ$variant, VARIANT) || !identical(SQ$feats, lane_feats(VARIANT)))) {
+  stop(seq_path, " does not hold variant ", VARIANT, "'s features: rerun 02_build_sequences.R --variant=", VARIANT)
 }
 X <- L$X
 CALLS <- L$calls
@@ -94,7 +114,7 @@ tr_by_screen <- split(tr, X$idx[tr])
 
 #' Raw history [n, 10, 9, NF] for prediction rows r: steps now, -0.2 s, ..., -1.6 s, mirrored per row
 #' (R/past_only.R, seq_history).
-history <- function(r) seq_history(flat, NS, X$idx[r], X$off[r], K_STEPS, SQ$base_offs, SQ$step)
+history <- function(r) seq_history(flat, NS, X$idx[r], X$off[r], K_STEPS, SQ$base_offs, SQ$step, SQ$feats, SQ$flip)
 
 
 
@@ -119,10 +139,28 @@ mu[SQ$feats %in% SQ$flip] <- 0
 sdv[sdv < 1e-6] <- 1
 mu[SQ$feats == "present"] <- 0
 sdv[SQ$feats == "present"] <- 1
-mu_t <- torch_tensor(mu)
-sd_t <- torch_tensor(sdv)
+# Lane experiment: each masked channel (roll distance, closing speed) from its valid training entries only; its flag
+# stays 0/1. Invalid entries are set to 0 after standardising (standardise_history, R/seq_transformer.R).
+masked <- if (is.null(SQ$masked)) character(0) else SQ$masked
+n_valid <- integer(0)
+for (f in names(masked)) {
+  k <- match(f, SQ$feats)
+  ok <- base[tr_s, , , masked[[f]]] == 1
+  n_valid[f] <- sum(ok)
+  if (!n_valid[f]) stop("No valid training entries for ", f, " in fold ", FOLD)
+  v <- base[tr_s, , , k]
+  mu[k] <- mean(v[ok])
+  sdv[k] <- sd(v[ok])
+  if (!is.finite(sdv[k]) || sdv[k] < 1e-6) sdv[k] <- 1
+}
+for (f in unique(unname(masked))) {
+  mu[SQ$feats == f] <- 0
+  sdv[SQ$feats == f] <- 1
+}
+if (length(masked)) cat("Valid training entries:", paste(names(n_valid), n_valid, sep = " = ", collapse = ", "), "\n")
+norm_x <- list(mu = mu, sdv = sdv, feats = SQ$feats, masked = masked)
 # Model inputs for prediction rows r: standardised histories and context. The validation inputs are built once.
-as_x <- function(r) (torch_tensor(history(r)) - mu_t) / sd_t
+as_x <- function(r) standardise_history(history(r), norm_x)
 cmu <- colMeans(ctx_all[tr, ])
 csd <- apply(ctx_all[tr, ], 2, sd)
 csd[csd < 1e-6] <- 1
@@ -141,7 +179,7 @@ Yva <- torch_tensor(y_all[va], dtype = torch_long())
 
 # Loss: mean negative log probability of the true joint call. Each random start's best network is saved here.
 nll <- function(logits, yy) -joint_logp(logits)$gather(2, yy$unsqueeze(2))$mean()
-net_path <- function(seed) file.path(cache_dir, "tf", sprintf("seqheads_%d_seed%d.pt", FOLD, seed))
+net_path <- function(seed) file.path(tf_dir, sprintf("seqheads_%d_seed%d.pt", FOLD, seed))
 
 t0 <- Sys.time()
 # One random start: train with early stopping on the validation game, then predict the test game with the best weights.
@@ -207,14 +245,23 @@ fit_seed <- function(seed) {
 ## 05 - AVERAGE THE RANDOM STARTS AND SAVE -------------------------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-fits <- lapply(seq_len(N_SEEDS), fit_seed)
+fits <- lapply(SEEDS, fit_seed)
 avg <- function(k) Reduce(`+`, lapply(fits, `[[`, k)) / N_SEEDS
-saveRDS(list(variant = "seqheads", test_game = FOLD, val_game = val_g, rows = te, prob = avg("prob"), heads = avg("heads"),
-             att = avg("att"), curves = rbindlist(lapply(fits, `[[`, "curve")),
-             best = data.table(seed = seq_len(N_SEEDS), epoch = vapply(fits, `[[`, 0L, "best_ep"), val_logloss = vapply(fits, `[[`, 0, "best_val")),
-             seconds = as.numeric(Sys.time() - t0, units = "secs"), nets = vapply(seq_len(N_SEEDS), net_path, ""),
-             norm = list(mu = mu, sdv = sdv, cmu = cmu, csd = csd), k_steps = K_STEPS, rules = PAST_ONLY_RULES,
-             screen_ids = L$P$id), out_path)
+saved <- list(variant = "seqheads", test_game = FOLD, val_game = val_g, rows = te, prob = avg("prob"), heads = avg("heads"),
+              att = avg("att"), curves = rbindlist(lapply(fits, `[[`, "curve")),
+              best = data.table(seed = SEEDS, epoch = vapply(fits, `[[`, 0L, "best_ep"), val_logloss = vapply(fits, `[[`, 0, "best_val")),
+              seconds = as.numeric(Sys.time() - t0, units = "secs"), nets = vapply(SEEDS, net_path, ""),
+              norm = list(mu = mu, sdv = sdv, cmu = cmu, csd = csd), k_steps = K_STEPS, rules = PAST_ONLY_RULES,
+              screen_ids = L$P$id)
+# Lane experiment: which variant and seeds, its feature axis and masks, and how many valid entries set the scaling.
+if (!is.na(VARIANT)) {
+  saved$lane <- list(variant = VARIANT, seeds = SEEDS, feats = SQ$feats, masked = masked, n_valid = n_valid,
+                     settings = list(MAX_EPOCHS = MAX_EPOCHS, PATIENCE = PATIENCE, BATCH = BATCH, LR = LR, WD = WD,
+                                     FRAMES_PER_EPOCH = FRAMES_PER_EPOCH, EVERY = EVERY, K_STEPS = K_STEPS))
+  saved$norm$feats <- SQ$feats
+  saved$norm$masked <- masked
+}
+saveRDS(saved, out_path)
 message(sprintf("seqheads fold %d: best epochs %s, val log loss %s, %.0f s", FOLD,
                 paste(vapply(fits, `[[`, 0L, "best_ep"), collapse = "/"),
                 paste(round(vapply(fits, `[[`, 0, "best_val"), 3), collapse = "/"), as.numeric(Sys.time() - t0, units = "secs")))

@@ -1,0 +1,40 @@
+window,group,label,inputs,rise_joint,lo_joint,hi_joint,rise_big,rise_guard,games_hurt,screens
+at -0.4 s,sd_lvl,Big's level,sd_lvl + sd_lvl_close,0.215,0.1852,0.2441,0.2095,0.0124,10,1463
+at -0.4 s,bd_lvl,Ball defender's level,bd_lvl + bd_lvl_close,0.1922,0.1693,0.2145,0.0248,0.1922,10,1463
+at -0.4 s,bd_lvl_v,Ball defender's level changing,bd_lvl_v + bd_lvl_v_close,0.1137,0.096,0.1308,0.0465,0.0759,10,1463
+at -0.4 s,sd_lvl_v,Big's level changing,sd_lvl_v + sd_lvl_v_close,0.0583,0.0491,0.0684,0.0549,0.0083,10,1463
+at -0.4 s,so_far,Defense's calls so far (5 shares),lsf_1 + lsf_2 + lsf_3 + lsf_4 + lsf_5,0.0434,0.0215,0.0722,0.0376,0.0229,10,1463
+at -0.4 s,d_bd,Handler to his defender,d_bd + d_bd_close,0.0375,0.0287,0.0442,0.0146,0.0371,10,1463
+at -0.4 s,tta_now,Time to act,tta_now,0.0375,0.0258,0.0497,0.0292,0.0294,10,1463
+at -0.4 s,d_def,Between the two defenders,d_def + d_def_close,0.0358,0.0238,0.0489,0.0202,0.0317,10,1463
+at -0.4 s,h_lvl,Handler's level,h_lvl + h_lvl_close,0.0326,0.0223,0.0447,0.0223,0.0192,10,1463
+at -0.4 s,s_hoop,Screener's distance from the hoop,s_hoop + s_hoop_close,0.0271,0.0196,0.0346,0.0161,0.0155,10,1463
+at -0.4 s,d_sd,Handler to the screener's defender,d_sd + d_sd_close,0.0254,0.0146,0.036,0.0138,0.0156,9,1463
+at -0.4 s,closeness,"Closeness (handler to screener, 0-1)",closeness,0.0244,0.0162,0.0312,0.0082,0.0091,10,1463
+at -0.4 s,d_hs,Handler to screener distance,d_hs,0.0082,0.0018,0.0149,0.006,0.0046,8,1463
+before the tag,sd_lvl,Big's level,sd_lvl + sd_lvl_close,0.2,0.1714,0.2304,0.1903,0.015,10,1463
+before the tag,bd_lvl,Ball defender's level,bd_lvl + bd_lvl_close,0.1826,0.1592,0.2041,0.0286,0.1837,10,1463
+before the tag,bd_lvl_v,Ball defender's level changing,bd_lvl_v + bd_lvl_v_close,0.097,0.0887,0.1053,0.0277,0.074,10,1463
+before the tag,d_def,Between the two defenders,d_def + d_def_close,0.0573,0.0431,0.0719,0.0257,0.0508,10,1463
+before the tag,h_lvl,Handler's level,h_lvl + h_lvl_close,0.0561,0.0406,0.0699,0.0244,0.0403,10,1463
+before the tag,so_far,Defense's calls so far (5 shares),lsf_1 + lsf_2 + lsf_3 + lsf_4 + lsf_5,0.0465,0.0216,0.0778,0.0394,0.021,9,1463
+before the tag,sd_lvl_v,Big's level changing,sd_lvl_v + sd_lvl_v_close,0.0437,0.0368,0.0518,0.0417,0.0067,10,1463
+before the tag,s_hoop,Screener's distance from the hoop,s_hoop + s_hoop_close,0.0416,0.0292,0.0527,0.0227,0.0258,10,1463
+before the tag,d_bd,Handler to his defender,d_bd + d_bd_close,0.0406,0.0274,0.0534,0.0184,0.0396,9,1463
+before the tag,closeness,"Closeness (handler to screener, 0-1)",closeness,0.0357,0.0218,0.0504,0.007,0.0141,9,1463
+before the tag,tta_now,Time to act,tta_now,0.0295,0.0187,0.0397,0.0254,0.0239,9,1463
+before the tag,d_sd,Handler to the screener's defender,d_sd + d_sd_close,0.0207,0.0089,0.0321,0.0103,0.0084,8,1463
+before the tag,d_hs,Handler to screener distance,d_hs,0.0178,0.0109,0.0244,0.0122,0.0107,10,1463
+tag to +1 s,sd_lvl,Big's level,sd_lvl + sd_lvl_close,0.3674,0.3305,0.4061,0.3634,0.0133,10,1463
+tag to +1 s,bd_lvl,Ball defender's level,bd_lvl + bd_lvl_close,0.2286,0.2038,0.2517,0.0329,0.2257,10,1463
+tag to +1 s,d_bd,Handler to his defender,d_bd + d_bd_close,0.1077,0.0963,0.1185,0.0386,0.1066,10,1463
+tag to +1 s,bd_lvl_v,Ball defender's level changing,bd_lvl_v + bd_lvl_v_close,0.0699,0.0541,0.0863,0.0347,0.0424,10,1463
+tag to +1 s,h_lvl,Handler's level,h_lvl + h_lvl_close,0.0579,0.0479,0.0691,0.0229,0.0449,10,1463
+tag to +1 s,sd_lvl_v,Big's level changing,sd_lvl_v + sd_lvl_v_close,0.0535,0.0386,0.0686,0.051,0.0086,10,1463
+tag to +1 s,d_def,Between the two defenders,d_def + d_def_close,0.0468,0.0369,0.0572,0.0367,0.0442,10,1463
+tag to +1 s,closeness,"Closeness (handler to screener, 0-1)",closeness,0.0463,0.0352,0.0573,0.0138,0.0257,10,1463
+tag to +1 s,d_sd,Handler to the screener's defender,d_sd + d_sd_close,0.0383,0.0292,0.0482,0.0306,0.0276,10,1463
+tag to +1 s,so_far,Defense's calls so far (5 shares),lsf_1 + lsf_2 + lsf_3 + lsf_4 + lsf_5,0.0336,0.0155,0.0563,0.0293,0.0203,8,1463
+tag to +1 s,s_hoop,Screener's distance from the hoop,s_hoop + s_hoop_close,0.026,0.0184,0.0335,0.022,0.0114,10,1463
+tag to +1 s,tta_now,Time to act,tta_now,0.0247,0.0155,0.0328,0.0209,0.0206,9,1463
+tag to +1 s,d_hs,Handler to screener distance,d_hs,0.0153,0.009,0.023,0.0157,0.0071,10,1463

@@ -56,6 +56,19 @@ seq_heads_transformer <- nn_module(initialize = function(n_feat, n_ctx, n_steps 
                                      if (return_attention) list(logits = logits, attention = ws) else logits
                                    })
 
+#' Standardised history tensor from a raw history array h [rows, 10, steps, features] and a fold's `norm` (mu, sdv;
+#' for the lane experiment also feats and masked = c(channel = flag)): (h - mu) / sdv, then each masked channel is
+#' set to 0 wherever its flag is 0. Without masks this is exactly the live model's (h - mu) / sdv.
+standardise_history <- function(h, norm) {
+  xt <- (torch_tensor(h) - torch_tensor(norm$mu)) / torch_tensor(norm$sdv)
+  if (length(norm$masked)) {
+    m <- array(1, dim(h))
+    for (f in names(norm$masked)) m[, , , match(f, norm$feats)] <- h[, , , match(norm$masked[[f]], norm$feats)]
+    xt <- xt * torch_tensor(m)
+  }
+  xt
+}
+
 #' Log probability of each of the five joint calls (over + show, over + soft, under + soft, under + show, switch).
 joint_logp <- function(logits) {
   ls <- nnf_logsigmoid(logits[, 1])

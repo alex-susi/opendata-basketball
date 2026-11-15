@@ -1,0 +1,7 @@
+model,reference,defender,horizon,loss_reference,loss_model,delta,lo,hi,screens,games_improved,passes
+baseline + pop,baseline (refit),big,-0.8 s,0.9138,0.9113,-0.0025,-0.0039,-0.0012,1463,9,TRUE
+baseline + pop,baseline (refit),big,-0.4 s,0.848,0.847,-0.0011,-0.003,0.001,1463,7,FALSE
+baseline + drive direct,baseline (refit),guard,-0.8 s,0.8142,0.8125,-0.0018,-0.0044,9e-04,1463,6,FALSE
+baseline + drive direct,baseline (refit),guard,-0.4 s,0.7588,0.7575,-0.0013,-0.0038,0.0013,1463,5,FALSE
+baseline + drive direct + routes,baseline (refit),guard,-0.8 s,0.8142,0.8131,-0.0011,-0.005,0.0031,1463,6,FALSE
+baseline + drive direct + routes,baseline (refit),guard,-0.4 s,0.7588,0.755,-0.0038,-0.0065,-9e-04,1463,8,TRUE

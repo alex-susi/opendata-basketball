@@ -2,7 +2,7 @@
   // The court canvas: runs the animation clock, draws each frame and records video on request. Clicking a player
   // makes the trace panel follow his distance to the nearest opponent; clicking him again lets him go.
   import { onMount } from "svelte";
-  import { attentionAt, loadCoverageAttention, type AttentionFile } from "../lib/coverage";
+  import { attentionAt, lanesAt, loadCoverageAttention, loadCoverageLanes, type AttentionFile, type LanesFile } from "../lib/coverage";
   import { drawScene } from "../lib/draw";
   import Annotations from "./Annotations.svelte";
   import { FPS } from "../lib/sequence";
@@ -24,6 +24,9 @@
   // The live coverage model's attention, fetched the first time the Model Attention toggle is on.
   let att: AttentionFile | null = null;
   $effect(() => { if (viewer.ann.attention && !att) loadCoverageAttention().then((a) => { att = a; }); });
+  // The roll-lane experiment's inputs, fetched the first time the Roll Lanes toggle is on.
+  let lanes: LanesFile | null = null;
+  $effect(() => { if (viewer.ann.lanes && !lanes) loadCoverageLanes().then((f) => { lanes = f; }); });
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -52,8 +55,9 @@
     const focusPid = viewer.showTrace && viewer.trace === "nearest" ? viewer.focusPid : null;
     const k = Math.min(Math.max(Math.floor(viewer.pos), 0), seq.length - 1);
     const attention = viewer.ann.attention && att && play && seq.length ? attentionAt(att, play.id, play.frames[seq[k]]) : null;
+    const laneFrame = viewer.ann.lanes && lanes && play && seq.length ? lanesAt(lanes, play.id, play.frames[seq[k]]) : null;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos,
-                           { ...viewer, focusPid, sample: season.sample, attention }, framed);
+                           { ...viewer, focusPid, sample: season.sample, attention, lanes: laneFrame }, framed);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;

@@ -37,6 +37,11 @@
 # 05_test_past_only.R checks exactly this code.
 #
 # Writes screen_coverage/02_cache/sequences.rds.
+#
+# Lane experiment (2026-11-15): with --variant=A|B|C the same sequences are written to
+# screen_coverage/02_cache/experiments/lanes/<variant>/sequences.rds, with the variant's roll-lane channels appended
+# after the 16 movement features (R/lane_variants.R, R/lane_geometry.R) and the roll-lane audit values (projection,
+# nearest lane point) for the three off-ball defenders. Without --variant nothing changes.
 ## ═════════════════════════════════════════════════════════════════════════════
 
 suppressPackageStartupMessages(library(data.table))
@@ -45,6 +50,13 @@ script <- sub("^--file=", "", grep("^--file=", args, value = TRUE))
 root <- normalizePath(file.path(dirname(normalizePath(script)), "..", ".."), winslash = "/")
 cache_dir <- file.path(root, "screen_coverage", "02_cache")
 source(file.path(root, "screen_coverage", "01_scripts", "R", "past_only.R"))
+hit <- grep("^--variant=", commandArgs(TRUE), value = TRUE)
+VARIANT <- if (length(hit)) sub("^--variant=", "", hit[1]) else NA_character_
+if (!is.na(VARIANT)) {
+  source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_geometry.R"))
+  source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_variants.R"))
+  if (!VARIANT %in% names(LANE_VARIANTS)) stop("Unknown --variant: ", VARIANT)
+}
 
 
 
@@ -105,8 +117,41 @@ ctx <- cbind(as.matrix(X[, c("tta_now", paste0("lsf_", 1:5)), with = FALSE]), cl
 ctx[is.na(ctx[, "hs_min"]), "hs_min"] <- X$d_hs[is.na(ctx[, "hs_min"])]
 ctx[is.na(ctx[, "since_hs_min"]), "since_hs_min"] <- 0
 stopifnot(!anyNA(ctx), !anyNA(base))
-saveRDS(list(base = base, base_offs = SEQ_BASE_OFFS, step = SEQ_STEP, feats = SEQ_FEATS, flip = SEQ_FLIP, ctx = ctx,
-             roster = roster, screen_ids = P$id, rules = PAST_ONLY_RULES),
-        file.path(cache_dir, "sequences.rds"))
-cat("Sequences:", paste(dim(base), collapse = " x "), "(screens x frames x players x features); context:",
-    paste(colnames(ctx), collapse = ", "), "\n")
+if (is.na(VARIANT)) {
+  saveRDS(list(base = base, base_offs = SEQ_BASE_OFFS, step = SEQ_STEP, feats = SEQ_FEATS, flip = SEQ_FLIP, ctx = ctx,
+               roster = roster, screen_ids = P$id, rules = PAST_ONLY_RULES),
+          file.path(cache_dir, "sequences.rds"))
+  cat("Sequences:", paste(dim(base), collapse = " x "), "(screens x frames x players x features); context:",
+      paste(colnames(ctx), collapse = ", "), "\n")
+}
+
+
+
+
+
+## ═════════════════════════════════════════════════════════════════════════════
+## 04 - LANE EXPERIMENT VARIANTS (--variant) -----------------------------------
+## ═════════════════════════════════════════════════════════════════════════════
+
+# The variant's roll-lane channels go after the movement features; the audit keeps the off-ball defenders' raw values.
+if (!is.na(VARIANT)) {
+  extra <- LANE_VARIANTS[[VARIANT]]
+  feats <- lane_feats(VARIANT)
+  audit <- NULL
+  if (length(extra)) {
+    ext <- append_lane_channels(base, PX, PY, extra)
+    base <- ext$base
+    audit <- lapply(ext$rl[c("distance", "closing", "valid", "projection", "nearest_x", "nearest_y")],
+                    function(a) a[, , ROLL_ROWS, drop = FALSE])
+    rm(ext)
+    cat(sprintf("Roll lane valid: %.1f%% of off-ball defender slots over the stored frames\n", 100 * mean(audit$valid)))
+  }
+  stopifnot(!anyNA(base), identical(dimnames(base)[[4]], feats))
+  out <- lane_dir(root, VARIANT)
+  dir.create(out, recursive = TRUE, showWarnings = FALSE)
+  saveRDS(list(base = base, base_offs = SEQ_BASE_OFFS, step = SEQ_STEP, feats = feats, flip = SEQ_FLIP, ctx = ctx,
+               roster = roster, screen_ids = P$id, rules = PAST_ONLY_RULES, variant = VARIANT,
+               masked = LANE_MASKED[names(LANE_MASKED) %in% feats], roll_audit = audit, roll_rows = ROLL_ROWS),
+          file.path(out, "sequences.rds"))
+  cat("Variant", VARIANT, "sequences:", paste(dim(base), collapse = " x "), "| features:", paste(feats, collapse = ", "), "\n")
+}

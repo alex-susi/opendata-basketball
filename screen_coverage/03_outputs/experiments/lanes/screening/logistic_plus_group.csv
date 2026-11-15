@@ -1,0 +1,49 @@
+model,reference,defender,horizon,loss_reference,loss_model,delta,lo,hi,screens,games_improved
+baseline + pop,baseline (refit),big,-0.8 s,0.9138,0.9113,-0.0025,-0.0039,-0.0012,1463,9
+baseline + pop,baseline (refit),big,-0.4 s,0.848,0.847,-0.0011,-0.003,0.001,1463,7
+baseline + pop,baseline (refit),big,before the tag (forecast),0.9136,0.9135,-1e-04,-0.0017,0.0015,1463,4
+baseline + pop,baseline (refit),big,tag to +1 s (recognition),0.6627,0.6621,-6e-04,-0.003,0.0019,1463,7
+baseline + pop,baseline (refit),guard,-0.8 s,0.8142,0.811,-0.0032,-0.0053,-0.001,1463,9
+baseline + pop,baseline (refit),guard,-0.4 s,0.7588,0.7561,-0.0027,-0.0052,-1e-04,1463,8
+baseline + pop,baseline (refit),guard,before the tag (forecast),0.8147,0.815,3e-04,-0.0017,0.0033,1463,7
+baseline + pop,baseline (refit),guard,tag to +1 s (recognition),0.5563,0.5569,6e-04,-0.0028,0.0038,1463,5
+baseline + pop,baseline (refit),joint,-0.8 s,1.3348,1.3315,-0.0033,-0.0054,-0.0013,1463,8
+baseline + pop,baseline (refit),joint,-0.4 s,1.2187,1.2166,-0.002,-0.0057,0.0011,1463,6
+baseline + pop,baseline (refit),joint,before the tag (forecast),1.336,1.3358,-2e-04,-0.0023,0.0027,1463,7
+baseline + pop,baseline (refit),joint,tag to +1 s (recognition),0.9003,0.9004,0,-0.0047,0.0045,1463,6
+baseline + drive direct,baseline (refit),big,-0.8 s,0.9138,0.9123,-0.0015,-0.004,0.001,1463,7
+baseline + drive direct,baseline (refit),big,-0.4 s,0.848,0.8458,-0.0022,-0.0048,6e-04,1463,7
+baseline + drive direct,baseline (refit),big,before the tag (forecast),0.9136,0.9134,-2e-04,-0.0023,0.002,1463,6
+baseline + drive direct,baseline (refit),big,tag to +1 s (recognition),0.6627,0.6591,-0.0035,-0.0072,4e-04,1463,6
+baseline + drive direct,baseline (refit),guard,-0.8 s,0.8142,0.8125,-0.0018,-0.0044,9e-04,1463,6
+baseline + drive direct,baseline (refit),guard,-0.4 s,0.7588,0.7575,-0.0013,-0.0038,0.0013,1463,5
+baseline + drive direct,baseline (refit),guard,before the tag (forecast),0.8147,0.8142,-5e-04,-0.0026,0.0018,1463,5
+baseline + drive direct,baseline (refit),guard,tag to +1 s (recognition),0.5563,0.5538,-0.0025,-0.0058,0.001,1463,5
+baseline + drive direct,baseline (refit),joint,-0.8 s,1.3348,1.335,1e-04,-0.0019,0.0022,1463,5
+baseline + drive direct,baseline (refit),joint,-0.4 s,1.2187,1.2179,-8e-04,-0.0024,0.0015,1463,7
+baseline + drive direct,baseline (refit),joint,before the tag (forecast),1.336,1.3372,0.0012,-2e-04,0.0027,1463,4
+baseline + drive direct,baseline (refit),joint,tag to +1 s (recognition),0.9003,0.8978,-0.0026,-0.0065,0.002,1463,7
+baseline + drive direct + routes,baseline (refit),big,-0.8 s,0.9138,0.9156,0.0019,-0.0036,0.0064,1463,2
+baseline + drive direct + routes,baseline (refit),big,-0.4 s,0.848,0.845,-0.003,-0.0064,6e-04,1463,8
+baseline + drive direct + routes,baseline (refit),big,before the tag (forecast),0.9136,0.9147,0.0011,-0.0027,0.0046,1463,4
+baseline + drive direct + routes,baseline (refit),big,tag to +1 s (recognition),0.6627,0.6583,-0.0043,-0.0087,6e-04,1463,6
+baseline + drive direct + routes,baseline (refit),guard,-0.8 s,0.8142,0.8131,-0.0011,-0.005,0.0031,1463,6
+baseline + drive direct + routes,baseline (refit),guard,-0.4 s,0.7588,0.755,-0.0038,-0.0065,-9e-04,1463,8
+baseline + drive direct + routes,baseline (refit),guard,before the tag (forecast),0.8147,0.8142,-5e-04,-0.0033,0.0025,1463,4
+baseline + drive direct + routes,baseline (refit),guard,tag to +1 s (recognition),0.5563,0.5521,-0.0042,-0.0078,-5e-04,1463,6
+baseline + drive direct + routes,baseline (refit),joint,-0.8 s,1.3348,1.3382,0.0034,-0.003,0.0101,1463,3
+baseline + drive direct + routes,baseline (refit),joint,-0.4 s,1.2187,1.2147,-0.004,-0.0067,-6e-04,1463,8
+baseline + drive direct + routes,baseline (refit),joint,before the tag (forecast),1.336,1.338,0.0021,-0.0016,0.0062,1463,4
+baseline + drive direct + routes,baseline (refit),joint,tag to +1 s (recognition),0.9003,0.8959,-0.0044,-0.0088,6e-04,1463,8
+baseline + drive direct + routes,baseline + drive direct,big,-0.8 s,0.9123,0.9156,0.0034,1e-04,0.0061,1463,1
+baseline + drive direct + routes,baseline + drive direct,big,-0.4 s,0.8458,0.845,-8e-04,-0.0026,0.001,1463,4
+baseline + drive direct + routes,baseline + drive direct,big,before the tag (forecast),0.9134,0.9147,0.0012,-9e-04,0.0034,1463,3
+baseline + drive direct + routes,baseline + drive direct,big,tag to +1 s (recognition),0.6591,0.6583,-8e-04,-0.0023,6e-04,1463,6
+baseline + drive direct + routes,baseline + drive direct,guard,-0.8 s,0.8125,0.8131,7e-04,-0.0026,0.0043,1463,5
+baseline + drive direct + routes,baseline + drive direct,guard,-0.4 s,0.7575,0.755,-0.0025,-0.0052,3e-04,1463,7
+baseline + drive direct + routes,baseline + drive direct,guard,before the tag (forecast),0.8142,0.8142,0,-0.0024,0.0023,1463,5
+baseline + drive direct + routes,baseline + drive direct,guard,tag to +1 s (recognition),0.5538,0.5521,-0.0017,-0.0036,-1e-04,1463,8
+baseline + drive direct + routes,baseline + drive direct,joint,-0.8 s,1.335,1.3382,0.0033,-0.0019,0.0084,1463,3
+baseline + drive direct + routes,baseline + drive direct,joint,-0.4 s,1.2179,1.2147,-0.0032,-0.0052,-0.0013,1463,8
+baseline + drive direct + routes,baseline + drive direct,joint,before the tag (forecast),1.3372,1.338,9e-04,-0.0023,0.0042,1463,6
+baseline + drive direct + routes,baseline + drive direct,joint,tag to +1 s (recognition),0.8978,0.8959,-0.0019,-0.004,-1e-04,1463,6

@@ -1,0 +1,241 @@
+comparison,metric,horizon,game_id,screens,delta
+roll lanes: B minus A,big,-0.8 s,114086,137,-0.0035
+roll lanes: B minus A,big,-0.8 s,114099,136,-0.0015
+roll lanes: B minus A,big,-0.8 s,114169,166,-0.0121
+roll lanes: B minus A,big,-0.8 s,114234,139,-0.03
+roll lanes: B minus A,big,-0.8 s,114243,129,0.0232
+roll lanes: B minus A,big,-0.8 s,178442,159,-0.0048
+roll lanes: B minus A,big,-0.8 s,179612,149,0.0075
+roll lanes: B minus A,big,-0.8 s,184439,172,0.0289
+roll lanes: B minus A,big,-0.8 s,188630,137,-0.0141
+roll lanes: B minus A,big,-0.8 s,191313,139,0.0046
+roll lanes: B minus A,big,-0.4 s,114086,137,2e-04
+roll lanes: B minus A,big,-0.4 s,114099,136,-0.0189
+roll lanes: B minus A,big,-0.4 s,114169,166,-0.0206
+roll lanes: B minus A,big,-0.4 s,114234,139,-0.012
+roll lanes: B minus A,big,-0.4 s,114243,129,0.0335
+roll lanes: B minus A,big,-0.4 s,178442,159,-0.0302
+roll lanes: B minus A,big,-0.4 s,179612,149,0.0047
+roll lanes: B minus A,big,-0.4 s,184439,172,0.0366
+roll lanes: B minus A,big,-0.4 s,188630,137,-0.017
+roll lanes: B minus A,big,-0.4 s,191313,139,-0.0144
+roll lanes: B minus A,big,before the tag (forecast),114086,137,0.0104
+roll lanes: B minus A,big,before the tag (forecast),114099,136,-0.0109
+roll lanes: B minus A,big,before the tag (forecast),114169,166,-0.0024
+roll lanes: B minus A,big,before the tag (forecast),114234,139,-0.0093
+roll lanes: B minus A,big,before the tag (forecast),114243,129,0.0119
+roll lanes: B minus A,big,before the tag (forecast),178442,159,-0.0075
+roll lanes: B minus A,big,before the tag (forecast),179612,149,0.0047
+roll lanes: B minus A,big,before the tag (forecast),184439,172,0.0265
+roll lanes: B minus A,big,before the tag (forecast),188630,137,0.0048
+roll lanes: B minus A,big,before the tag (forecast),191313,139,-9e-04
+roll lanes: B minus A,big,tag to +1 s (recognition),114086,137,-0.0056
+roll lanes: B minus A,big,tag to +1 s (recognition),114099,136,-0.0237
+roll lanes: B minus A,big,tag to +1 s (recognition),114169,166,-0.0063
+roll lanes: B minus A,big,tag to +1 s (recognition),114234,139,-0.0088
+roll lanes: B minus A,big,tag to +1 s (recognition),114243,129,-0.0356
+roll lanes: B minus A,big,tag to +1 s (recognition),178442,159,-0.0526
+roll lanes: B minus A,big,tag to +1 s (recognition),179612,149,0.0191
+roll lanes: B minus A,big,tag to +1 s (recognition),184439,172,0.0496
+roll lanes: B minus A,big,tag to +1 s (recognition),188630,137,-0.0078
+roll lanes: B minus A,big,tag to +1 s (recognition),191313,139,-0.0021
+roll lanes: B minus A,guard,-0.8 s,114086,137,5e-04
+roll lanes: B minus A,guard,-0.8 s,114099,136,-0.0043
+roll lanes: B minus A,guard,-0.8 s,114169,166,0.0123
+roll lanes: B minus A,guard,-0.8 s,114234,139,-0.0313
+roll lanes: B minus A,guard,-0.8 s,114243,129,-0.0062
+roll lanes: B minus A,guard,-0.8 s,178442,159,0.0092
+roll lanes: B minus A,guard,-0.8 s,179612,149,1e-04
+roll lanes: B minus A,guard,-0.8 s,184439,172,-0.0468
+roll lanes: B minus A,guard,-0.8 s,188630,137,0.0225
+roll lanes: B minus A,guard,-0.8 s,191313,139,-0.0063
+roll lanes: B minus A,guard,-0.4 s,114086,137,0.0092
+roll lanes: B minus A,guard,-0.4 s,114099,136,-0.0241
+roll lanes: B minus A,guard,-0.4 s,114169,166,-0.0102
+roll lanes: B minus A,guard,-0.4 s,114234,139,0.0062
+roll lanes: B minus A,guard,-0.4 s,114243,129,-0.0082
+roll lanes: B minus A,guard,-0.4 s,178442,159,0.0146
+roll lanes: B minus A,guard,-0.4 s,179612,149,0.0052
+roll lanes: B minus A,guard,-0.4 s,184439,172,0.0205
+roll lanes: B minus A,guard,-0.4 s,188630,137,0.017
+roll lanes: B minus A,guard,-0.4 s,191313,139,-0.0162
+roll lanes: B minus A,guard,before the tag (forecast),114086,137,0.0096
+roll lanes: B minus A,guard,before the tag (forecast),114099,136,-0.0068
+roll lanes: B minus A,guard,before the tag (forecast),114169,166,0.0177
+roll lanes: B minus A,guard,before the tag (forecast),114234,139,-0.0094
+roll lanes: B minus A,guard,before the tag (forecast),114243,129,-0.0158
+roll lanes: B minus A,guard,before the tag (forecast),178442,159,3e-04
+roll lanes: B minus A,guard,before the tag (forecast),179612,149,0.0025
+roll lanes: B minus A,guard,before the tag (forecast),184439,172,-8e-04
+roll lanes: B minus A,guard,before the tag (forecast),188630,137,0.0246
+roll lanes: B minus A,guard,before the tag (forecast),191313,139,-0.0048
+roll lanes: B minus A,guard,tag to +1 s (recognition),114086,137,0
+roll lanes: B minus A,guard,tag to +1 s (recognition),114099,136,-0.037
+roll lanes: B minus A,guard,tag to +1 s (recognition),114169,166,-0.0175
+roll lanes: B minus A,guard,tag to +1 s (recognition),114234,139,0.0293
+roll lanes: B minus A,guard,tag to +1 s (recognition),114243,129,-0.0152
+roll lanes: B minus A,guard,tag to +1 s (recognition),178442,159,-0.024
+roll lanes: B minus A,guard,tag to +1 s (recognition),179612,149,0.0094
+roll lanes: B minus A,guard,tag to +1 s (recognition),184439,172,0.0517
+roll lanes: B minus A,guard,tag to +1 s (recognition),188630,137,0.0021
+roll lanes: B minus A,guard,tag to +1 s (recognition),191313,139,0.0049
+roll lanes: B minus A,joint,-0.8 s,114086,137,-0.0026
+roll lanes: B minus A,joint,-0.8 s,114099,136,-0.0049
+roll lanes: B minus A,joint,-0.8 s,114169,166,-0.002
+roll lanes: B minus A,joint,-0.8 s,114234,139,-0.0555
+roll lanes: B minus A,joint,-0.8 s,114243,129,0.0073
+roll lanes: B minus A,joint,-0.8 s,178442,159,-0.0112
+roll lanes: B minus A,joint,-0.8 s,179612,149,0.0066
+roll lanes: B minus A,joint,-0.8 s,184439,172,0.0014
+roll lanes: B minus A,joint,-0.8 s,188630,137,0.0161
+roll lanes: B minus A,joint,-0.8 s,191313,139,-0.0079
+roll lanes: B minus A,joint,-0.4 s,114086,137,2e-04
+roll lanes: B minus A,joint,-0.4 s,114099,136,-0.0314
+roll lanes: B minus A,joint,-0.4 s,114169,166,-0.0254
+roll lanes: B minus A,joint,-0.4 s,114234,139,-0.01
+roll lanes: B minus A,joint,-0.4 s,114243,129,0.0184
+roll lanes: B minus A,joint,-0.4 s,178442,159,-0.0185
+roll lanes: B minus A,joint,-0.4 s,179612,149,0.0057
+roll lanes: B minus A,joint,-0.4 s,184439,172,0.0676
+roll lanes: B minus A,joint,-0.4 s,188630,137,0.0099
+roll lanes: B minus A,joint,-0.4 s,191313,139,-0.0207
+roll lanes: B minus A,joint,before the tag (forecast),114086,137,0.0178
+roll lanes: B minus A,joint,before the tag (forecast),114099,136,-0.0124
+roll lanes: B minus A,joint,before the tag (forecast),114169,166,0.006
+roll lanes: B minus A,joint,before the tag (forecast),114234,139,-0.0101
+roll lanes: B minus A,joint,before the tag (forecast),114243,129,-0.0076
+roll lanes: B minus A,joint,before the tag (forecast),178442,159,-0.0177
+roll lanes: B minus A,joint,before the tag (forecast),179612,149,0.0138
+roll lanes: B minus A,joint,before the tag (forecast),184439,172,0.0372
+roll lanes: B minus A,joint,before the tag (forecast),188630,137,0.0259
+roll lanes: B minus A,joint,before the tag (forecast),191313,139,-0.0083
+roll lanes: B minus A,joint,tag to +1 s (recognition),114086,137,-0.0097
+roll lanes: B minus A,joint,tag to +1 s (recognition),114099,136,-0.0444
+roll lanes: B minus A,joint,tag to +1 s (recognition),114169,166,-0.0176
+roll lanes: B minus A,joint,tag to +1 s (recognition),114234,139,0.0215
+roll lanes: B minus A,joint,tag to +1 s (recognition),114243,129,-0.0396
+roll lanes: B minus A,joint,tag to +1 s (recognition),178442,159,-0.0506
+roll lanes: B minus A,joint,tag to +1 s (recognition),179612,149,0.0233
+roll lanes: B minus A,joint,tag to +1 s (recognition),184439,172,0.0933
+roll lanes: B minus A,joint,tag to +1 s (recognition),188630,137,0.0046
+roll lanes: B minus A,joint,tag to +1 s (recognition),191313,139,8e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,114086,137,-0.0079
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,114099,136,-0.0028
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,114169,166,-0.0139
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,114234,139,-0.0211
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,114243,129,0.0156
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,178442,159,0.0133
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,179612,149,0.006
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,184439,172,0.011
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,188630,137,-0.0244
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.8 s,191313,139,-0.0041
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,114086,137,-2e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,114099,136,-0.0225
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,114169,166,-0.0268
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,114234,139,-0.0077
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,114243,129,0.005
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,178442,159,0.0127
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,179612,149,0.0074
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,184439,172,0.0037
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,188630,137,-0.0221
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,-0.4 s,191313,139,-0.0224
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),114086,137,0.0105
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),114099,136,-0.0049
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),114169,166,-0.0093
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),114234,139,-0.0099
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),114243,129,0.0148
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),178442,159,0.0033
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),179612,149,0.0062
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),184439,172,-0.0016
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),188630,137,-0.0011
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,before the tag (forecast),191313,139,-0.0072
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),114086,137,-3e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),114099,136,-0.0209
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),114169,166,-0.0142
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),114234,139,-0.0262
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),114243,129,-0.0567
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),178442,159,-0.0462
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),179612,149,0.03
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),184439,172,-0.0056
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),188630,137,0.0084
+seed noise: A (seeds 3-4) minus A (seeds 1-2),big,tag to +1 s (recognition),191313,139,-0.0158
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,114086,137,-0.0154
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,114099,136,0.0052
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,114169,166,-0.02
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,114234,139,-0.0336
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,114243,129,0.0197
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,178442,159,0.018
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,179612,149,0.0026
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,184439,172,-0.0186
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,188630,137,0.0179
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.8 s,191313,139,0.001
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,114086,137,-0.0132
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,114099,136,-0.0113
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,114169,166,-0.0302
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,114234,139,2e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,114243,129,0.0212
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,178442,159,0.026
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,179612,149,-0.0035
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,184439,172,0.0041
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,188630,137,0.0248
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,-0.4 s,191313,139,-0.0124
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),114086,137,-0.0052
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),114099,136,-3e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),114169,166,-0.0125
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),114234,139,0.0027
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),114243,129,-5e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),178442,159,0.0107
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),179612,149,-8e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),184439,172,8e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),188630,137,0.0203
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,before the tag (forecast),191313,139,-0.0104
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),114086,137,0.0335
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),114099,136,-0.0275
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),114169,166,-0.0338
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),114234,139,-3e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),114243,129,-0.0326
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),178442,159,-0.0188
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),179612,149,0.0013
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),184439,172,-9e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),188630,137,7e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),guard,tag to +1 s (recognition),191313,139,-0.0079
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,114086,137,-0.0173
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,114099,136,-0.0057
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,114169,166,-0.0214
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,114234,139,-0.043
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,114243,129,0.0241
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,178442,159,0.0107
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,179612,149,0.007
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,184439,172,0.0058
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,188630,137,0.0083
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.8 s,191313,139,4e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,114086,137,-0.0135
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,114099,136,-0.0302
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,114169,166,-0.0466
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,114234,139,-0.0121
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,114243,129,0.0215
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,178442,159,0.0197
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,179612,149,-0.0038
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,184439,172,0.0148
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,188630,137,0.0195
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,-0.4 s,191313,139,-0.0228
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),114086,137,0.0089
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),114099,136,-0.0065
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),114169,166,-0.019
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),114234,139,-0.002
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),114243,129,0.0104
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),178442,159,-9e-04
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),179612,149,0.0053
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),184439,172,0.0094
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),188630,137,0.0233
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,before the tag (forecast),191313,139,-0.0122
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),114086,137,0.0281
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),114099,136,-0.0437
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),114169,166,-0.0295
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),114234,139,-0.0202
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),114243,129,-0.0747
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),178442,159,-0.0459
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),179612,149,0.0164
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),184439,172,-0.0018
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),188630,137,0.0134
+seed noise: A (seeds 3-4) minus A (seeds 1-2),joint,tag to +1 s (recognition),191313,139,-0.0144

@@ -234,10 +234,14 @@ contact_memory <- function(PX, PY, idx, off, pos_offs = SEQ_POS_OFFS, window = 5
 #' Model input [rows, 10, k_steps, features] for prediction rows (screen `idx`, offset `off`): each player's stored
 #' features at the row's frame, 0.2 s earlier, ..., (k_steps - 1) x 0.2 s earlier, mirrored so the screener is on the
 #' y >= 0 side at the row's frame. `flat` is matrix(base, nrow = screens x frames) and `ns` the number of screens.
-seq_history <- function(flat, ns, idx, off, k_steps, base_offs = SEQ_BASE_OFFS, step = SEQ_STEP) {
+#' `feats` names the feature axis of `base` (the lane experiments append channels after SEQ_FEATS; mirrored columns
+#' are looked up by name in it).
+seq_history <- function(flat, ns, idx, off, k_steps, base_offs = SEQ_BASE_OFFS, step = SEQ_STEP, feats = SEQ_FEATS,
+                        flip = SEQ_FLIP) {
   nf <- ncol(flat) / 10L
-  fi <- match(SEQ_FLIP, SEQ_FEATS)
-  yi <- match("y", SEQ_FEATS)
+  stopifnot(nf == length(feats), all(flip %in% feats))
+  fi <- match(flip, feats)
+  yi <- match("y", feats)
   b0 <- match(off, base_offs)
   bb <- outer(b0, (seq_len(k_steps) - 1L) * step, `-`)              # [n, k] stored-frame index per step
   rows <- (bb - 1L) * ns + idx

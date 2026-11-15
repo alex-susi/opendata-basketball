@@ -1,0 +1,27 @@
+group,label,input,term,over + soft,under + soft,under + show,switch
+d_hs,Handler to screener distance,d_hs,plain,-0.23,-0.083,0.185,0.153
+d_bd,Handler to his defender,d_bd,plain,0.164,-0.318,-0.418,0.021
+d_sd,Handler to the screener's defender,d_sd,plain,-0.238,-0.076,-0.203,-0.081
+d_def,Between the two defenders,d_def,plain,0.19,0.735,0.455,0.212
+bd_lvl,Ball defender's level,bd_lvl,plain,-0.162,-0.02,0.055,0.001
+sd_lvl,Big's level,sd_lvl,plain,-0.123,-0.133,-0.227,-0.045
+h_lvl,Handler's level,h_lvl,plain,0.13,0.311,0.447,-0.036
+s_hoop,Screener's distance from the hoop,s_hoop,plain,0.174,0.412,0.191,-0.141
+bd_lvl_v,Ball defender's level changing,bd_lvl_v,plain,-0.034,-0.084,-0.137,0.059
+sd_lvl_v,Big's level changing,sd_lvl_v,plain,-0.038,-0.071,0.111,-0.058
+tta_now,Time to act,tta_now,plain,0.198,0.41,0.235,-0.243
+so_far,Defense's calls so far (5 shares),lsf_1,over + show,-0.074,-0.413,-0.28,0.213
+so_far,Defense's calls so far (5 shares),lsf_2,over + soft,0.366,0.126,-0.189,0.622
+so_far,Defense's calls so far (5 shares),lsf_3,under + soft,0.269,0.134,0.312,0.217
+so_far,Defense's calls so far (5 shares),lsf_4,under + show,-0.097,0.038,-0.253,-0.007
+so_far,Defense's calls so far (5 shares),lsf_5,switch,0.122,0.098,0.015,0.545
+closeness,"Closeness (handler to screener, 0-1)",closeness,plain,-0.351,0.341,-0.217,0.017
+d_bd,Handler to his defender,d_bd_close,× closeness,-0.149,0.613,0.785,0.566
+d_sd,Handler to the screener's defender,d_sd_close,× closeness,-0.087,-0.043,-0.224,-0.459
+d_def,Between the two defenders,d_def_close,× closeness,-0.085,-0.457,-0.161,0.36
+bd_lvl,Ball defender's level,bd_lvl_close,× closeness,0.223,-1.142,-1.222,-0.767
+sd_lvl,Big's level,sd_lvl_close,× closeness,-1.423,-1.009,0.15,-0.617
+h_lvl,Handler's level,h_lvl_close,× closeness,0.253,0.477,0.267,0.576
+s_hoop,Screener's distance from the hoop,s_hoop_close,× closeness,-0.16,-0.695,0.09,-0.224
+bd_lvl_v,Ball defender's level changing,bd_lvl_v_close,× closeness,0.487,-0.276,-0.483,-0.265
+sd_lvl_v,Big's level changing,sd_lvl_v_close,× closeness,-0.536,-0.311,-0.048,0.091

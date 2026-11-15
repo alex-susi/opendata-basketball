@@ -111,6 +111,43 @@ export function attentionAt(att: AttentionFile, possession: string, frame: numbe
   return out;
 }
 
+// ---- the roll-lane experiment (the Display panel's Roll Lanes toggle) ---------------------------------------
+// coverage_lanes.json (screen_coverage/01_scripts/09_lane_figures.R): for each screen, its screener (s), its three
+// off-ball defenders (r) and, at every frame of the window, each defender's gap to the screener-to-rim lane (d) and
+// how fast that gap closed over the last 0.2 s (c), both in tenths and null when not valid. These are the inputs of
+// the experimental variant B, not the live model.
+
+export interface LaneScreen { id: string; f0: number; s: number; r: number[]; d: (number | null)[][]; c: (number | null)[][] }
+export interface LanesFile { experiment: string; offsets: [number, number]; generated: string; possessions: Record<string, LaneScreen[]> }
+export interface LaneHelper { pid: number; d: number | null; c: number | null }
+export interface LaneFrame { screener: number; helpers: LaneHelper[] }
+
+let lanesFile: Promise<LanesFile | null> | null = null;
+/** Fetched once, the first time the toggle is on; null when the file has not been exported. */
+export function loadCoverageLanes(): Promise<LanesFile | null> {
+  lanesFile ??= fetch(`${base}coverage_lanes.json`, { cache: "no-cache" })
+    .then((r) => (r.ok ? (r.json() as Promise<LanesFile>) : null))
+    .catch(() => null);
+  return lanesFile;
+}
+
+/** The screener and each off-ball defender's lane values at a frame, from the screen whose window holds it. */
+export function lanesAt(file: LanesFile, possession: string, frame: number): LaneFrame | null {
+  const list = file.possessions[possession];
+  if (!list?.length) return null;
+  const [lo, hi] = file.offsets;
+  let best: LaneScreen | null = null;
+  for (const s of list) {
+    const o = frame - s.f0;
+    if (o < lo || o > hi) continue;
+    if (!best || Math.abs(o) < Math.abs(frame - best.f0)) best = s;
+  }
+  if (!best) return null;
+  const i = Math.round(frame - best.f0) - lo;
+  const tenth = (v: number | null | undefined) => (v == null ? null : v / 10);
+  return { screener: best.s, helpers: best.r.map((pid, h) => ({ pid, d: tenth(best!.d[h]?.[i]), c: tenth(best!.c[h]?.[i]) })) };
+}
+
 // ---- each defender's part of the call -----------------------------------------------------------------------
 // The joint calls split into the ball handler's defender (over, under, switch) and the screener's defender (show,
 // soft, switch); a defender's probability is the sum of the joint calls with his part, e.g. over = over + show +

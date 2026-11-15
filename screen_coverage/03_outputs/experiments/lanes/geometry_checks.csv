@@ -1,0 +1,43 @@
+check,pass
+gap 2 ft at projection 0.4,TRUE
+closing +5 ft/s toward the lane,TRUE
+closing -5 ft/s away from the lane,TRUE
+"beyond the rim: sqrt(13) ft, projection 1.2",TRUE
+"behind the screener: 5 ft to the start, projection -0.3",TRUE
+on the lane: distance 0,TRUE
+coincident endpoints: NA,TRUE
+missing point: NA,TRUE
+"roll: gap 2, projection 0.4, closing +5",TRUE
+roll: moving away closes -5,TRUE
+"roll: beyond the rim sqrt(13), projection 1.2",TRUE
+roll: nearest point is on the lane,TRUE
+roll: only rows 8-10 carry values,TRUE
+roll: defender holds while screener moves -> closing 0,TRUE
+"mirror: distance, closing and projection unchanged",TRUE
+reorder: values follow the player,TRUE
+invalid: defender missing now,TRUE
+invalid: defender history missing (not present),TRUE
+invalid: screener on the rim (zero-length lane),TRUE
+valid at 0 ft: defender on the lane,TRUE
+invalid slots carry 0 in every channel,TRUE
+on-lane slot: distance 0 with flag 1,TRUE
+standardised: invalid distance and closing are 0,TRUE
+standardised: valid entries are scaled,TRUE
+standardised without masks = (h - mu) / sdv,TRUE
+pop: spot 3 kept; spot 4 reachable but occupied,TRUE
+"pop: move 2 ft, catch sqrt(20) ft, pass 3 ft",TRUE
+"pop mirrored: same move, catch and pass (spot 2 instead of 3)",TRUE
+pop: no defender along the pass -> pass gap capped at 15 ft,TRUE
+"pop: a missing player -> unknown, no candidate",TRUE
+"drive: direct lane on-ball gap 2 ft at projection 0.1, help gap 4 ft",TRUE
+drive: screen-side is the screener's (+) side; its on-ball gap uses the first leg,TRUE
+drive: the reject route passes the low helper,TRUE
+drive mirrored: identical screen-side and reject gaps,TRUE
+"drive: screener within 1 ft of the lane line -> routes unknown, direct lane kept",TRUE
+"variant A: movement features, context and roster identical to the live cache",TRUE
+variant A: feature axis as defined,TRUE
+variant A: whole base identical to the live cache,TRUE
+"variant B: movement features, context and roster identical to the live cache",TRUE
+variant B: feature axis as defined,TRUE
+"variant C: movement features, context and roster identical to the live cache",TRUE
+variant C: feature axis as defined,TRUE

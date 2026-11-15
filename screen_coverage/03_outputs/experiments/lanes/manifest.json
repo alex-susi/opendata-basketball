@@ -1,0 +1,35 @@
+{
+  "created": "2026-11-15 12:30:27 EST",
+  "commit": "d320f3a720b7f7fa237232a1248e208cc3689bf9",
+  "working_tree": [" M screen_coverage/01_scripts/02_build_sequences.R", " M screen_coverage/01_scripts/03_train_transformer.R", " M screen_coverage/01_scripts/05_test_past_only.R", " M screen_coverage/01_scripts/R/past_only.R", " M screen_coverage/01_scripts/R/seq_transformer.R", " M web/src/components/SidePanel.svelte", " M web/src/components/Stage.svelte", " M web/src/lib/coverage.ts", " M web/src/lib/draw.ts", " M web/src/lib/viewer.svelte.ts", "?? screen_coverage/01_scripts/07_test_lane_geometry.R", "?? screen_coverage/01_scripts/08_evaluate_lanes.R", "?? screen_coverage/01_scripts/09_lane_figures.R", "?? screen_coverage/01_scripts/R/lane_geometry.R", "?? screen_coverage/01_scripts/R/lane_variants.R", "?? screen_coverage/03_outputs/experiments/", "?? web/public/data/coverage_lanes.json"],
+  "r_version": "R version 4.4.2 (2024-10-31 ucrt)",
+  "torch_version": "0.17.0",
+  "data": {
+    "tracking_lfs_objects": ["3c188d7e06dd273354dd775555659d612255e8855e22b85045bfdfa48c03ca9c * data/matches/114086/114086_tracking_data.jsonl", "ee2d9863b9ea29545bb4e89ac570bce237d6fa0de7307bba0cdedf04d3d30e29 * data/matches/114099/114099_tracking_data.jsonl", "feaa9f30bbff7c234d0787b525d9aa64f5b50db5b9e527d9341b92f3fe65a051 * data/matches/114169/114169_tracking_data.jsonl", "6a321010a532a9e79b14ea7457524cc79a3e115e49dc2989f38c65cfa666b5db * data/matches/114234/114234_tracking_data.jsonl", "2791dfc296494142b08c5fd1f125d33d58413ab2774eb227a08588f387c845c5 * data/matches/114243/114243_tracking_data.jsonl", "7b34a558b9983bfe1d2f1d995cded386d9750c39bfb27a2fb7c55f8da0103a12 * data/matches/178442/178442_tracking_data.jsonl", "72d06ffa567d3861df4ebe6903e33be083a04563024505bf8ee4a6695cdff329 * data/matches/179612/179612_tracking_data.jsonl", "b3f2308cdbf619b4e2cdffb137b04cc7c761d5dd509fe245dfed1898ffbcb3ef * data/matches/184439/184439_tracking_data.jsonl", "078803ccc4007361f9529a76b6ab09af9771f67f87e9a0abc8279e3030da80d5 * data/matches/188630/188630_tracking_data.jsonl", "d98633e4339fed8f3413ebaa2d22dce8d11194bcb8d201e4aa6483056db1b8f1 * data/matches/191313/191313_tracking_data.jsonl"],
+    "rules": "past-only v2 (2026-11-12): backward fill <= 2 frames; so far = calls readable 1 s after tag, even-split prior"
+  },
+  "rows": {
+    "screens": 1463,
+    "frames_per_screen": 76,
+    "offsets": [-50, 25]
+  },
+  "variants": {
+    "A": ["x", "y", "rel_x", "rel_y", "rel_h_x", "rel_h_y", "hoop_dist", "lvl", "vx", "vy", "speed", "accel", "turn", "lvl_v", "lvl_hold", "present"],
+    "B": ["x", "y", "rel_x", "rel_y", "rel_h_x", "rel_h_y", "hoop_dist", "lvl", "vx", "vy", "speed", "accel", "turn", "lvl_v", "lvl_hold", "present", "roll_distance_ft", "roll_closing_fps", "roll_lane_valid"],
+    "C": ["x", "y", "rel_x", "rel_y", "rel_h_x", "rel_h_y", "hoop_dist", "lvl", "vx", "vy", "speed", "accel", "turn", "lvl_v", "lvl_hold", "present", "roll_distance_ft", "roll_lane_valid"]
+  },
+  "eligibility": "roll_lane_valid = off-ball defender (roster rows 8-10) present (tracked at the frame and 0.2 s and 0.4 s before), screener tracked at the frame, both gaps finite (segment longer than 1e-6 ft)",
+  "models": {
+    "A": "C:/Users/alexs/Desktop/Data Science Projects/opendata-basketball/screen_coverage/02_cache/tf",
+    "A seeds 3-4": "C:/Users/alexs/Desktop/Data Science Projects/opendata-basketball/screen_coverage/02_cache/experiments/lanes/A/tf_s3-4",
+    "B": "C:/Users/alexs/Desktop/Data Science Projects/opendata-basketball/screen_coverage/02_cache/experiments/lanes/B/tf_s1-2"
+  },
+  "skipped": "C",
+  "bootstrap": {
+    "seed": 20261115,
+    "reps": 2000,
+    "unit": "game"
+  },
+  "commands": ["Rscript screen_coverage/01_scripts/02_build_sequences.R --variant=A|B|C", "Rscript screen_coverage/01_scripts/07_test_lane_geometry.R", "Rscript screen_coverage/01_scripts/03_train_transformer.R --fold=<gameId> --variant=B --seeds=1,2", "Rscript screen_coverage/01_scripts/03_train_transformer.R --fold=<gameId> --variant=A --seeds=3,4", "Rscript screen_coverage/01_scripts/05_test_past_only.R --variant=B", "Rscript screen_coverage/01_scripts/08_evaluate_lanes.R"],
+  "evaluation_seconds": 5
+}

@@ -1,0 +1,161 @@
+model,metric,horizon,game_id,screens,delta
+baseline + helper gap,big,-0.8 s,114086,137,6e-04
+baseline + helper gap,big,-0.8 s,114099,136,0.0053
+baseline + helper gap,big,-0.8 s,114169,166,-0.0119
+baseline + helper gap,big,-0.8 s,114234,139,0.0027
+baseline + helper gap,big,-0.8 s,114243,129,0.0055
+baseline + helper gap,big,-0.8 s,178442,159,-0.0091
+baseline + helper gap,big,-0.8 s,179612,149,-8e-04
+baseline + helper gap,big,-0.8 s,184439,172,-0.0058
+baseline + helper gap,big,-0.8 s,188630,137,0.0024
+baseline + helper gap,big,-0.8 s,191313,139,-0.0037
+baseline + helper gap,big,-0.4 s,114086,137,0.0032
+baseline + helper gap,big,-0.4 s,114099,136,0.0045
+baseline + helper gap,big,-0.4 s,114169,166,-0.0149
+baseline + helper gap,big,-0.4 s,114234,139,0.0028
+baseline + helper gap,big,-0.4 s,114243,129,0.0066
+baseline + helper gap,big,-0.4 s,178442,159,-0.0036
+baseline + helper gap,big,-0.4 s,179612,149,0.0012
+baseline + helper gap,big,-0.4 s,184439,172,-0.0114
+baseline + helper gap,big,-0.4 s,188630,137,8e-04
+baseline + helper gap,big,-0.4 s,191313,139,-0.0058
+baseline + helper gap,big,before the tag (forecast),114086,137,-1e-04
+baseline + helper gap,big,before the tag (forecast),114099,136,0.008
+baseline + helper gap,big,before the tag (forecast),114169,166,-0.0107
+baseline + helper gap,big,before the tag (forecast),114234,139,0.0022
+baseline + helper gap,big,before the tag (forecast),114243,129,0.0046
+baseline + helper gap,big,before the tag (forecast),178442,159,-0.0057
+baseline + helper gap,big,before the tag (forecast),179612,149,-4e-04
+baseline + helper gap,big,before the tag (forecast),184439,172,-0.0024
+baseline + helper gap,big,before the tag (forecast),188630,137,0.0056
+baseline + helper gap,big,before the tag (forecast),191313,139,-0.0027
+baseline + helper gap,big,tag to +1 s (recognition),114086,137,-0.0022
+baseline + helper gap,big,tag to +1 s (recognition),114099,136,0.0037
+baseline + helper gap,big,tag to +1 s (recognition),114169,166,-0.01
+baseline + helper gap,big,tag to +1 s (recognition),114234,139,0.0071
+baseline + helper gap,big,tag to +1 s (recognition),114243,129,0.0062
+baseline + helper gap,big,tag to +1 s (recognition),178442,159,-0.0028
+baseline + helper gap,big,tag to +1 s (recognition),179612,149,0.0029
+baseline + helper gap,big,tag to +1 s (recognition),184439,172,-0.0101
+baseline + helper gap,big,tag to +1 s (recognition),188630,137,-0.005
+baseline + helper gap,big,tag to +1 s (recognition),191313,139,-0.007
+baseline + helper gap,joint,-0.8 s,114086,137,2e-04
+baseline + helper gap,joint,-0.8 s,114099,136,0.0056
+baseline + helper gap,joint,-0.8 s,114169,166,-0.0107
+baseline + helper gap,joint,-0.8 s,114234,139,0.0023
+baseline + helper gap,joint,-0.8 s,114243,129,0.0053
+baseline + helper gap,joint,-0.8 s,178442,159,-0.0096
+baseline + helper gap,joint,-0.8 s,179612,149,0.0015
+baseline + helper gap,joint,-0.8 s,184439,172,-0.0049
+baseline + helper gap,joint,-0.8 s,188630,137,0.0067
+baseline + helper gap,joint,-0.8 s,191313,139,0.0017
+baseline + helper gap,joint,-0.4 s,114086,137,0.0024
+baseline + helper gap,joint,-0.4 s,114099,136,0.0056
+baseline + helper gap,joint,-0.4 s,114169,166,-0.0149
+baseline + helper gap,joint,-0.4 s,114234,139,0.0028
+baseline + helper gap,joint,-0.4 s,114243,129,0.0046
+baseline + helper gap,joint,-0.4 s,178442,159,-0.0051
+baseline + helper gap,joint,-0.4 s,179612,149,0.0036
+baseline + helper gap,joint,-0.4 s,184439,172,-0.0122
+baseline + helper gap,joint,-0.4 s,188630,137,0.0039
+baseline + helper gap,joint,-0.4 s,191313,139,0.0018
+baseline + helper gap,joint,before the tag (forecast),114086,137,-4e-04
+baseline + helper gap,joint,before the tag (forecast),114099,136,0.0085
+baseline + helper gap,joint,before the tag (forecast),114169,166,-0.0117
+baseline + helper gap,joint,before the tag (forecast),114234,139,6e-04
+baseline + helper gap,joint,before the tag (forecast),114243,129,0.0045
+baseline + helper gap,joint,before the tag (forecast),178442,159,-0.0069
+baseline + helper gap,joint,before the tag (forecast),179612,149,0.0018
+baseline + helper gap,joint,before the tag (forecast),184439,172,-7e-04
+baseline + helper gap,joint,before the tag (forecast),188630,137,0.0093
+baseline + helper gap,joint,before the tag (forecast),191313,139,9e-04
+baseline + helper gap,joint,tag to +1 s (recognition),114086,137,-0.0023
+baseline + helper gap,joint,tag to +1 s (recognition),114099,136,0.003
+baseline + helper gap,joint,tag to +1 s (recognition),114169,166,-0.0116
+baseline + helper gap,joint,tag to +1 s (recognition),114234,139,0.0037
+baseline + helper gap,joint,tag to +1 s (recognition),114243,129,0.0095
+baseline + helper gap,joint,tag to +1 s (recognition),178442,159,-0.0043
+baseline + helper gap,joint,tag to +1 s (recognition),179612,149,0.006
+baseline + helper gap,joint,tag to +1 s (recognition),184439,172,-0.0104
+baseline + helper gap,joint,tag to +1 s (recognition),188630,137,-0.0057
+baseline + helper gap,joint,tag to +1 s (recognition),191313,139,-0.0039
+baseline + helper gap + closing,big,-0.8 s,114086,137,5e-04
+baseline + helper gap + closing,big,-0.8 s,114099,136,0.0078
+baseline + helper gap + closing,big,-0.8 s,114169,166,-0.013
+baseline + helper gap + closing,big,-0.8 s,114234,139,-0.0014
+baseline + helper gap + closing,big,-0.8 s,114243,129,0.0031
+baseline + helper gap + closing,big,-0.8 s,178442,159,-0.0041
+baseline + helper gap + closing,big,-0.8 s,179612,149,-0.0019
+baseline + helper gap + closing,big,-0.8 s,184439,172,-0.0105
+baseline + helper gap + closing,big,-0.8 s,188630,137,0.0019
+baseline + helper gap + closing,big,-0.8 s,191313,139,-0.0061
+baseline + helper gap + closing,big,-0.4 s,114086,137,0.0024
+baseline + helper gap + closing,big,-0.4 s,114099,136,0.0052
+baseline + helper gap + closing,big,-0.4 s,114169,166,-0.0123
+baseline + helper gap + closing,big,-0.4 s,114234,139,0.0019
+baseline + helper gap + closing,big,-0.4 s,114243,129,0.0069
+baseline + helper gap + closing,big,-0.4 s,178442,159,-4e-04
+baseline + helper gap + closing,big,-0.4 s,179612,149,-0.0015
+baseline + helper gap + closing,big,-0.4 s,184439,172,-0.0145
+baseline + helper gap + closing,big,-0.4 s,188630,137,-0.0048
+baseline + helper gap + closing,big,-0.4 s,191313,139,-0.009
+baseline + helper gap + closing,big,before the tag (forecast),114086,137,-0.0026
+baseline + helper gap + closing,big,before the tag (forecast),114099,136,0.0081
+baseline + helper gap + closing,big,before the tag (forecast),114169,166,-0.0109
+baseline + helper gap + closing,big,before the tag (forecast),114234,139,0.0048
+baseline + helper gap + closing,big,before the tag (forecast),114243,129,0.0046
+baseline + helper gap + closing,big,before the tag (forecast),178442,159,-0.0022
+baseline + helper gap + closing,big,before the tag (forecast),179612,149,-0.0017
+baseline + helper gap + closing,big,before the tag (forecast),184439,172,-0.0048
+baseline + helper gap + closing,big,before the tag (forecast),188630,137,0.0041
+baseline + helper gap + closing,big,before the tag (forecast),191313,139,-0.0055
+baseline + helper gap + closing,big,tag to +1 s (recognition),114086,137,-0.0041
+baseline + helper gap + closing,big,tag to +1 s (recognition),114099,136,0.003
+baseline + helper gap + closing,big,tag to +1 s (recognition),114169,166,-0.0103
+baseline + helper gap + closing,big,tag to +1 s (recognition),114234,139,0.0099
+baseline + helper gap + closing,big,tag to +1 s (recognition),114243,129,0.0054
+baseline + helper gap + closing,big,tag to +1 s (recognition),178442,159,-0.0024
+baseline + helper gap + closing,big,tag to +1 s (recognition),179612,149,0.004
+baseline + helper gap + closing,big,tag to +1 s (recognition),184439,172,-0.0117
+baseline + helper gap + closing,big,tag to +1 s (recognition),188630,137,-0.0086
+baseline + helper gap + closing,big,tag to +1 s (recognition),191313,139,-0.008
+baseline + helper gap + closing,joint,-0.8 s,114086,137,-0.0014
+baseline + helper gap + closing,joint,-0.8 s,114099,136,0.0057
+baseline + helper gap + closing,joint,-0.8 s,114169,166,-0.0142
+baseline + helper gap + closing,joint,-0.8 s,114234,139,-0.0049
+baseline + helper gap + closing,joint,-0.8 s,114243,129,0.0028
+baseline + helper gap + closing,joint,-0.8 s,178442,159,-0.0053
+baseline + helper gap + closing,joint,-0.8 s,179612,149,-0.0042
+baseline + helper gap + closing,joint,-0.8 s,184439,172,-0.0046
+baseline + helper gap + closing,joint,-0.8 s,188630,137,0.0132
+baseline + helper gap + closing,joint,-0.8 s,191313,139,0.0013
+baseline + helper gap + closing,joint,-0.4 s,114086,137,0.0011
+baseline + helper gap + closing,joint,-0.4 s,114099,136,0.004
+baseline + helper gap + closing,joint,-0.4 s,114169,166,-0.0131
+baseline + helper gap + closing,joint,-0.4 s,114234,139,-0.004
+baseline + helper gap + closing,joint,-0.4 s,114243,129,0.0103
+baseline + helper gap + closing,joint,-0.4 s,178442,159,-3e-04
+baseline + helper gap + closing,joint,-0.4 s,179612,149,0.0022
+baseline + helper gap + closing,joint,-0.4 s,184439,172,-0.0177
+baseline + helper gap + closing,joint,-0.4 s,188630,137,0.0053
+baseline + helper gap + closing,joint,-0.4 s,191313,139,0.001
+baseline + helper gap + closing,joint,before the tag (forecast),114086,137,-0.0029
+baseline + helper gap + closing,joint,before the tag (forecast),114099,136,0.0087
+baseline + helper gap + closing,joint,before the tag (forecast),114169,166,-0.0141
+baseline + helper gap + closing,joint,before the tag (forecast),114234,139,0.0024
+baseline + helper gap + closing,joint,before the tag (forecast),114243,129,0.0026
+baseline + helper gap + closing,joint,before the tag (forecast),178442,159,-0.0048
+baseline + helper gap + closing,joint,before the tag (forecast),179612,149,-7e-04
+baseline + helper gap + closing,joint,before the tag (forecast),184439,172,-0.0021
+baseline + helper gap + closing,joint,before the tag (forecast),188630,137,0.0123
+baseline + helper gap + closing,joint,before the tag (forecast),191313,139,-7e-04
+baseline + helper gap + closing,joint,tag to +1 s (recognition),114086,137,-0.0026
+baseline + helper gap + closing,joint,tag to +1 s (recognition),114099,136,-0.0021
+baseline + helper gap + closing,joint,tag to +1 s (recognition),114169,166,-0.0117
+baseline + helper gap + closing,joint,tag to +1 s (recognition),114234,139,0.0023
+baseline + helper gap + closing,joint,tag to +1 s (recognition),114243,129,0.0093
+baseline + helper gap + closing,joint,tag to +1 s (recognition),178442,159,0.0024
+baseline + helper gap + closing,joint,tag to +1 s (recognition),179612,149,0.0044
+baseline + helper gap + closing,joint,tag to +1 s (recognition),184439,172,-0.0114
+baseline + helper gap + closing,joint,tag to +1 s (recognition),188630,137,-0.0134
+baseline + helper gap + closing,joint,tag to +1 s (recognition),191313,139,-0.0059

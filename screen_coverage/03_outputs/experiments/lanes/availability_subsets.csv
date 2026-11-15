@@ -1,0 +1,9 @@
+comparison,t,subset,screens,delta_big
+roll lanes: B minus A,-0.8,all three valid,1463,1e-04
+roll lanes: B minus A,-0.8,fewer than three,0,
+roll lanes: B minus A,-0.4,all three valid,1463,-0.0037
+roll lanes: B minus A,-0.4,fewer than three,0,
+seed noise: A (seeds 3-4) minus A (seeds 1-2),-0.8,all three valid,1463,-0.0025
+seed noise: A (seeds 3-4) minus A (seeds 1-2),-0.8,fewer than three,0,
+seed noise: A (seeds 3-4) minus A (seeds 1-2),-0.4,all three valid,1463,-0.0071
+seed noise: A (seeds 3-4) minus A (seeds 1-2),-0.4,fewer than three,0,
