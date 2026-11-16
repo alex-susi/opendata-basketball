@@ -4,7 +4,7 @@
 #
 # Scores the live time-aware transformer, the logistic baseline and the league mix of calls under the three curves of
 # R/window_weights.R (main, narrow, flat), for the joint call and for each defender: guard (the ball handler's
-# defender: over / under / switch) and big (the screener's defender: show / soft / switch). These are the reference
+# defender: over / under / switch) and big (the screener's defender: show / drop / switch). These are the reference
 # numbers every tuning run is compared with. Each screen's frames are averaged with the curve's weights, then screens
 # are averaged; 95% intervals resample whole games.
 #

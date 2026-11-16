@@ -75,7 +75,7 @@ feature_spec <- function() {
       "Share of his shots out of picks as screener that are threes (pop rather than roll)")
   add("s_ctx_bh_under_share", "handler_picks_vs_under", HANDLER_COVERAGES, "Share of direct picks as handler where his defender goes under", "context")
   add("s_ctx_bh_switch_share", "handler_picks_vs_switch", HANDLER_COVERAGES, "Share of direct picks as handler that are switched", "context")
-  add("s_ctx_scr_soft_share", "screener_picks_vs_soft", SCREENER_COVERAGES, "Share of direct picks as screener where his defender drops", "context")
+  add("s_ctx_scr_drop_share", "screener_picks_vs_soft", SCREENER_COVERAGES, "Share of direct picks as screener where his defender drops", "context")
   add("s_ctx_scr_switch_share", "screener_picks_vs_switch", SCREENER_COVERAGES, "Share of direct picks as screener that are switched", "context")
 
   # ---- offense, tracked: touches
@@ -153,7 +153,7 @@ feature_spec <- function() {
   # ---- defense, tracked: actions defended
   add("d_pick_bh_per100", "d_pick_bh", "def_ch", "On-ball screens defended as the handler's defender per 100 chances", scale = 100)
   add("d_pick_scr_per100", "d_pick_scr", "def_ch", "On-ball screens defended as the screener's defender per 100 chances", scale = 100)
-  add("d_scr_soft_share", "d_scr_soft", "d_scr_cov", "As screener's defender: share of coverages that are soft (drop)")
+  add("d_scr_drop_share", "d_scr_drop", "d_scr_cov", "As screener's defender: share of coverages that are drop")
   add("d_scr_show_share", "d_scr_show + d_scr_blitz", "d_scr_cov", "As screener's defender: share of coverages that are show or blitz")
   add("d_scr_switch_share", "d_scr_switch", "d_scr_cov", "As screener's defender: share of coverages that are switches")
   add("d_scr_depth", "d_scr_depth", "d_scr_depth_n", "As screener's defender: feet nearer the hoop than the screener when the screen is set")

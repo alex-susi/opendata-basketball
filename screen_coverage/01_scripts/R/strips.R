@@ -2,7 +2,7 @@
 # defender's part of it, and the two defenders' raw positions underneath. Used by 04_evaluate.R for the live model
 # (the archived models in zz_Archive/ used it too). One PNG per screen, five panels in three rows:
 #   row 1  the ball handler's defender alone: over / under / switch (sums of the joint calls, e.g. over = over + show
-#          + over + soft), smoothed | the screener's defender alone: show / soft / switch, smoothed
+#          + over + drop), smoothed | the screener's defender alone: show / drop / switch, smoothed
 #   row 2  the five joint calls, smoothed | the five joint calls, raw, frame by frame
 #   row 3  the raw positions: both defenders' level against the screener (full width)
 
@@ -12,12 +12,12 @@ suppressPackageStartupMessages({
   library(patchwork)
 })
 
-STRIP_CALLS <- c("over + show", "over + soft", "under + soft", "under + show", "switch")
-STRIP_COLS <- c(`over + show` = "#2a78d6", `over + soft` = "#eb6834", `under + soft` = "#1baf7a",
+STRIP_CALLS <- c("over + show", "over + drop", "under + drop", "under + show", "switch")
+STRIP_COLS <- c(`over + show` = "#2a78d6", `over + drop` = "#eb6834", `under + drop` = "#1baf7a",
                 `under + show` = "#eda100", switch = "#e87ba4")
-PART_COLS <- c(over = "#2a78d6", under = "#1baf7a", switch = "#e87ba4", show = "#eda100", soft = "#eb6834")
+PART_COLS <- c(over = "#2a78d6", under = "#1baf7a", switch = "#e87ba4", show = "#eda100", drop = "#eb6834")
 BALL_PARTS <- c("over", "under", "switch")
-BIG_PARTS <- c("show", "soft", "switch")
+BIG_PARTS <- c("show", "drop", "switch")
 # A defender's part of a joint call: "over + show" gives "over" for the ball and "show" for the big; switch is both.
 part_of <- function(call, which) ifelse(call == "switch", "switch", vapply(strsplit(call, " + ", fixed = TRUE), `[`, "", if (which == "ball") 1L else 2L))
 
@@ -80,7 +80,7 @@ draw_strips <- function(X, prob, P, ids, film, model_label, csv_path, fig_dir, o
                 sprintf("Ball handler's defender (%s): over / under / switch, smoothed. Called: %s",
                         last(info$bd_name), part_of(info$call, "ball")), prefix = "ball: ")
     bg <- stack(paste0("big: ", BIG_PARTS, " (smoothed)"), BIG_PARTS, PART_COLS[BIG_PARTS],
-                sprintf("Screener's defender (%s): show / soft / switch, smoothed. Called: %s",
+                sprintf("Screener's defender (%s): show / drop / switch, smoothed. Called: %s",
                         last(info$sd_name), part_of(info$call, "big")), prefix = "big: ")
     b <- stack(STRIP_CALLS, STRIP_CALLS, STRIP_COLS, "Joint call, raw, frame by frame")   # keeps its legend so row 2 lines up
     # Bottom panel: both defenders' levels against the screener.

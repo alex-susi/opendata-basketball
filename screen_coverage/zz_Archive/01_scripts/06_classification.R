@@ -14,8 +14,8 @@
 #                       always says over + show gets 20% here however common over + show is
 #   macro precision/F1  the same averaging; a call the model never makes counts as precision 0
 #   ball defender       the same accuracy for the handler's defender alone: over, under or switch (the model's call
-#                       is the one with the highest summed probability, e.g. over + show plus over + soft)
-#   big                 the same for the screener's defender: show, soft or switch
+#                       is the one with the highest summed probability, e.g. over + show plus over + drop)
+#   big                 the same for the screener's defender: show, drop or switch
 # Baselines: always calling the most common coverage (over + show), and calling this defense's most frequent call so
 # far in the game (league mix before its first screen).
 #
@@ -64,7 +64,7 @@ X <- L$X
 CALLS <- L$calls
 y <- match(X$call, CALLS)
 BD_OF <- c("over", "over", "under", "under", "switch")      # ball defender's part of each joint call
-BIG_OF <- c("show", "soft", "soft", "show", "switch")       # the big's part
+BIG_OF <- c("show", "drop", "drop", "show", "switch")       # the big's part
 
 # calls from each model, plus the two baselines
 sofar <- as.matrix(X[, paste0("so_far_", seq_along(CALLS)), with = FALSE])          # at each row's own frame

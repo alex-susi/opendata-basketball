@@ -6,7 +6,7 @@
 # transformer yet: frequency baselines and small logistic models, scored at fixed times around the screen tag.
 #
 # Label. The joint call of the two defenders on an on-ball screen (picks.bhrDefType + picks.scrDefType):
-# over + show, over + soft, under + soft, under + show, switch. Ice (14), blitz (4) and over + none (6) are too
+# over + show, over + drop, under + drop, under + show, switch. Ice (14), blitz (4) and over + none (6) are too
 # rare to learn from in ten games and are left out (24 of 1,520 picks).
 #
 # The four players. Ball handler H, screener S, the handler's defender BD (ballhandlerDefId) and the screener's
@@ -43,7 +43,7 @@
 #   10 players              the four-player measures plus the other six players' positions and velocities
 #   10 players + so far     the same plus the "defense so far" shares
 #
-# "Committed?" check. For over vs under and for show vs soft, an AUC at each cutoff: pick one pick of each call at
+# "Committed?" check. For over vs under and for show vs drop, an AUC at each cutoff: pick one pick of each call at
 # random; how often does bd_lvl (or sd_lvl) rank them the right way round? 0.5 = no sign yet, 1 = always.
 #
 # Writes screen_coverage/zz_Archive/03_outputs/: lead_time_scores.csv, six_players_effect.csv, feature_weights.csv,
@@ -69,7 +69,7 @@ FT_PER_M <- 3.28084
 HOOP_X <- (14 - 1.575) * FT_PER_M
 CUTS <- c(-0.8, -0.4, 0, 0.4)
 VLAG <- 6L
-CALLS <- c("over + show", "over + soft", "under + soft", "under + show", "switch")
+CALLS <- c("over + show", "over + drop", "under + drop", "under + show", "switch")
 PRIOR_W <- 5
 DECAY <- 1
 hoop_dist <- function(x, y) sqrt((HOOP_X - x)^2 + y^2)
@@ -340,7 +340,7 @@ auc <- function(x, g) {
 # At each cutoff: does one defender's position already separate the calls?
 FA <- merge(Fe[id %in% P$id], P[, .(id, cov, scov)], by = "id")
 com <- rbind(FA[cov %in% c("over", "under"), .(question = "over vs under, from BD's level (bd_lvl)", auc = auc(bd_lvl, cov == "over"), n = .N), by = cut],
-             FA[scov %in% c("show", "soft") & cov %in% c("over", "under"), .(question = "show vs soft, from SD's level (sd_lvl)", auc = auc(sd_lvl, scov == "show"), n = .N), by = cut],
+             FA[scov %in% c("show", "drop") & cov %in% c("over", "under"), .(question = "show vs drop, from SD's level (sd_lvl)", auc = auc(sd_lvl, scov == "show"), n = .N), by = cut],
              FA[, .(question = "switch vs not, from BD-SD distance (closer = switch)", auc = auc(-d_def, cov == "switch"), n = .N), by = cut])
 com[, auc := round(auc, 3)]
 fwrite(com, file.path(out_dir, "commitment_auc.csv"))
@@ -355,15 +355,15 @@ print(dcast(com, question ~ cut, value.var = "auc"))
 ## 04 - WORKED EXAMPLE ---------------------------------------------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-# Fall screens for Marcos, under + soft.
+# Fall screens for Marcos, under + drop.
 
 FULL <- "10 players + so far"
-ex <- P[game_id == 188630 & S == 59165 & call == "under + soft" & grepl("Marcos", h_name)]
+ex <- P[game_id == 188630 & S == 59165 & call == "under + drop" & grepl("Marcos", h_name)]
 ex <- ex[order(f0)][1]
 if (nrow(ex)) {
-  # Each model's probability of under + soft for this pick at the four cutoffs, and the full model's top call.
+  # Each model's probability of under + drop for this pick at the four cutoffs, and the full model's top call.
   i <- match(ex$id, P$id)
-  j_us <- match("under + soft", CALLS)
+  j_us <- match("under + drop", CALLS)
   wx <- Fe[id == ex$id]
   pk <- function(mn) vapply(as.character(wx$cut), function(k) probs[[k]][[mn]][i, j_us], 0)
   wx[, `:=`(p_so_far = so_far_p[i, j_us], p_4 = pk("4 players"), p_4_so_far = pk("4 players + so far"),
@@ -376,7 +376,7 @@ if (nrow(ex)) {
          file.path(out_dir, "worked_example.csv"))
   cat(sprintf("\nWorked example %s (%s): %s screens for %s; %s guards the ball, %s guards the screener; called %s\n",
               ex$id, ex$poss, ex$s_name, ex$h_name, ex$bd_name, ex$sd_name, ex$call))
-  cat("Probability of under + soft by model:\n")
+  cat("Probability of under + drop by model:\n")
   print(wx[, .(cut, bd_lvl = round(bd_lvl, 1), sd_lvl = round(sd_lvl, 1), so_far = round(p_so_far, 2),
                `4p` = round(p_4, 2), `4p+sf` = round(p_4_so_far, 2), `10p` = round(p_10, 2),
                `10p+sf` = round(p_10_so_far, 2), top_call_full)])
@@ -394,7 +394,7 @@ if (nrow(ex)) {
   who <- c(H = paste0(last(ex$h_name), " (ball)"), S = paste0(last(ex$s_name), " (screener)"),
            BD = paste0(last(ex$bd_name), " (on ball)"), SD = paste0(last(ex$sd_name), " (on screener)"))
   sn[, who := who[role]]
-  lab <- function(cut) sprintf("%+.1f s  |  under + soft: %.0f%%", cut, 100 * wx$p_10_so_far[match(cut, wx$cut)])
+  lab <- function(cut) sprintf("%+.1f s  |  under + drop: %.0f%%", cut, 100 * wx$p_10_so_far[match(cut, wx$cut)])
   sn[, panel := factor(lab(cut), levels = lab(CUTS))]
   ot[, panel := factor(lab(cut), levels = lab(CUTS))]
   sn[, side := fifelse(role %in% c("H", "S"), "Offense", "Defense")]
@@ -412,9 +412,9 @@ if (nrow(ex)) {
     scale_fill_manual(values = c(Offense = "#2a78d6", Defense = "#e34948"), name = NULL) +
     facet_wrap(~ panel, nrow = 1) +
     coord_equal(xlim = range(allx) + c(-3, 2), ylim = range(ally) + c(-3, 3)) +
-    labs(title = sprintf("Worked example: %s screens for %s, called under + soft (%s)", ex$s_name, ex$h_name, ex$poss),
+    labs(title = sprintf("Worked example: %s screens for %s, called under + drop (%s)", ex$s_name, ex$h_name, ex$poss),
          subtitle = paste("Big dots: the four players of the screen. Faded dots: the other six. Four moments around the tag (0 s); above each,",
-                          "\nthe '10 players + so far' model's probability for under + soft using only that moment and the 0.24 s before it. Hoop on the right."),
+                          "\nthe '10 players + so far' model's probability for under + drop using only that moment and the 0.24 s before it. Hoop on the right."),
          x = NULL, y = NULL) +
     theme_minimal(base_size = 11) +
     theme(legend.position = "top", panel.grid = element_blank(), axis.text = element_blank(),

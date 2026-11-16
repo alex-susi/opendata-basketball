@@ -1,55 +1,55 @@
 model,t,actual,predicted,N
 A,-0.8,show,show,400
-A,-0.8,show,soft,181
+A,-0.8,show,drop,181
 A,-0.8,show,switch,25
-A,-0.8,soft,show,187
-A,-0.8,soft,soft,444
-A,-0.8,soft,switch,15
+A,-0.8,drop,show,187
+A,-0.8,drop,drop,444
+A,-0.8,drop,switch,15
 A,-0.8,switch,show,97
-A,-0.8,switch,soft,98
+A,-0.8,switch,drop,98
 A,-0.8,switch,switch,16
 A,-0.4,show,show,435
-A,-0.4,show,soft,136
+A,-0.4,show,drop,136
 A,-0.4,show,switch,35
-A,-0.4,soft,show,142
-A,-0.4,soft,soft,490
-A,-0.4,soft,switch,14
+A,-0.4,drop,show,142
+A,-0.4,drop,drop,490
+A,-0.4,drop,switch,14
 A,-0.4,switch,show,106
-A,-0.4,switch,soft,80
+A,-0.4,switch,drop,80
 A,-0.4,switch,switch,25
 A seeds 3-4,-0.8,show,show,408
-A seeds 3-4,-0.8,show,soft,178
+A seeds 3-4,-0.8,show,drop,178
 A seeds 3-4,-0.8,show,switch,20
-A seeds 3-4,-0.8,soft,show,188
-A seeds 3-4,-0.8,soft,soft,444
-A seeds 3-4,-0.8,soft,switch,14
+A seeds 3-4,-0.8,drop,show,188
+A seeds 3-4,-0.8,drop,drop,444
+A seeds 3-4,-0.8,drop,switch,14
 A seeds 3-4,-0.8,switch,show,97
-A seeds 3-4,-0.8,switch,soft,96
+A seeds 3-4,-0.8,switch,drop,96
 A seeds 3-4,-0.8,switch,switch,18
 A seeds 3-4,-0.4,show,show,438
-A seeds 3-4,-0.4,show,soft,130
+A seeds 3-4,-0.4,show,drop,130
 A seeds 3-4,-0.4,show,switch,38
-A seeds 3-4,-0.4,soft,show,142
-A seeds 3-4,-0.4,soft,soft,488
-A seeds 3-4,-0.4,soft,switch,16
+A seeds 3-4,-0.4,drop,show,142
+A seeds 3-4,-0.4,drop,drop,488
+A seeds 3-4,-0.4,drop,switch,16
 A seeds 3-4,-0.4,switch,show,102
-A seeds 3-4,-0.4,switch,soft,78
+A seeds 3-4,-0.4,switch,drop,78
 A seeds 3-4,-0.4,switch,switch,31
 B,-0.8,show,show,400
-B,-0.8,show,soft,188
+B,-0.8,show,drop,188
 B,-0.8,show,switch,18
-B,-0.8,soft,show,189
-B,-0.8,soft,soft,446
-B,-0.8,soft,switch,11
+B,-0.8,drop,show,189
+B,-0.8,drop,drop,446
+B,-0.8,drop,switch,11
 B,-0.8,switch,show,98
-B,-0.8,switch,soft,96
+B,-0.8,switch,drop,96
 B,-0.8,switch,switch,17
 B,-0.4,show,show,439
-B,-0.4,show,soft,141
+B,-0.4,show,drop,141
 B,-0.4,show,switch,26
-B,-0.4,soft,show,146
-B,-0.4,soft,soft,489
-B,-0.4,soft,switch,11
+B,-0.4,drop,show,146
+B,-0.4,drop,drop,489
+B,-0.4,drop,switch,11
 B,-0.4,switch,show,106
-B,-0.4,switch,soft,79
+B,-0.4,switch,drop,79
 B,-0.4,switch,switch,26

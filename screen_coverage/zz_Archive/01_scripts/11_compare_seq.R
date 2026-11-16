@@ -153,7 +153,7 @@ ggsave(file.path(out_dir, "figures", "scores_by_frame.png"), p1 / p2 + plot_layo
 
 # The ball defender's and the big's part of each joint call.
 BD_OF <- c("over", "over", "under", "under", "switch")
-BIG_OF <- c("show", "soft", "soft", "show", "switch")
+BIG_OF <- c("show", "drop", "drop", "show", "switch")
 sofar <- as.matrix(X[, paste0("so_far_", seq_along(CALLS)), with = FALSE])          # at each row's own frame
 # The three models of interest and the two baselines.
 cls <- c(probs[c(NEW, LIVE, BEST_LOG)], list(`baseline: always over + show` = matrix(rep(c(1, 0, 0, 0, 0), each = nrow(X)), nrow(X)),
@@ -235,7 +235,7 @@ apanel <- function(col, ttl, ylab, legend = FALSE) {
 ga <- apanel("accuracy", "Accuracy: share of top calls that were right (out of five calls)", "Accuracy", TRUE) /
   apanel("macro_recall", "Balanced accuracy: recall averaged over the five calls", "Balanced acc.") /
   apanel("ball_defender_accuracy", "Ball defender only: over, under or switch", "Accuracy") /
-  (apanel("big_accuracy", "Big only: show, soft or switch", "Accuracy") +
+  (apanel("big_accuracy", "Big only: show, drop or switch", "Accuracy") +
     labs(x = "Seconds relative to the screen tag")) +
   plot_annotation(title = "If each model just called its most likely coverage: how often it was right, frame by frame",
                   subtitle = sprintf("%s screens, held-out games. Dotted grey: baselines.", format(nrow(P), big.mark = ",")),
@@ -243,7 +243,7 @@ ga <- apanel("accuracy", "Accuracy: share of top calls that were right (out of f
 ggsave(file.path(out_dir, "figures", "accuracy_by_frame.png"), ga, width = 12, height = 13, dpi = 150, bg = "white")
 
 # each head on its own: log loss of the ball defender's and the big's calls
-hl <- melt(bfm[, .(t, grp, `Ball defender (over / under / switch)` = ball_defender_logloss, `Big (show / soft / switch)` = big_logloss)],
+hl <- melt(bfm[, .(t, grp, `Ball defender (over / under / switch)` = ball_defender_logloss, `Big (show / drop / switch)` = big_logloss)],
            id.vars = c("t", "grp"), variable.name = "head", value.name = "logloss")
 gh <- ggplot(hl, aes(t, logloss, colour = grp)) +
   geom_vline(xintercept = 0, colour = "grey60") +

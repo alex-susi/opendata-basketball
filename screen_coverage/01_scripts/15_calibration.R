@@ -5,7 +5,7 @@
 # Calibration check of the held-out probabilities (each game predicted by the folds that never saw it). A model is
 # well calibrated when, of all the times it says "70% over", over is the actual call about 70% of the time. Checked
 # for the full call (five calls), the ball handler's defender alone (over / under / switch) and the screener's
-# defender alone (show / soft / switch), for the live transformer and the logistic baseline.
+# defender alone (show / drop / switch), for the live transformer and the logistic baseline.
 #
 # Frames are weighted with the fixed "main" time-weight curve (R/window_weights.R: 0 before -1.8 s, up to full weight
 # at -0.9 s, full through +0.24 s, down to 0 at +0.5 s from the pick frame), the moments a ball handler would use the

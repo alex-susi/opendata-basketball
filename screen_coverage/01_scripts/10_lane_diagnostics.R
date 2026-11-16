@@ -9,7 +9,7 @@
 # Nearest helper: at each prediction row's own frame, the off-ball defender (of the three) closest to the roll lane,
 # among those with a valid lane value; his gap (ft) and closing speed (ft/s), as in variant B.
 #
-# 1. Descriptive: the big's call (show, soft, switch) by the nearest helper's gap and by his closing speed, at -0.8 s
+# 1. Descriptive: the big's call (show, drop, switch) by the nearest helper's gap and by his closing speed, at -0.8 s
 #    and -0.4 s, with 95% Wilson intervals. And a held-out version: a multinomial of the big's call on the gap alone
 #    against one with no inputs, leave one game out, scored on the held-out game (game bootstrap).
 # 2. The logistic baseline (01_logistic_baseline.R, "no timing, + closeness"; it sees only the four screen players)
@@ -52,8 +52,8 @@ L <- readRDS(file.path(root, "screen_coverage", "02_cache", "logistic_per_frame.
 X <- copy(L$X)
 CALLS <- L$calls
 OFFS <- L$offs
-BIG_OF <- c("show", "soft", "soft", "show", "switch")
-BIG_LV <- c("show", "soft", "switch")
+BIG_OF <- c("show", "drop", "drop", "show", "switch")
+BIG_LV <- c("show", "drop", "switch")
 X[, big := BIG_OF[match(call, CALLS)]]
 
 # Each row's three off-ball defenders at its own frame: the nearest valid one to the lane, and his closing speed.
@@ -141,7 +141,7 @@ cat("\nThe big's call from the gap alone vs no inputs (held out by game; below z
 print(alone[, lapply(.SD, function(v) if (is.numeric(v) && !is.integer(v)) round(v, 4) else v)])
 
 # Figure: share of each big call by gap bin, at -0.8 s and -0.4 s, with intervals and direct labels.
-COL <- c(show = "#2a78d6", soft = "#eb6834", switch = "#1baf7a")
+COL <- c(show = "#2a78d6", drop = "#eb6834", switch = "#1baf7a")
 fig <- copy(by_gap)
 fig[, panel := factor(sprintf("%+.1f s before the screen tag", t), sprintf("%+.1f s before the screen tag", sort(unique(t))))]
 fig[, x := as.integer(bin)]

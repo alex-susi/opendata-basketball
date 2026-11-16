@@ -1,55 +1,55 @@
 id,why,call,t,helper,gap_ft,closing_fps,projection,valid,big_forecast
-pick-114243-2-39,runbook clip,over + show,-0.8,Bozic,1.15,6.93,0.671,TRUE,A: show 49% soft 42% switch 9% | B: show 51% soft 41% switch 8%
-pick-114243-2-39,runbook clip,over + show,-0.8,Kljajic,13.05,-0.24,0.625,TRUE,A: show 49% soft 42% switch 9% | B: show 51% soft 41% switch 8%
-pick-114243-2-39,runbook clip,over + show,-0.8,Thomas,19.34,1.15,0.459,TRUE,A: show 49% soft 42% switch 9% | B: show 51% soft 41% switch 8%
-pick-114243-2-39,runbook clip,over + show,-0.4,Bozic,1.13,-4.37,0.801,TRUE,A: show 66% soft 26% switch 9% | B: show 66% soft 26% switch 8%
-pick-114243-2-39,runbook clip,over + show,-0.4,Kljajic,13.53,-0.11,0.6,TRUE,A: show 66% soft 26% switch 9% | B: show 66% soft 26% switch 8%
-pick-114243-2-39,runbook clip,over + show,-0.4,Thomas,18.4,0.8,0.505,TRUE,A: show 66% soft 26% switch 9% | B: show 66% soft 26% switch 8%
-pick-114243-2-39,runbook clip,over + show,0,Bozic,2.52,-2.1,0.88,TRUE,A: show 81% soft 5% switch 14% | B: show 88% soft 3% switch 9%
-pick-114243-2-39,runbook clip,over + show,0,Kljajic,14.19,0.33,0.593,TRUE,A: show 81% soft 5% switch 14% | B: show 88% soft 3% switch 9%
-pick-114243-2-39,runbook clip,over + show,0,Thomas,17.26,0.2,0.487,TRUE,A: show 81% soft 5% switch 14% | B: show 88% soft 3% switch 9%
-pick-188630-1-12,runbook clip,under + soft,-0.8,Robertson,9.78,-1.05,0.43,TRUE,A: show 25% soft 46% switch 29% | B: show 27% soft 40% switch 33%
-pick-188630-1-12,runbook clip,under + soft,-0.8,Metu,9.58,0.27,0.505,TRUE,A: show 25% soft 46% switch 29% | B: show 27% soft 40% switch 33%
-pick-188630-1-12,runbook clip,under + soft,-0.8,Brussino,15.06,0.05,1.053,TRUE,A: show 25% soft 46% switch 29% | B: show 27% soft 40% switch 33%
-pick-188630-1-12,runbook clip,under + soft,-0.4,Robertson,11.36,-0.98,0.51,TRUE,A: show 20% soft 67% switch 13% | B: show 22% soft 64% switch 14%
-pick-188630-1-12,runbook clip,under + soft,-0.4,Metu,8.37,0.08,0.446,TRUE,A: show 20% soft 67% switch 13% | B: show 22% soft 64% switch 14%
-pick-188630-1-12,runbook clip,under + soft,-0.4,Brussino,15.04,0.05,1.004,TRUE,A: show 20% soft 67% switch 13% | B: show 22% soft 64% switch 14%
-pick-188630-1-12,runbook clip,under + soft,0,Robertson,12.42,-1.16,0.595,TRUE,A: show 7% soft 87% switch 7% | B: show 5% soft 92% switch 3%
-pick-188630-1-12,runbook clip,under + soft,0,Metu,7.75,-0.46,0.412,TRUE,A: show 7% soft 87% switch 7% | B: show 5% soft 92% switch 3%
-pick-188630-1-12,runbook clip,under + soft,0,Brussino,14.91,0.36,0.973,TRUE,A: show 7% soft 87% switch 7% | B: show 5% soft 92% switch 3%
-pick-114243-3-66,runbook clip,under + soft,-0.8,Obasohan,12.66,-0.78,0.395,TRUE,A: show 53% soft 39% switch 8% | B: show 55% soft 38% switch 7%
-pick-114243-3-66,runbook clip,under + soft,-0.8,Reyes,19.18,-0.94,0.338,TRUE,A: show 53% soft 39% switch 8% | B: show 55% soft 38% switch 7%
-pick-114243-3-66,runbook clip,under + soft,-0.8,Steinbergs,16.16,3.03,1.082,TRUE,A: show 53% soft 39% switch 8% | B: show 55% soft 38% switch 7%
-pick-114243-3-66,runbook clip,under + soft,-0.4,Obasohan,13.94,-0.6,0.55,TRUE,A: show 61% soft 29% switch 10% | B: show 66% soft 26% switch 8%
-pick-114243-3-66,runbook clip,under + soft,-0.4,Reyes,17.87,0.21,0.39,TRUE,A: show 61% soft 29% switch 10% | B: show 66% soft 26% switch 8%
-pick-114243-3-66,runbook clip,under + soft,-0.4,Steinbergs,14.8,3.43,1.013,TRUE,A: show 61% soft 29% switch 10% | B: show 66% soft 26% switch 8%
-pick-114243-3-66,runbook clip,under + soft,0,Obasohan,14.47,-0.61,0.591,TRUE,A: show 59% soft 26% switch 15% | B: show 59% soft 30% switch 11%
-pick-114243-3-66,runbook clip,under + soft,0,Reyes,16.63,2.96,0.426,TRUE,A: show 59% soft 26% switch 15% | B: show 59% soft 30% switch 11%
-pick-114243-3-66,runbook clip,under + soft,0,Steinbergs,13.64,2.67,1.009,TRUE,A: show 59% soft 26% switch 15% | B: show 59% soft 30% switch 11%
-pick-114086-1-9,a switch,switch,-0.8,Tobey,4,0.3,0.804,TRUE,A: show 70% soft 25% switch 5% | B: show 72% soft 23% switch 5%
-pick-114086-1-9,a switch,switch,-0.8,Brussino,16.71,-0.95,0.707,TRUE,A: show 70% soft 25% switch 5% | B: show 72% soft 23% switch 5%
-pick-114086-1-9,a switch,switch,-0.8,Samar,18.03,-0.54,0.863,TRUE,A: show 70% soft 25% switch 5% | B: show 72% soft 23% switch 5%
-pick-114086-1-9,a switch,switch,-0.4,Tobey,4.22,0.71,0.847,TRUE,A: show 80% soft 16% switch 4% | B: show 83% soft 13% switch 4%
-pick-114086-1-9,a switch,switch,-0.4,Brussino,17.58,-0.59,0.843,TRUE,A: show 80% soft 16% switch 4% | B: show 83% soft 13% switch 4%
-pick-114086-1-9,a switch,switch,-0.4,Samar,17.56,0.26,0.782,TRUE,A: show 80% soft 16% switch 4% | B: show 83% soft 13% switch 4%
-pick-114086-1-9,a switch,switch,0,Tobey,4.18,1.12,0.881,TRUE,A: show 85% soft 9% switch 6% | B: show 88% soft 6% switch 5%
-pick-114086-1-9,a switch,switch,0,Brussino,18.08,-0.4,0.933,TRUE,A: show 85% soft 9% switch 6% | B: show 88% soft 6% switch 5%
-pick-114086-1-9,a switch,switch,0,Samar,16.66,0.78,0.719,TRUE,A: show 85% soft 9% switch 6% | B: show 88% soft 6% switch 5%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.8,Brussino,4.99,-7.92,-0.016,TRUE,A: show 57% soft 41% switch 2% | B: show 59% soft 38% switch 2%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.8,Labeyrie,6.89,-4.42,0.492,TRUE,A: show 57% soft 41% switch 2% | B: show 59% soft 38% switch 2%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.8,Albicy,16.92,-0.05,1,TRUE,A: show 57% soft 41% switch 2% | B: show 59% soft 38% switch 2%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.4,Brussino,7.69,-9.04,0.107,TRUE,A: show 61% soft 37% switch 2% | B: show 69% soft 29% switch 2%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.4,Labeyrie,9.16,-4.49,0.58,TRUE,A: show 61% soft 37% switch 2% | B: show 69% soft 29% switch 2%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.4,Albicy,16.46,1.47,0.966,TRUE,A: show 61% soft 37% switch 2% | B: show 69% soft 29% switch 2%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,0,Brussino,8.97,-7.93,0.201,TRUE,A: show 68% soft 27% switch 4% | B: show 71% soft 26% switch 3%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,0,Labeyrie,11.76,-4.15,0.675,TRUE,A: show 68% soft 27% switch 4% | B: show 71% soft 26% switch 3%
-pick-114086-2-51,screener still approaching at -0.8 s,under + show,0,Albicy,15.38,2.52,0.899,TRUE,A: show 68% soft 27% switch 4% | B: show 71% soft 26% switch 3%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.8,Howard,10.92,-1.31,0.203,TRUE,A: show 51% soft 43% switch 5% | B: show 51% soft 43% switch 7%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.8,Radzevicius,13.19,0.04,0.712,TRUE,A: show 51% soft 43% switch 5% | B: show 51% soft 43% switch 7%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.8,Kurucs,16.33,-0.22,1.099,TRUE,A: show 51% soft 43% switch 5% | B: show 51% soft 43% switch 7%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.4,Howard,9.83,1.86,0.274,TRUE,A: show 41% soft 54% switch 5% | B: show 41% soft 52% switch 7%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.4,Radzevicius,13.25,0.61,0.729,TRUE,A: show 41% soft 54% switch 5% | B: show 41% soft 52% switch 7%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.4,Kurucs,16.16,0.62,1.023,TRUE,A: show 41% soft 54% switch 5% | B: show 41% soft 52% switch 7%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,0,Howard,7.48,3.99,0.252,TRUE,A: show 43% soft 54% switch 3% | B: show 55% soft 41% switch 5%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,0,Radzevicius,13.38,0.41,0.746,TRUE,A: show 43% soft 54% switch 3% | B: show 55% soft 41% switch 5%
-pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,0,Kurucs,15.61,1.58,0.935,TRUE,A: show 43% soft 54% switch 3% | B: show 55% soft 41% switch 5%
+pick-114243-2-39,runbook clip,over + show,-0.8,Bozic,1.15,6.93,0.671,TRUE,A: show 40% drop 50% switch 10% | B: show 51% drop 41% switch 8%
+pick-114243-2-39,runbook clip,over + show,-0.8,Kljajic,13.05,-0.24,0.625,TRUE,A: show 40% drop 50% switch 10% | B: show 51% drop 41% switch 8%
+pick-114243-2-39,runbook clip,over + show,-0.8,Thomas,19.34,1.15,0.459,TRUE,A: show 40% drop 50% switch 10% | B: show 51% drop 41% switch 8%
+pick-114243-2-39,runbook clip,over + show,-0.4,Bozic,1.13,-4.37,0.801,TRUE,A: show 64% drop 28% switch 8% | B: show 66% drop 26% switch 8%
+pick-114243-2-39,runbook clip,over + show,-0.4,Kljajic,13.53,-0.11,0.6,TRUE,A: show 64% drop 28% switch 8% | B: show 66% drop 26% switch 8%
+pick-114243-2-39,runbook clip,over + show,-0.4,Thomas,18.4,0.8,0.505,TRUE,A: show 64% drop 28% switch 8% | B: show 66% drop 26% switch 8%
+pick-114243-2-39,runbook clip,over + show,0,Bozic,2.52,-2.1,0.88,TRUE,A: show 82% drop 5% switch 13% | B: show 88% drop 3% switch 9%
+pick-114243-2-39,runbook clip,over + show,0,Kljajic,14.19,0.33,0.593,TRUE,A: show 82% drop 5% switch 13% | B: show 88% drop 3% switch 9%
+pick-114243-2-39,runbook clip,over + show,0,Thomas,17.26,0.2,0.487,TRUE,A: show 82% drop 5% switch 13% | B: show 88% drop 3% switch 9%
+pick-188630-1-12,runbook clip,under + drop,-0.8,Robertson,9.78,-1.05,0.43,TRUE,A: show 42% drop 32% switch 27% | B: show 27% drop 40% switch 33%
+pick-188630-1-12,runbook clip,under + drop,-0.8,Metu,9.58,0.27,0.505,TRUE,A: show 42% drop 32% switch 27% | B: show 27% drop 40% switch 33%
+pick-188630-1-12,runbook clip,under + drop,-0.8,Brussino,15.06,0.05,1.053,TRUE,A: show 42% drop 32% switch 27% | B: show 27% drop 40% switch 33%
+pick-188630-1-12,runbook clip,under + drop,-0.4,Robertson,11.36,-0.98,0.51,TRUE,A: show 33% drop 50% switch 17% | B: show 22% drop 64% switch 14%
+pick-188630-1-12,runbook clip,under + drop,-0.4,Metu,8.37,0.08,0.446,TRUE,A: show 33% drop 50% switch 17% | B: show 22% drop 64% switch 14%
+pick-188630-1-12,runbook clip,under + drop,-0.4,Brussino,15.04,0.05,1.004,TRUE,A: show 33% drop 50% switch 17% | B: show 22% drop 64% switch 14%
+pick-188630-1-12,runbook clip,under + drop,0,Robertson,12.42,-1.16,0.595,TRUE,A: show 8% drop 85% switch 7% | B: show 5% drop 92% switch 3%
+pick-188630-1-12,runbook clip,under + drop,0,Metu,7.75,-0.46,0.412,TRUE,A: show 8% drop 85% switch 7% | B: show 5% drop 92% switch 3%
+pick-188630-1-12,runbook clip,under + drop,0,Brussino,14.91,0.36,0.973,TRUE,A: show 8% drop 85% switch 7% | B: show 5% drop 92% switch 3%
+pick-114243-3-66,runbook clip,under + drop,-0.8,Obasohan,12.66,-0.78,0.395,TRUE,A: show 45% drop 45% switch 10% | B: show 55% drop 38% switch 7%
+pick-114243-3-66,runbook clip,under + drop,-0.8,Reyes,19.18,-0.94,0.338,TRUE,A: show 45% drop 45% switch 10% | B: show 55% drop 38% switch 7%
+pick-114243-3-66,runbook clip,under + drop,-0.8,Steinbergs,16.16,3.03,1.082,TRUE,A: show 45% drop 45% switch 10% | B: show 55% drop 38% switch 7%
+pick-114243-3-66,runbook clip,under + drop,-0.4,Obasohan,13.94,-0.6,0.55,TRUE,A: show 60% drop 29% switch 11% | B: show 66% drop 26% switch 8%
+pick-114243-3-66,runbook clip,under + drop,-0.4,Reyes,17.87,0.21,0.39,TRUE,A: show 60% drop 29% switch 11% | B: show 66% drop 26% switch 8%
+pick-114243-3-66,runbook clip,under + drop,-0.4,Steinbergs,14.8,3.43,1.013,TRUE,A: show 60% drop 29% switch 11% | B: show 66% drop 26% switch 8%
+pick-114243-3-66,runbook clip,under + drop,0,Obasohan,14.47,-0.61,0.591,TRUE,A: show 59% drop 24% switch 16% | B: show 59% drop 30% switch 11%
+pick-114243-3-66,runbook clip,under + drop,0,Reyes,16.63,2.96,0.426,TRUE,A: show 59% drop 24% switch 16% | B: show 59% drop 30% switch 11%
+pick-114243-3-66,runbook clip,under + drop,0,Steinbergs,13.64,2.67,1.009,TRUE,A: show 59% drop 24% switch 16% | B: show 59% drop 30% switch 11%
+pick-114086-1-9,a switch,switch,-0.8,Tobey,4,0.3,0.804,TRUE,A: show 70% drop 24% switch 6% | B: show 72% drop 23% switch 5%
+pick-114086-1-9,a switch,switch,-0.8,Brussino,16.71,-0.95,0.707,TRUE,A: show 70% drop 24% switch 6% | B: show 72% drop 23% switch 5%
+pick-114086-1-9,a switch,switch,-0.8,Samar,18.03,-0.54,0.863,TRUE,A: show 70% drop 24% switch 6% | B: show 72% drop 23% switch 5%
+pick-114086-1-9,a switch,switch,-0.4,Tobey,4.22,0.71,0.847,TRUE,A: show 80% drop 15% switch 5% | B: show 83% drop 13% switch 4%
+pick-114086-1-9,a switch,switch,-0.4,Brussino,17.58,-0.59,0.843,TRUE,A: show 80% drop 15% switch 5% | B: show 83% drop 13% switch 4%
+pick-114086-1-9,a switch,switch,-0.4,Samar,17.56,0.26,0.782,TRUE,A: show 80% drop 15% switch 5% | B: show 83% drop 13% switch 4%
+pick-114086-1-9,a switch,switch,0,Tobey,4.18,1.12,0.881,TRUE,A: show 85% drop 9% switch 6% | B: show 88% drop 6% switch 5%
+pick-114086-1-9,a switch,switch,0,Brussino,18.08,-0.4,0.933,TRUE,A: show 85% drop 9% switch 6% | B: show 88% drop 6% switch 5%
+pick-114086-1-9,a switch,switch,0,Samar,16.66,0.78,0.719,TRUE,A: show 85% drop 9% switch 6% | B: show 88% drop 6% switch 5%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.8,Brussino,4.99,-7.92,-0.016,TRUE,A: show 56% drop 41% switch 3% | B: show 59% drop 38% switch 2%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.8,Labeyrie,6.89,-4.42,0.492,TRUE,A: show 56% drop 41% switch 3% | B: show 59% drop 38% switch 2%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.8,Albicy,16.92,-0.05,1,TRUE,A: show 56% drop 41% switch 3% | B: show 59% drop 38% switch 2%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.4,Brussino,7.69,-9.04,0.107,TRUE,A: show 61% drop 36% switch 3% | B: show 69% drop 29% switch 2%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.4,Labeyrie,9.16,-4.49,0.58,TRUE,A: show 61% drop 36% switch 3% | B: show 69% drop 29% switch 2%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,-0.4,Albicy,16.46,1.47,0.966,TRUE,A: show 61% drop 36% switch 3% | B: show 69% drop 29% switch 2%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,0,Brussino,8.97,-7.93,0.201,TRUE,A: show 65% drop 30% switch 5% | B: show 71% drop 26% switch 3%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,0,Labeyrie,11.76,-4.15,0.675,TRUE,A: show 65% drop 30% switch 5% | B: show 71% drop 26% switch 3%
+pick-114086-2-51,screener still approaching at -0.8 s,under + show,0,Albicy,15.38,2.52,0.899,TRUE,A: show 65% drop 30% switch 5% | B: show 71% drop 26% switch 3%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.8,Howard,10.92,-1.31,0.203,TRUE,A: show 50% drop 44% switch 6% | B: show 51% drop 43% switch 7%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.8,Radzevicius,13.19,0.04,0.712,TRUE,A: show 50% drop 44% switch 6% | B: show 51% drop 43% switch 7%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.8,Kurucs,16.33,-0.22,1.099,TRUE,A: show 50% drop 44% switch 6% | B: show 51% drop 43% switch 7%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.4,Howard,9.83,1.86,0.274,TRUE,A: show 40% drop 53% switch 7% | B: show 41% drop 52% switch 7%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.4,Radzevicius,13.25,0.61,0.729,TRUE,A: show 40% drop 53% switch 7% | B: show 41% drop 52% switch 7%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,-0.4,Kurucs,16.16,0.62,1.023,TRUE,A: show 40% drop 53% switch 7% | B: show 41% drop 52% switch 7%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,0,Howard,7.48,3.99,0.252,TRUE,A: show 45% drop 51% switch 4% | B: show 55% drop 41% switch 5%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,0,Radzevicius,13.38,0.41,0.746,TRUE,A: show 45% drop 51% switch 4% | B: show 55% drop 41% switch 5%
+pick-114086-1-2,a re-screen (same defense screened within 2 s before),over + show,0,Kurucs,15.61,1.58,0.935,TRUE,A: show 45% drop 51% switch 4% | B: show 55% drop 41% switch 5%

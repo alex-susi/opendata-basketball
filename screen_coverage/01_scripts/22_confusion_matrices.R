@@ -12,7 +12,7 @@
 # Two matrices from each count table:
 #   recall       rows = actual call, each row sums to 1: of the screens that were X, the share read as each call
 #   precision    columns = top call, each column sums to 1: of the screens read as X, the share that really were each
-# Also for each defender's part (guard: over / under / switch, big: show / soft / switch) and, for switch alone,
+# Also for each defender's part (guard: over / under / switch, big: show / drop / switch) and, for switch alone,
 # measures that do not depend on the top call: mean switch probability on true switches and on the rest, and the
 # chance a random true switch gets a higher switch probability than a random other screen (AUC).
 #

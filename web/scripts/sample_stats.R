@@ -171,7 +171,7 @@ sample_figures <- function() {
     act <- function(key, recs, actor, outs, cov, direct_only = FALSE) {
       if (!length(recs)) return(NULL)
       dt <- data.table(kind = key, pid = a$int_field(recs, actor), pts = act_pts(lst(recs, outs)),
-                       cov = if (is.null(cov)) "all" else fcoalesce(a$chr_field(recs, cov), "none"),
+                       cov = if (is.null(cov)) "all" else sub("^soft$", "drop", fcoalesce(a$chr_field(recs, cov), "none")),
                        direct = a$lgl_field(recs, "direct"))
       if (direct_only) dt <- dt[direct == TRUE]
       dt[, team := team_of(pid)][, direct := NULL]

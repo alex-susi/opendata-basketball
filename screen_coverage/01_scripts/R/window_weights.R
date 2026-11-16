@@ -19,8 +19,8 @@ WINDOW_CURVES <- list(main = list(t = c(-1.8, -0.9, 0.24, 0.5), w = c(0, 1, 1, 0
                       flat = list(t = c(-2, 1), w = c(1, 1)))
 
 # Which joint calls make up each defender's call. Guard = the ball handler's defender, big = the screener's defender.
-GUARD_CALLS <- list(over = c("over + show", "over + soft"), under = c("under + soft", "under + show"), switch = "switch")
-BIG_CALLS <- list(show = c("over + show", "under + show"), soft = c("over + soft", "under + soft"), switch = "switch")
+GUARD_CALLS <- list(over = c("over + show", "over + drop"), under = c("under + drop", "under + show"), switch = "switch")
+BIG_CALLS <- list(show = c("over + show", "under + show"), drop = c("over + drop", "under + drop"), switch = "switch")
 
 #' Weight of each frame offset `off` (frames from the pick frame) under `curve`. Anchors are converted to frames and
 #' rounded so the curve's end frames are counted exactly (-0.4 s is frame -10, not a float just past it).
@@ -32,7 +32,7 @@ window_weight <- function(off, curve) {
   w
 }
 
-#' Per-frame log loss of the true call: joint (five calls), guard (over / under / switch) and big (show / soft /
+#' Per-frame log loss of the true call: joint (five calls), guard (over / under / switch) and big (show / drop /
 #' switch). `P` holds the five joint-call probabilities in the order `calls`, rows matching `call`.
 frame_losses <- function(P, call, calls) {
   stopifnot(ncol(P) == length(calls), nrow(P) == length(call), !anyNA(P))

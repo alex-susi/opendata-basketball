@@ -70,7 +70,7 @@ pick <- data.table(id = c(ids, P$id[c(sw, appr, resc)]),
 pick <- pick[!duplicated(id)]
 stopifnot(all(pick$id %in% P$id))
 
-# Forecasts for the big where both models are fitted (show, soft, switch from the five calls).
+# Forecasts for the big where both models are fitted (show, drop, switch from the five calls).
 fold_prob <- function(dir) {
   paths <- file.path(dir, sprintf("seqheads_%d.rds", sort(unique(X$game_id))))
   if (!all(file.exists(paths))) return(NULL)
@@ -79,7 +79,7 @@ fold_prob <- function(dir) {
     o <- read_fold(p, L)
     Pm[o$rows, ] <- o$prob
   }
-  cbind(show = Pm[, 1] + Pm[, 4], soft = Pm[, 2] + Pm[, 3], switch = Pm[, 5])
+  cbind(show = Pm[, 1] + Pm[, 4], drop = Pm[, 2] + Pm[, 3], switch = Pm[, 5])
 }
 BIG <- list(A = fold_prob(file.path(root, "screen_coverage", "02_cache", "tf")), B = fold_prob(lane_tf_dir(root, "B", 1:2)))
 
@@ -148,7 +148,7 @@ for (i in seq_len(nrow(pick))) {
     r <- which(X$idx == k & X$off == o)
     fc <- vapply(names(BIG), function(m) {
       if (is.null(BIG[[m]])) return(NA_character_)
-      sprintf("%s: show %.0f%% soft %.0f%% switch %.0f%%", m, 100 * BIG[[m]][r, 1], 100 * BIG[[m]][r, 2], 100 * BIG[[m]][r, 3])
+      sprintf("%s: show %.0f%% drop %.0f%% switch %.0f%%", m, 100 * BIG[[m]][r, 1], 100 * BIG[[m]][r, 2], 100 * BIG[[m]][r, 3])
     }, "")
     fc <- paste(fc[!is.na(fc)], collapse = " | ")
     rows[[length(rows) + 1L]] <- hl[, .(id = p$id, why = pick$why[i], call = p$call, t = o / FPS, helper = name, gap_ft = round(d, 2),

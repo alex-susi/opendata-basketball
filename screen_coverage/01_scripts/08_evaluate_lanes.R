@@ -13,7 +13,7 @@
 #   C          A plus roll distance and validity (only if trained)
 #
 # Scores (lower is better), each from the averaged five-call probabilities in their stored order:
-#   big      the screener's defender: show = over + show + under + show, soft = over + soft + under + soft,
+#   big      the screener's defender: show = over + show + under + show, drop = over + drop + under + drop,
 #            switch = switch. PRIMARY: at -0.4 s (offset -10); repeated at -0.8 s (offset -20)
 #   guard    the handler's defender: over = both over calls, under = both under calls, switch
 #   joint    the five calls
@@ -55,7 +55,7 @@ L <- load_logistic(root)
 X <- copy(L$X)
 P <- L$P
 CALLS <- L$calls
-stopifnot(identical(CALLS, c("over + show", "over + soft", "under + soft", "under + show", "switch")))
+stopifnot(identical(CALLS, c("over + show", "over + drop", "under + drop", "under + show", "switch")))
 stopifnot(X[, .N, by = .(game_id, id, off)][, all(N == 1L)])
 games <- sort(unique(X$game_id))
 
@@ -84,9 +84,9 @@ MODELS <- names(PROB)
 
 # The two defenders' marginal calls and the tagged outcome of each.
 y <- match(X$call, CALLS)
-BIG_OF <- c("show", "soft", "soft", "show", "switch")
+BIG_OF <- c("show", "drop", "drop", "show", "switch")
 BD_OF <- c("over", "over", "under", "under", "switch")
-BIG_LV <- c("show", "soft", "switch")
+BIG_LV <- c("show", "drop", "switch")
 BD_LV <- c("over", "under", "switch")
 marg <- function(Pm, of, lv) sapply(lv, function(l) rowSums(Pm[, of == l, drop = FALSE]))
 ll <- function(Pm, k) -log(pmax(Pm[cbind(seq_len(nrow(Pm)), k)], 1e-12))

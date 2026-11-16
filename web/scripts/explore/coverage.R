@@ -2,8 +2,8 @@
 # Topic: pick-and-roll coverage, the EDA before trying to predict it (no model here).
 #
 # The label. SkillCorner calls two coverages on every on-ball screen (picks.bhrDefType on the ball handler's
-# defender, picks.scrDefType on the screener's defender). Together they form one joint call: "over · soft",
-# "over · show", "under · soft", "under · show", or a call both defenders share (switch, ice, blitz). In the ten
+# defender, picks.scrDefType on the screener's defender). Together they form one joint call: "over · drop",
+# "over · show", "under · drop", "under · show", or a call both defenders share (switch, ice, blitz). In the ten
 # games the shared calls never mix with anything else, so the joint call is the label a model would predict.
 #
 # The frame. Every position is in the viewer's frame (offense attacks the hoop at +HOOP_X). The pick's own location
@@ -15,7 +15,7 @@
 #   d_bd     H to BD (ft)                     d_sd     H to SD (ft)
 #   d_hs     H to S (ft): the screen itself   d_def    BD to SD (ft): both defenders together = trap
 #   bd_lvl   BD's hoop distance minus the screen spot's (ft): + above the screen (over), - below it (under)
-#   sd_lvl   SD's hoop distance minus the screen spot's (ft): + up at the ball (show), - dropped (soft)
+#   sd_lvl   SD's hoop distance minus the screen spot's (ft): + up at the ball (show), - sitting back (drop)
 # The screen spot is S's tracked position at time 0 (the event location when he is not tracked).
 #
 # Separation over time is shown with a rank statistic (AUC): pick one pick of each of two coverages at random; the
@@ -36,7 +36,7 @@
 
 # Window offsets (s from the pick) and the smallest defense sample shown.
 COV <- list(t = round(seq(-3, 2, by = 0.2), 1), min_team = 25L)
-JOINT_LV <- c("over · soft", "over · show", "under · soft", "under · show", "switch", "ice", "blitz")
+JOINT_LV <- c("over · drop", "over · show", "under · drop", "under · show", "switch", "ice", "blitz")
 
 
 
@@ -163,7 +163,7 @@ score <- function(prob, y) {
 #' Probabilities from counts with one of each call added.
 smooth_counts <- function(cnt) (cnt + 1) / sum(cnt + 1)
 
-KEYS <- setNames(c("o_soft", "o_show", "u_soft", "u_show", "switch", "ice", "blitz"), JOINT_LV)
+KEYS <- setNames(c("o_drop", "o_show", "u_drop", "u_show", "switch", "ice", "blitz"), JOINT_LV)
 #' Table columns for the seven call shares (tinted against the overall share).
 mix_cols <- function(base) {
   lapply(JOINT_LV, function(l) col(KEYS[[l]], l, "pct", ref = base[[l]], scale = 0.25, group = "Share of the defense's calls",
@@ -199,16 +199,17 @@ cov_season <- function() {
   pk <- rows(fread(file.path(a$root, "data", "aggregates", "acb_picksaggregates_20252026.csv")))
   sh <- rows(fread(file.path(a$root, "data", "aggregates", "acb_shotsaggregates_20252026.csv")))
   hv <- c("blitz", "ice", "over", "switch", "under")
-  sv <- c("blitz", "ice", "show", "soft", "switch")
+  # Screener's defender buckets: "drop" here, "_vs_soft" in the aggregate CSV as SkillCorner delivers it.
+  sv <- c(blitz = "blitz", ice = "ice", show = "show", drop = "soft", switch = "switch")
   # Coverage faced per player as handler and as screener, and his shooting.
   p <- pk[, c(list(name = player_name[1], h_tot = sum(handler_total_picks), s_tot = sum(screener_total_picks),
                    s_three = sum(screener_score_3pt + screener_miss_3pt), s_two = sum(screener_score_2pt + screener_miss_2pt)),
               setNames(lapply(hv, function(v) sum(get(paste0("handler_picks_vs_", v)))), paste0("h_", hv)),
-              setNames(lapply(sv, function(v) sum(get(paste0("screener_picks_vs_", v)))), paste0("s_", sv))), by = canon]
+              setNames(lapply(sv, function(v) sum(get(paste0("screener_picks_vs_", v)))), paste0("s_", names(sv)))), by = canon]
   s <- sh[, .(poss = sum(possessions_played), od3 = sum(od_three_attempts), od3m = sum(od_three_mades),
               three_att = sum(three_attempts), three_made = sum(three_mades)), by = canon]
   out <- merge(p, s, by = "canon", all.x = TRUE)
-  out[, `:=`(h_called = h_blitz + h_ice + h_over + h_switch + h_under, s_called = s_blitz + s_ice + s_show + s_soft + s_switch)]
+  out[, `:=`(h_called = h_blitz + h_ice + h_over + h_switch + h_under, s_called = s_blitz + s_ice + s_show + s_drop + s_switch)]
   out[, `:=`(od3_100 = 100 * od3 / pmax(1, poss), pop = s_three / pmax(1, s_tot))]
   attr(out, "hv") <- hv
   attr(out, "sv") <- sv
@@ -252,7 +253,7 @@ cov_baselines <- function(L, S) {
       }
     }
   }
-  # Season files: the handler's faced over/under/switch/ice/blitz mix times the screener's show/soft split, each
+  # Season files: the handler's faced over/under/switch/ice/blitz mix times the screener's show/drop split, each
   # pulled toward the league mix with 20 picks of weight. These include the ten games (10 of 293).
   W0 <- 20
   z <- function(v) {
@@ -264,10 +265,10 @@ cov_baselines <- function(L, S) {
   hk <- c("h_over", "h_under", "h_switch", "h_ice", "h_blitz")
   lgh <- colSums(S[, ..hk])
   lgh <- lgh / sum(lgh)
-  lgs <- sum(S$s_show) / (sum(S$s_show) + sum(S$s_soft))
+  lgs <- sum(S$s_show) / (sum(S$s_show) + sum(S$s_drop))
   h_n <- z(hs$h_called)
   ph <- sapply(hk, function(k) (z(hs[[k]]) + W0 * lgh[[k]]) / (h_n + W0))
-  pshow <- (z(ss$s_show) + W0 * lgs) / (z(ss$s_show) + z(ss$s_soft) + W0)
+  pshow <- (z(ss$s_show) + W0 * lgs) / (z(ss$s_show) + z(ss$s_drop) + W0)
   pr_season <- cbind(ph[, "h_over"] * (1 - pshow), ph[, "h_over"] * pshow, ph[, "h_under"] * (1 - pshow), ph[, "h_under"] * pshow,
                      ph[, "h_switch"], ph[, "h_ice"], ph[, "h_blitz"])
   pr_season <- pr_season / rowSums(pr_season)
@@ -315,11 +316,11 @@ topic_coverage <- function(BL) {
   # ---- the label ----
   cross <- dcast(P[, .N, by = .(cov, scov)], cov ~ scov, value.var = "N", fill = 0)
   cross <- cross[match(c("over", "under", "switch", "ice", "blitz"), cov)]
-  scov_lv <- intersect(c("soft", "show", "switch", "ice", "blitz", "none"), names(cross))
+  scov_lv <- intersect(c("drop", "show", "switch", "ice", "blitz", "none"), names(cross))
   cross[, n := rowSums(.SD), .SDcols = scov_lv]
   cnt_tab <- data.table(call = JOINT_LV, n = as.integer(cnt), share = as.numeric(cnt) / n7,
                         bhr = c("over", "over", "under", "under", "switch", "ice", "blitz"),
-                        scr = c("soft", "show", "soft", "show", "switch", "ice", "blitz"),
+                        scr = c("drop", "show", "drop", "show", "switch", "ice", "blitz"),
                         games = vapply(JOINT_LV, function(l) uniqueN(L[joint7 == l]$game), 0L))
   hv <- attr(S, "hv")
   sv <- attr(S, "sv")
@@ -331,7 +332,7 @@ topic_coverage <- function(BL) {
   s_share_sea <- sea_s / sum(S$s_tot)
   dir10 <- P[direct == TRUE]
   h_cmp_lv <- c("over", "under", "switch", "ice", "blitz")
-  s_cmp_lv <- c("soft", "show", "switch", "ice", "blitz")
+  s_cmp_lv <- c("drop", "show", "switch", "ice", "blitz")
 
   # ---- tracking traces ----
   lines_lv <- setdiff(JOINT_LV, "blitz")
@@ -355,7 +356,7 @@ topic_coverage <- function(BL) {
             d_bd = "handler to his own defender", d_sd = "handler to screener's defender", d_def = "defender to defender",
             h_lvl = "handler: level vs screen")
   contrasts <- list(list(name = "Under or over (the handler's defender)", ids = P[cov %in% c("over", "under"), .(id, g = cov == "under")]),
-                    list(name = "Show or soft (the screener's defender, over and under picks)", ids = P[cov %in% c("over", "under") & scov %in% c("show", "soft"), .(id, g = scov == "show")]),
+                    list(name = "Show or drop (the screener's defender, over and under picks)", ids = P[cov %in% c("over", "under") & scov %in% c("show", "drop"), .(id, g = scov == "show")]),
                     list(name = "Switch or not (switch against over and under picks)", ids = P[scheme %in% c("switch", "over/under"), .(id, g = scheme == "switch")]))
   CN <- vapply(contrasts, `[[`, "", "name")
   SEP <- rbindlist(lapply(contrasts, function(cc) {
@@ -404,7 +405,7 @@ topic_coverage <- function(BL) {
   sd_mix <- mix_by(L, c("sd_canon", "sd_name", "def_name"), min_n = 20)
   sd_mix[, show_ou := (`over · show` + `under · show`) / pmax(1e-9, 1 - switch - ice - blitz)]
   bd_mix <- mix_by(L, c("bd_canon", "bd_name", "def_name"), min_n = 20)
-  bd_mix[, under_ou := (`under · soft` + `under · show`) / pmax(1e-9, 1 - switch - ice - blitz)]
+  bd_mix[, under_ou := (`under · drop` + `under · show`) / pmax(1e-9, 1 - switch - ice - blitz)]
   setorder(L, game, def_team, f0)
   L[, prev := shift(joint7), by = .(game, def_team)]
   L[, prev_sd := shift(joint7), by = .(game, def_team, SD)]
@@ -415,9 +416,9 @@ topic_coverage <- function(BL) {
   SH[, `:=`(under = h_under / h_called, od3p = od3m / pmax(1, od3))]
   lg_od3p <- S[, sum(od3m, na.rm = TRUE) / sum(od3, na.rm = TRUE)]
   SS <- S[s_called >= 80]
-  SS[, soft := s_soft / s_called]
+  SS[, drop := s_drop / s_called]
   r_under <- SH[, cor(od3_100, under)]
-  r_soft <- SS[, cor(pop, soft)]
+  r_drop <- SS[, cor(pop, drop)]
   L <- merge(L, S[, .(h_canon = canon, h_od3 = od3_100)], by = "h_canon", all.x = TRUE)
   L <- merge(L, S[, .(s_canon = canon, s_pop = pop)], by = "s_canon", all.x = TRUE)
   h_lv <- c("under 3 per 100", "3-8 per 100", "8+ per 100")
@@ -560,7 +561,7 @@ topic_coverage <- function(BL) {
              spot_angle = "angle around the hoop", approach = "approach angle", time_to_act = "time to act", since_prev = "seconds since the previous screen")
     gsep <- rbindlist(lapply(names(gfe), function(f) FTm[, {
       ou <- cov %in% c("over", "under")
-      ss <- ou & scov %in% c("show", "soft")
+      ss <- ou & scov %in% c("show", "drop")
       a_uo <- auc(get(f)[ou], cov[ou] == "under")
       a_ss <- auc(get(f)[ss], scov[ss] == "show")
       a_sw <- auc(get(f), call == "switch")
@@ -587,7 +588,7 @@ topic_coverage <- function(BL) {
                        gmix("tta_band", "Time to act", "By time to act", levels(G$tta_band), "Shot clock or game clock, whichever runs out first"),
                        TABLE("How well each new measure separates the calls on its own (AUC, either direction)", limit = 10, rows = gsep_w, cols = list(col("measure", "Measure", title = "Measured at that moment"),
                                                                                                                                                         col("uo_m04", "−0.4 s", "num2", group = "Under or over", title = "0.4 s before the tag"), col("uo_0", "Tag", "num2", group = "Under or over", title = "At the tag"),
-                                                                                                                                                        col("ss_m04", "−0.4 s", "num2", group = "Show or soft", title = "0.4 s before the tag"), col("ss_0", "Tag", "num2", group = "Show or soft", title = "At the tag"),
+                                                                                                                                                        col("ss_m04", "−0.4 s", "num2", group = "Show or drop", title = "0.4 s before the tag"), col("ss_0", "Tag", "num2", group = "Show or drop", title = "At the tag"),
                                                                                                                                                         col("sw_m04", "−0.4 s", "num2", group = "Switch or not", title = "0.4 s before the tag"), col("sw_0", "Tag", "num2", group = "Switch or not", title = "At the tag"))),
                        if (!is.null(PT)) TABLE("Adding them to the four-player logistic model (held-out log loss, lower is better)", limit = 40,
                                                rows = PT[model != "base (shot clock)"], cols = list(col("t", "Seconds", "num1", title = "Seconds from the screen tag"), col("model", "Model", title = "What the base model gets added"),
@@ -609,9 +610,9 @@ topic_coverage <- function(BL) {
                                 KPI("Usable joint calls", int(n7), sprintf("%d with screener call 'none' left out", n_all - n7)),
                                 KPI("Most common call", maj, sprintf("%s of picks", pct(max(cnt) / n7))),
                                 KPI("Rarest calls", sprintf("%d ice · %d blitz", cnt[["ice"]], cnt[["blitz"]]), "too few to learn from")),
-                           BUL("SkillCorner labels every pick twice. **bhrDefType** is the ball handler's defender: over, under, switch, ice or blitz ('none' is documented but never used in these games). **scrDefType** is the screener's defender: soft, show, switch, ice, blitz or none",
-                               "**Switch, ice and blitz are always called for both defenders together**, and over or under always pairs with soft, show or none. So the two fields are really one call with seven values",
-                               "The seven joint calls match the rows of the coaching table: over · soft (drop), over · show (hedge), under · soft, under · show, switch, ice and blitz"),
+                           BUL("SkillCorner labels every pick twice. **bhrDefType** is the ball handler's defender: over, under, switch, ice or blitz ('none' is documented but never used in these games). **scrDefType** is the screener's defender: drop (SkillCorner's label is soft), show, switch, ice, blitz or none",
+                               "**Switch, ice and blitz are always called for both defenders together**, and over or under always pairs with drop, show or none. So the two fields are really one call with seven values",
+                               "The seven joint calls match the rows of the coaching table: over · drop, over · show (hedge), under · drop, under · show, switch, ice and blitz"),
                            TABLE("Ball handler's call (rows) against screener's call (columns)", limit = 6, rows = cross,
                                  cols = c(list(col("cov", "Handler's defender", title = "bhrDefType, the call on the ball handler's defender")),
                                           lapply(scov_lv, function(s) col(s, s, "int", group = "Screener's defender", title = sprintf("Picks where the screener's defender was called %s", s))),
@@ -629,7 +630,7 @@ topic_coverage <- function(BL) {
                                 COLS("Screener's defender: ten games vs season", s_cmp_lv, labels = TRUE,
                                      list(SERIES1("ten games (direct picks)", sapply(s_cmp_lv, function(l) mean(dir10$scov == l)), PAL[1]),
                                           SERIES1("season, 293 games (direct picks)", s_share_sea[s_cmp_lv], PAL[2])))),
-                           TAKE(sprintf("Over · soft and over · show together are %s of the calls; always guessing the commoner one is right %s of the time", pct((cnt[["over · soft"]] + cnt[["over · show"]]) / n7), pct(max(cnt) / n7)),
+                           TAKE(sprintf("Over · drop and over · show together are %s of the calls; always guessing the commoner one is right %s of the time", pct((cnt[["over · drop"]] + cnt[["over · show"]]) / n7), pct(max(cnt) / n7)),
                                 sprintf("The season mix is close to the sample's: over %s, under %s and switch %s of season direct picks. Only %s of %s season direct picks have no call on the handler's defender and %s none on the screener's",
                                         pct(h_share_sea[["over"]]), pct(h_share_sea[["under"]]), pct(h_share_sea[["switch"]]),
                                         int(sum(S$h_tot) - sum(sea_h)), int(sum(S$h_tot)), int(sum(S$s_tot) - sum(sea_s))),
@@ -638,7 +639,7 @@ topic_coverage <- function(BL) {
                    SECTION("cv-motion", "What each call looks like in the tracking",
                            P("For every pick, the four players of the action are followed from 3 s before to 2 s after the pick frame. Lines are averages per joint call (blitz left out: 4 picks). The dashed line is the pick frame."),
                            BUL(sprintf("**Time 0 is the screen.** The handler passes closest to the screener a median %.1f s after picks.frame (middle half %.1f to %.1f s)", median(closest$t), quantile(closest$t, .25), quantile(closest$t, .75)),
-                               "**Level vs screen** = the player's distance to the hoop minus the screen spot's, in feet. Positive is above the screen (farther from the hoop), negative below it. Over keeps the handler's defender above, under takes him below; show brings the screener's defender up toward the ball, soft keeps him back",
+                               "**Level vs screen** = the player's distance to the hoop minus the screen spot's, in feet. Positive is above the screen (farther from the hoop), negative below it. Over keeps the handler's defender above, under takes him below; show brings the screener's defender up toward the ball, drop keeps him back",
                                sprintf("**Who is who.** ballhandlerDefId and screenerDefId name the defenders before any switch. The matchups table agrees on %s of picks just before the screen", pct(mk_pre))),
                            GRID(trace_chart("bd_lvl", "Handler's defender: level vs the screen", "ft above (+) or below (−)"),
                                 trace_chart("sd_lvl", "Screener's defender: level vs the screen", "ft above (+) or below (−)"),
@@ -650,10 +651,10 @@ topic_coverage <- function(BL) {
                                                                                                                                    col("n", "Picks", "int", title = "Picks with a matchup row for the handler 1.5 s after the pick"),
                                                                                                                                    col("sd", "Screener's defender", "pct", title = "Share where the handler's assigned defender is now the screener's defender"),
                                                                                                                                    col("bd", "Own defender", "pct", title = "Share where the handler's assigned defender is still his original defender"))),
-                           TAKE(sprintf("Under: the handler's defender is %.1f ft below the screen 0.4 s after the pick; with over he is still %.1f ft above it", -ag("under · soft", 0.4, "bd_lvl"), ag("over · soft", 0.4, "bd_lvl")),
-                                sprintf("Show: the screener's defender is %.1f ft from the handler 0.4 s after the pick, against %.1f ft for soft (both with over)", ag("over · show", 0.4, "d_sd"), ag("over · soft", 0.4, "d_sd")),
+                           TAKE(sprintf("Under: the handler's defender is %.1f ft below the screen 0.4 s after the pick; with over he is still %.1f ft above it", -ag("under · drop", 0.4, "bd_lvl"), ag("over · drop", 0.4, "bd_lvl")),
+                                sprintf("Show: the screener's defender is %.1f ft from the handler 0.4 s after the pick, against %.1f ft for drop (both with over)", ag("over · show", 0.4, "d_sd"), ag("over · drop", 0.4, "d_sd")),
                                 sprintf("Switch: by +2 s the handler's own defender is %.1f ft away and the screener's defender %.1f ft", ag("switch", 2, "d_bd"), ag("switch", 2, "d_sd")),
-                                sprintf("Under picks start higher: 1 s before the pick the handler is %.1f ft above the screen on under · soft picks, %.1f ft on over · show", ag("under · soft", -1, "h_lvl"), ag("over · show", -1, "h_lvl")),
+                                sprintf("Under picks start higher: 1 s before the pick the handler is %.1f ft above the screen on under · drop picks, %.1f ft on over · show", ag("under · drop", -1, "h_lvl"), ag("over · show", -1, "h_lvl")),
                                 sprintf("The matchups table backs the switch label: %s of switches hand the handler to the screener's defender, against %s of over/under picks", pct(mk[scheme == "switch"]$sd), pct(mk[scheme == "over/under"]$sd))),
                            CAVEAT("Averages hide spread: single picks overlap a lot, which the next section measures",
                                   sprintf("The ice lines rest on %d picks", cnt[["ice"]]))),
@@ -666,12 +667,12 @@ topic_coverage <- function(BL) {
                            TABLE("Best single measure at each moment", limit = 10, rows = best_tab, cols = list(col("t", "Seconds", "num1", title = "Seconds from the pick frame"),
                                                                                                                 col("uo", "AUC", "num2", group = "Under or over", title = "Best separation of any single measure at that moment"),
                                                                                                                 col("uo_m", "Best measure", group = "Under or over", title = "The measure that separates best at that moment"),
-                                                                                                                col("ss", "AUC", "num2", group = "Show or soft", title = "Best separation of any single measure at that moment"),
-                                                                                                                col("ss_m", "Best measure", group = "Show or soft", title = "The measure that separates best at that moment"),
+                                                                                                                col("ss", "AUC", "num2", group = "Show or drop", title = "Best separation of any single measure at that moment"),
+                                                                                                                col("ss_m", "Best measure", group = "Show or drop", title = "The measure that separates best at that moment"),
                                                                                                                 col("sw", "AUC", "num2", group = "Switch or not", title = "Best separation of any single measure at that moment"),
                                                                                                                 col("sw_m", "Best measure", group = "Switch or not", title = "The measure that separates best at that moment"))),
                            TAKE(sprintf("Under or over is barely visible 1 s before the screen (best AUC %.2f) and nearly certain 0.4 s after it (%.2f)", best_at(1, -1)$sep, best_at(1, 0.4)$sep),
-                                sprintf("Show or soft shows earliest: the screener's defender's level separates %.2f at −0.4 s and %.2f at the pick frame", sep_at(2, "sd_lvl", -0.4), sep_at(2, "sd_lvl", 0)),
+                                sprintf("Show or drop shows earliest: the screener's defender's level separates %.2f at −0.4 s and %.2f at the pick frame", sep_at(2, "sd_lvl", -0.4), sep_at(2, "sd_lvl", 0)),
                                 sprintf("A switch shows last: best %.2f at the pick frame, %.2f at +1 s and %.2f at +2 s", best_at(3, 0)$sep, best_at(3, 1)$sep, best_at(3, 2)$sep),
                                 "So a before-the-screen model has to lean on the defenders' set-up and on context, which alone says little (section 7). A model allowed to look 0.5-1 s past the screen is mostly reading a label already visible in the tracking"),
                            CAVEAT("One measure at one moment is a floor: a model combining measures and frames will separate better, especially before the screen",
@@ -711,34 +712,34 @@ topic_coverage <- function(BL) {
                                sprintf("The same screener's defender repeats his own previous call %s of the time", pct(rep_sd))),
                            TABLE("Screener's defenders with 20+ picks", limit = 15, rows = mix_rows(copy(sd_mix))[order(-n)], cols = c(list(col("sd_name", "Screener's defender", title = "The defender of the screener (screenerDefId)"), col("def_name", "Team"),
                                                                                                                                             col("n", "Picks", "int", title = "Picks in which he guarded the screener"),
-                                                                                                                                            col("show_ou", "Show share", "pct", title = "Among his over and under picks, the share where he showed rather than played soft")), mix_cols(base))),
+                                                                                                                                            col("show_ou", "Show share", "pct", title = "Among his over and under picks, the share where he showed rather than played drop")), mix_cols(base))),
                            TABLE("Ball handler's defenders with 20+ picks", limit = 15, rows = mix_rows(copy(bd_mix))[order(-n)], cols = c(list(col("bd_name", "Handler's defender", title = "The defender of the ball handler (ballhandlerDefId)"), col("def_name", "Team"),
                                                                                                                                                 col("n", "Picks", "int", title = "Picks in which he guarded the ball handler"),
                                                                                                                                                 col("under_ou", "Under share", "pct", title = "Among his over and under picks, the share where he went under")), mix_cols(base))),
                            H("Does the attacker's shooting change the call? (whole season)"),
-                           P("The season files give, for every ACB player, the calls he faced as a handler and as a screener over 293 games. The coaching logic says defenders go under non-shooters and drop (soft) against rollers rather than poppers."),
+                           P("The season files give, for every ACB player, the calls he faced as a handler and as a screener over 293 games. The coaching logic says defenders go under non-shooters and drop against rollers rather than poppers."),
                            GRID(SCAT("Handlers: going under against off-the-dribble three volume", points = SH[, .(x = r2(od3_100, 1), y = r2(under, 3), g = as.integer(od3p < lg_od3p),
                                                                                                                    tip = sprintf("%s\n%d called picks as handler\n%.1f off-dribble 3PA per 100 possessions\n%.0f%% under", name, h_called, od3_100, 100 * under))],
                                      groups = c("off-dribble 3P% at or above league", "below league"), xlabel = "season off-dribble 3PA per 100 possessions",
                                      ylabel = "share of his picks defended under", yfmt = "pct", radius = 4,
                                      note = sprintf("Handlers with 100+ called direct picks (%d). Correlation %.2f", nrow(SH), r_under)),
-                                SCAT("Screeners: soft (drop) against how often he pops for three", points = SS[, .(x = r2(pop, 3), y = r2(soft, 3), g = 0L,
-                                                                                                                   tip = sprintf("%s\n%d called picks as screener\n%.1f%% of his picks end in his own three\n%.0f%% soft", name, s_called, 100 * pop, 100 * soft))],
-                                     groups = c("screeners"), xlabel = "share of his picks ending in his own three-point attempt", ylabel = "share of his picks defended soft",
-                                     xfmt = "pct", yfmt = "pct", radius = 4, note = sprintf("Screeners with 80+ called direct picks (%d). Correlation %.2f", nrow(SS), r_soft))),
+                                SCAT("Screeners: drop against how often he pops for three", points = SS[, .(x = r2(pop, 3), y = r2(drop, 3), g = 0L,
+                                                                                                                   tip = sprintf("%s\n%d called picks as screener\n%.1f%% of his picks end in his own three\n%.0f%% drop", name, s_called, 100 * pop, 100 * drop))],
+                                     groups = c("screeners"), xlabel = "share of his picks ending in his own three-point attempt", ylabel = "share of his picks defended drop",
+                                     xfmt = "pct", yfmt = "pct", radius = 4, note = sprintf("Screeners with 80+ called direct picks (%d). Correlation %.2f", nrow(SS), r_drop))),
                            GRID(RATES("Ten games: under rate by the handler's season off-dribble 3PA", lapply(h_lv, function(l) {
                              d <- L[h_tier %in% l & cov %in% c("over", "under")]
                              rrow(l, sum(d$cov == "under"), nrow(d))
                            }),
                                       ref = mean(OU$cov == "under"), unit = "of over and under picks went under", label_width = 130),
-                                RATES("Ten games: soft rate by how often the screener pops (season)", lapply(s_lv, function(l) {
-                                  d <- L[s_tier %in% l & scov %in% c("show", "soft")]
-                                  rrow(l, sum(d$scov == "soft"), nrow(d))
+                                RATES("Ten games: drop rate by how often the screener pops (season)", lapply(s_lv, function(l) {
+                                  d <- L[s_tier %in% l & scov %in% c("show", "drop")]
+                                  rrow(l, sum(d$scov == "drop"), nrow(d))
                                 }),
-                                      ref = mean(L[scov %in% c("show", "soft")]$scov == "soft"), unit = "of show and soft picks were soft", label_width = 140)),
+                                      ref = mean(L[scov %in% c("show", "drop")]$scov == "drop"), unit = "of show and drop picks were drop", label_width = 140)),
                            TAKE(sprintf("Defenses lean on different calls, but within a game the order looks random: %s repeats against %s by chance. A team's mix matters; its last call adds nothing", pct(rep_all), pct(rep_exp)),
                                 sprintf("Season-wide, handlers who take more off-the-dribble threes are defended under %s often (correlation %.2f)", if (r_under < 0) "less" else "more", r_under),
-                                sprintf("Screeners who pop more see %s soft coverage (correlation %.2f)", if (r_soft < 0) "less" else "more", r_soft)),
+                                sprintf("Screeners who pop more see %s drop coverage (correlation %.2f)", if (r_drop < 0) "less" else "more", r_drop)),
                            CAVEAT("The season files include the ten games (10 of 293): a small overlap, but a leak if used as model input without care",
                                   "There is no defensive season file, so a defense's own season scheme cannot be measured, only what each attacker faced")),
 
@@ -770,12 +771,12 @@ topic_coverage <- function(BL) {
                            H("Simple baselines"),
                            BUL("Each baseline predicts a pick's call from the shares of calls in a reference group, with one pick of each call added so nothing gets probability zero, and the league mix added with the weight of five picks",
                                "Groups built from games are built without the pick's own game (leave one game out). 'Earlier calls' and 'previous call' use only picks before this one in the same game",
-                               "The season baseline multiplies the handler's season share of over, under, switch, ice and blitz by the screener's season share of show and soft, each pulled toward the league with the weight of 20 picks",
+                               "The season baseline multiplies the handler's season share of over, under, switch, ice and blitz by the screener's season share of show and drop, each pulled toward the league with the weight of 20 picks",
                                sprintf("**Accuracy** = how often the most likely call was right. **Log loss** = the average of minus the log of the probability given to the true call; lower is better, and guessing all seven calls equally scores %.2f", ll_unif)),
                            TABLE("Baselines on the seven-call label", limit = 8, rows = BS, cols = list(col("base", "Baseline", title = "Where the call shares come from"), col("n", "Picks", "int", title = "Picks scored"),
                                                                                                         col("acc", "Accuracy", "pct", title = "Share of picks where the most likely call was the true call"),
                                                                                                         col("ll", "Log loss", "num2", ref = BS$ll[1], scale = 0.15, low = TRUE, title = "Average of minus the log of the probability given to the true call. Lower is better"))),
-                           TAKE(sprintf("The bar from league shares alone: log loss %.2f. Its accuracy is only %s because over · soft and over · show are nearly tied, so which one it picks flips from game to game", BS$ll[1], pct(BS$acc[1])),
+                           TAKE(sprintf("The bar from league shares alone: log loss %.2f. Its accuracy is only %s because over · drop and over · show are nearly tied, so which one it picks flips from game to game", BS$ll[1], pct(BS$acc[1])),
                                 sprintf("No honest look-up moves log loss by more than %.2f (best: '%s', %.2f). Context alone says little about the call", BS$ll[1] - min(BS$ll[1:6]), BS$base[which.min(BS$ll[1:6])], min(BS$ll[1:6])),
                                 sprintf("Knowing a defense's whole-game mix (cheating, it includes the answer) would give %.2f: that is roughly the most a team-scheme prior could be worth", BS$ll[7]),
                                 "So the real signal must come from the tracking around the screen (section 3), which is the case for a sequence model",
@@ -783,7 +784,7 @@ topic_coverage <- function(BL) {
 
                    SECTION("cv-plan", "What this means for a transformer",
                            BUL("**Decide the task first.** Predicting from frames up to the screen is forecasting. Letting the model see 0.5-1 s past it is mostly recognising a call already visible in the tracking (section 3). Both are useful, but they answer different coaching questions",
-                               sprintf("**Label.** Use the joint call. %d of the seven have under 20 picks, so a practical version has five values (over · soft, over · show, under · soft, under · show, switch), or two heads (handler: over, under or switch; screener: soft, show or switch)", sum(cnt < 20)),
+                               sprintf("**Label.** Use the joint call. %d of the seven have under 20 picks, so a practical version has five values (over · drop, over · show, under · drop, under · show, switch), or two heads (handler: over, under or switch; screener: drop, show or switch)", sum(cnt < 20)),
                                "**Tokens.** One token per player per frame, with fixed roles for the four players of the action (handler, screener and their two defenders) plus the other six. Coordinates in the viewer frame (attacking +x, screen y corrected), possibly also relative to the screen spot",
                                "**Context.** The shot clock, how high the handler starts, and the handler's and screener's season shooting shift the mix, but only a little (section 7). The defense's earlier calls did not help. Context tokens are worth including, not worth relying on",
                                "**Never inputs.** bhrOutcomes, scrOutcomes, direct, and anything about the shot or points: all are recorded after the call",

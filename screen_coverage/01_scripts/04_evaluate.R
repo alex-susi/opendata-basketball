@@ -151,7 +151,7 @@ print(sc[off %in% c(-50, -25, -10, 0, 10, 25), c("t", TF1, TF2, LB2, LB0), with 
 
 # The ball defender's and the big's part of each joint call.
 BD_OF <- c("over", "over", "under", "under", "switch")
-BIG_OF <- c("show", "soft", "soft", "show", "switch")
+BIG_OF <- c("show", "drop", "drop", "show", "switch")
 part_call <- function(Pm, of) {
   lv <- unique(of)
   lv[max.col(sapply(lv, function(l) rowSums(Pm[, of == l, drop = FALSE])), ties.method = "first")]

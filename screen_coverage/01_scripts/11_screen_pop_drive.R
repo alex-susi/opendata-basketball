@@ -144,9 +144,9 @@ stopifnot(all(chk$matches_cache), all(chk$future_scrambled_same), all(chk$contro
 ## 03 - DESCRIPTIVE: EACH DEFENDER'S CALL BY EACH MEASURE ----------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-BIG_OF <- c("show", "soft", "soft", "show", "switch")
+BIG_OF <- c("show", "drop", "drop", "show", "switch")
 BD_OF <- c("over", "over", "under", "under", "switch")
-LV <- list(big = c("show", "soft", "switch"), guard = c("over", "under", "switch"))
+LV <- list(big = c("show", "drop", "switch"), guard = c("over", "under", "switch"))
 X[, big := BIG_OF[match(call, CALLS)]]
 X[, guard := BD_OF[match(call, CALLS)]]
 wilson <- function(k, n, z = 1.96) {
@@ -193,7 +193,7 @@ rates <- rbindlist(rates)
 fwrite(rates[, lapply(.SD, function(v) if (is.numeric(v)) round(v, 4) else v)], file.path(out_dir, "call_rates_by_measure.csv"))
 
 # Figures: the big by pop open space, and the guard by the direct-lane on-ball gap.
-COL <- list(big = c(show = "#2a78d6", soft = "#eb6834", switch = "#1baf7a"),
+COL <- list(big = c(show = "#2a78d6", drop = "#eb6834", switch = "#1baf7a"),
             guard = c(over = "#2a78d6", under = "#eb6834", switch = "#1baf7a"))
 draw_rates <- function(m, who, file, title) {
   fig <- rates[measure == m & defender == who]

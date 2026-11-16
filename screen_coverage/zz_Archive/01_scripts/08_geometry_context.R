@@ -51,7 +51,7 @@ BASELINE_X <- 14 * FT
 HALF_W <- 7.5 * FT
 LOOK <- 12L                                     # 0.48 s
 OFFS <- c(-25L, -20L, -15L, -10L, -5L, 0L, 10L)  # -1.0, -0.8, -0.6, -0.4, -0.2, 0, +0.4 s
-CALLS <- c("over + show", "over + soft", "under + soft", "under + show", "switch")
+CALLS <- c("over + show", "over + drop", "under + drop", "under + show", "switch")
 games <- as.integer(jsonlite::fromJSON(file.path(root, "data", "matches.json"))$id)
 bundle <- function(g) readRDS(file.path(root, "web", "cache", "explore", sprintf("bundle_%d.rds", g)))
 

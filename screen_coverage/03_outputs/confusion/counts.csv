@@ -1,77 +1,77 @@
 model,part,moment,actual,read,screens
 live transformer,joint,main curve,over + show,over + show,342.84
-live transformer,joint,main curve,over + show,over + soft,111.46
-live transformer,joint,main curve,over + show,under + soft,10.72
+live transformer,joint,main curve,over + show,over + drop,111.46
+live transformer,joint,main curve,over + show,under + drop,10.72
 live transformer,joint,main curve,over + show,under + show,7.41
 live transformer,joint,main curve,over + show,switch,24.57
-live transformer,joint,main curve,over + soft,over + show,104.95
-live transformer,joint,main curve,over + soft,over + soft,343.53
-live transformer,joint,main curve,over + soft,under + soft,20.27
-live transformer,joint,main curve,over + soft,under + show,3.87
-live transformer,joint,main curve,over + soft,switch,10.39
-live transformer,joint,main curve,under + soft,over + show,22
-live transformer,joint,main curve,under + soft,over + soft,67.3
-live transformer,joint,main curve,under + soft,under + soft,56.82
-live transformer,joint,main curve,under + soft,under + show,6.97
-live transformer,joint,main curve,under + soft,switch,9.91
+live transformer,joint,main curve,over + drop,over + show,104.95
+live transformer,joint,main curve,over + drop,over + drop,343.53
+live transformer,joint,main curve,over + drop,under + drop,20.27
+live transformer,joint,main curve,over + drop,under + show,3.87
+live transformer,joint,main curve,over + drop,switch,10.39
+live transformer,joint,main curve,under + drop,over + show,22
+live transformer,joint,main curve,under + drop,over + drop,67.3
+live transformer,joint,main curve,under + drop,under + drop,56.82
+live transformer,joint,main curve,under + drop,under + show,6.97
+live transformer,joint,main curve,under + drop,switch,9.91
 live transformer,joint,main curve,under + show,over + show,35.73
-live transformer,joint,main curve,under + show,over + soft,24.06
-live transformer,joint,main curve,under + show,under + soft,13.37
+live transformer,joint,main curve,under + show,over + drop,24.06
+live transformer,joint,main curve,under + show,under + drop,13.37
 live transformer,joint,main curve,under + show,under + show,20.4
 live transformer,joint,main curve,under + show,switch,15.44
 live transformer,joint,main curve,switch,over + show,78.05
-live transformer,joint,main curve,switch,over + soft,71.06
-live transformer,joint,main curve,switch,under + soft,8.58
+live transformer,joint,main curve,switch,over + drop,71.06
+live transformer,joint,main curve,switch,under + drop,8.58
 live transformer,joint,main curve,switch,under + show,9.42
 live transformer,joint,main curve,switch,switch,43.9
 live transformer,joint,-0.4 s,over + show,over + show,349
-live transformer,joint,-0.4 s,over + show,over + soft,99
-live transformer,joint,-0.4 s,over + show,under + soft,6
+live transformer,joint,-0.4 s,over + show,over + drop,99
+live transformer,joint,-0.4 s,over + show,under + drop,6
 live transformer,joint,-0.4 s,over + show,under + show,13
 live transformer,joint,-0.4 s,over + show,switch,30
-live transformer,joint,-0.4 s,over + soft,over + show,107
-live transformer,joint,-0.4 s,over + soft,over + soft,340
-live transformer,joint,-0.4 s,over + soft,under + soft,22
-live transformer,joint,-0.4 s,over + soft,under + show,0
-live transformer,joint,-0.4 s,over + soft,switch,14
-live transformer,joint,-0.4 s,under + soft,over + show,21
-live transformer,joint,-0.4 s,under + soft,over + soft,73
-live transformer,joint,-0.4 s,under + soft,under + soft,47
-live transformer,joint,-0.4 s,under + soft,under + show,9
-live transformer,joint,-0.4 s,under + soft,switch,13
+live transformer,joint,-0.4 s,over + drop,over + show,107
+live transformer,joint,-0.4 s,over + drop,over + drop,340
+live transformer,joint,-0.4 s,over + drop,under + drop,22
+live transformer,joint,-0.4 s,over + drop,under + show,0
+live transformer,joint,-0.4 s,over + drop,switch,14
+live transformer,joint,-0.4 s,under + drop,over + show,21
+live transformer,joint,-0.4 s,under + drop,over + drop,73
+live transformer,joint,-0.4 s,under + drop,under + drop,47
+live transformer,joint,-0.4 s,under + drop,under + show,9
+live transformer,joint,-0.4 s,under + drop,switch,13
 live transformer,joint,-0.4 s,under + show,over + show,46
-live transformer,joint,-0.4 s,under + show,over + soft,17
-live transformer,joint,-0.4 s,under + show,under + soft,14
+live transformer,joint,-0.4 s,under + show,over + drop,17
+live transformer,joint,-0.4 s,under + show,under + drop,14
 live transformer,joint,-0.4 s,under + show,under + show,17
 live transformer,joint,-0.4 s,under + show,switch,15
 live transformer,joint,-0.4 s,switch,over + show,80
-live transformer,joint,-0.4 s,switch,over + soft,70
-live transformer,joint,-0.4 s,switch,under + soft,8
+live transformer,joint,-0.4 s,switch,over + drop,70
+live transformer,joint,-0.4 s,switch,under + drop,8
 live transformer,joint,-0.4 s,switch,under + show,7
 live transformer,joint,-0.4 s,switch,switch,46
 live transformer,joint,0.0 s,over + show,over + show,390
-live transformer,joint,0.0 s,over + show,over + soft,77
-live transformer,joint,0.0 s,over + show,under + soft,2
+live transformer,joint,0.0 s,over + show,over + drop,77
+live transformer,joint,0.0 s,over + show,under + drop,2
 live transformer,joint,0.0 s,over + show,under + show,7
 live transformer,joint,0.0 s,over + show,switch,21
-live transformer,joint,0.0 s,over + soft,over + show,66
-live transformer,joint,0.0 s,over + soft,over + soft,401
-live transformer,joint,0.0 s,over + soft,under + soft,9
-live transformer,joint,0.0 s,over + soft,under + show,0
-live transformer,joint,0.0 s,over + soft,switch,7
-live transformer,joint,0.0 s,under + soft,over + show,4
-live transformer,joint,0.0 s,under + soft,over + soft,44
-live transformer,joint,0.0 s,under + soft,under + soft,94
-live transformer,joint,0.0 s,under + soft,under + show,13
-live transformer,joint,0.0 s,under + soft,switch,8
+live transformer,joint,0.0 s,over + drop,over + show,66
+live transformer,joint,0.0 s,over + drop,over + drop,401
+live transformer,joint,0.0 s,over + drop,under + drop,9
+live transformer,joint,0.0 s,over + drop,under + show,0
+live transformer,joint,0.0 s,over + drop,switch,7
+live transformer,joint,0.0 s,under + drop,over + show,4
+live transformer,joint,0.0 s,under + drop,over + drop,44
+live transformer,joint,0.0 s,under + drop,under + drop,94
+live transformer,joint,0.0 s,under + drop,under + show,13
+live transformer,joint,0.0 s,under + drop,switch,8
 live transformer,joint,0.0 s,under + show,over + show,15
-live transformer,joint,0.0 s,under + show,over + soft,12
-live transformer,joint,0.0 s,under + show,under + soft,18
+live transformer,joint,0.0 s,under + show,over + drop,12
+live transformer,joint,0.0 s,under + show,under + drop,18
 live transformer,joint,0.0 s,under + show,under + show,40
 live transformer,joint,0.0 s,under + show,switch,24
 live transformer,joint,0.0 s,switch,over + show,62
-live transformer,joint,0.0 s,switch,over + soft,52
-live transformer,joint,0.0 s,switch,under + soft,14
+live transformer,joint,0.0 s,switch,over + drop,52
+live transformer,joint,0.0 s,switch,under + drop,14
 live transformer,joint,0.0 s,switch,under + show,17
 live transformer,joint,0.0 s,switch,switch,66
 live transformer,guard,main curve,over,over,920.07
@@ -102,105 +102,105 @@ live transformer,guard,0.0 s,switch,over,126
 live transformer,guard,0.0 s,switch,under,37
 live transformer,guard,0.0 s,switch,switch,48
 live transformer,big,main curve,show,show,419.45
-live transformer,big,main curve,show,soft,163.84
+live transformer,big,main curve,show,drop,163.84
 live transformer,big,main curve,show,switch,22.7
-live transformer,big,main curve,soft,show,143.59
-live transformer,big,main curve,soft,soft,493.78
-live transformer,big,main curve,soft,switch,8.63
+live transformer,big,main curve,drop,show,143.59
+live transformer,big,main curve,drop,drop,493.78
+live transformer,big,main curve,drop,switch,8.63
 live transformer,big,main curve,switch,show,98.81
-live transformer,big,main curve,switch,soft,84.57
+live transformer,big,main curve,switch,drop,84.57
 live transformer,big,main curve,switch,switch,27.62
 live transformer,big,-0.4 s,show,show,435
-live transformer,big,-0.4 s,show,soft,140
+live transformer,big,-0.4 s,show,drop,140
 live transformer,big,-0.4 s,show,switch,31
-live transformer,big,-0.4 s,soft,show,149
-live transformer,big,-0.4 s,soft,soft,488
-live transformer,big,-0.4 s,soft,switch,9
+live transformer,big,-0.4 s,drop,show,149
+live transformer,big,-0.4 s,drop,drop,488
+live transformer,big,-0.4 s,drop,switch,9
 live transformer,big,-0.4 s,switch,show,100
-live transformer,big,-0.4 s,switch,soft,86
+live transformer,big,-0.4 s,switch,drop,86
 live transformer,big,-0.4 s,switch,switch,25
 live transformer,big,0.0 s,show,show,469
-live transformer,big,0.0 s,show,soft,110
+live transformer,big,0.0 s,show,drop,110
 live transformer,big,0.0 s,show,switch,27
-live transformer,big,0.0 s,soft,show,85
-live transformer,big,0.0 s,soft,soft,551
-live transformer,big,0.0 s,soft,switch,10
+live transformer,big,0.0 s,drop,show,85
+live transformer,big,0.0 s,drop,drop,551
+live transformer,big,0.0 s,drop,switch,10
 live transformer,big,0.0 s,switch,show,90
-live transformer,big,0.0 s,switch,soft,72
+live transformer,big,0.0 s,switch,drop,72
 live transformer,big,0.0 s,switch,switch,49
 logistic baseline,joint,main curve,over + show,over + show,336.46
-logistic baseline,joint,main curve,over + show,over + soft,130.81
-logistic baseline,joint,main curve,over + show,under + soft,8.11
+logistic baseline,joint,main curve,over + show,over + drop,130.81
+logistic baseline,joint,main curve,over + show,under + drop,8.11
 logistic baseline,joint,main curve,over + show,under + show,4.77
 logistic baseline,joint,main curve,over + show,switch,16.85
-logistic baseline,joint,main curve,over + soft,over + show,121.75
-logistic baseline,joint,main curve,over + soft,over + soft,335.22
-logistic baseline,joint,main curve,over + soft,under + soft,11.18
-logistic baseline,joint,main curve,over + soft,under + show,2.07
-logistic baseline,joint,main curve,over + soft,switch,12.78
-logistic baseline,joint,main curve,under + soft,over + show,33.22
-logistic baseline,joint,main curve,under + soft,over + soft,75.1
-logistic baseline,joint,main curve,under + soft,under + soft,33.57
-logistic baseline,joint,main curve,under + soft,under + show,7.81
-logistic baseline,joint,main curve,under + soft,switch,13.3
+logistic baseline,joint,main curve,over + drop,over + show,121.75
+logistic baseline,joint,main curve,over + drop,over + drop,335.22
+logistic baseline,joint,main curve,over + drop,under + drop,11.18
+logistic baseline,joint,main curve,over + drop,under + show,2.07
+logistic baseline,joint,main curve,over + drop,switch,12.78
+logistic baseline,joint,main curve,under + drop,over + show,33.22
+logistic baseline,joint,main curve,under + drop,over + drop,75.1
+logistic baseline,joint,main curve,under + drop,under + drop,33.57
+logistic baseline,joint,main curve,under + drop,under + show,7.81
+logistic baseline,joint,main curve,under + drop,switch,13.3
 logistic baseline,joint,main curve,under + show,over + show,48.77
-logistic baseline,joint,main curve,under + show,over + soft,25.54
-logistic baseline,joint,main curve,under + show,under + soft,6.18
+logistic baseline,joint,main curve,under + show,over + drop,25.54
+logistic baseline,joint,main curve,under + show,under + drop,6.18
 logistic baseline,joint,main curve,under + show,under + show,15.29
 logistic baseline,joint,main curve,under + show,switch,13.22
 logistic baseline,joint,main curve,switch,over + show,88.48
-logistic baseline,joint,main curve,switch,over + soft,73.85
-logistic baseline,joint,main curve,switch,under + soft,7.8
+logistic baseline,joint,main curve,switch,over + drop,73.85
+logistic baseline,joint,main curve,switch,under + drop,7.8
 logistic baseline,joint,main curve,switch,under + show,4.96
 logistic baseline,joint,main curve,switch,switch,35.91
 logistic baseline,joint,-0.4 s,over + show,over + show,353
-logistic baseline,joint,-0.4 s,over + show,over + soft,116
-logistic baseline,joint,-0.4 s,over + show,under + soft,7
+logistic baseline,joint,-0.4 s,over + show,over + drop,116
+logistic baseline,joint,-0.4 s,over + show,under + drop,7
 logistic baseline,joint,-0.4 s,over + show,under + show,6
 logistic baseline,joint,-0.4 s,over + show,switch,15
-logistic baseline,joint,-0.4 s,over + soft,over + show,134
-logistic baseline,joint,-0.4 s,over + soft,over + soft,331
-logistic baseline,joint,-0.4 s,over + soft,under + soft,4
-logistic baseline,joint,-0.4 s,over + soft,under + show,0
-logistic baseline,joint,-0.4 s,over + soft,switch,14
-logistic baseline,joint,-0.4 s,under + soft,over + show,45
-logistic baseline,joint,-0.4 s,under + soft,over + soft,83
-logistic baseline,joint,-0.4 s,under + soft,under + soft,18
-logistic baseline,joint,-0.4 s,under + soft,under + show,5
-logistic baseline,joint,-0.4 s,under + soft,switch,12
+logistic baseline,joint,-0.4 s,over + drop,over + show,134
+logistic baseline,joint,-0.4 s,over + drop,over + drop,331
+logistic baseline,joint,-0.4 s,over + drop,under + drop,4
+logistic baseline,joint,-0.4 s,over + drop,under + show,0
+logistic baseline,joint,-0.4 s,over + drop,switch,14
+logistic baseline,joint,-0.4 s,under + drop,over + show,45
+logistic baseline,joint,-0.4 s,under + drop,over + drop,83
+logistic baseline,joint,-0.4 s,under + drop,under + drop,18
+logistic baseline,joint,-0.4 s,under + drop,under + show,5
+logistic baseline,joint,-0.4 s,under + drop,switch,12
 logistic baseline,joint,-0.4 s,under + show,over + show,67
-logistic baseline,joint,-0.4 s,under + show,over + soft,17
-logistic baseline,joint,-0.4 s,under + show,under + soft,5
+logistic baseline,joint,-0.4 s,under + show,over + drop,17
+logistic baseline,joint,-0.4 s,under + show,under + drop,5
 logistic baseline,joint,-0.4 s,under + show,under + show,9
 logistic baseline,joint,-0.4 s,under + show,switch,11
 logistic baseline,joint,-0.4 s,switch,over + show,96
-logistic baseline,joint,-0.4 s,switch,over + soft,76
-logistic baseline,joint,-0.4 s,switch,under + soft,8
+logistic baseline,joint,-0.4 s,switch,over + drop,76
+logistic baseline,joint,-0.4 s,switch,under + drop,8
 logistic baseline,joint,-0.4 s,switch,under + show,0
 logistic baseline,joint,-0.4 s,switch,switch,31
 logistic baseline,joint,0.0 s,over + show,over + show,382
-logistic baseline,joint,0.0 s,over + show,over + soft,79
-logistic baseline,joint,0.0 s,over + show,under + soft,4
+logistic baseline,joint,0.0 s,over + show,over + drop,79
+logistic baseline,joint,0.0 s,over + show,under + drop,4
 logistic baseline,joint,0.0 s,over + show,under + show,7
 logistic baseline,joint,0.0 s,over + show,switch,25
-logistic baseline,joint,0.0 s,over + soft,over + show,99
-logistic baseline,joint,0.0 s,over + soft,over + soft,361
-logistic baseline,joint,0.0 s,over + soft,under + soft,7
-logistic baseline,joint,0.0 s,over + soft,under + show,0
-logistic baseline,joint,0.0 s,over + soft,switch,16
-logistic baseline,joint,0.0 s,under + soft,over + show,19
-logistic baseline,joint,0.0 s,under + soft,over + soft,47
-logistic baseline,joint,0.0 s,under + soft,under + soft,61
-logistic baseline,joint,0.0 s,under + soft,under + show,17
-logistic baseline,joint,0.0 s,under + soft,switch,19
+logistic baseline,joint,0.0 s,over + drop,over + show,99
+logistic baseline,joint,0.0 s,over + drop,over + drop,361
+logistic baseline,joint,0.0 s,over + drop,under + drop,7
+logistic baseline,joint,0.0 s,over + drop,under + show,0
+logistic baseline,joint,0.0 s,over + drop,switch,16
+logistic baseline,joint,0.0 s,under + drop,over + show,19
+logistic baseline,joint,0.0 s,under + drop,over + drop,47
+logistic baseline,joint,0.0 s,under + drop,under + drop,61
+logistic baseline,joint,0.0 s,under + drop,under + show,17
+logistic baseline,joint,0.0 s,under + drop,switch,19
 logistic baseline,joint,0.0 s,under + show,over + show,41
-logistic baseline,joint,0.0 s,under + show,over + soft,8
-logistic baseline,joint,0.0 s,under + show,under + soft,7
+logistic baseline,joint,0.0 s,under + show,over + drop,8
+logistic baseline,joint,0.0 s,under + show,under + drop,7
 logistic baseline,joint,0.0 s,under + show,under + show,34
 logistic baseline,joint,0.0 s,under + show,switch,19
 logistic baseline,joint,0.0 s,switch,over + show,86
-logistic baseline,joint,0.0 s,switch,over + soft,47
-logistic baseline,joint,0.0 s,switch,under + soft,6
+logistic baseline,joint,0.0 s,switch,over + drop,47
+logistic baseline,joint,0.0 s,switch,under + drop,6
 logistic baseline,joint,0.0 s,switch,under + show,12
 logistic baseline,joint,0.0 s,switch,switch,60
 logistic baseline,guard,main curve,over,over,943.24
@@ -231,29 +231,29 @@ logistic baseline,guard,0.0 s,switch,over,154
 logistic baseline,guard,0.0 s,switch,under,19
 logistic baseline,guard,0.0 s,switch,switch,38
 logistic baseline,big,main curve,show,show,404.77
-logistic baseline,big,main curve,show,soft,185.85
+logistic baseline,big,main curve,show,drop,185.85
 logistic baseline,big,main curve,show,switch,15.38
-logistic baseline,big,main curve,soft,show,158.45
-logistic baseline,big,main curve,soft,soft,474.57
-logistic baseline,big,main curve,soft,switch,12.98
+logistic baseline,big,main curve,drop,show,158.45
+logistic baseline,big,main curve,drop,drop,474.57
+logistic baseline,big,main curve,drop,switch,12.98
 logistic baseline,big,main curve,switch,show,98.33
-logistic baseline,big,main curve,switch,soft,88.76
+logistic baseline,big,main curve,switch,drop,88.76
 logistic baseline,big,main curve,switch,switch,23.92
 logistic baseline,big,-0.4 s,show,show,434
-logistic baseline,big,-0.4 s,show,soft,156
+logistic baseline,big,-0.4 s,show,drop,156
 logistic baseline,big,-0.4 s,show,switch,16
-logistic baseline,big,-0.4 s,soft,show,175
-logistic baseline,big,-0.4 s,soft,soft,459
-logistic baseline,big,-0.4 s,soft,switch,12
+logistic baseline,big,-0.4 s,drop,show,175
+logistic baseline,big,-0.4 s,drop,drop,459
+logistic baseline,big,-0.4 s,drop,switch,12
 logistic baseline,big,-0.4 s,switch,show,102
-logistic baseline,big,-0.4 s,switch,soft,88
+logistic baseline,big,-0.4 s,switch,drop,88
 logistic baseline,big,-0.4 s,switch,switch,21
 logistic baseline,big,0.0 s,show,show,479
-logistic baseline,big,0.0 s,show,soft,105
+logistic baseline,big,0.0 s,show,drop,105
 logistic baseline,big,0.0 s,show,switch,22
-logistic baseline,big,0.0 s,soft,show,128
-logistic baseline,big,0.0 s,soft,soft,498
-logistic baseline,big,0.0 s,soft,switch,20
+logistic baseline,big,0.0 s,drop,show,128
+logistic baseline,big,0.0 s,drop,drop,498
+logistic baseline,big,0.0 s,drop,switch,20
 logistic baseline,big,0.0 s,switch,show,111
-logistic baseline,big,0.0 s,switch,soft,64
+logistic baseline,big,0.0 s,switch,drop,64
 logistic baseline,big,0.0 s,switch,switch,36

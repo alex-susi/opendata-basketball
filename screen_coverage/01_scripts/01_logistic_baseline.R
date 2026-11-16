@@ -58,7 +58,7 @@ source(file.path(root, "screen_coverage", "01_scripts", "R", "past_only.R"))
 # OFFS spans -2 s to +1 s around the tag; VLAG is the velocity lag in frames; DECAY is the logistic penalty.
 OFFS <- -50:25
 VLAG <- 6L
-CALLS <- c("over + show", "over + soft", "under + soft", "under + show", "switch")
+CALLS <- c("over + show", "over + drop", "under + drop", "under + show", "switch")
 DECAY <- 1
 
 games <- as.integer(jsonlite::fromJSON(file.path(root, "data", "matches.json"))$id)

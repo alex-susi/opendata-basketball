@@ -10,7 +10,7 @@
 # calls, closeness, and the memory of contact) and turned into three numbers:
 #   switch        is it a switch?
 #   under         if not a switch: did the ball defender go under (vs over)?
-#   show          if not a switch: did the big show (vs soft)?
+#   show          if not a switch: did the big show (vs drop)?
 # The five joint calls follow: over + show = (1 - p_switch) x (1 - p_under) x p_show, and so on; switch = p_switch.
 # So the two defenders' calls share the switch decision and "under + show" borrows from every under and every show.
 
@@ -69,7 +69,7 @@ standardise_history <- function(h, norm) {
   xt
 }
 
-#' Log probability of each of the five joint calls (over + show, over + soft, under + soft, under + show, switch).
+#' Log probability of each of the five joint calls (over + show, over + drop, under + drop, under + show, switch).
 joint_logp <- function(logits) {
   ls <- nnf_logsigmoid(logits[, 1])
   lns <- nnf_logsigmoid(-logits[, 1])

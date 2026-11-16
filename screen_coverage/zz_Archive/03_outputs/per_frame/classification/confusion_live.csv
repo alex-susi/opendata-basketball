@@ -1,51 +1,51 @@
 actual,called,N,share,t
 over + show,over + show,339,0.682092555331992,-0.4
-over + show,over + soft,102,0.20523138832998,-0.4
-over + show,under + soft,9,0.0181086519114688,-0.4
+over + show,over + drop,102,0.20523138832998,-0.4
+over + show,under + drop,9,0.0181086519114688,-0.4
 over + show,under + show,9,0.0181086519114688,-0.4
 over + show,switch,38,0.0764587525150906,-0.4
-over + soft,over + show,126,0.260869565217391,-0.4
-over + soft,over + soft,310,0.641821946169772,-0.4
-over + soft,under + soft,28,0.0579710144927536,-0.4
-over + soft,under + show,4,0.0082815734989648,-0.4
-over + soft,switch,15,0.031055900621118,-0.4
-under + soft,over + show,23,0.140243902439024,-0.4
-under + soft,over + soft,74,0.451219512195122,-0.4
-under + soft,under + soft,47,0.286585365853659,-0.4
-under + soft,under + show,9,0.0548780487804878,-0.4
-under + soft,switch,11,0.0670731707317073,-0.4
+over + drop,over + show,126,0.260869565217391,-0.4
+over + drop,over + drop,310,0.641821946169772,-0.4
+over + drop,under + drop,28,0.0579710144927536,-0.4
+over + drop,under + show,4,0.0082815734989648,-0.4
+over + drop,switch,15,0.031055900621118,-0.4
+under + drop,over + show,23,0.140243902439024,-0.4
+under + drop,over + drop,74,0.451219512195122,-0.4
+under + drop,under + drop,47,0.286585365853659,-0.4
+under + drop,under + show,9,0.0548780487804878,-0.4
+under + drop,switch,11,0.0670731707317073,-0.4
 under + show,over + show,48,0.440366972477064,-0.4
-under + show,over + soft,19,0.174311926605505,-0.4
-under + show,under + soft,14,0.128440366972477,-0.4
+under + show,over + drop,19,0.174311926605505,-0.4
+under + show,under + drop,14,0.128440366972477,-0.4
 under + show,under + show,14,0.128440366972477,-0.4
 under + show,switch,14,0.128440366972477,-0.4
 switch,over + show,93,0.440758293838863,-0.4
-switch,over + soft,64,0.303317535545024,-0.4
-switch,under + soft,12,0.0568720379146919,-0.4
+switch,over + drop,64,0.303317535545024,-0.4
+switch,under + drop,12,0.0568720379146919,-0.4
 switch,under + show,3,0.014218009478673,-0.4
 switch,switch,39,0.184834123222749,-0.4
 over + show,over + show,359,0.722334004024145,0
-over + show,over + soft,84,0.169014084507042,0
-over + show,under + soft,3,0.00603621730382294,0
+over + show,over + drop,84,0.169014084507042,0
+over + show,under + drop,3,0.00603621730382294,0
 over + show,under + show,10,0.0201207243460765,0
 over + show,switch,41,0.0824949698189135,0
-over + soft,over + show,79,0.163561076604555,0
-over + soft,over + soft,379,0.784679089026915,0
-over + soft,under + soft,13,0.0269151138716356,0
-over + soft,under + show,0,0,0
-over + soft,switch,12,0.0248447204968944,0
-under + soft,over + show,5,0.0304878048780488,0
-under + soft,over + soft,38,0.231707317073171,0
-under + soft,under + soft,93,0.567073170731707,0
-under + soft,under + show,13,0.0792682926829268,0
-under + soft,switch,15,0.0914634146341463,0
+over + drop,over + show,79,0.163561076604555,0
+over + drop,over + drop,379,0.784679089026915,0
+over + drop,under + drop,13,0.0269151138716356,0
+over + drop,under + show,0,0,0
+over + drop,switch,12,0.0248447204968944,0
+under + drop,over + show,5,0.0304878048780488,0
+under + drop,over + drop,38,0.231707317073171,0
+under + drop,under + drop,93,0.567073170731707,0
+under + drop,under + show,13,0.0792682926829268,0
+under + drop,switch,15,0.0914634146341463,0
 under + show,over + show,19,0.174311926605505,0
-under + show,over + soft,8,0.073394495412844,0
-under + show,under + soft,20,0.18348623853211,0
+under + show,over + drop,8,0.073394495412844,0
+under + show,under + drop,20,0.18348623853211,0
 under + show,under + show,39,0.357798165137615,0
 under + show,switch,23,0.211009174311927,0
 switch,over + show,62,0.293838862559242,0
-switch,over + soft,44,0.208530805687204,0
-switch,under + soft,11,0.052132701421801,0
+switch,over + drop,44,0.208530805687204,0
+switch,under + drop,11,0.052132701421801,0
 switch,under + show,19,0.0900473933649289,0
 switch,switch,75,0.355450236966825,0

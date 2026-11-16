@@ -8,7 +8,7 @@
   //                       far, who has had the ball, the game state, free throws.
   //   Data Quality        the chance's tracking quality index and how many players are extrapolated now.
   //   Coverage Read       from 2 s before an on-ball screen to 1 s after it: the live screen-coverage model's probability for
-  //                       each defender (ball: over/under/switch; screener: show/soft/switch) and the most likely joint
+  //                       each defender (ball: over/under/switch; screener: show/drop/switch) and the most likely joint
   //                       call at this frame (lib/coverage.ts), the screener and ballhandler, and a table of the
   //                       expected call per defender and combined against the tagged call (TBD until the screen).
   // The court's drawing is in lib/annotate.ts; the text in lib/context.ts.

@@ -32,7 +32,7 @@ const START_LABELS: Record<string, string> = {
 };
 
 const COVERAGE: Record<string, string> = {
-  ice: "ICE", switch: "switch", over: "over", under: "under", blitz: "blitz", soft: "soft", show: "show",
+  ice: "ICE", switch: "switch", over: "over", under: "under", blitz: "blitz", drop: "drop", show: "show",
   trail: "trail", whip: "whip", ride: "ride", "top lock": "top lock", drop: "drop", jam: "jam",
 };
 

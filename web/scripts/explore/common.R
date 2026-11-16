@@ -352,7 +352,7 @@ game_bundle <- function(g, rebuild = FALSE) {
   })
   picks <- act(ev$picks, "pick", "ballhandlerId", "ballhandlerDefId",
                extra = list(screener = function(r) xi(r, "screenerId"), sdef = function(r) xi(r, "screenerDefId"),
-                            cov = function(r) xc(r, "bhrDefType"), scov = function(r) xc(r, "scrDefType"),
+                            cov = function(r) xc(r, "bhrDefType"), scov = function(r) sub("^soft$", "drop", xc(r, "scrDefType")),
                             spot = function(r) xc(r, "locationType")))
   handoffs <- act(ev$handoffs, "handoff", "receiverId", "receiverDefId",
                   extra = list(screener = function(r) xi(r, "setterId"), sdef = function(r) xi(r, "setterDefId"),

@@ -146,7 +146,7 @@ event_counts <- function(ev, ch) {
 
   # on-ball screens, with the coverage each defender played
   bh_type <- chr_field(ev$picks, "bhrDefType")
-  scr_type <- chr_field(ev$picks, "scrDefType")
+  scr_type <- sub("^soft$", "drop", chr_field(ev$picks, "scrDefType"))
   called <- function(type) !is.na(type) & type != "none"
   out$picks <- rbind(per(ev$picks, "ballhandlerId", "pick_bh"), per(ev$picks, "screenerId", "pick_scr"),
                      per(ev$picks, "ballhandlerDefId", "d_pick_bh"), per(ev$picks, "screenerDefId", "d_pick_scr"),

@@ -122,7 +122,7 @@ game_annotations <- function(game_id) {
     ann_table(recs, function(r) {
       l <- ann_loc(r, "location")
       out <- data.table(f = ann_int(r, "frame"), kind = kind, x = l[[1]], y = l[[2]], scr = ann_int(r, scr),
-                        use = ann_int(r, use), covUse = ann_chr(r, cov_use), covScr = ann_chr(r, cov_scr),
+                        use = ann_int(r, use), covUse = ann_chr(r, cov_use), covScr = sub("^soft$", "drop", ann_chr(r, cov_scr)),
                         spot = if (kind == "off_ball_screen") NA_character_ else ann_chr(r, "locationType"))
       # The screener's tracked position in the viewer's frame, and which sign of y lands nearer it.
       lh <- left_hoop[ann_chr(r, "possessionId")]
@@ -289,7 +289,8 @@ season_figures <- function() {
   shots <- sum_by(agg("shots"), shot_cols)
   drives <- sum_by(agg("drives"), c("total_drives", "successful_drives", "points"))
   h_cov <- c("blitz", "ice", "over", "switch", "under")
-  s_cov <- c("blitz", "ice", "show", "soft", "switch")
+  # The screener's defender: "drop" here, "soft" in the aggregate CSV column names as SkillCorner delivers them.
+  s_cov <- c(blitz = "blitz", ice = "ice", show = "show", drop = "soft", switch = "switch")
   pick_cols <- c("handler_total_picks", "handler_points", "screener_total_picks", "screener_points",
                  paste0("handler_picks_vs_", h_cov), paste0("handler_points_vs_", h_cov),
                  paste0("screener_picks_vs_", s_cov), paste0("screener_points_vs_", s_cov))
@@ -319,7 +320,7 @@ season_figures <- function() {
                 handler = pair(p, "handler_total_picks", "handler_points"),
                 screener = pair(p, "screener_total_picks", "screener_points"),
                 handlerVs = if (nrow(p)) lapply(setNames(h_cov, h_cov), function(c) I(c(p[[paste0("handler_picks_vs_", c)]], p[[paste0("handler_points_vs_", c)]]))) else NULL,
-                screenerVs = if (nrow(p)) lapply(setNames(s_cov, s_cov), function(c) I(c(p[[paste0("screener_picks_vs_", c)]], p[[paste0("screener_points_vs_", c)]]))) else NULL)
+                screenerVs = if (nrow(p)) lapply(s_cov, function(c) I(c(p[[paste0("screener_picks_vs_", c)]], p[[paste0("screener_points_vs_", c)]]))) else NULL)
     out[[paste0(k$canon, ":", k$team_id)]] <- rec[!vapply(rec, is.null, NA)]
   }
   out

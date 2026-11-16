@@ -62,9 +62,9 @@ GROUPS <- c(lapply(setNames(setdiff(GEOM, c("d_hs", "tta_now")), setdiff(GEOM, c
                    function(v) c(v, paste0(v, "_close"))),
             list(d_hs = "d_hs", tta_now = "tta_now", so_far = LSF, closeness = "closeness"))
 stopifnot(setequal(unlist(GROUPS), FEATS))
-BIG_OF <- c("show", "soft", "soft", "show", "switch")
+BIG_OF <- c("show", "drop", "drop", "show", "switch")
 BD_OF <- c("over", "over", "under", "under", "switch")
-LV <- list(big = c("show", "soft", "switch"), guard = c("over", "under", "switch"))
+LV <- list(big = c("show", "drop", "switch"), guard = c("over", "under", "switch"))
 
 
 
