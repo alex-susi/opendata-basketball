@@ -2429,3 +2429,12 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Screen Coverage Read countdown uses the Unslop badge in both looks, red before the screen and blue after (the blue had been lost in the Unslop look).
 - Game clock block centred between the possession-ball slot and the right edge of the court's panel. The shot clock is the amber number with a thin dark outline, no box.
 - No model, input or result changed.
+
+## 2026-11-16 — Web viewer: third pass on the trace panel and court caption
+
+- Trace panel header stays on one line: Player menu 165 px, Track menu 150 px (they shrink only in a very narrow panel), and the value is cut with an ellipsis rather than wrapping.
+- Court caption (seconds and frame left, events right) now lines up with the floor's edges, not the wider drawing area, and sits halfway between the baseline and the bottom of the court window.
+- Trace chart: the players' names under the time axis are gone and the plot takes their height (92 → 129 px, same panel height). Y axis labelled every 1, 2, 5, 10 or 20 units (finest step with at most eight intervals), with faint unlabelled lines halfway between.
+- Timeline hover cards no longer carry the points-per-action and chances table, so they are narrower.
+- Player Tracking table: the team heading rows (team, offense/defense, spacing) are gone; a thin rule separates the two teams.
+- No model, input or result changed.

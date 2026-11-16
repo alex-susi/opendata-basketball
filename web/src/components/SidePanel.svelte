@@ -79,7 +79,7 @@
       <label class="toggle" title="The panel under the court: the play's actions and either the ball's height or a player's distance to his nearest opponent">
         <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
       </label>
-      <label class="toggle" title="Caption the actions in the trace panel: the action above, the player below">
+      <label class="toggle" title="Caption the actions in the trace panel, above the chart">
         <input type="checkbox" bind:checked={viewer.showTickLabels} />Action names
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>

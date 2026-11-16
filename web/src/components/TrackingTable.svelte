@@ -8,9 +8,8 @@
 
 <script lang="ts">
   // The trace panel's Player Tracking tab: the ten players on court at the current frame in one table, the offense's
-  // five then the defense's, each under a heading row with the team's spacing (mean distance between its players on
-  // court; hover for an explanation). An orange dot marks the ball handler and a shield the rim protector (the
-  // defender nearest the basket).
+  // five then the defense's, a thin rule between them (no heading rows: the numbers' kit colours tell the teams apart).
+  // An orange dot marks the ball handler and a shield the rim protector (the defender nearest the basket).
   // The columns come in three groups, picked in the panel's header (All shows every column and scrolls sideways):
   //   Movement  speed, acceleration, speed toward the basket and across it, top speed so far and distance covered
   //             (smoothed tracking, lib/motion.ts)
@@ -129,14 +128,6 @@
 
   const rows = (role: Role) => play.players.filter((p) => p.role === role && here(p, i)).map((p) => rowOf(p, role));
 
-  // Width of the Player column, so each team's heading lines its side and spacing up under the other's.
-  let nameW = $state(0);
-  // The spacing explainer, fixed on the page (the panel scrolls and would clip it).
-  let tip = $state<{ x: number; y: number } | null>(null);
-  function showTip(ev: MouseEvent): void {
-    const r = (ev.currentTarget as HTMLElement).getBoundingClientRect();
-    tip = { x: r.left, y: r.bottom + 6 };
-  }
 
   function follow(id: number): void {
     viewer.focusPid = id;
@@ -148,7 +139,7 @@
   <table class="track-table">
     <thead>
       <tr>
-        <th class="name" bind:clientWidth={nameW}>Player</th>
+        <th class="name">Player</th>
         {#each shown as c (c.key)}
           {@const words = c.head.split(" ")}
           <th class:al={c.left} title={c.title}>{words.slice(0, -1).join(" ")}{words.length > 1 ? " " : ""}<span class="keep">{words.at(-1)}{#if c.unit}&nbsp;({c.unit}){/if}</span></th>
@@ -159,17 +150,6 @@
       {@const kit = play.colors[role]}
       {@const list = rows(role)}
       <tbody>
-        <tr class="group">
-          <td colspan={shown.length + 1}>
-            <!-- Sticky, so the heading stays in view when the table scrolls sideways. -->
-            <div class="group-line">
-              <b class="group-team" style:color={pageText(kit.text)} style:width="{nameW}px">{role === "off" ? play.off : play.def}</b>
-              <span class="group-side">{role === "off" ? "Offense" : "Defense"}</span>
-              <!-- svelte-ignore a11y_no_static_element_interactions -->
-              <span class="group-spacing" onmouseenter={showTip} onmouseleave={() => (tip = null)}>Spacing {fixed(spaced.spread[role])} ft <i class="info">i</i></span>
-            </div>
-          </td>
-        </tr>
         {#each list as r (r.p.id)}
           <tr class="player" class:has-ball={live.handler === r.p.id} onmouseenter={() => (viewer.hoverPid = r.p.id)}
               onmouseleave={() => (viewer.hoverPid = null)} onclick={() => follow(r.p.id)}
@@ -189,10 +169,3 @@
   </table>
 </div>
 
-{#if tip}
-  <div class="spacing-tip" style:left="{tip.x}px" style:top="{tip.y}px">
-    <b>Spacing</b>
-    <span>The average distance between every pair of a team's players on court (ten pairs with five a side), at this
-      moment. Higher means the team is more spread out; it falls as players crowd the ball or the paint.</span>
-  </div>
-{/if}

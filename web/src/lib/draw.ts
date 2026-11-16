@@ -5,7 +5,7 @@
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
 import { controlAt, drawControl, motionLimits } from "./control";
 import { logoImage } from "./logos.svelte";
-import { COLORS, HEADER_TOP, HOOP_X, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
+import { COLORS, HALF_L, HALF_W, HEADER_TOP, HOOP_X, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import type { LaneFrame } from "./coverage";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, FPS, type Cursor } from "./sequence";
@@ -422,12 +422,14 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
 
 export const DATA_CREDIT = "Data: Liga Endesa ACB 2025/2026 via SkillCorner";
 
-// The line under the court. Left, level with the court's left edge: the playback seconds and the tracking frame
+// The line under the court, centred between the court's baseline-to-baseline floor and the bottom of the canvas,
+// and kept within the floor's width. Left, level with the floor's left edge: the playback seconds and the tracking frame
 // ("9.40 s · Frame 69928", numbers bold), or in a recorded video the data credit (on the page it is in the tab bar; a
-// video leaves the page behind). Right, level with the court's right edge: the event labels of the last 0.8 s, at most
+// video leaves the page behind). Right, level with the floor's right edge: the event labels of the last 0.8 s, at most
 // two; when two do not fit beside the left text, only the newest, cut short if even that does not fit.
 function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[], secs: number, frame: number, credit: boolean): void {
-  const y = L.top + L.ch + 14, x0 = L.left, x1 = L.left + L.cw;
+  const xa = px(L, -HALF_L), xb = px(L, HALF_L), floorBottom = Math.max(py(L, -HALF_W), py(L, HALF_W));
+  const x0 = Math.min(xa, xb), x1 = Math.max(xa, xb), y = (floorBottom + L.H) / 2;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
   const left: [string, string, number][] = credit

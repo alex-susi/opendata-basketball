@@ -8,7 +8,7 @@
   //                  court rings him in his team's secondary colour and, for a paired measure, rings the other
   //                  player and joins them with a line.
   // Samples are every 0.2 s of playback (lib/trace.ts). Each action is a dashed line, captioned with the action
-  // above the plot and the player under the time axis (both hidden when the Display panel's Action Names is off);
+  // above the plot (hidden when the Display panel's Action Names is off);
   // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
   // chart to move playback there. A third tab, Player Tracking, swaps the chart for a table of the ten players on
@@ -28,11 +28,12 @@
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
   const M = { left: 38, right: 12 };
-  const PLOT_H = 92;
   const AXIS = 20;          // the time axis's numbers, under the plot
-  // Captions: the action in a band above the plot, the player in a band under the axis. Captions that crowd tilt
-  // away from their line (lib/sequence.ts, layoutTimeline), each joined to it by a short leader.
+  // Captions: the action in a band above the plot. Captions that crowd tilt away from their line (lib/sequence.ts,
+  // layoutTimeline), each joined to it by a short leader. The players' names that used to sit in a band under the
+  // axis are gone (2026-11-16); the plot takes their height, so the panel keeps its size.
   const BAND = 43, LEADER = 5;
+  const PLOT_H = $derived(viewer.showTickLabels ? 129 : 92);
   const TICK_FONT = '600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
   const measurer = document.createElement("canvas").getContext("2d")!;
   const measure = (text: string) => {
@@ -58,13 +59,19 @@
   const color = $derived(viewer.trace === "ball" || !focus || !play ? COLORS.ball : pageText(play.colors[focus.role].text));
   const tEnd = $derived(Math.max(1, (seq.length - 1) / FPS));
   const unit = $derived(viewer.trace === "ball" ? "ft" : info.unit);
-  // Ball heights past 20 ft are tracking noise; other measures use whatever the play needs, in steps of 5, with room
-  // below zero for the ones that go negative (acceleration, speed toward the basket).
-  const yMax = $derived.by(() => {
-    const top = Math.max(0, ...samples.map((s) => s.v ?? 0));
-    return viewer.trace === "ball" ? clamp(Math.ceil(top / 5) * 5, 10, 20) : Math.max(10, Math.ceil(top / 5) * 5);
+  // The y axis: ball heights past 20 ft are tracking noise; other measures use whatever the play needs (at least 0 to
+  // 5), with room below zero for the ones that go negative (acceleration, speed toward the basket). Labelled gridlines
+  // every 1, 2, 5, 10 or 20 units, the finest step that gives at most eight intervals, and a faint unlabelled line
+  // halfway between each pair.
+  const yAxis = $derived.by(() => {
+    const vals = samples.map((s) => s.v ?? 0);
+    const hi = viewer.trace === "ball" ? clamp(Math.max(0, ...vals), 5, 20) : Math.max(5, ...vals);
+    const lo = viewer.trace === "ball" ? 0 : Math.min(0, ...vals);
+    const step = [1, 2, 5, 10, 20, 50].find((st) => Math.ceil(hi / st) - Math.floor(lo / st) <= 8) ?? 100;
+    return { step, min: Math.floor(lo / step) * step, max: Math.ceil(hi / step) * step };
   });
-  const yMin = $derived(viewer.trace === "ball" ? 0 : Math.min(0, Math.floor(Math.min(0, ...samples.map((s) => s.v ?? 0)) / 5) * 5));
+  const yMax = $derived(yAxis.max);
+  const yMin = $derived(yAxis.min);
 
   const plotW = $derived(Math.max(10, width - M.left - M.right));
   const X = (t: number) => M.left + (t / tEnd) * plotW;
@@ -73,9 +80,10 @@
   const timeline = $derived(play && seq.length && plotW > 10 ? layoutTimeline(play, seq, plotW, measure) : empty);
   const top = $derived(viewer.showTickLabels ? BAND + 2 : 12);
   const bottom = $derived(top + PLOT_H);
-  const H = $derived(bottom + AXIS + (viewer.showTickLabels ? BAND : 4));
+  const H = $derived(bottom + AXIS + 6);
   const Y = (v: number) => bottom - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * PLOT_H;
-  const yTicks = $derived(Array.from({ length: Math.floor((yMax - yMin) / 5) + 1 }, (_, i) => yMin + i * 5).filter((v) => yMax - yMin <= 20 || v % 10 === 0));
+  const yTicks = $derived(Array.from({ length: Math.round((yMax - yMin) / yAxis.step) + 1 }, (_, i) => yMin + i * yAxis.step));
+  const yMinor = $derived(yTicks.slice(1).map((v) => v - yAxis.step / 2));
   const xTicks = $derived.by(() => {
     const step = [0.5, 1, 2, 5, 10, 20].find((s) => (s / tEnd) * plotW >= 46) ?? 30;
     return Array.from({ length: Math.floor(tEnd / step + 1e-9) + 1 }, (_, i) => i * step);
@@ -207,6 +215,9 @@
            onpointerdown={(ev) => { svg!.setPointerCapture(ev.pointerId); seek(ev); }} onpointermove={hover}
            onpointerleave={leave}>
         <rect class="plot-hit" x={M.left} y={top} width={plotW} height={PLOT_H} />
+        {#each yMinor as v (v)}
+          <line class="grid minor" x1={M.left} x2={M.left + plotW} y1={Y(v)} y2={Y(v)} />
+        {/each}
         {#each yTicks as v (v)}
           <line class="grid" x1={M.left} x2={M.left + plotW} y1={Y(v)} y2={Y(v)} />
           <text class="axis" x={M.left - 6} y={Y(v)} text-anchor="end" dominant-baseline="middle">{v}</text>
@@ -252,19 +263,6 @@
           {#each timeline.ticks as tick}
             <span class="tick-label above lean-{tick.lean} {tick.event.kind}" class:on={hoverTicks.includes(tick)}
                   style:left="{tick.at}px" style:width={boxWidth(tick)}>{shortScreen(tick.event.short ?? "")}{#if tick.event.flag}<i class="event-flag">{tick.event.flag}</i>{/if}</span>
-          {/each}
-        </div>
-        <!-- The player under the time axis. -->
-        <div class="trace-names" style:left="{M.left}px" style:top="{bottom + AXIS}px" style:width="{plotW}px"
-             style:height="{BAND}px" aria-hidden="true">
-          <svg class="leaders">
-            {#each tilted as tick}
-              <line x1={tick.frac * plotW} y1={0} x2={tick.at} y2={LEADER} />
-            {/each}
-          </svg>
-          {#each timeline.ticks as tick}
-            <span class="tick-label below lean-{tick.lean}" class:on={hoverTicks.includes(tick)}
-                  style:left="{tick.at}px" style:width={boxWidth(tick)}>{tick.event.who ?? ""}</span>
           {/each}
         </div>
       {/if}

@@ -299,21 +299,26 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* ---- the trace panel, between the court and the timeline ---- */
 /* Shrinks (and scrolls) when the court window needs more height for its cards. */
 .trace { flex: 0 1 auto; min-height: 110px; overflow-y: auto; padding: 8px 12px 4px; }
-.trace-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 4px; font-size: 12.5px; }
+/* One line, never wrapped: in a narrow panel the menus shrink a little and the value is cut with an ellipsis. */
+.trace-head { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px 12px; margin-bottom: 4px; font-size: 12.5px; }
+.trace-head > .seg { flex: none; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 7px; overflow: hidden; }
 .seg button { padding: 3px 10px; border: 0; background: none; color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer; }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button.on { background: var(--raised); color: var(--ink); }
-.trace-pick { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .01em; text-transform: capitalize; }
+.trace-pick { display: inline-flex; flex: 0 1 auto; min-width: 0; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .01em; text-transform: capitalize; }
 .trace-pick select {
   max-width: 220px; height: 26px; padding: 2px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised);
   color: var(--ink); font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none;
 }
 /* The value, at the right end of the header line. */
-.trace-read { margin-left: auto; min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-/* Fixed widths, so the menus never shift with the chosen name. */
-.trace-pick select.pick-player { width: 210px; }
-.trace-pick select.pick-metric { width: 175px; }
+.trace-read {
+  margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* Fixed widths, so the menus never shift with the chosen name (they only shrink when the panel is too narrow). */
+.trace-pick select.pick-player { flex: 0 1 165px; width: 165px; min-width: 96px; }
+.trace-pick select.pick-metric { flex: 0 1 150px; width: 150px; min-width: 96px; }
 .trace-chart .now-dot { stroke: var(--panel); }
 .trace-read b { color: var(--ink); }
 .trace-chart { position: relative; min-height: 126px; }
@@ -321,6 +326,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .trace-chart svg { display: block; cursor: crosshair; touch-action: none; user-select: none; }
 .trace-chart .plot-hit { fill: transparent; }
 .trace-chart .grid { stroke: #26314A; stroke-width: 1; }
+.trace-chart .grid.minor { opacity: .45; }
 .trace-chart .axis { fill: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
 .trace-chart .unit { font-style: italic; }
 .trace-chart .sample { fill: none; stroke: #74819C; stroke-width: 1.2; }
@@ -752,6 +758,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .track-table .opp { font-weight: 700; }
 .track-table .ball-dot { display: inline-block; width: 9px; height: 9px; margin-left: 6px; border-radius: 50%; background: #FFA62B; border: 1px solid #5C3200; box-sizing: border-box; }
 .track-table .empty { color: var(--muted); text-align: left; }
+/* The defense's rows start under a thin rule. */
+.track-table tbody + tbody tr:first-child td { border-top: 1px solid var(--line); }
 .paint-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255, 255, 255, .45); }
 
 /* The narrow timeline under the court while the trace panel is off (TimelineStrip.svelte). */
