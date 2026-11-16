@@ -177,6 +177,12 @@ math[display="block"] { margin: 0; }
 .bar { display: inline-block; height: 8px; border-radius: 2px; background: var(--accent); flex: none; }
 .ci { color: var(--muted); font-size: .8rem; }
 td.strong { font-weight: 700; }
+table.cm td { white-space: nowrap; padding: 6px 6px; }
+table.cm th.num { text-align: center; padding: 6px 4px; }
+table.cm td.num { text-align: center; font-size: .84rem; }
+td.call { white-space: nowrap; }
+table.cm td.diag { font-weight: 700; box-shadow: inset 0 0 0 2px var(--accent); }
+table.cm .n { color: var(--muted); font-size: .8rem; font-weight: 400; }
 </style>
 </head>
 <body>
@@ -200,6 +206,7 @@ td.strong { font-weight: 700; }
           <li><a href="#logloss">Probability scores</a></li>
           <li><a href="#accuracy">Top-call accuracy</a></li>
           <li><a href="#per-defender">Each defender</a></li>
+          <li><a href="#per-call">Each call</a></li>
         </ul></li>
       <li class="toc-sec"><a href="#findings">Findings</a>
         <ul class="toc-sub"><li><a href="#ice">Ice and blitz</a></li></ul></li>
@@ -220,7 +227,7 @@ td.strong { font-weight: 700; }
 
 <main class="page">
   <header>
-    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-15</span>
+    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-16</span>
     <h1>Screen Coverage Reads</h1>
     <p class="lede">Can tracking data tell a ball handler how an on-ball screen will be defended, and how early?</p>
     <ul class="tight">
@@ -260,11 +267,11 @@ td.strong { font-weight: 700; }
         <table>
           <thead><tr><th>Call</th><th class="num">Screens</th><th class="num">Share</th></tr></thead>
           <tbody>
-            <tr><td><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num">502</td><td class="num">34%</td></tr>
-            <tr><td><span class="swatch" style="background:var(--c-oversoft)"></span>over + soft</td><td class="num">496</td><td class="num">33%</td></tr>
-            <tr><td><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num">218</td><td class="num">15%</td></tr>
-            <tr><td><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num">167</td><td class="num">11%</td></tr>
-            <tr><td><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num">113</td><td class="num">8%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num">502</td><td class="num">34%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-oversoft)"></span>over + soft</td><td class="num">496</td><td class="num">33%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num">218</td><td class="num">15%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num">167</td><td class="num">11%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num">113</td><td class="num">8%</td></tr>
           </tbody>
         </table>
       </div>
@@ -319,10 +326,11 @@ td.strong { font-weight: 700; }
   <section id="status">
     <div class="head">
       <h2>Status</h2>
-      <p class="sub">Where the project stands as of 2026-11-15</p>
+      <p class="sub">Where the project stands as of 2026-11-16</p>
     </div>
     <ul class="tight">
       <li>Live model · time-aware transformer with v2 past-only inputs, on the play viewer's Coverage Read card</li>
+      <li>Weak spot · switch and under + show are mostly missed (21% and 19% caught, see Each call)</li>
       <li>Past-only rule confirmed by a test</li>
       <li>Graded mainly on the moments a ball handler can use (main curve), since 2026-11-15</li>
       <li>One baseline only, the logistic model that is also never told when the screen comes</li>
@@ -362,7 +370,7 @@ td.strong { font-weight: 700; }
             <li>Confident switch reads before the pick frame are the clearest problem</li>
           </ul></td></tr>
           <tr><td class="lead">Project folder</td><td><ul>
-            <li><span class="file">screen_coverage/01_scripts/</span> · six pipeline scripts (01–06), then checks and experiments (07–21)</li>
+            <li><span class="file">screen_coverage/01_scripts/</span> · six pipeline scripts (01–06), then checks and experiments (07–23)</li>
             <li><span class="file">02_cache/</span> · intermediates</li>
             <li><span class="file">03_outputs/</span> · results and figures</li>
             <li><span class="file">04_docs/</span> · this page</li>
@@ -751,11 +759,108 @@ td.strong { font-weight: 700; }
       </div>
       <h4>Share of each call caught at −0.4 s</h4>
       <ul class="tight">
-        <li>over + show and over + soft · about 70%</li>
-        <li>under + soft · 36%</li>
-        <li>switch · 19%</li>
-        <li>under + show · 19%</li>
+        <li>over + show and over + soft · 70%</li>
+        <li>under + soft · 29%</li>
+        <li>switch · 22%</li>
+        <li>under + show · 16%</li>
+        <li>Live v2 model (<span class="file">03_outputs/evaluation/per_call_at_minus_0.4s.csv</span>). Full matrices in Each call</li>
       </ul>
+    </div>
+
+    <div class="block" id="per-call">
+      <h3>Each call</h3>
+      <p class="sub">Recall and precision of the top call. The over calls are read well, switch and under + show mostly missed</p>
+      <ul class="tight">
+        <li>Accuracy hides the rare calls. Over calls are 67% of screens, switch 14%, under + show 7%</li>
+        <li>Top call · the largest of the five probabilities, the Combined row on the Coverage Read card</li>
+        <li>Recall · of the screens that were a call, the share read as each call. Rows sum to 100%</li>
+        <li>Precision · of the screens read as a call, the share that really were each call. Columns sum to 100%</li>
+        <li>Frames weighted by the main curve so each screen counts once. Brackets give screens, rounded to whole screens</li>
+        <li>Live v2 model, 1,463 screens, every game held out</li>
+      </ul>
+      <h4>Recall · rows are the real call</h4>
+      <div class="tablewrap">
+        <table class="cm">
+          <thead><tr><th>Real call</th><th class="num">over + show</th><th class="num">over + soft</th><th class="num">under + soft</th><th class="num">under + show</th><th class="num">switch</th></tr></thead>
+          <tbody>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 48%, transparent)">69% <span class="n">(343)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 16%, transparent)">22% <span class="n">(111)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 2%, transparent)">2% <span class="n">(11)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 1%, transparent)">1% <span class="n">(7)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">5% <span class="n">(25)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-oversoft)"></span>over + soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 15%, transparent)">22% <span class="n">(105)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 50%, transparent)">71% <span class="n">(344)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(20)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 1%, transparent)">1% <span class="n">(4)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 2%, transparent)">2% <span class="n">(10)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(22)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 29%, transparent)">41% <span class="n">(67)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 24%, transparent)">35% <span class="n">(57)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(7)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 4%, transparent)">6% <span class="n">(10)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num" style="background:color-mix(in srgb, var(--accent) 23%, transparent)">33% <span class="n">(36)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 15%, transparent)">22% <span class="n">(24)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">12% <span class="n">(13)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 13%, transparent)">19% <span class="n">(20)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">14% <span class="n">(15)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 26%, transparent)">37% <span class="n">(78)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 24%, transparent)">34% <span class="n">(71)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(9)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(9)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 15%, transparent)">21% <span class="n">(44)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Precision · columns are the model's top call</h4>
+      <div class="tablewrap">
+        <table class="cm">
+          <thead><tr><th>Real call</th><th class="num">over + show</th><th class="num">over + soft</th><th class="num">under + soft</th><th class="num">under + show</th><th class="num">switch</th></tr></thead>
+          <tbody>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 41%, transparent)">59% <span class="n">(343)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 13%, transparent)">18% <span class="n">(111)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 7%, transparent)">10% <span class="n">(11)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 11%, transparent)">15% <span class="n">(7)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 17%, transparent)">24% <span class="n">(25)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-oversoft)"></span>over + soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 13%, transparent)">18% <span class="n">(105)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 39%, transparent)">56% <span class="n">(344)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 13%, transparent)">18% <span class="n">(20)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 6%, transparent)">8% <span class="n">(4)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 7%, transparent)">10% <span class="n">(10)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(22)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 8%, transparent)">11% <span class="n">(67)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 36%, transparent)">52% <span class="n">(57)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">14% <span class="n">(7)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 7%, transparent)">10% <span class="n">(10)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num" style="background:color-mix(in srgb, var(--accent) 4%, transparent)">6% <span class="n">(36)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(24)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">12% <span class="n">(13)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 30%, transparent)">42% <span class="n">(20)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">15% <span class="n">(15)</span></td></tr>
+            <tr><td class="lead"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(78)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 8%, transparent)">12% <span class="n">(71)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 5%, transparent)">8% <span class="n">(9)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 14%, transparent)">20% <span class="n">(9)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 29%, transparent)">42% <span class="n">(44)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Call</th><th class="num">Screens</th><th class="num">Recall</th><th class="num">Precision</th><th class="num">Recall at pick frame</th><th class="num">Recall at +1 s</th><th class="num">Logistic recall</th></tr></thead>
+          <tbody>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num">497</td><td class="num">69%</td><td class="num">59%</td><td class="num">78%</td><td class="num">79%</td><td class="num">71%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-oversoft)"></span>over + soft</td><td class="num">483</td><td class="num">71%</td><td class="num">56%</td><td class="num">83%</td><td class="num">83%</td><td class="num">69%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num">163</td><td class="num">35%</td><td class="num">52%</td><td class="num">58%</td><td class="num">44%</td><td class="num">13%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num">109</td><td class="num">19%</td><td class="num">42%</td><td class="num">37%</td><td class="num">17%</td><td class="num">10%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num">211</td><td class="num">21%</td><td class="num">42%</td><td class="num">31%</td><td class="num">43%</td><td class="num">15%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="tight small">
+        <li>Recall and precision on the main curve. Logistic recall is the baseline on the main curve</li>
+        <li>Each defender's part, main curve · switch caught 12% for the ball handler's defender, 13% for the screener's defender</li>
+        <li>Over is over-called · the ball handler's defender is read as over on 94% of real overs, and 74% of over reads are right</li>
+        <li>Accuracy 55%, average recall over the five calls 43%</li>
+        <li>Files in <span class="file">03_outputs/confusion/</span> (<span class="file">22_confusion_matrices.R</span>) and <span class="file">03_outputs/call_diagnostics/</span> (<span class="file">23_call_diagnostics.R</span>)</li>
+      </ul>
+
+      <h4>Why the rare calls are missed</h4>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Reason</th><th>Evidence</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">A switch looks like over<br>until the screen</td><td><ul>
+              <li>71% of switches are read as an over call</li>
+              <li>Switch caught 6% at −2 s, 22% at −0.4 s, 31% at the pick frame, 43% at +1 s</li>
+              <li>Even a second after the screen, most switches are still read as over</li>
+            </ul></td></tr>
+            <tr><td class="lead">The top-call rule<br>favours common calls</td><td><ul>
+              <li>Dividing each probability by its call's share in the other nine games before taking the largest</li>
+              <li>Switch caught 36% (was 21%), under + show 46% (was 19%)</li>
+              <li>Precision falls to 33% and 23%, accuracy to 50% (was 55%)</li>
+              <li>So part of the miss is the rule, and the rest is a weak signal</li>
+            </ul></td></tr>
+            <tr><td class="lead">The signal is there,<br>just weak</td><td><ul>
+              <li>Average switch probability 0.23 on real switches, 0.13 on the rest</li>
+              <li>A real switch outranks a random other screen 76% of the time (AUC 0.76)</li>
+            </ul></td></tr>
+            <tr><td class="lead">Game plans vary</td><td><ul>
+              <li>Switch share by defending team runs from 1% (Valencia) to 33% (Murcia)</li>
+              <li>The same team changes between games · Zaragoza 11% and 23%, Breogan 3% and 17%</li>
+              <li>Tonight's tendencies help a little · switch caught 15% over a defense's first 10 screens, 22% after its 30th</li>
+            </ul></td></tr>
+            <tr><td class="lead">Personnel the model<br>never sees</td><td><ul>
+              <li>Screens set by a guard (handler on over 60% of his season picks, 109 screens) are switched 26% of the time, 13% with a big setting the screen</li>
+              <li>The model catches 17% of those guard-screen switches</li>
+              <li>Handlers who take under 30% of their shots from three (223 screens) see an under call 28% of the time, 17% for the rest</li>
+              <li>Season aggregates include these ten games, so this is descriptive only</li>
+            </ul></td></tr>
+            <tr><td class="lead">Few examples</td><td><ul>
+              <li>211 switches and 109 under + show across ten games, about 11 under + show per game</li>
+            </ul></td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -796,6 +901,15 @@ td.strong { font-weight: 700; }
           <li>Screener's defender read right 58.5% of the time before the screen (habit alone 51.5%)</li>
           <li>Ball defender's over-or-under choice barely beats "expect over" (67.5% vs 67.0%) until the pick frame</li>
           <li>Same pattern as the Fall–Marcos example</li>
+        </ul>
+      </div>
+      <div class="finding">
+        <span class="stat">Switches read as over</span>
+        <ul class="tight">
+          <li>21% of switches and 19% of under + show caught by the top call (main curve)</li>
+          <li>71% of switches read as an over call, even a second after the screen most still are</li>
+          <li>The model does rank switches higher (AUC 0.76), too weakly to make switch the top call</li>
+          <li>Switching depends on game plan and personnel the model never sees (Each call)</li>
         </ul>
       </div>
       <div class="finding">
@@ -978,6 +1092,7 @@ td.strong { font-weight: 700; }
       </li>
       <li><b>Attention rings explain little.</b> Attention is spread almost evenly across the ten players</li>
       <li><b>What 55% means.</b> A lean toward the likely coverage. Too uncertain to bet on</li>
+      <li><b>Rare calls mostly missed.</b> Switch 21% and under + show 19% caught by the top call. The card's Combined call almost always names an over call (see Each call)</li>
     </ul>
   </section>
 
@@ -988,6 +1103,10 @@ td.strong { font-weight: 700; }
       <p class="sub">Priority order first, then ideas grouped by area</p>
     </div>
     <ol class="steps plain">
+      <li><div><b>Decide how to lift switch and under + show</b><ul class="tight">
+        <li>Owner to choose. Candidates ranked by expected gain in Ideas by area (Rare calls)</li>
+        <li>Cheapest first · film-check switches still read as over at +1 s, and a card that flags switch risk when its probability is well above its usual share</li>
+      </ul></div></li>
       <li><div><b>Decide on the tuning round</b><ul class="tight">
         <li>Small search over size, dropout and learning rate</li>
         <li>Picked on the held-out main-curve score pooled across all ten folds</li>
@@ -1021,6 +1140,14 @@ td.strong { font-weight: 700; }
         <table>
           <thead><tr><th>Area</th><th>Ideas</th></tr></thead>
           <tbody>
+            <tr><td class="lead">Rare calls</td><td><ul>
+              <li>Film check · watch switches still read as over at +1 s. If the defenders never trade players on film, the label is the ceiling. If they do, the inputs miss something visible</li>
+              <li>Who guards whom after the screen · nearest defender to the handler and to the screener as direct inputs. A switch is that trade</li>
+              <li>Personnel · each player's season share of picks as handler or screener and three-point attempt rate, the two that moved switch and under above. Season aggregates include these ten games, so the owner decides whether offense-only usage counts as a leak. Never the coverage columns (<code>_vs_switch</code> and the like)</li>
+              <li>Defender types from <span class="file">archetypes/</span> (a big who can guard a guard switches more)</li>
+              <li>Card · show switch risk when its probability is well above its usual share, keeping the probabilities unchanged</li>
+              <li>Class weights in training · lifts rare-call recall but bends the probabilities, so the main-curve score would need a separate check</li>
+            </ul></td></tr>
             <tr><td class="lead">Model structure</td><td><ul>
               <li>Longer history (2–3 s) or an explicit "the screen has happened" detector, to stop the drift after the screen</li>
               <li>A version on the four screen players only, to separate the architecture's gain from the other six players' gain</li>
@@ -1032,7 +1159,6 @@ td.strong { font-weight: 700; }
               <li>Four random starts now averaged</li>
               <li>One temperature for all moments would barely help (1.1143 → 1.1137) and make after-screen reads more underconfident</li>
               <li>A softening that depends on time from the pick frame fits the calibration pattern</li>
-              <li>Class weights, if catching switches and under + show matters more than overall scores</li>
               <li>Pretraining on all tracking frames (e.g. predicting where players move next) before learning the calls</li>
             </ul></td></tr>
             <tr><td class="lead">New inputs</td><td><ul>
@@ -1149,6 +1275,8 @@ td.strong { font-weight: 700; }
               <tr><td><span class="file">18_timing_compare.R</span>, <span class="file">19_timing_stress.R</span></td><td>Timing experiment scores and stress test (dropped)</td></tr>
               <tr><td><span class="file">20_hoop_speed_compare.R</span></td><td>Hoop-speed input (dropped)</td></tr>
               <tr><td><span class="file">21_promote_main_curve.R</span></td><td>Made the main-curve model live from the timing experiment's "none" runs. Replaced model kept in <span class="file">02_cache/v2_flat_2026-11-12/</span></td></tr>
+              <tr><td><span class="file">22_confusion_matrices.R</span></td><td>Recall and precision matrices of the top call for each call and each defender, and how well switch probabilities rank switches</td></tr>
+              <tr><td><span class="file">23_call_diagnostics.R</span></td><td>Why switch and under + show are missed · recall over time, a share-adjusted top-call rule, team habits and player roles</td></tr>
             </tbody>
           </table>
         </div>
@@ -1528,7 +1656,21 @@ td.strong { font-weight: 700; }
     </div>
     <div class="log">
       <div class="entry">
-        <time datetime="2026-11-15">2026-11-15 (latest)</time>
+        <time datetime="2026-11-16">2026-11-16 (latest)</time>
+        <div>
+          <h3>Each call · recall and precision matrices, why the rare calls are missed</h3>
+          <ul class="tight">
+            <li>New Each call results with recall and precision matrices of the top call, screens in brackets (<span class="file">22_confusion_matrices.R</span>)</li>
+            <li>Switch 21% and under + show 19% caught, against about 70% for the over calls. 71% of switches read as an over call</li>
+            <li>Checks of why (<span class="file">23_call_diagnostics.R</span>) · switches look like over until the screen, the top-call rule favours common calls, game plans vary by team and game, and personnel the model never sees moves switch and under</li>
+            <li>Corrected the "caught at −0.4 s" list to the live v2 model (it showed older numbers)</li>
+            <li>New finding, limit, next step and Rare calls ideas</li>
+            <li>No model, input or live result changed</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-15">2026-11-15 (latest that day)</time>
         <div>
           <h3>Contents list, wording and spacing</h3>
           <ul class="tight">

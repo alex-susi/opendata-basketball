@@ -1,0 +1,4 @@
+call,actual_screens,read_screens,recall,precision,habit
+switch,20,8.5212,0.1451,0.3407,0-9 earlier screens
+switch,51,24.9771,0.1995,0.4073,10-29
+switch,140,70.7036,0.2201,0.4359,30+

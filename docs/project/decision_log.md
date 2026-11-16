@@ -2472,3 +2472,23 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Score bar: the divider between the team boxes uses the bar's edge colour (light at night, dark by day). Each team box is sized so the clock box ends level with the court floor's right edge (measured within 1 px at 1600 px wide), never under 166 px.
 - Screen Coverage Read table: joint calls coloured part by part as in the bars above, the "+" grey; expected call set right against its %, a wider gap before Actual; Expected and Actual headers centred over their two columns; the rule above Combined runs unbroken across each pair. Card 296 px.
 - No model, input or result changed.
+
+## 2026-11-16 — Screen coverage: precision and recall matrices for the live transformer
+
+- Question: does the live transformer miss switches? Accuracy hides it because the five calls are unbalanced (switch 211 of 1,463 screens).
+- New `screen_coverage/01_scripts/22_confusion_matrices.R` writes `screen_coverage/03_outputs/confusion/` (counts, recall, precision, per call, switch ranking, `matrices.png`). Top call per frame, held out by game, counted on the main time-weight curve (each screen weighted to 1), at −0.4 s and at the pick frame. Joint calls and each defender's part.
+- Switch, main curve: recall 0.21 (logistic baseline 0.15), precision 0.42. True switches are read as over + show 37% and over + soft 34% of the time. At the pick frame recall is 0.31.
+- Switch as a ranking (top call aside): AUC 0.76, mean switch probability 0.23 on true switches against 0.13 on the rest. The model separates switches somewhat but never makes switch probable enough to be the top call.
+- Under + show is read worst (recall 0.19). Over calls are over-read (guard over recall 0.94, precision 0.74).
+- No model, input or live result changed.
+
+## 2026-11-16 — Screen coverage: why switch and under + show are missed, reads page Each call
+
+- Matrices now show screens in brackets next to each share (`03_outputs/confusion/matrices.png`, main-curve weighted screens, rounded).
+- New `screen_coverage/01_scripts/23_call_diagnostics.R` writes `03_outputs/call_diagnostics/`. Descriptive checks only.
+- Switch caught 6% at −2 s, 22% at −0.4 s, 31% at the pick frame, 43% at +1 s. Most switches are read as over even after the screen.
+- Dividing each probability by its call's share in the other nine games lifts switch recall to 36% and under + show to 46%, with precision 33% and 23% and accuracy 50% (was 55%). So part of the miss is the top-call rule and the rest is a weak signal.
+- Switch share by defending team-game runs from 1% (Valencia) to 33% (Murcia), and the same team varies between games (Zaragoza 11% and 23%). Switch recall 15% in a defense's first 10 screens, 22% after 30.
+- Screens set by a guard (handler on over 60% of his season picks, 109 screens) switch 26% against 13%. Handlers with under 30% of shots from three see under 28% against 17%. Season aggregates include the ten games, so descriptive only. The model is given no player identity.
+- Reads page: new Results › Each call (matrices with counts, why table), finding, limit, next step 1 (owner to choose how to lift the rare calls), Rare calls ideas, scripts 22-23, change log. Corrected the −0.4 s per-call list to the live v2 numbers. Artifact republished (version 13).
+- No model, input or live result changed.

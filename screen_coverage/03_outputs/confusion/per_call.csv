@@ -1,0 +1,67 @@
+model,part,moment,call,actual_screens,read_screens,recall,precision,f1
+live transformer,big,-0.4 s,switch,211,65,0.1185,0.3846,0.1812
+live transformer,big,-0.4 s,show,606,684,0.7178,0.636,0.6744
+live transformer,big,-0.4 s,soft,646,714,0.7554,0.6835,0.7176
+live transformer,big,0.0 s,switch,211,86,0.2322,0.5698,0.33
+live transformer,big,0.0 s,show,606,644,0.7739,0.7283,0.7504
+live transformer,big,0.0 s,soft,646,733,0.8529,0.7517,0.7991
+live transformer,big,main curve,switch,211,59,0.1309,0.4685,0.2046
+live transformer,big,main curve,show,606,661.8,0.6922,0.6338,0.6617
+live transformer,big,main curve,soft,646,742.2,0.7644,0.6653,0.7114
+live transformer,guard,-0.4 s,switch,211,54,0.0995,0.3889,0.1585
+live transformer,guard,-0.4 s,over,980,1248,0.9337,0.7332,0.8214
+live transformer,guard,-0.4 s,under,272,161,0.3493,0.5901,0.4388
+live transformer,guard,0.0 s,switch,211,86,0.2275,0.5581,0.3232
+live transformer,guard,0.0 s,over,980,1148,0.9643,0.8232,0.8882
+live transformer,guard,0.0 s,under,272,229,0.6397,0.7598,0.6946
+live transformer,guard,main curve,switch,211,52.2,0.1189,0.481,0.1907
+live transformer,guard,main curve,over,980,1238.5,0.9388,0.7429,0.8294
+live transformer,guard,main curve,under,272,172.3,0.3851,0.6079,0.4715
+live transformer,joint,-0.4 s,over + show,497,603,0.7022,0.5788,0.6345
+live transformer,joint,-0.4 s,over + soft,483,599,0.7039,0.5676,0.6285
+live transformer,joint,-0.4 s,under + soft,163,97,0.2883,0.4845,0.3615
+live transformer,joint,-0.4 s,under + show,109,46,0.156,0.3696,0.2194
+live transformer,joint,-0.4 s,switch,211,118,0.218,0.3898,0.2796
+live transformer,joint,0.0 s,over + show,497,537,0.7847,0.7263,0.7544
+live transformer,joint,0.0 s,over + soft,483,586,0.8302,0.6843,0.7502
+live transformer,joint,0.0 s,under + soft,163,137,0.5767,0.6861,0.6267
+live transformer,joint,0.0 s,under + show,109,77,0.367,0.5195,0.4301
+live transformer,joint,0.0 s,switch,211,126,0.3128,0.5238,0.3917
+live transformer,joint,main curve,over + show,497,583.6,0.6898,0.5875,0.6346
+live transformer,joint,main curve,over + soft,483,617.4,0.7112,0.5564,0.6244
+live transformer,joint,main curve,under + soft,163,109.8,0.3486,0.5177,0.4166
+live transformer,joint,main curve,under + show,109,48.1,0.1872,0.4245,0.2598
+live transformer,joint,main curve,switch,211,104.2,0.208,0.4213,0.2785
+logistic baseline,big,-0.4 s,switch,211,49,0.0995,0.4286,0.1615
+logistic baseline,big,-0.4 s,show,606,711,0.7162,0.6104,0.6591
+logistic baseline,big,-0.4 s,soft,646,703,0.7105,0.6529,0.6805
+logistic baseline,big,0.0 s,switch,211,78,0.1706,0.4615,0.2491
+logistic baseline,big,0.0 s,show,606,718,0.7904,0.6671,0.7236
+logistic baseline,big,0.0 s,soft,646,667,0.7709,0.7466,0.7586
+logistic baseline,big,main curve,switch,211,52.3,0.1134,0.4576,0.1817
+logistic baseline,big,main curve,show,606,661.5,0.6679,0.6119,0.6387
+logistic baseline,big,main curve,soft,646,749.2,0.7346,0.6335,0.6803
+logistic baseline,guard,-0.4 s,switch,211,27,0.0664,0.5185,0.1176
+logistic baseline,guard,-0.4 s,over,980,1367,0.9776,0.7008,0.8164
+logistic baseline,guard,-0.4 s,under,272,69,0.1765,0.6957,0.2815
+logistic baseline,guard,0.0 s,switch,211,80,0.1801,0.475,0.2612
+logistic baseline,guard,0.0 s,over,980,1224,0.9653,0.7729,0.8584
+logistic baseline,guard,0.0 s,under,272,159,0.4743,0.8113,0.5986
+logistic baseline,guard,main curve,switch,211,43.8,0.0994,0.4784,0.1646
+logistic baseline,guard,main curve,over,980,1307.9,0.9625,0.7212,0.8245
+logistic baseline,guard,main curve,under,272,111.3,0.2596,0.6348,0.3685
+logistic baseline,joint,-0.4 s,over + show,497,695,0.7103,0.5079,0.5923
+logistic baseline,joint,-0.4 s,over + soft,483,623,0.6853,0.5313,0.5986
+logistic baseline,joint,-0.4 s,under + soft,163,42,0.1104,0.4286,0.1756
+logistic baseline,joint,-0.4 s,under + show,109,20,0.0826,0.45,0.1395
+logistic baseline,joint,-0.4 s,switch,211,83,0.1469,0.3735,0.2109
+logistic baseline,joint,0.0 s,over + show,497,627,0.7686,0.6093,0.6797
+logistic baseline,joint,0.0 s,over + soft,483,542,0.7474,0.6661,0.7044
+logistic baseline,joint,0.0 s,under + soft,163,85,0.3742,0.7176,0.4919
+logistic baseline,joint,0.0 s,under + show,109,70,0.3119,0.4857,0.3799
+logistic baseline,joint,0.0 s,switch,211,139,0.2844,0.4317,0.3429
+logistic baseline,joint,main curve,over + show,497,628.7,0.677,0.5352,0.5978
+logistic baseline,joint,main curve,over + soft,483,640.5,0.694,0.5234,0.5967
+logistic baseline,joint,main curve,under + soft,163,66.8,0.2059,0.5023,0.2921
+logistic baseline,joint,main curve,under + show,109,34.9,0.1403,0.4381,0.2125
+logistic baseline,joint,main curve,switch,211,92.1,0.1702,0.3901,0.237

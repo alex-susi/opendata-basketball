@@ -1,0 +1,11 @@
+rule,call,actual_screens,read_screens,recall,precision,accuracy
+largest probability,over + show,497,583.569,0.6898,0.5875,0.5519
+largest probability,over + soft,483,617.4036,0.7112,0.5564,0.5519
+largest probability,under + soft,163,109.7553,0.3486,0.5177,0.5519
+largest probability,under + show,109,48.0703,0.1872,0.4245,0.5519
+largest probability,switch,211,104.2018,0.208,0.4213,0.5519
+largest probability / call share,over + show,497,389.4552,0.5236,0.6681,0.4988
+largest probability / call share,over + soft,483,413.2173,0.5399,0.6311,0.4988
+largest probability / call share,under + soft,163,220.1751,0.5147,0.3811,0.4988
+largest probability / call share,under + show,109,215.2932,0.456,0.2308,0.4988
+largest probability / call share,switch,211,224.8592,0.3561,0.3342,0.4988
