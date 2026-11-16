@@ -28,6 +28,17 @@ export function dotInk(fill: string): string {
   return contrast(WHITE, fill) >= 2.9 ? WHITE : DARK;
 }
 
+/** The colour as it is, or darkened toward black in small steps until it has at least `min` contrast with `bg`. */
+export function readableOn(hex: string, bg: string, min: number): string {
+  const [r, g, b] = rgb(hex);
+  for (let k = 0; k <= 10; k++) {
+    const f = 1 - k * 0.08;
+    const out = `#${[r, g, b].map((c) => Math.round(c * f).toString(16).padStart(2, "0")).join("")}`;
+    if (contrast(out, bg) >= min) return out;
+  }
+  return DARK;
+}
+
 /** A hex colour with an opacity, as rgba(). */
 export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${rgb(hex).join(",")},${alpha})`;

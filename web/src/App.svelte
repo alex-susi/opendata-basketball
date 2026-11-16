@@ -1,10 +1,10 @@
 <script lang="ts">
-  // Eleven tabs: the three below, then eight exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
+  // Eleven tabs: the three below, then eight exploration tabs (one per candidate topic, components/explore/), with no divider between them. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
   // shots. Static counterpart of play_viewer/01_app/app.R.
-  import { untrack } from "svelte";
+  import { tick, untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
   import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
@@ -22,9 +22,10 @@
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
   import { live, season, viewer } from "./lib/viewer.svelte";
-  import { applyLook, type Look } from "./lib/look";
+  import { applyLook, applyTheme, type Look } from "./lib/look";
+  import { page, pageText } from "./lib/theme.svelte";
 
-  // The tab bar's Current / Unslop switch (main.ts puts the starting look on the page before this mounts).
+  // The corner's Current / Unslop switch (main.ts puts the starting look on the page before this mounts).
   let look = $state<Look>(document.documentElement.dataset.look === "unslop" ? "unslop" : "current");
   function setLook(next: Look): void {
     look = next;
@@ -93,19 +94,35 @@
   // How far the court's centre line sits from the middle of the header (the stage and the header share a column).
   let headW = $state(0);
   const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
-  // The clocks' centre: halfway between the end of the scorebug (the away side's ball slot) and the court's right
-  // edge, in the header's coordinates.
+  // The clocks' centre: halfway between the away side's possession-ball slot (kept in place when the home team has the
+  // ball) and the court's right edge, in the header's coordinates. The slot is measured again whenever the scorebug
+  // or the away team's name changes size, the court moves or a new play loads, so the clocks never sit on stale
+  // numbers.
   let awayEnd = $state<HTMLElement>();
-  let clockX = $state<number | null>(null);
-  $effect(() => {
-    void headW; void courtShift; void play?.id;
+  let slotEnd = $state<number | null>(null);
+  function measureSlot(): void {
     const head = awayEnd?.closest(".play-head");
-    if (!awayEnd || !head || !live.box) { clockX = null; return; }
-    requestAnimationFrame(() => {
-      if (!awayEnd || !live.box) return;
-      const end = awayEnd.getBoundingClientRect().right - head.getBoundingClientRect().left;
-      clockX = Math.round((end + live.box.left + live.box.w) / 2);
-    });
+    slotEnd = awayEnd && head ? awayEnd.getBoundingClientRect().right - head.getBoundingClientRect().left : null;
+  }
+  $effect(() => {
+    const slot = awayEnd;
+    if (!slot) return;
+    const watch = new ResizeObserver(measureSlot);
+    for (const el of [slot.closest(".scorebug"), slot.closest(".team")]) if (el) watch.observe(el);
+    measureSlot();
+    return () => watch.disconnect();
+  });
+  $effect(() => {
+    void headW; void courtShift; void play?.id; void live.box;
+    tick().then(measureSlot);
+  });
+  // Where the court ends too close to the ball for that (a narrow window), the clocks move right just enough to clear
+  // the ball, staying inside the header.
+  let clockW = $state(0);
+  const clockX = $derived.by(() => {
+    if (slotEnd == null || !live.box) return null;
+    const mid = (slotEnd + live.box.left + live.box.w) / 2, half = clockW / 2;
+    return Math.round(Math.min(Math.max(mid, slotEnd + 10 + half), headW - 4 - half));
   });
   const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
   loadLogos();
@@ -204,15 +221,23 @@
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
   <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
-  <span class="tab-sep" aria-hidden="true">Explore</span>
   {#each TOPICS as t (t.id)}
     <button type="button" class:on={tab === `x-${t.id}`} onclick={() => show(`x-${t.id}`)}>{t.label}</button>
   {/each}
   <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
 
-<!-- The look switch floats in the bottom-right corner on every tab (the tab bar has no room left for it). -->
+<!-- The night / day and look switches float in the bottom-right corner on every tab (the tab bar has no room left
+     for them). -->
 <div class="look-box">
+  <label class="switch two-way look-switch" title="Switch between the dark night theme and the light day theme">
+    <span class:on={!page.light}>Night</span>
+    <input type="checkbox" role="switch" aria-label="Use the light day theme" checked={page.light}
+           onchange={(ev) => applyTheme(ev.currentTarget.checked ? "light" : "dark")} />
+    <span class="switch-track"></span>
+    <span class:on={page.light}>Day</span>
+  </label>
+  <span class="look-sep" aria-hidden="true"></span>
   <label class="switch two-way look-switch" title="Switch between the site's current look and the unslop polish pass">
     <span class:on={look === "current"}>Current</span>
     <input type="checkbox" role="switch" aria-label="Use the unslop look" checked={look === "unslop"}
@@ -245,18 +270,18 @@
     <div class="play-head" style:--court-shift="{courtShift}px" bind:clientWidth={headW}>
       {#if play && home && away}
         <div class="scorebug" title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
-          <span class="team home" style:color={home.text}>
+          <span class="team home" style:color={pageText(home.text)}>
             {@render ball(homeIsOff)}
             {#if homeLogo}<img class="logo" src={homeLogo} alt="" />{:else}<span class="kit" style:background={home.fill}></span>{/if}<span class="team-name">{play.home}</span>
           </span>
           <b>{play.homeScore} – {play.awayScore}</b>
-          <span class="team away" style:color={away.text}>
+          <span class="team away" style:color={pageText(away.text)}>
             <span class="team-name">{play.away}</span>{#if awayLogo}<img class="logo" src={awayLogo} alt="" />{:else}<span class="kit" style:background={away.fill}></span>{/if}
             <span class="ball-slot" bind:this={awayEnd}>{@render ball(!homeIsOff)}</span>
           </span>
         </div>
         <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
-        <div class="game-clock" style:left={clockX != null ? `${clockX}px` : null}>
+        <div class="game-clock" style:left={clockX != null ? `${clockX}px` : null} bind:clientWidth={clockW}>
           <span class="game-time" title="Game clock">{live.gameClock}</span>
           <span class="period-line"><span class="period">{quarter(play.period)}</span><span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span></span>
         </div>

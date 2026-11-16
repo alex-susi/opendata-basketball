@@ -1,23 +1,27 @@
 <script lang="ts">
   // The trace panel under the court, and the play's timeline: one number followed over the whole play, with the
   // play's actions marked on it and the current moment as the play runs. Two traces:
-  //   Ball height       the ball's z from the tracking (ft).
-  //   Nearest opponent  one player's floor distance to the closest player of the other team (ft). Click a player
-  //                     on the court or in a roster, or pick one here; the court rings the pair in their teams'
-  //                     secondary colours and joins them with a line.
+  //   Ball Height    the ball's z from the tracking (ft).
+  //   Player Trace   one player's measure, both picked here (lib/trace.ts, METRICS): distance to the nearest
+  //                  opponent, his matchup, the nearest teammate, the basket or the ball, or his speed, acceleration
+  //                  or speed toward the basket. Clicking a player on the court or in a roster picks him too. The
+  //                  court rings him in his team's secondary colour and, for a paired measure, rings the other
+  //                  player and joins them with a line.
   // Samples are every 0.2 s of playback (lib/trace.ts). Each action is a dashed line, captioned with the action
   // above the plot and the player under the time axis (both hidden when the Display panel's Action Names is off);
   // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
-  // chart to move playback there. A third tab, Players, swaps the chart for a table of the ten players on court
-  // (TrackingTable.svelte). Shown or hidden from the Display panel.
+  // chart to move playback there. A third tab, Player Tracking, swaps the chart for a table of the ten players on
+  // court (TrackingTable.svelte). The readout on the right has three rows: the playback seconds, the tracking frame
+  // and the value. Shown or hidden from the Display panel.
   import ActionCard from "./ActionCard.svelte";
   import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
   import { blend, cursorAt, FPS, layoutTimeline, shortScreen, type Tick, type Timeline } from "../lib/sequence";
-  import { nearestAt, traceSamples, type TraceKind, type TraceSample } from "../lib/trace";
+  import { metricInfo, METRICS, playerValue, traceSamples, type Metric, type TraceKind, type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
+  import { pageText } from "../lib/theme.svelte";
   import { viewer } from "../lib/viewer.svelte";
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
@@ -46,16 +50,20 @@
   const tracked = $derived((play?.players ?? []).filter((p) => p.x.some((v) => !Number.isNaN(v)))
     .sort((a, b) => (a.role === b.role ? 0 : a.role === "off" ? -1 : 1)));
   const focus = $derived(tracked.find((p) => p.id === viewer.focusPid) ?? null);
-  const kind = $derived<TraceKind | null>(viewer.trace === "ball" ? { kind: "ball" } : viewer.trace === "nearest" && focus ? { kind: "nearest", pid: focus.id } : null);
+  const info = $derived(metricInfo(viewer.metric));
+  const kind = $derived<TraceKind | null>(viewer.trace === "ball" ? { kind: "ball" } : viewer.trace === "player" && focus ? { kind: "player", pid: focus.id, metric: viewer.metric } : null);
   const samples = $derived(play && seq.length && kind ? traceSamples(play, seq, kind) : []);
-  // The ball in its own orange; a followed player in his team's colour as written on the dark panels.
-  const color = $derived(viewer.trace === "ball" || !focus || !play ? COLORS.ball : play.colors[focus.role].text);
+  // The ball in its own orange; a followed player in his team's colour as written on the panels.
+  const color = $derived(viewer.trace === "ball" || !focus || !play ? COLORS.ball : pageText(play.colors[focus.role].text));
   const tEnd = $derived(Math.max(1, (seq.length - 1) / FPS));
-  // Ball heights past 20 ft are tracking noise; distances use whatever the play needs, in steps of 5 ft.
+  const unit = $derived(viewer.trace === "ball" ? "ft" : info.unit);
+  // Ball heights past 20 ft are tracking noise; other measures use whatever the play needs, in steps of 5, with room
+  // below zero for the ones that go negative (acceleration, speed toward the basket).
   const yMax = $derived.by(() => {
     const top = Math.max(0, ...samples.map((s) => s.v ?? 0));
     return viewer.trace === "ball" ? clamp(Math.ceil(top / 5) * 5, 10, 20) : Math.max(10, Math.ceil(top / 5) * 5);
   });
+  const yMin = $derived(viewer.trace === "ball" ? 0 : Math.min(0, Math.floor(Math.min(0, ...samples.map((s) => s.v ?? 0)) / 5) * 5));
 
   const plotW = $derived(Math.max(10, width - M.left - M.right));
   const X = (t: number) => M.left + (t / tEnd) * plotW;
@@ -65,8 +73,8 @@
   const top = $derived(viewer.showTickLabels ? BAND + 2 : 12);
   const bottom = $derived(top + PLOT_H);
   const H = $derived(bottom + AXIS + (viewer.showTickLabels ? BAND : 4));
-  const Y = (v: number) => bottom - (clamp(v, 0, yMax) / yMax) * PLOT_H;
-  const yTicks = $derived(Array.from({ length: Math.floor(yMax / 5) + 1 }, (_, i) => i * 5).filter((v) => yMax <= 20 || v % 10 === 0));
+  const Y = (v: number) => bottom - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * PLOT_H;
+  const yTicks = $derived(Array.from({ length: Math.floor((yMax - yMin) / 5) + 1 }, (_, i) => yMin + i * 5).filter((v) => yMax - yMin <= 20 || v % 10 === 0));
   const xTicks = $derived.by(() => {
     const step = [0.5, 1, 2, 5, 10, 20].find((s) => (s / tEnd) * plotW >= 46) ?? 30;
     return Array.from({ length: Math.floor(tEnd / step + 1e-9) + 1 }, (_, i) => i * step);
@@ -80,8 +88,8 @@
     if (!play || !seq.length || !kind) return null;
     const c = cursorAt(play, seq, viewer.pos);
     if (kind.kind === "ball") return { v: blend(play.ball.z, c), opp: null as PlayerTrack | null };
-    const near = nearestAt(play, kind.pid, c);
-    return { v: near?.dist ?? null, opp: near ? play.players.find((p) => p.id === near.pid) ?? null : null };
+    const got = playerValue(play, kind.pid, kind.metric, c);
+    return { v: got.v, opp: play.players.find((p) => p.id === got.other) ?? null };
   });
 
   // The line runs through the samples already played (and the current moment), broken where a value is missing.
@@ -106,8 +114,8 @@
   const moment = $derived(hovered ? { t: hovered.t, f: frameAt(hovered.k) } : { t: tNow, f: frameAt(viewer.pos) });
   const name = (p: PlayerTrack | null | undefined) => (p ? `#${p.jersey} ${p.name}` : "–");
   const teamOf = (p: PlayerTrack) => (play ? (p.role === "off" ? play.off : play.def) : "");
-  const kitText = (p: PlayerTrack | null | undefined) => (p && play ? play.colors[p.role].text : undefined);
-  const fmt = (v: number | null | undefined) => (v == null || Number.isNaN(v) ? "–" : `${v.toFixed(1)} ft`);
+  const kitText = (p: PlayerTrack | null | undefined) => (p && play ? pageText(play.colors[p.role].text) : undefined);
+  const fmt = (v: number | null | undefined) => (v == null || Number.isNaN(v) ? "–" : `${v.toFixed(1)} ${unit}`);
 
   function tAt(ev: PointerEvent): number {
     const box = svg!.getBoundingClientRect();
@@ -138,6 +146,9 @@
     const v = (ev.currentTarget as HTMLSelectElement).value;
     viewer.focusPid = v === "" ? null : Number(v);
   }
+  function pickMetric(ev: Event): void {
+    viewer.metric = (ev.currentTarget as HTMLSelectElement).value as Metric;
+  }
 </script>
 
 <div class="panel trace">
@@ -145,8 +156,8 @@
     <div class="seg" role="radiogroup" aria-label="What the panel follows">
       <button type="button" role="radio" aria-checked={viewer.trace === "ball"} class:on={viewer.trace === "ball"}
               onclick={() => (viewer.trace = "ball")}>Ball Height</button>
-      <button type="button" role="radio" aria-checked={viewer.trace === "nearest"} class:on={viewer.trace === "nearest"}
-              onclick={() => (viewer.trace = "nearest")}>Nearest Opponent</button>
+      <button type="button" role="radio" aria-checked={viewer.trace === "player"} class:on={viewer.trace === "player"}
+              onclick={() => (viewer.trace = "player")}>Player Trace</button>
       <button type="button" role="radio" aria-checked={viewer.trace === "players"} class:on={viewer.trace === "players"}
               onclick={() => (viewer.trace = "players")}>Player Tracking</button>
     </div>
@@ -160,7 +171,7 @@
         {/each}
       </div>
       {#if play}<span class="trace-read">{@render at()}</span>{/if}
-    {:else if viewer.trace === "nearest"}
+    {:else if viewer.trace === "player"}
       <label class="trace-pick">
         <span>Player</span>
         <select value={focus ? String(focus.id) : ""} onchange={pick} style:color={kitText(focus)}>
@@ -175,22 +186,31 @@
           {/each}
         </select>
       </label>
+      <label class="trace-pick" title={info.title}>
+        <span>Track</span>
+        <select value={viewer.metric} onchange={pickMetric}>
+          {#each METRICS as m (m.key)}<option value={m.key} title={m.title}>{m.label}</option>{/each}
+        </select>
+      </label>
       {#if play}
         <span class="trace-read">
-          {@render at()}{#if focus}:
-            {#if hovered}
-              {@const opp = play?.players.find((p) => p.id === hovered.opp)}
-              <b>{fmt(hovered.v)}</b> to <b style:color={kitText(opp)}>{name(opp)}</b>
+          {@render at()}
+          <span class="trace-row">
+            {#if focus}
+              {@const v = hovered ? hovered.v : now?.v}
+              {@const opp = hovered ? play.players.find((p) => p.id === hovered.opp) : now?.opp}
+              {info.label} <b>{fmt(v)}</b>{#if info.pair && opp}&nbsp;· <b style:color={kitText(opp)}>{name(opp)}</b>{#if !hovered}&nbsp;<span>({teamOf(opp)})</span>{/if}{/if}
             {:else}
-              nearest <b style:color={kitText(now?.opp)}>{name(now?.opp)}</b>{#if now?.opp}&nbsp;<span>({teamOf(now.opp)})</span>{/if} · <b>{fmt(now?.v)}</b>
+              No player picked
             {/if}
-          {/if}
+          </span>
         </span>
       {/if}
     {:else if viewer.trace === "ball"}
       {#if play}
         <span class="trace-read">
-          {@render at()}: {#if hovered}<b>{fmt(hovered.v)}</b>{:else}ball height <b>{fmt(now?.v)}</b>{/if}
+          {@render at()}
+          <span class="trace-row">Ball Height <b>{fmt(hovered ? hovered.v : now?.v)}</b></span>
         </span>
       {/if}
     {/if}
@@ -215,7 +235,7 @@
         {#each xTicks as t (t)}
           <text class="axis" x={X(t)} y={bottom + 14} text-anchor="middle">{t % 1 ? t.toFixed(1) : t}</text>
         {/each}
-        <text class="axis unit" x={M.left - 6} y={top - 6} text-anchor="end">ft</text>
+        <text class="axis unit" x={M.left - 6} y={top - 6} text-anchor="end">{unit}</text>
         <text class="axis unit" x={M.left + plotW} y={bottom + 14} text-anchor="end" dx="12">s</text>
         {#each timeline.cuts as cut}
           <line class="cut" x1={M.left + cut * plotW} x2={M.left + cut * plotW} y1={bottom - 5} y2={bottom + 3}><title>Footage skips here</title></line>
@@ -226,7 +246,7 @@
         {/each}
         {#if !kind}
           <text class="trace-prompt" x={M.left + plotW / 2} y={top + PLOT_H / 2} text-anchor="middle" dominant-baseline="middle">
-            Click a player on the court or in a roster to follow his distance to the nearest opponent.
+            Click a player on the court or in a roster, or pick one above, to follow his {info.label.toLowerCase()}.
           </text>
         {/if}
         {#if hovered}<line class="hover" x1={X(hovered.t)} x2={X(hovered.t)} y1={top} y2={bottom} />{/if}
@@ -238,7 +258,7 @@
           {/if}
         {/each}
         {#if now?.v != null}
-          <circle cx={X(tNow)} cy={Y(now.v)} r="5.5" fill={color} stroke="#0F1522" stroke-width="1.5" />
+          <circle class="now-dot" cx={X(tNow)} cy={Y(now.v)} r="5.5" fill={color} stroke-width="1.5" />
         {/if}
       </svg>
       {#if viewer.showTickLabels}
@@ -277,5 +297,5 @@
 </div>
 
 {#snippet at()}
-  <span class="trace-at" title="Where the readout is: seconds of playback on the timeline below, and the tracking frame (25 frames a second). Shows the hovered moment while the pointer is over the chart, otherwise the current one.">at <b>{moment.t.toFixed(2)} s</b><span class="trace-frame"> · frame {moment.f ?? "–"}</span></span>
+  <span class="trace-at" title="Where the readout is: seconds of playback on the timeline below, and the tracking frame (25 frames a second). Shows the hovered moment while the pointer is over the chart, otherwise the current one."><span class="trace-row"><b>{moment.t.toFixed(2)} s</b></span><span class="trace-row">Frame <b>{moment.f ?? "–"}</b></span></span>
 {/snippet}

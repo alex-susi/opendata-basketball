@@ -39,7 +39,7 @@
 
   let cov = $state<CoverageFile | null>(null);
   $effect(() => { if (viewer.ann.coverage && !cov) loadCoverage().then((c) => { cov = c; }); });
-  const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame, viewer.covSmooth) : null);
+  const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame, 1) : null);
   // A player as the card names him: jersey number, then last name ("#12 Steinbergs").
   const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
   // Calls coloured as in the strips (screen_coverage/01_scripts/R/strips.R), stepped for the dark card.
@@ -88,11 +88,11 @@
   {@const shown = r.t >= 0}
   {@const right = calls[top] === r.screen.call}
   <div class="ann-card cov-card">
-    <b>Screen Coverage Read</b>
-    <span class="card-line cov-when"><span><i class="event-flag cov-flag" class:set={shown}>{fmtT(r.t)}</i></span><span>{shown ? "screen set" : "before the screen"}</span></span>
+    <span class="cov-title"><b>Screen Coverage Read</b><i class="event-flag cov-flag" class:set={shown}
+      title={shown ? "Seconds since the screen was set" : "Seconds until the screen is set"}>{fmtT(r.t)}</i></span>
     <span class="cov-who">{who(r.screen.s)} screens for {who(r.screen.h)}</span>
-    {@render bars(`On the ball · ${who(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
-    {@render bars(`On the screener · ${who(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
+    {@render bars(`On the Ball · ${who(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
+    {@render bars(`On the Screener · ${who(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
     <!-- The model's most likely joint call and, from the screen on, the tagged call under it, the two call names in
          one column; the mark says whether the model's call at this frame was the tagged one. -->
     <span class="cov-joint">

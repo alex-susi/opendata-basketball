@@ -3,13 +3,13 @@
   // the two rosters. Each team keeps its club colours whichever end it plays. A roster row ends with the player's
   // archetype on that side of the ball: its name in an outlined pill of the archetype's colour, full name and
   // probability on hover. Clicking a row makes the trace panel under the court follow that player's distance to his
-  // nearest opponent (clicking it again lets him go).
+  // chosen measure (clicking it again lets him go).
   //
-  // Hovering a row opens his player card (PlayerCard.svelte) beside the column; it stays open while the pointer is
-  // on it. Clicking the row pins the card under his team's roster (and follows him in the trace panel) until the row
-  // is clicked again or the card's × is pressed. Other rows still open their floating cards meanwhile.
+  // Hovering a row only rings the player on the court. Clicking it opens his player card (PlayerCard.svelte) under
+  // his team's roster (and follows him in the trace panel) until the row is clicked again or the card's × is pressed.
   import PlayerCard from "./PlayerCard.svelte";
   import { logoUrl } from "../lib/logos.svelte";
+  import { pageText } from "../lib/theme.svelte";
   import type { Play, PlayerTrack, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
@@ -17,7 +17,7 @@
 
   const sides: { role: Role; title: string }[] = [{ role: "off", title: "Offense" }, { role: "def", title: "Defense" }];
   const area = (role: Role) => (role === "off" ? live.areaOff : live.areaDef);
-  const following = (id: number) => viewer.showTrace && viewer.trace === "nearest" && viewer.focusPid === id;
+  const following = (id: number) => viewer.showTrace && viewer.trace === "player" && viewer.focusPid === id;
 
   const SECTIONS: { key: keyof typeof viewer.ann; label: string; title: string }[] = [
     { key: "events", label: "Event Markers", title: "Where each action happened: shot spots (filled made, ringed missed, coloured by contest), passes, dribbles, drives, screens, closeouts, fouls, rebounds, turnovers, and every player at the last shot's release (dashed)" },
@@ -28,45 +28,24 @@
     { key: "glass", label: "Rebounding Roles", title: "While a shot is in the air: which attackers crash the glass, retreat, stay back as the safety or hold their spot, and which defenders box out (? = mostly off camera)" },
     { key: "coverage", label: "Screen Coverage Read", title: "Around each on-ball screen (2 s before to 1 s after): the live model's probability for each defender's call (on the ball: over, under, switch; on the screener: show, soft, switch) and the most likely joint call. The model is a transformer that reads all ten players' last 1.6 s and is never told when the screen comes, held out from this game. The tagged call is ticked once the screen is set" },
     { key: "attention", label: "Model Attention", title: "Around each on-ball screen: a purple ring on each player sized by how much of the live coverage model's attention the four players of the screen give him (last layer, heads averaged), with the top three labelled. Attention shows which players' information the model mixes in, not what caused the call" },
-    { key: "lanes", label: "Roll Lanes (experiment)", title: "Around each on-ball screen (2 s before to 1 s after): the straight lane from the screener to the rim (gold dashes), each off-ball defender's nearest point on it (dotted), an arrow for his last 0.2 s, and the experiment's inputs: his gap to the lane and how fast it closed (+ = moving toward it). These are inputs of an experimental model variant, not the live Coverage Read; a still-approaching screener or a pop makes the lane a poor guide" },
+    { key: "lanes", label: "Roll Lanes", title: "Around each on-ball screen (2 s before to 1 s after): the straight lane from the screener to the rim (gold dashes), each off-ball defender's nearest point on it (dotted), an arrow for his last 0.2 s, and the experiment's inputs: his gap to the lane and how fast it closed (+ = moving toward it). These are inputs of an experimental model variant, not the live Coverage Read; a still-approaching screener or a pop makes the lane a poor guide" },
     { key: "quality", label: "Data Quality", title: "Extrapolated players drawn faint, tracking's expected error round each player, the chance's quality index" },
   ];
 
-  // The floating card beside a hovered row (fixed, so the scrolling column does not clip it), and the pinned player.
-  type At = { p: PlayerTrack; top: number; right: number };
-  let hovered = $state<At | null>(null);
+  // The player whose card is open (clicked).
   let pinned = $state<PlayerTrack | null>(null);
-  let hideTimer: ReturnType<typeof setTimeout> | undefined;
-  const at = (ev: MouseEvent, p: PlayerTrack): At => {
-    const box = (ev.currentTarget as HTMLElement).getBoundingClientRect();
-    return { p, top: box.top, right: window.innerWidth - box.left + 8 };
-  };
-  function enter(ev: MouseEvent, p: PlayerTrack): void {
-    clearTimeout(hideTimer);
-    viewer.hoverPid = p.id;
-    hovered = pinned?.id === p.id ? null : at(ev, p);
-  }
-  // A short grace before the card goes, so the pointer can cross the gap onto it.
-  function leave(): void {
-    viewer.hoverPid = null;
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => { hovered = null; }, 220);
-  }
-  const keep = () => clearTimeout(hideTimer);
 
   function follow(p: PlayerTrack): void {
     const on = pinned?.id === p.id;
     pinned = on ? null : p;
-    hovered = null;
     viewer.focusPid = on ? null : p.id;
-    viewer.trace = "nearest";
+    viewer.trace = "player";
     viewer.showTrace = true;
   }
-  // A new play has new rows: let the pinned card go.
+  // A new play has new rows: let the open card go.
   $effect(() => {
     void play?.id;
     pinned = null;
-    hovered = null;
   });
 </script>
 
@@ -132,29 +111,17 @@
       </div>
     {/if}
     <h3 class="sub-head">Annotations</h3>
-    <div class="toggle-grid by-column four">
+    <div class="toggle-grid by-column five">
       {#each SECTIONS as sec}
         <label class="toggle" title={sec.title}><input type="checkbox" bind:checked={viewer.ann[sec.key]} />{sec.label}</label>
       {/each}
     </div>
-    {#if viewer.ann.coverage}
-      <!-- The Coverage Read card's percentages: this frame's raw value, or the average of the last two frames. -->
-      <div class="control-read">
-        <span class="control-note">Coverage Read percentages</span>
-        <div class="seg control-scope" role="radiogroup" aria-label="Coverage Read percentages">
-          <button type="button" role="radio" aria-checked={viewer.covSmooth === 1} class:on={viewer.covSmooth === 1}
-                  title="Each frame's own probabilities, as the model gives them" onclick={() => (viewer.covSmooth = 1)}>Raw</button>
-          <button type="button" role="radio" aria-checked={viewer.covSmooth === 2} class:on={viewer.covSmooth === 2}
-                  title="Averaged over this frame and the one before (0.08 s), never a later frame" onclick={() => (viewer.covSmooth = 2)}>Avg 0.08s</button>
-        </div>
-      </div>
-    {/if}
   </div>
 
   {#each sides as side}
     {@const kit = play?.colors[side.role]}
     {@const logo = play ? logoUrl(side.role === "off" ? play.offTeam : play.defTeam) : null}
-    <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-ink={kit?.ink} style:--kit-text={kit?.text}>
+    <div class="panel roster" style:--kit-fill={kit?.fill} style:--kit-ink={kit?.ink} style:--kit-text={pageText(kit?.text)}>
       <div class="roster-head">
         <h2>{#if logo}<img class="roster-logo" src={logo} alt="" />{/if}{play ? (side.role === "off" ? play.off : play.def) : ""}</h2>
         <p class="roster-sub">
@@ -166,8 +133,8 @@
           <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
           <li class:bench={!live.onCourt.includes(p.id)} class:has-ball={live.handler === p.id} class:following={following(p.id)}
               class:pinned={pinned?.id === p.id}
-              title="Click to pin his card and follow his distance to the nearest opponent"
-              onmouseenter={(ev) => enter(ev, p)} onmouseleave={leave} onclick={() => follow(p)}>
+              title="Click to open his card and follow him in the trace panel"
+              onmouseenter={() => (viewer.hoverPid = p.id)} onmouseleave={() => (viewer.hoverPid = null)} onclick={() => follow(p)}>
             <span class="num">{p.jersey}</span><span class="name" title={p.name}>{p.name}</span><span class="ball-mark"></span>
             {#if p.arch}
               <span class="arch" style:--arch-color={`var(--arch-${p.arch.slot})`}
@@ -183,6 +150,3 @@
   {/each}
 </aside>
 
-{#if hovered && play}
-  <PlayerCard p={hovered.p} kit={play.colors[hovered.p.role]} top={hovered.top} right={hovered.right} onenter={keep} onleave={leave} />
-{/if}

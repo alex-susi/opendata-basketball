@@ -58,11 +58,6 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   background: var(--panel); border-bottom: 1px solid var(--line);
   overflow-x: auto; scrollbar-width: thin; scrollbar-color: #3A4866 transparent;
 }
-/* Divider before the exploration tabs. */
-.tabs .tab-sep {
-  display: flex; align-items: center; margin: 0 2px 0 10px; padding-left: 12px; border-left: 1px solid var(--line);
-  color: var(--muted); font-size: 11px; font-weight: 600; white-space: nowrap;
-}
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .tabs button {
   padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted);
@@ -310,7 +305,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   max-width: 220px; height: 26px; padding: 2px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised);
   color: var(--ink); font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none;
 }
-.trace-read { min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* The readout: three right-aligned rows (seconds, frame, value). */
+.trace-read { display: grid; justify-items: end; min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.3; }
+.trace-at { display: contents; }
+.trace-row { white-space: nowrap; }
+.trace-chart .now-dot { stroke: var(--panel); }
 .trace-read b { color: var(--ink); }
 .trace-chart { position: relative; min-height: 126px; }
 .trace-captions, .trace-names { position: absolute; pointer-events: none; }
@@ -628,10 +627,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* A line allowed to wrap (a long value): the card keeps the width of its other lines. */
 /* contain: inline-size keeps the line out of the card's width, so the card is as wide as its other lines and this one wraps. */
 .card-line.wrap { white-space: normal; contain: inline-size; }
-/* A subheader inside a card (shot details groups): space above, a small label, a thin rule under it. */
+/* A subheader inside a card (shot details groups, coverage read defenders): space above, a small label in title case
+   as written, a thin rule under it. */
 .card-head {
-  margin: 7px 0 2px; padding-bottom: 1px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 10.5px;
-  font-weight: 700; letter-spacing: .04em; text-transform: uppercase; opacity: .85;
+  margin: 7px 0 2px; padding-bottom: 1px; border-bottom: 1px solid var(--line); color: var(--ink); font-size: 11px;
+  font-weight: 700; opacity: .85;
 }
 .ann-card > b + .card-head, .trace-card-head + .card-head { margin-top: 3px; }
 .card-line.wrap > span:last-child { flex: 1 1 0; }
@@ -780,7 +780,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .cov-card .cov-row { grid-template-columns: 70px 1fr 34px; }
 .cov-card .card-head, .cov-who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cov-who { color: var(--muted); }
-.cov-when { align-items: center; }
+/* The title with the countdown to the screen (blue once it is set) in the card's top-right corner. */
+.cov-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .cov-flag { margin-left: 0; }
 .cov-flag.set { background: #2f7de1; }
 .cov-row { display: grid; grid-template-columns: 92px 1fr 34px; align-items: center; gap: 8px; color: var(--muted);
@@ -792,8 +793,6 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .cov-called { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--line); }
 .cov-note { color: var(--muted); font-size: 10.5px; }
 /* The trace panel's moment readout (TracePanel.svelte): always shown, hovered or current. */
-.trace-at { white-space: nowrap; }
-.trace-frame { color: var(--muted); }
 /* The Coverage Read card's tick on the defender's tagged call (shown from the screen on). */
 .cov-tick { margin-left: 5px; font-style: normal; color: var(--ink); font-weight: 700; }
 .cov-card .card-head { margin-top: 5px; }
@@ -805,3 +804,57 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .cov-mark { text-align: right; font-weight: 700; }
 .cov-mark.right { color: #3ccb7f; }
 .cov-mark.wrong { color: #f0605d; }
+
+/* ---- Day theme: the night/day switch in the bottom-right corner (data-theme="light" on <html>, lib/look.ts) ----
+   The same layout on light surfaces. The shared variables carry most of it; the rules below cover the places that
+   use a fixed dark colour. The court keeps its hardwood and its dark label plates in both themes. */
+:root[data-theme="light"] {
+  --bg: #EDF0F5;
+  --panel: #FFFFFF;
+  --raised: #F3F5F9;
+  --hover: #E6EBF3;
+  --line: #D5DCE6;
+  --ink: #172033;
+  --muted: #5A6780;
+  --off: #2B74DB;
+  --def: #E0612B;
+  --made: #17955A;
+  --missed: #D2433A;
+  --arch-chaser: #C9B414;
+  color-scheme: light;
+}
+:root[data-theme="light"] :is(.tabs, .play-list, .side, .doc, .ann-stack.top) { scrollbar-color: #B8C1D1 transparent; }
+:root[data-theme="light"] .chip { background: #DCE7FA; }
+:root[data-theme="light"] .play-item { border-bottom-color: #E7EBF1; }
+:root[data-theme="light"] .play-item.active { background: #E2ECFB; }
+:root[data-theme="light"] .pi-and1 { color: #B87400; }
+:root[data-theme="light"] .pi-tags i { background: #E7EBF2; color: #3E4A5F; }
+:root[data-theme="light"] .pi-tags i.oreb { background: #FBEAD0; color: #93560A; }
+:root[data-theme="light"] .poss-ball.on { filter: none; }
+:root[data-theme="light"] .scorebug .kit, :root[data-theme="light"] .roster .num { box-shadow: 0 0 0 1px rgba(0, 0, 0, .2); }
+:root[data-theme="light"] .stage-note { background: rgba(255, 255, 255, .82); }
+:root[data-theme="light"] .trace-chart .grid { stroke: #E3E7EE; }
+:root[data-theme="light"] .trace-chart .sample { stroke: #8E9AAE; }
+:root[data-theme="light"] .trace-chart .mark, :root[data-theme="light"] .strip-mark { stroke: #6B788F; }
+:root[data-theme="light"] :is(.trace-chart .mark.foul, .trace-chart .mark.rebound, .strip-mark.foul, .strip-mark.rebound, .leaders line, .strip-played) { stroke: #A0AABB; }
+:root[data-theme="light"] .trace-chart .mark.cut { stroke: #3D6FC0; }
+:root[data-theme="light"] .strip-rail { stroke: #DCE1EA; }
+:root[data-theme="light"] .strip-shot { stroke: #FFFFFF; }
+:root[data-theme="light"] :is(.strip-shot.on, .strip-head) { stroke: var(--ink); }
+:root[data-theme="light"] :is(.icon-btn.primary svg) { fill: #FFFFFF; }
+:root[data-theme="light"] .icon-btn.primary:hover { background: #4A8BE8; }
+:root[data-theme="light"] .switch input:checked + .switch-track::after { background: #FFFFFF; }
+:root[data-theme="light"] .switch.two-way input:checked + .switch-track::after { background: var(--off); }
+:root[data-theme="light"] :is(.multi-list, .trace-card, .spacing-tip) { box-shadow: 0 6px 18px rgba(23, 32, 51, .14); }
+:root[data-theme="light"] .ann-card { background: rgba(255, 255, 255, .95); box-shadow: 0 4px 14px rgba(23, 32, 51, .16); }
+:root[data-theme="light"] .player-card { background: color-mix(in srgb, var(--team-fill, var(--raised)) 10%, #FFFFFF); }
+:root[data-theme="light"] .pc-views button { border-color: rgba(0, 0, 0, .12); background: rgba(255, 255, 255, .7); }
+:root[data-theme="light"] .pc-views button:hover { background: rgba(0, 0, 0, .05); }
+:root[data-theme="light"] .pc-views button.on { background: var(--team-edge, #F5B02E); }
+:root[data-theme="light"] :is(.ps-axis, .cov-bar) { background: rgba(0, 0, 0, .08); }
+:root[data-theme="light"] .apart .num.pos { color: #1B8E4E; }
+:root[data-theme="light"] .apart .num.neg { color: #C63B3B; }
+:root[data-theme="light"] .cov-mark.right { color: #1B8E4E; }
+:root[data-theme="light"] .cov-mark.wrong { color: #C63B3B; }
+:root[data-theme="light"] .trace-chart .rim-shield { fill: #5C77A8; }
+:root[data-theme="light"] .paint-dot { box-shadow: 0 0 0 1px rgba(0, 0, 0, .3); }

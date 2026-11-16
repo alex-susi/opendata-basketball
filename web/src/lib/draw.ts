@@ -10,7 +10,7 @@ import type { LaneFrame } from "./coverage";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
 import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
-import { nearestAt } from "./trace";
+import { metricInfo, playerValue, type Metric } from "./trace";
 import type { Play, PlayerTrack, Sample, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
@@ -29,8 +29,11 @@ export interface DrawOptions {
   sample?: Sample | null;
   /** Annotation sections drawn on the court (annotate.ts). */
   ann: AnnSections;
-  /** The player whose nearest opponent is shown: both ringed and joined by a line. Null shows no pair. */
+  /** The player the trace panel follows: ringed, and for a paired measure (nearest opponent, matchup, nearest
+   * teammate) joined to the other player by a line with the distance. Null shows nothing. */
   focusPid: number | null;
+  /** The trace panel's measure for him. */
+  metric: Metric;
   hoverPid: number | null;
   /** The live coverage model's attention share (0-1) per player id at this frame, or null (coverage.ts). */
   attention?: Map<number, number> | null;
@@ -398,9 +401,9 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
   const homeIsOff = play.off === play.home, gap = "   ·   ";
   const home = homeIsOff ? play.colors.off : play.colors.def, away = homeIsOff ? play.colors.def : play.colors.off;
   const parts: [string, string, number][] = [
-    [`${quarter(play.period)}  `, COLORS.ink, 700], [shotClockText(play.sc[c.i0]), COLORS.risk, 700],
-    [`  ${clock(play.gc[c.i0])}`, COLORS.ink, 700], [gap, COLORS.muted, 400], [play.home, home.text, 700],
-    [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.ink, 700], [play.away, away.text, 700]];
+    [`${quarter(play.period)}  `, COLORS.paperInk, 700], [shotClockText(play.sc[c.i0]), COLORS.risk, 700],
+    [`  ${clock(play.gc[c.i0])}`, COLORS.paperInk, 700], [gap, COLORS.paperMuted, 400], [play.home, home.text, 700],
+    [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.paperInk, 700], [play.away, away.text, 700]];
   const span = (size: number) => parts.reduce((sum, [text, , weight]) => {
     ctx.font = `${weight} ${size}px ${FONT}`;
     return sum + ctx.measureText(text).width;
@@ -427,11 +430,11 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[],
   if (credit && L.cw >= 420) {
     ctx.textAlign = "right";
     ctx.font = `400 11px ${FONT}`;
-    ctx.fillStyle = COLORS.muted;
+    ctx.fillStyle = COLORS.paperMuted;
     ctx.fillText(DATA_CREDIT, L.left + L.cw, y);
   }
   ctx.font = `700 13px ${FONT}`;
-  ctx.fillStyle = COLORS.ink;
+  ctx.fillStyle = COLORS.paperInk;
   ctx.textAlign = "center";
   const both = labels.join("   ·   ");
   ctx.fillText(ctx.measureText(both).width <= L.cw - 16 ? both : labels[labels.length - 1] ?? "", L.left + L.cw / 2, y, L.cw);
@@ -474,22 +477,22 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   const k = annContext(ctx, L, play, c, r, all);
   drawAnnotationsUnder(k, o.ann);
   if (o.lanes) drawLanesUnder(ctx, L, play, all, c, o.lanes);
-  // The followed player and his nearest opponent: joined by a line under the dots, each ringed in his team's
-  // secondary colour over the dots (the followed player's ring thicker), the distance on top of everything.
-  let pair: { a: Dot; b: Dot; dist: number } | null = null;
+  // The followed player and, for a paired measure, the other player (nearest opponent, matchup, nearest teammate):
+  // joined by a line under the dots, each ringed in his team's secondary colour over the dots (the followed player's
+  // ring thicker), the distance on top of everything.
+  let pair: { a: Dot; b: Dot | null; dist: number | null } | null = null;
   if (o.focusPid != null) {
-    const near = nearestAt(play, o.focusPid, c);
-    const a = all.find((d) => d.p.id === o.focusPid), b = near && all.find((d) => d.p.id === near.pid);
-    if (a && b && near) {
-      drawPairLine(ctx, L, a, b);
-      pair = { a, b, dist: near.dist };
-    }
+    const a = all.find((d) => d.p.id === o.focusPid);
+    const got = a && metricInfo(o.metric).pair ? playerValue(play, o.focusPid, o.metric, c) : null;
+    const b = got?.other != null ? all.find((d) => d.p.id === got.other) ?? null : null;
+    if (a && b && got?.v != null) drawPairLine(ctx, L, a, b);
+    if (a) pair = { a, b, dist: b ? got?.v ?? null : null };
   }
   for (const d of all) drawPlayer(ctx, L, d, r, play.colors[d.p.role], d.p.id === handler, o, o.ann.quality && d.p.d[c.i0] === 0);
   if (o.attention) drawAttention(ctx, L, all, r, o.attention);
   if (o.lanes) drawLanesOver(ctx, L, all, r, o.lanes);
   if (pair) {
-    for (const [d, width] of [[pair.a, 3], [pair.b, 2]] as const) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
+    for (const [d, width] of [[pair.a, 3], [pair.b, 2]] as const) if (d) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
   }
   if (o.showArch) {
     for (const d of dots.def.concat(dots.off)) {
@@ -511,7 +514,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
     ctx.stroke();
   }
   drawAnnotationsOver(k, o.ann, handler, o.focusPid ?? o.hoverPid);
-  if (pair) {
+  if (pair?.b && pair.dist != null) {
     const mx = (px(L, pair.a.x) + px(L, pair.b.x)) / 2, my = (py(L, pair.a.y) + py(L, pair.b.y)) / 2;
     drawTag(ctx, mx, my, `${pair.dist.toFixed(1)} ft`, COLORS.ink, 11);
   }

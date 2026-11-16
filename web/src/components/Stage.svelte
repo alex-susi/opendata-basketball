@@ -52,7 +52,7 @@
   }
 
   function render(ctx: CanvasRenderingContext2D): void {
-    const focusPid = viewer.showTrace && viewer.trace === "nearest" ? viewer.focusPid : null;
+    const focusPid = viewer.showTrace && viewer.trace === "player" ? viewer.focusPid : null;
     const k = Math.min(Math.max(Math.floor(viewer.pos), 0), seq.length - 1);
     const attention = viewer.ann.attention && att && play && seq.length ? attentionAt(att, play.id, play.frames[seq[k]]) : null;
     const laneFrame = viewer.ann.lanes && lanes && play && seq.length ? lanesAt(lanes, play.id, play.frames[seq[k]]) : null;
@@ -94,9 +94,9 @@
   function onClick(ev: MouseEvent): void {
     const pid = playerAt(ev);
     if (pid == null) return;
-    const same = viewer.trace === "nearest" && viewer.focusPid === pid && viewer.showTrace;
+    const same = viewer.trace === "player" && viewer.focusPid === pid && viewer.showTrace;
     viewer.focusPid = same ? null : pid;
-    viewer.trace = "nearest";
+    viewer.trace = "player";
     viewer.showTrace = true;
   }
 

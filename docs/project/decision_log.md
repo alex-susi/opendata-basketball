@@ -2395,3 +2395,29 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - `03_train_transformer.R` defaults changed to match (without `--variant`: main-curve stopping, seeds 1-4, validation predictions saved; the closed lane experiment keeps its flat stopping and two starts). `21_promote_main_curve.R` built the live fold files `02_cache/tf/seqheads_<game>.rds` and 40 networks from `experiments/timing/none/tf_s1-2` and `tf_s3-4`, after checking rules, rows, standardisation and settings match; each start is seeded on its own, so this equals rerunning 03 for each game. The replaced live folds (flat stopping, two starts) are kept in `02_cache/v2_flat_2026-11-12/tf/`; `R/predictions.R` gains `SEQ_FLAT_DIR`, and 16, 18 and 20 now read that snapshot as their "live" comparison so their logged numbers still reproduce.
 - Checks rerun on the new live model: past-only test passes 180/180 with its four saved networks reproducing the cached predictions (`05_test_past_only.R`). Evaluation (`04_evaluate.R`, label updated): before the screen 1.2766 (was 1.278), at −0.4 s 1.1228 (was 1.127), after 0.779 (was 0.760); live minus logistic −0.059 before (−0.091 to −0.026, 8 of 10), −0.121 after (−0.142 to −0.098, 10 of 10). Main-curve scores (`14_weighted_scores.R`): full call 1.1143, ball handler's defender 0.6960, screener's defender 0.7903; gain over logistic 0.078 (0.047 to 0.104). Calibration (`15_calibration.R`): leading call overstated by 1.4 points (−0.3 to +3.3; was 2.7), best single temperature 1.04 (was 1.11), still 8 points high at −2 s and about 5 low after the pick frame; confident switch reads before the pick frame still come true about a third of the time (21 screens from −0.5 s to the pick frame). Card flicker raw 2.25 changes per screen.
 - Exported to the viewer (`06_export_live.R`; model label "time-aware transformer, two heads (main-curve stopping, 4 starts)"). Reads page updated (status, results table with the replaced model as a row, training settings, limits, next steps, pipeline, change log) and its artifact republished.
+
+## 2026-11-15 (latest) — Screen coverage: reads page rewritten for first-time readers
+
+- Owner's request: `screen_coverage/04_docs/screen_coverage_reads.html` read as wordy. New writing rules for the page: bullets instead of paragraphs, short incomplete sentences, no semicolons, colons only right before a list, short section titles with a one-line description under each.
+- Layout: collapsible contents panel on the left (sticky on wide screens, a closed drawer on narrow ones, highlights the section in view). Text now spans the full 940 px content column, the same width as tables and figures.
+- New order (owner's choice): question (with a key-terms table), status, model inputs, results, findings, checks (leakage audit, past-only test, left-out screens), limits, next steps, staff use, under the hood (pipeline and scripts moved here), change log. Experiments that were not adopted grouped in one Status table.
+- Terminology: "tag" replaced by pick frame (`picks.frame`) and "contact" by closest approach throughout, per the plain-terminology preference.
+- Every number kept. One correction: the "Movement history pays" finding showed 0.058 before / 0.141 after, which match the replaced flat-stopping model (1.278 and 0.760 against the baseline). It now shows the live model's 0.059 / 0.121, matching the results table.
+- No model, input or result changed. Artifact republished (version 11).
+
+## 2026-11-15 (latest) — Screen coverage: reads page contents list, wording and spacing
+
+- Owner's follow-up. The contents list now copies the floating table of contents in the owner's R Markdown reports (reference `colorectal-cancer-screening/03_output/04_model_report.html`, rmarkdown `toc_float` with `collapsed`). Bordered list of ruled rows, current entry filled, a section's subsections shown only while reading it, a slim tab on the left edge that hides the list (remembered per viewer), full-width box at the top on phones.
+- "X, not Y" contrast phrasing removed or reworded throughout (21 places, including "tested, not adopted", "reliance, not cause", "rather than", "instead of"). Experiments that were tried and set aside are now called "dropped".
+- More space between sections (88 px) and above each subsection.
+- No model, input or result changed. Artifact republished (version 12).
+
+## 2026-11-16 — Web viewer: display changes and a day theme
+
+- Player cards open only on a click of a roster name. Hovering a row still rings the player on the court.
+- The game clock, quarter and shot clock sit halfway between the away side's possession-ball slot and the court's right edge, measured again whenever the header or court changes size. In a narrow window they move right just enough to clear the ball.
+- The trace panel's Nearest Opponent tab is now Player Trace, with a player menu and a Track menu: nearest opponent, gap to matchup, nearest teammate, distance to basket, distance to ball, speed, acceleration, speed toward basket (`web/src/lib/trace.ts`, `METRICS`). Paired measures draw the line and distance on the court. The readout is three rows: seconds, frame, value.
+- Removed the "Explore" divider in the tab bar and "(Experiment)" from Roll Lanes. Annotations toggles are two columns.
+- Screen Coverage Read card always shows each frame's raw percentages (Raw / Avg 0.08 s switch removed). Its defender subheaders are title case ("On the Ball · #55 Perez"), the "before the screen / screen set" text is gone and the countdown sits beside the title. Shot card subheaders are title case too.
+- New Night / Day switch in the bottom-right corner (`?theme=light`), working with both the Current and Unslop looks. The court and its dark label plates stay the same by day. Team colours on panels are darkened by day where too pale on white.
+- No model, input or result changed.

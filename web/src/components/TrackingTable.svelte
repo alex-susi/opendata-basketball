@@ -20,12 +20,13 @@
   //             defender is assigned to (matchups table), with the gap between them
   //   Ball      minutes played entering the chance, and this possession's touches, dribbles and seconds on the ball
   // "The basket" is the one the offense attacks, which the defense defends. Hovering a row rings the player on the
-  // court; clicking it follows his nearest opponent in the Nearest Opponent tab.
+  // court; clicking it follows him in the Player Trace tab.
   import { CONTEST_COLORS, minutesAt, ownChances, regionName, titleCase } from "../lib/context";
   import { HOOP_X } from "../lib/court";
   import { accelAt, motion, spacing } from "../lib/motion";
   import { contestOf, courtRegion } from "../lib/regions";
   import type { Play, PlayerTrack, Role } from "../lib/types";
+  import { pageText } from "../lib/theme.svelte";
   import { live, viewer } from "../lib/viewer.svelte";
 
   let { play }: { play: Play } = $props();
@@ -87,7 +88,7 @@
     return Number(out) === 0 ? (0).toFixed(d) : out;   // no "-0.0"
   }
   const signed = (v: number) => { const t = fixed(v); return Number(t) > 0 ? `+${t}` : t; };
-  const tagged = (d: number | null, q: PlayerTrack): Cell => ({ v: fixed(d), tag: `#${q.jersey}`, tagTone: play.colors[q.role].text });
+  const tagged = (d: number | null, q: PlayerTrack): Cell => ({ v: fixed(d), tag: `#${q.jersey}`, tagTone: pageText(play.colors[q.role].text) });
 
   function rowOf(p: PlayerTrack, role: Role): Row {
     const at = play.players.indexOf(p), kit = play.colors[role];
@@ -139,7 +140,7 @@
 
   function follow(id: number): void {
     viewer.focusPid = id;
-    viewer.trace = "nearest";
+    viewer.trace = "player";
   }
 </script>
 
@@ -162,7 +163,7 @@
           <td colspan={shown.length + 1}>
             <!-- Sticky, so the heading stays in view when the table scrolls sideways. -->
             <div class="group-line">
-              <b class="group-team" style:color={kit.text} style:width="{nameW}px">{role === "off" ? play.off : play.def}</b>
+              <b class="group-team" style:color={pageText(kit.text)} style:width="{nameW}px">{role === "off" ? play.off : play.def}</b>
               <span class="group-side">{role === "off" ? "Offense" : "Defense"}</span>
               <!-- svelte-ignore a11y_no_static_element_interactions -->
               <span class="group-spacing" onmouseenter={showTip} onmouseleave={() => (tip = null)}>Spacing {fixed(spaced.spread[role])} ft <i class="info">i</i></span>

@@ -17,11 +17,13 @@ export const REACH = 4;      // feet outside the lines in which players and the 
 export const PAD = { top: 6, bottom: 26, side: 6 };
 export const HEADER_TOP = 40;   // top padding while a video is recorded: room for the header drawn on the canvas
 
-// The court keeps its light hardwood look; everything around it follows the dark dashboard theme.
+// The court keeps its light hardwood look; everything around it follows the dashboard theme. ink and muted are
+// for text on the dark label plates (panel) over the court; paperInk and paperMuted for text straight on the
+// surround (paper), which turns light in the day theme (lib/look.ts swaps paper, paperInk and paperMuted).
 // Team colours come with each play (Play.colors).
 export const COLORS = {
   paper: "#1B2334", floor: "#F6CFA3", paint: "#DCA673", line: "#2B2622", ink: "#E8EDF6", muted: "#93A0B8", ball: "#F59A23",
-  ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", risk: "#F5B02E",
+  ballEdge: "#7A3E00", panel: "#0F1522", dark: "#0B0E14", risk: "#F5B02E", paperInk: "#E8EDF6", paperMuted: "#93A0B8",
 };
 
 export type CourtView = "full" | "half";
