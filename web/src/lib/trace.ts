@@ -166,3 +166,26 @@ export function traceSamples(play: Play, seq: number[], kind: TraceKind, step = 
   }
   return out;
 }
+
+export interface PartnerChange {
+  /** The sample where the new player first appears. */
+  k: number;
+  t: number;
+  /** The value there (null when it is missing, so the chart has nowhere to put the dot). */
+  v: number | null;
+  from: number;
+  to: number;
+}
+
+/** Paired measures: the samples where the other player becomes someone else. Samples with nobody (no matchup
+ * assigned, or nobody on the tracked court) are passed over, so A, nobody, B is one change from A to B. */
+export function partnerChanges(samples: TraceSample[]): PartnerChange[] {
+  const out: PartnerChange[] = [];
+  let last: number | null = null;
+  for (const s of samples) {
+    if (s.opp == null) continue;
+    if (last != null && s.opp !== last) out.push({ k: s.k, t: s.t, v: s.v, from: last, to: s.opp });
+    last = s.opp;
+  }
+  return out;
+}

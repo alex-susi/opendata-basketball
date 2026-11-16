@@ -2492,3 +2492,17 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Screens set by a guard (handler on over 60% of his season picks, 109 screens) switch 26% against 13%. Handlers with under 30% of shots from three see under 28% against 17%. Season aggregates include the ten games, so descriptive only. The model is given no player identity.
 - Reads page: new Results › Each call (matrices with counts, why table), finding, limit, next step 1 (owner to choose how to lift the rare calls), Rare calls ideas, scripts 22-23, change log. Corrected the −0.4 s per-call list to the live v2 numbers. Artifact republished (version 13).
 - No model, input or live result changed.
+
+## 2026-11-16 — Screen coverage: defender matrices
+
+- `22_confusion_matrices.R` now draws six matrices in `03_outputs/confusion/matrices.png` (full call, ball handler's defender, screener's defender, each recall and precision), titles centred.
+- Reads page Each call shows the same six as tables, with a note on how each defender's top call is formed (sum of the full calls that share his part). Artifact republished (version 14).
+- Ball handler's defender, main curve: over 94% caught, under 39%, switch 12%. 57% of unders and 77% of switches read as over. Screener's defender: show 69%, soft 76%, switch 13%.
+- No model, input or live result changed.
+
+## 2026-11-16 — Web viewer: partner-change dots on the Player Trace
+
+- For Nearest Opponent, Gap to Matchup and Nearest Teammate, the trace now carries a dot wherever the other player becomes someone else, filled in the new player's team colour.
+- Hovering a dot names the change ("New Nearest Opponent · #32 Obasohan → #12 Steinbergs"); the action card stays hidden while a dot is hovered.
+- Detected on the 0.2 s samples (`partnerChanges` in `web/src/lib/trace.ts`). Samples with nobody (no matchup assigned, or nobody tracked) are passed over, so A, nobody, B counts as one change. No smoothing, so a near tie can show two dots a sample apart.
+- New test file `web/tests/trace.test.ts` (2 tests). No data or model changed.

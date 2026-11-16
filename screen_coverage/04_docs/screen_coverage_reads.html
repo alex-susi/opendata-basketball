@@ -778,7 +778,7 @@ table.cm .n { color: var(--muted); font-size: .8rem; font-weight: 400; }
         <li>Frames weighted by the main curve so each screen counts once. Brackets give screens, rounded to whole screens</li>
         <li>Live v2 model, 1,463 screens, every game held out</li>
       </ul>
-      <h4>Recall · rows are the real call</h4>
+      <h4>Full call recall · rows are the real call</h4>
       <div class="tablewrap">
         <table class="cm">
           <thead><tr><th>Real call</th><th class="num">over + show</th><th class="num">over + soft</th><th class="num">under + soft</th><th class="num">under + show</th><th class="num">switch</th></tr></thead>
@@ -791,7 +791,7 @@ table.cm .n { color: var(--muted); font-size: .8rem; font-weight: 400; }
           </tbody>
         </table>
       </div>
-      <h4>Precision · columns are the model's top call</h4>
+      <h4>Full call precision · columns are the model's top call</h4>
       <div class="tablewrap">
         <table class="cm">
           <thead><tr><th>Real call</th><th class="num">over + show</th><th class="num">over + soft</th><th class="num">under + soft</th><th class="num">under + show</th><th class="num">switch</th></tr></thead>
@@ -801,6 +801,67 @@ table.cm .n { color: var(--muted); font-size: .8rem; font-weight: 400; }
             <tr><td class="lead"><span class="swatch" style="background:var(--c-undersoft)"></span>under + soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(22)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 8%, transparent)">11% <span class="n">(67)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 36%, transparent)">52% <span class="n">(57)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">14% <span class="n">(7)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 7%, transparent)">10% <span class="n">(10)</span></td></tr>
             <tr><td class="lead"><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num" style="background:color-mix(in srgb, var(--accent) 4%, transparent)">6% <span class="n">(36)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(24)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">12% <span class="n">(13)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 30%, transparent)">42% <span class="n">(20)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">15% <span class="n">(15)</span></td></tr>
             <tr><td class="lead"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(78)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 8%, transparent)">12% <span class="n">(71)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 5%, transparent)">8% <span class="n">(9)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 14%, transparent)">20% <span class="n">(9)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 29%, transparent)">42% <span class="n">(44)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Each defender on his own</h4>
+      <ul class="tight">
+        <li>A defender's probability for each of his options is the sum of the full calls that share it
+          <ul>
+            <li>Over = over + show + over + soft</li>
+            <li>Show = over + show + under + show</li>
+          </ul>
+        </li>
+        <li>His top call is the largest of his three</li>
+        <li>So switch is caught less often here (12% and 13%) than for the full call (21%)
+          <ul>
+            <li>Example · over + show 30% and over + soft 25% make over 55%, which beats switch 35% even though switch was the largest of the five</li>
+          </ul>
+        </li>
+        <li>The ball handler's defender is read over on almost everything. 94% of overs caught, and 57% of unders and 77% of switches read as over</li>
+        <li>The screener's defender is read more evenly. Show 69% and soft 76% caught, switches split between show (47%) and soft (40%)</li>
+      </ul>
+      <h4>Ball handler's defender recall · rows are the real call</h4>
+      <div class="tablewrap">
+        <table class="cm">
+          <thead><tr><th>Real call</th><th class="num">over</th><th class="num">under</th><th class="num">switch</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">over</td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 66%, transparent)">94% <span class="n">(920)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">5% <span class="n">(45)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 1%, transparent)">2% <span class="n">(15)</span></td></tr>
+            <tr><td class="lead">under</td><td class="num" style="background:color-mix(in srgb, var(--accent) 40%, transparent)">57% <span class="n">(155)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 27%, transparent)">39% <span class="n">(105)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(12)</span></td></tr>
+            <tr><td class="lead">switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 54%, transparent)">77% <span class="n">(163)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 7%, transparent)">11% <span class="n">(23)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 8%, transparent)">12% <span class="n">(25)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Ball handler's defender precision · columns are the model's top call</h4>
+      <div class="tablewrap">
+        <table class="cm">
+          <thead><tr><th>Real call</th><th class="num">over</th><th class="num">under</th><th class="num">switch</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">over</td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 52%, transparent)">74% <span class="n">(920)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 18%, transparent)">26% <span class="n">(45)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 20%, transparent)">29% <span class="n">(15)</span></td></tr>
+            <tr><td class="lead">under</td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(155)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 43%, transparent)">61% <span class="n">(105)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 16%, transparent)">23% <span class="n">(12)</span></td></tr>
+            <tr><td class="lead">switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(163)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(23)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 34%, transparent)">48% <span class="n">(25)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Screener's defender recall · rows are the real call</h4>
+      <div class="tablewrap">
+        <table class="cm">
+          <thead><tr><th>Real call</th><th class="num">show</th><th class="num">soft</th><th class="num">switch</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">show</td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 48%, transparent)">69% <span class="n">(419)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 19%, transparent)">27% <span class="n">(164)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 3%, transparent)">4% <span class="n">(23)</span></td></tr>
+            <tr><td class="lead">soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 16%, transparent)">22% <span class="n">(144)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 54%, transparent)">76% <span class="n">(494)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 1%, transparent)">1% <span class="n">(9)</span></td></tr>
+            <tr><td class="lead">switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 33%, transparent)">47% <span class="n">(99)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 28%, transparent)">40% <span class="n">(85)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 9%, transparent)">13% <span class="n">(28)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Screener's defender precision · columns are the model's top call</h4>
+      <div class="tablewrap">
+        <table class="cm">
+          <thead><tr><th>Real call</th><th class="num">show</th><th class="num">soft</th><th class="num">switch</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">show</td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 44%, transparent)">63% <span class="n">(419)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 15%, transparent)">22% <span class="n">(164)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 27%, transparent)">39% <span class="n">(23)</span></td></tr>
+            <tr><td class="lead">soft</td><td class="num" style="background:color-mix(in srgb, var(--accent) 15%, transparent)">22% <span class="n">(144)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 47%, transparent)">67% <span class="n">(494)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">15% <span class="n">(9)</span></td></tr>
+            <tr><td class="lead">switch</td><td class="num" style="background:color-mix(in srgb, var(--accent) 10%, transparent)">15% <span class="n">(99)</span></td><td class="num" style="background:color-mix(in srgb, var(--accent) 8%, transparent)">11% <span class="n">(85)</span></td><td class="num diag" style="background:color-mix(in srgb, var(--accent) 33%, transparent)">47% <span class="n">(28)</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -1661,6 +1722,7 @@ table.cm .n { color: var(--muted); font-size: .8rem; font-weight: 400; }
           <h3>Each call · recall and precision matrices, why the rare calls are missed</h3>
           <ul class="tight">
             <li>New Each call results with recall and precision matrices of the top call, screens in brackets (<span class="file">22_confusion_matrices.R</span>)</li>
+            <li>Six matrices · the full call, the ball handler's defender and the screener's defender, each with recall and precision. The same six in <span class="file">03_outputs/confusion/matrices.png</span></li>
             <li>Switch 21% and under + show 19% caught, against about 70% for the over calls. 71% of switches read as an over call</li>
             <li>Checks of why (<span class="file">23_call_diagnostics.R</span>) · switches look like over until the screen, the top-call rule favours common calls, game plans vary by team and game, and personnel the model never sees moves switch and under</li>
             <li>Corrected the "caught at −0.4 s" list to the live v2 model (it showed older numbers)</li>

@@ -6,7 +6,8 @@
   //                  opponent, his matchup, the nearest teammate, the basket or the ball, or his speed, acceleration
   //                  or speed toward the basket. Clicking a player on the court or in a roster picks him too. The
   //                  court rings him in his team's secondary colour and, for a paired measure, rings the other
-  //                  player and joins them with a line.
+  //                  player and joins them with a line. For a paired measure, a dot on the line marks each moment
+  //                  the other player becomes someone else; hovering it names who from and to.
   // Samples are every 0.2 s of playback (lib/trace.ts). Each action is a dashed line, captioned with the action
   // above the plot (hidden when the Display panel's Action Names is off);
   // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
@@ -20,7 +21,8 @@
   import { clamp } from "../lib/geometry";
   import { COLORS } from "../lib/court";
   import { blend, cursorAt, FPS, layoutTimeline, shortScreen, type Tick, type Timeline } from "../lib/sequence";
-  import { metricInfo, METRICS, playerValue, traceSamples, type Metric, type TraceKind, type TraceSample } from "../lib/trace";
+  import { metricInfo, METRICS, partnerChanges, playerValue, traceSamples, type Metric, type PartnerChange, type TraceKind,
+           type TraceSample } from "../lib/trace";
   import type { Play, PlayerTrack } from "../lib/types";
   import { pageText } from "../lib/theme.svelte";
   import { viewer } from "../lib/viewer.svelte";
@@ -124,6 +126,13 @@
   });
 
   const hovered = $derived<TraceSample | null>(hoverK == null ? null : samples.find((s) => s.k === hoverK) ?? null);
+
+  // Paired measures: a dot on the line where the other player becomes someone else, filled in the new player's team
+  // colour. Hovering one names who it changed from and to (the action card stays hidden meanwhile).
+  const changes = $derived(viewer.trace === "player" && info.pair ? partnerChanges(samples).filter((c) => c.v != null) : []);
+  const CHANGE_TITLE: Partial<Record<Metric, string>> = { nearest: "New Nearest Opponent", matchup: "New Matchup", teammate: "New Nearest Teammate" };
+  let hoverChange = $state<PartnerChange | null>(null);
+  const playerOf = (pid: number) => play?.players.find((p) => p.id === pid) ?? null;
   // The other player of a paired measure: number and last name.
   const name = (p: PlayerTrack | null | undefined) => (p ? `#${p.jersey} ${p.last}` : "–");
   const kitText = (p: PlayerTrack | null | undefined) => (p && play ? pageText(play.colors[p.role].text) : undefined);
@@ -142,13 +151,21 @@
     chartBox = chartEl?.getBoundingClientRect() ?? null;
     const box = svg!.getBoundingClientRect(), x = ev.clientX - box.left, t = tAt(ev);
     hoverK = samples.length ? samples.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a)).k : null;
-    const near = timeline.ticks.filter((tick) => Math.abs(M.left + tick.frac * plotW - x) < 7).sort((a, b) => a.k - b.k);
+    const y = ev.clientY - box.top;
+    let dot: PartnerChange | null = null, dotD = 9;
+    for (const c of changes) {
+      const d = Math.hypot(X(c.t) - x, Y(c.v!) - y);
+      if (d < dotD) { dot = c; dotD = d; }
+    }
+    hoverChange = dot;
+    const near = dot ? [] : timeline.ticks.filter((tick) => Math.abs(M.left + tick.frac * plotW - x) < 7).sort((a, b) => a.k - b.k);
     if (near.length !== hoverTicks.length || near.some((tick, n) => tick !== hoverTicks[n])) hoverTicks = near;
     if (svg!.hasPointerCapture(ev.pointerId)) seek(ev);
   }
   function leave(): void {
     hoverK = null;
     hoverTicks = [];
+    hoverChange = null;
   }
   // The card is fixed to the window (not clipped by the scrolling panel), so it can rise over the court.
   let chartEl = $state<HTMLDivElement>();
@@ -257,10 +274,24 @@
             <circle class="sample" class:faint={s.faint} cx={X(s.t)} cy={Y(s.v)} r="3" />
           {/if}
         {/each}
+        {#each changes as c (c.k)}
+          <circle class="change-dot" class:on={hoverChange === c} cx={X(c.t)} cy={Y(c.v!)} r={hoverChange === c ? 6 : 4.5}
+                  fill={kitText(playerOf(c.to))} />
+        {/each}
         {#if now?.v != null}
           <circle class="now-dot" cx={X(tNow)} cy={Y(now.v)} r="5.5" fill={color} stroke-width="1.5" />
         {/if}
       </svg>
+      {#if hoverChange}
+        {@const c = hoverChange}
+        {@const from = playerOf(c.from)}
+        {@const to = playerOf(c.to)}
+        <div class="change-tip" class:at-left={X(c.t) < 110} class:at-right={X(c.t) > width - 110}
+             style:left="{X(c.t)}px" style:top="{Y(c.v!) - 10}px" role="tooltip">
+          <span class="change-title">{CHANGE_TITLE[viewer.metric] ?? "New Player"}</span>
+          <span><b style:color={kitText(from)}>{name(from)}</b> → <b style:color={kitText(to)}>{name(to)}</b></span>
+        </div>
+      {/if}
       {#if viewer.showTickLabels}
         <!-- The action over its line, above the plot. -->
         <div class="trace-captions" style:left="{M.left}px" style:top="{top - 2 - BAND}px" style:width="{plotW}px"

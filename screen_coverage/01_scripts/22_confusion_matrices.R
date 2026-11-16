@@ -158,24 +158,34 @@ print(sr)
 ## 04 - FIGURE -----------------------------------------------------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-# Recall and precision heat maps for the live transformer's joint calls on the main curve. Each cell shows its share
-# and, in brackets, its screens (main-curve weighted, so rounded to whole screens).
+# Recall and precision heat maps for the live transformer on the main curve, one row each for the joint call, the ball
+# handler's defender and the screener's defender. Each cell shows its share and, in brackets, its screens
+# (main-curve weighted, so rounded to whole screens).
 draw <- function(d, value, title) {
   d <- copy(d)
   d[, v := get(value)]
-  d[, actual := factor(actual, rev(levels(actual)))]
+  lv <- names(PARTS[[d$part[1]]])
+  d[, read := factor(read, lv)]
+  d[, actual := factor(actual, rev(lv))]
   ggplot(d, aes(read, actual, fill = v)) +
     geom_tile(colour = "white") +
     geom_text(aes(label = ifelse(is.na(v), "", sprintf("%.0f%%\n(%.0f)", 100 * v, screens))), size = 3.2, lineheight = 0.9) +
     scale_fill_gradient(low = "#f4f1ea", high = "#2f6db3", limits = c(0, 1), na.value = "grey90", guide = "none") +
     labs(title = title, x = "Model's top call", y = "Actual call") +
     theme_minimal(base_size = 11) +
-    theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 30, hjust = 1))
+    theme(panel.grid = element_blank(),
+          axis.text.x = element_text(angle = 30, hjust = 1),
+          plot.title = element_text(hjust = 0.5))
 }
-fig_d <- counts[model == TF & part == "joint" & moment == "main curve"]
-p <- draw(fig_d, "recall", "Recall (rows sum to 100%)") +
-  draw(fig_d, "precision", "Precision (columns sum to 100%)") +
+ROWS <- c(joint = "Full call", guard = "Ball handler's defender", big = "Screener's defender")
+panels <- unlist(lapply(names(ROWS), function(pt) {
+  fig_d <- counts[model == TF & part == pt & moment == "main curve"]
+  list(draw(fig_d, "recall", paste0(ROWS[[pt]], "\nRecall (rows sum to 100%)")),
+       draw(fig_d, "precision", paste0(ROWS[[pt]], "\nPrecision (columns sum to 100%)")))
+}), recursive = FALSE)
+p <- wrap_plots(panels, ncol = 2, heights = c(5, 3, 3)) +
   plot_annotation(title = "Live transformer, held out by game, main time-weight curve (1,463 screens)",
-                  caption = "Cell = share (screens). Screens are main-curve weighted, each screen counting 1, rounded to whole screens.")
-ggsave(file.path(out_dir, "matrices.png"), p, width = 11, height = 5.2, dpi = 150, bg = "white")
+                  caption = "Cell = share (screens). Screens are main-curve weighted, each screen counting 1, rounded to whole screens.",
+                  theme = theme(plot.title = element_text(hjust = 0.5)))
+ggsave(file.path(out_dir, "matrices.png"), p, width = 11, height = 13, dpi = 150, bg = "white")
 cat("\nWrote", out_dir, "\n")

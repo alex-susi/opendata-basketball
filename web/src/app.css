@@ -360,6 +360,16 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* The current moment. */
 .trace-chart .playhead { stroke: var(--ink); stroke-width: 1.5; opacity: .85; }
 .trace-chart .trace-prompt { fill: var(--muted); font-size: 13px; }
+/* Player Trace, paired measures: where the other player changes, and the hover note naming who from and to. */
+.trace-chart .change-dot { stroke: var(--ink); stroke-width: 1.3; cursor: default; }
+.change-tip {
+  position: absolute; z-index: 5; transform: translate(-50%, -100%); display: grid; gap: 1px; padding: 5px 8px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--raised); box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  font-size: 12px; white-space: nowrap; pointer-events: none;
+}
+.change-tip.at-left { transform: translate(-12px, -100%); }
+.change-tip.at-right { transform: translate(calc(-100% + 12px), -100%); }
+.change-tip .change-title { color: var(--muted); font-size: 10.5px; font-weight: 600; }
 .trace-empty { display: grid; place-items: center; height: 100%; margin: 0; padding: 0 16px; color: var(--muted); font-size: 13px; text-align: center; }
 /* The full description of the action under the pointer. */
 .trace-card {
