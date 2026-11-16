@@ -9,7 +9,8 @@
   //   Data Quality        the chance's tracking quality index and how many players are extrapolated now.
   //   Coverage Read       from 2 s before an on-ball screen to 1 s after it: the live screen-coverage model's probability for
   //                       each defender (ball: over/under/switch; screener: show/soft/switch) and the most likely joint
-  //                       call at this frame (lib/coverage.ts); the tagged call is ticked once the screen is set.
+  //                       call at this frame (lib/coverage.ts), the screener and ballhandler, and a table of the
+  //                       expected call per defender and combined against the tagged call (TBD until the screen).
   // The court's drawing is in lib/annotate.ts; the text in lib/context.ts.
   import { chanceAt, lastShot, possessionCard, shotCard, type Card } from "../lib/context";
   import { coverageAt, defenderParts, loadCoverage, partOf, PART_COLORS, type CoverageFile, type PartRow } from "../lib/coverage";
@@ -45,6 +46,8 @@
   // Calls coloured as in the strips (screen_coverage/01_scripts/R/strips.R), stepped for the dark card.
   const COV_COL: Record<string, string> = { "over + show": "#3987e5", "over + soft": "#d95926", "under + soft": "#199e70",
                                             "under + show": "#c98500", switch: "#d55181" };
+  // A call as the card writes it: each word capitalised ("over + show" → "Over + Show").
+  const cap = (call: string) => call.replace(/\b[a-z]/g, (c) => c.toUpperCase());
   const fmtT = (t: number) => `${t >= 0 ? "+" : "−"}${Math.abs(t).toFixed(2)} s`;
 
   const box = $derived(live.box);
@@ -86,34 +89,38 @@
   {@const top = r.pct.indexOf(Math.max(...r.pct))}
   {@const dp = defenderParts(calls, r.pct)}
   {@const shown = r.t >= 0}
-  {@const right = calls[top] === r.screen.call}
+  {@const lead = (rows: PartRow[]) => rows.find((row) => row.top) ?? rows[0]}
   <div class="ann-card cov-card">
     <span class="cov-title"><b>Screen Coverage Read</b><i class="event-flag cov-flag" class:set={shown}
       title={shown ? "Seconds since the screen was set" : "Seconds until the screen is set"}>{fmtT(r.t)}</i></span>
-    <span class="cov-who">{who(r.screen.s)} screens for {who(r.screen.h)}</span>
-    {@render bars(`On the Ball · ${who(r.screen.bd)}`, dp.ball, shown ? partOf(r.screen.call, "ball") : null)}
-    {@render bars(`On the Screener · ${who(r.screen.sd)}`, dp.big, shown ? partOf(r.screen.call, "big") : null)}
-    <!-- The model's most likely joint call and, from the screen on, the tagged call under it, the two call names in
-         one column; the mark says whether the model's call at this frame was the tagged one. -->
-    <span class="cov-joint">
-      <span class="cov-k">Most likely together</span>
-      <span style:color={COV_COL[calls[top]]}>{calls[top]}</span>
-      <span class="cov-pct">{Math.round(r.pct[top])}%</span>
-      {#if shown}
-        <span class="cov-k">Called</span>
-        <span style:color={COV_COL[r.screen.call]}>{r.screen.call}</span>
-        <span class="cov-mark" class:right class:wrong={!right} title={right ? "The model's most likely call is the tagged call" : "The model's most likely call is not the tagged call"}>{right ? "✓" : "✗"}</span>
-      {/if}
+    <span class="card-line"><span>Screener</span><span>{who(r.screen.s)}</span></span>
+    <span class="card-line"><span>Ballhandler</span><span>{who(r.screen.h)}</span></span>
+    {@render bars(`On the Ball · ${who(r.screen.bd)}`, dp.ball)}
+    {@render bars(`On the Screener · ${who(r.screen.sd)}`, dp.big)}
+    <!-- The model's expected call for each defender and for both together, its probability, the tagged call once the
+         screen is set (TBD before) and whether the two agree (green tick or red cross, blank before the screen). Each
+         defender is judged on his own part of the call, so the model can be right about one and wrong about the other. -->
+    <span class="cov-table">
+      <span></span><span class="cov-th">Expected</span><span></span><span class="cov-th">Actual</span><span></span>
+      {#each [{ label: who(r.screen.bd), exp: lead(dp.ball).label, pct: lead(dp.ball).pct, act: partOf(r.screen.call, "ball"), color: PART_COLORS },
+              { label: who(r.screen.sd), exp: lead(dp.big).label, pct: lead(dp.big).pct, act: partOf(r.screen.call, "big"), color: PART_COLORS },
+              { label: "Combined", exp: calls[top], pct: r.pct[top], act: r.screen.call, color: COV_COL }] as row, i (i)}
+        <span class="cov-k" class:combined={i === 2}>{row.label}</span>
+        <span style:color={row.color[row.exp]} class:combined={i === 2}>{cap(row.exp)}</span>
+        <span class="cov-pct" class:combined={i === 2}>{Math.round(row.pct)}%</span>
+        <span style:color={shown ? row.color[row.act] : null} class:tbd={!shown} class:combined={i === 2}>{shown ? cap(row.act) : "TBD"}</span>
+        <span class="cov-mark" class:right={shown && row.exp === row.act} class:wrong={shown && row.exp !== row.act} class:combined={i === 2}
+              title={shown ? (row.exp === row.act ? "The model's expected call is the tagged call" : "The model's expected call is not the tagged call") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : ""}</span>
+      {/each}
     </span>
-    {#if !shown}<span class="cov-note">Actual call shown at the screen</span>{/if}
   </div>
 {/snippet}
 
-{#snippet bars(title: string, rows: PartRow[], called: string | null)}
+{#snippet bars(title: string, rows: PartRow[])}
   <span class="card-head">{title}</span>
   {#each rows as row}
     <span class="cov-row" class:top={row.top}>
-      <span class="cov-label">{row.label}{#if called === row.label}<i class="cov-tick" title="The call SkillCorner tagged">✓</i>{/if}</span>
+      <span class="cov-label">{cap(row.label)}</span>
       <span class="cov-bar"><span style:width="{row.pct}%" style:background={PART_COLORS[row.label]}></span></span>
       <span class="cov-pct">{Math.round(row.pct)}%</span>
     </span>

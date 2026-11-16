@@ -97,12 +97,12 @@
 :root[data-look="unslop"] .pc-views button { border-color: var(--line); border-radius: 8px; background: rgba(0, 0, 0, .3); font-size: 11px; font-weight: 500; }
 :root[data-look="unslop"] .ps-pie text { font-size: 11px; font-weight: 600; }
 :root[data-look="unslop"] :is(.ps-key, .pc-empty, .stat-title, .stat-grid) { font-size: 12px; }
-:root[data-look="unslop"] :is(.ps-comps, .ps-fill, .pc-foot, .stat-grid .stat-head, .stat-n, .stat-foot, .cov-note) { font-size: 11px; }
+:root[data-look="unslop"] :is(.ps-comps, .ps-fill, .pc-foot, .stat-grid .stat-head, .stat-n, .stat-foot) { font-size: 11px; }
 :root[data-look="unslop"] .ps-fill { font-weight: 600; }
 :root[data-look="unslop"] .stat-info { font-size: 9px; font-style: normal; font-weight: 600; }
 :root[data-look="unslop"] .event-flag { padding: 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0; background: #c94545; }
 :root[data-look="unslop"] .cov-flag.set { background: #2f7de1; }
-:root[data-look="unslop"] :is(.cov-tick, .cov-mark) { font-weight: 600; }
+:root[data-look="unslop"] .cov-mark { font-weight: 600; }
 :root[data-look="unslop"] .cov-bar > span { transition: none; }
 
 /* ═══ 8. Player tracking table ═══ */
@@ -128,21 +128,6 @@
 :root[data-look="unslop"] .player text { font-weight: 600; }
 :root[data-look="unslop"] .x-fig h4 { font-size: 14px; font-weight: 500; }
 :root[data-look="unslop"] .decision b { font-size: 14px; }
-
-/* ═══ 10. The night / day and look switches and the credit (shown in both looks) ═══ */
-/* A small floating control in the bottom-right corner, over the page on every tab. */
-.look-box {
-  position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 8px; height: 32px;
-  padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .4); font-size: 12px;
-}
-.look-box .look-switch { margin: 0; }
-.look-sep { width: 1px; height: 16px; background: var(--line); }
-.look-credit { display: none; color: var(--u-faint, var(--muted)); font-size: 11px; white-space: nowrap; text-decoration: none; }
-.look-credit:hover { color: var(--ink); text-decoration: underline; }
-:root[data-look="unslop"] .look-credit { display: block; }
-@media print { .look-box { display: none; } }
-:root[data-theme="light"] .look-box { box-shadow: 0 6px 18px rgba(23, 32, 51, .14); }
 
 /* ═══ 11. Unslop by day ═══ */
 /* The neutral ramp in light greys, and the few graphite surfaces above set in light ones. Everything else follows the

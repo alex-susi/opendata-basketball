@@ -1,10 +1,10 @@
-// How the site looks, set from the bottom-right corner's two switches:
-//   look   "current" (app.css alone) or "unslop" (app.css plus unslop.css, whose rules apply only while
-//          <html data-look="unslop">).
+// How the site looks:
 //   theme  "dark" (night, the default) or "light" (day: <html data-theme="light">, the day rules at the end of
-//          app.css and unslop.css).
-// A ?look=… or ?theme=… in the address wins, so a link opens as it names; otherwise the last choice in this browser;
-// otherwise the current look at night.
+//          app.css and unslop.css), set by the sun / moon switch beside the playback buttons (Controls.svelte). A
+//          ?theme=… in the address wins; otherwise the last choice in this browser; otherwise night.
+//   look   "current" (app.css alone) or "unslop" (app.css plus unslop.css, whose rules apply only while
+//          <html data-look="unslop">). Its switch was removed 2026-11-16: the site opens in the current look unless
+//          the address asks for ?look=unslop, and an Unslop choice saved by the old switch is ignored.
 
 import { COLORS } from "./court";
 import { page } from "./theme.svelte";
@@ -19,7 +19,7 @@ const DARK_TEXT = { paperInk: COLORS.paperInk, paperMuted: COLORS.paperMuted };
 const CANVAS: Record<Look, Record<Theme, Partial<typeof COLORS>>> = {
   current: {
     dark: { paper: COLORS.paper, panel: COLORS.panel, ...DARK_TEXT },
-    light: { paper: "#FFFFFF", panel: COLORS.panel, paperInk: "#172033", paperMuted: "#5A6780" },
+    light: { paper: "#F6F4EF", panel: COLORS.panel, paperInk: "#172033", paperMuted: "#5A6780" },
   },
   unslop: {
     dark: { paper: "#19191b", panel: "#0e0e0f", ...DARK_TEXT },
@@ -41,7 +41,11 @@ function initial<T>(param: string, key: string, test: (v: unknown) => v is T, fa
   return fallback;
 }
 
-export const initialLook = (): Look => initial("look", LOOK_KEY, isLook, "current");
+export function initialLook(): Look {
+  try { localStorage.removeItem(LOOK_KEY); } catch { /* nothing saved */ }
+  const asked = new URLSearchParams(location.search).get("look");
+  return isLook(asked) ? asked : "current";
+}
 export const initialTheme = (): Theme => initial("theme", THEME_KEY, isTheme, "dark");
 
 const lookNow = (): Look => (document.documentElement.dataset.look === "unslop" ? "unslop" : "current");
@@ -61,7 +65,6 @@ function remember(param: string, key: string, value: string, fallback: string): 
 export function applyLook(look: Look): void {
   document.documentElement.dataset.look = look;
   Object.assign(COLORS, CANVAS[look][themeNow()]);
-  remember("look", LOOK_KEY, look, "current");
 }
 
 /** Puts the night or day theme on the page (and the canvas colours that go with it and the look). */

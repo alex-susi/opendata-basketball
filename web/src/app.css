@@ -85,7 +85,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .play-head-box { grid-area: head; }
 .viewer { grid-area: viewer; }
 .side { grid-area: side; }
-.controls-box { grid-area: ctrl; align-self: center; min-width: 0; padding: 0 13px; }
+.controls-box { grid-area: ctrl; align-self: center; min-width: 0; padding: 0 4px; }
 
 .panel {
   background: var(--panel);
@@ -225,63 +225,74 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .viewer { display: flex; flex-direction: column; gap: 10px; min-width: 0; min-height: 0; }
 /* The scorebug, in the style of a television score bar: the home team's box, the away team's box, then a dark
    box with the game clock over the shot clock and quarter. Each team box is filled with its club's primary colour
-   (a faint sheen at the top), its logo on a white disc at the outer end, a three-letter name and the score at the
+   (a faint sheen at the top), its logo on a darker panel at the outer end, a three-letter name and the score at the
    inner end, in heavy condensed italics. The join between the two team boxes sits on the court's centre line
-   (--court-shift: the line's offset from the header's middle). A basketball beside the name marks the team with
-   the ball. It looks the same in every look and theme. */
+   (--court-shift: the line's offset from the header's middle), and both scores sit the same distance from it. A small
+   basketball beside the name marks the team with the ball. A thin edge runs round the bar: light at night, dark by
+   day. */
 .play-head-box { min-width: 0; container: playhead / inline-size; }
-.play-head { position: relative; display: flex; align-items: center; min-height: 52px; padding: 2px 4px 0; }
+.play-head { position: relative; display: flex; align-items: center; min-height: 56px; padding: 2px 4px 0; }
 .play-head-note { font-size: 19px; font-weight: 700; line-height: 1.3; }
 .bug {
-  --bug-h: 44px; --team-w: 196px;
-  position: absolute; top: 50%; left: calc(50% + var(--court-shift, 0px)); display: flex; height: var(--bug-h);
-  transform: translateY(-50%); font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  font-style: italic; font-weight: 800; line-height: 1; white-space: nowrap; box-shadow: 0 3px 10px rgba(0, 0, 0, .35);
+  --bug-h: 52px; --team-w: 220px; --bug-edge: rgba(255, 255, 255, .6);
+  /* Its left edge one team box left of the court's centre line, so the join between the boxes falls on the line. */
+  position: absolute; top: 50%; left: calc(50% + var(--court-shift, 0px) - var(--team-w)); display: flex;
+  height: var(--bug-h); transform: translateY(-50%);
+  font-family: "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  font-style: italic; font-weight: 800; line-height: 1; white-space: nowrap;
+  box-shadow: 0 0 0 1px var(--bug-edge), 0 3px 12px rgba(0, 0, 0, .4);
 }
+:root[data-theme="light"] .bug { --bug-edge: rgba(15, 18, 24, .75); }
 .bug-team {
-  display: flex; align-items: center; gap: 9px; width: var(--team-w); height: 100%; padding: 0 12px 0 0;
+  display: flex; align-items: center; gap: 10px; width: var(--team-w); height: 100%; padding: 0 12px 0 0;
   background-image: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, .14));
 }
-.bug-team.home { position: absolute; right: 100%; top: 0; }
-.bug-team.away { flex-direction: row-reverse; padding: 0 0 0 12px; border-left: 2px solid rgba(255, 255, 255, .55); }
+/* The light divider is drawn inside the away box. The home score's italic ink reaches about a pixel past its box
+   and the away score's starts about a pixel inside, so the away box pads 10px against the home box's 12px: both
+   scores' ink sits 11px from the join. */
+.bug-team.away {
+  flex-direction: row-reverse; padding: 0 0 0 10px;
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .55);
+}
 /* The logo on a darker panel of the team colour at the box's outer end, drawn larger than the panel so its edges
    are clipped a little. */
 .bug-logo {
-  display: grid; place-items: center; width: 54px; height: 100%; flex: none; overflow: hidden;
+  display: grid; place-items: center; width: 60px; height: 100%; flex: none; overflow: hidden;
   background: rgba(0, 0, 0, .2); box-shadow: inset -1px 0 0 rgba(255, 255, 255, .18);
 }
 .bug-team.away .bug-logo { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .18); }
-.bug-logo img { width: 54px; height: 54px; flex: none; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
+.bug-logo img { width: 62px; height: 62px; flex: none; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
 /* The roster headings' logos (SidePanel.svelte). */
 .roster-logo { width: 20px; height: 20px; margin-right: 7px; object-fit: contain; vertical-align: -4px; }
-.bug-abbr { font-size: 22px; letter-spacing: .02em; }
-.bug-score { margin-left: auto; font-size: 31px; font-variant-numeric: tabular-nums; }
+.bug-abbr { font-size: 25px; letter-spacing: .02em; }
+.bug-score { margin-left: auto; font-size: 36px; font-variant-numeric: tabular-nums; }
 .bug-team.away .bug-score { margin-left: 0; margin-right: auto; }
-.poss-ball { width: 15px; height: 15px; flex: none; visibility: hidden; }
+/* The possession ball, small and tucked against the name. */
+.poss-ball { width: 11px; height: 11px; flex: none; margin-left: -5px; visibility: hidden; }
+.bug-team.away .poss-ball { margin-left: 0; margin-right: -5px; }
 .poss-ball.on { visibility: visible; }
 .bug-clock {
-  display: grid; align-content: center; justify-items: center; gap: 3px; width: 86px; height: 100%;
+  display: grid; align-content: center; justify-items: center; gap: 4px; width: 96px; height: 100%;
   background: linear-gradient(180deg, #2A2D33, #121417); color: #FFFFFF; font-variant-numeric: tabular-nums;
 }
-.bug-time { font-size: 22px; }
-.bug-period-line { display: flex; gap: 8px; font-size: 14px; font-style: normal; font-weight: 700; }
+.bug-time { font-size: 25px; }
+.bug-period-line { display: flex; gap: 8px; font-size: 15px; font-style: normal; font-weight: 700; }
 .shot-clock { min-width: 18px; color: #F5C518; text-align: right; }
 
 /* A narrower centre column: smaller boxes. */
 @container playhead (max-width: 780px) {
-  .bug { --bug-h: 38px; --team-w: 150px; }
-  .bug-abbr { font-size: 18px; }
-  .bug-score { font-size: 25px; }
-  .bug-logo { width: 46px; }
-  .bug-logo img { width: 46px; height: 46px; }
-  .bug-clock { width: 74px; }
-  .bug-time { font-size: 18px; }
-  .bug-period-line { font-size: 12px; }
+  .bug { --bug-h: 44px; --team-w: 166px; }
+  .bug-abbr { font-size: 20px; }
+  .bug-score { font-size: 29px; }
+  .bug-logo { width: 50px; }
+  .bug-logo img { width: 52px; height: 52px; }
+  .bug-clock { width: 80px; }
+  .bug-time { font-size: 20px; }
+  .bug-period-line { font-size: 13px; }
 }
 /* A narrow one (a phone): the bar centred in the header, the court line no longer followed. */
 @container playhead (max-width: 560px) {
-  .bug { position: static; transform: none; margin: 4px auto; padding-left: var(--team-w); }
-  .bug-team.home { right: auto; left: 0; }
+  .bug { position: static; transform: none; margin: 4px auto; }
 }
 
 .stage {
@@ -403,11 +414,24 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .side h2 { margin-bottom: 8px; font-size: 13.5px; font-weight: 700; }
 /* Playback controls, beside the play's header and above the Display panel: buttons at the left, time at the right,
    the speed centred in the space between. */
-.controls { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 8px; }
-.control-buttons { display: flex; align-items: center; gap: 8px; }
-.controls .speed { justify-self: center; }
-.time-label { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.speed { height: 30px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
+/* One row: the three buttons, the speed over the time (centred on each other), Save Video, the moon / sun switch. */
+.controls { display: flex; align-items: center; gap: 7px; }
+.control-buttons { display: flex; align-items: center; gap: 4px; }
+.control-buttons .icon-btn { width: 27px; height: 27px; }
+.control-buttons .icon-btn svg { width: 15px; height: 15px; }
+.control-buttons .icon-btn.primary { width: 33px; height: 33px; }
+.control-buttons .icon-btn.primary svg { width: 17px; height: 17px; }
+.speed-time { display: grid; justify-items: center; gap: 2px; }
+.time-label { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.controls .save-video { margin-left: auto; padding: 4px 6px; font-size: 11px; white-space: nowrap; }
+.theme-switch { margin: 0; gap: 4px; }
+.theme-switch .switch-track { width: 24px; }
+.theme-switch input:checked + .switch-track::after { transform: translateX(8px); }
+.theme-switch svg { width: 13px; height: 13px; fill: var(--muted); stroke: var(--muted); }
+.theme-switch svg:first-child { stroke: none; }
+.theme-switch svg.on { fill: var(--ink); stroke: var(--ink); }
+.theme-switch svg.on:first-child { stroke: none; }
+.speed { height: 24px; padding: 0 4px; font-size: 12px; color: var(--ink); border: 1px solid var(--line); border-radius: 7px; background: var(--raised); }
 .toggle { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; cursor: pointer; white-space: nowrap; font-size: 12px; }
 .toggle input { margin: 0; accent-color: var(--off); }
 /* Toggles in columns. By default two columns filled row by row; .by-column fills each column top to bottom
@@ -794,10 +818,10 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* Coverage Read card (Annotations.svelte, lib/coverage.ts): one bar per screen-coverage call, the leading call in
    full ink; the bar colours are the strips' call colours stepped for the dark card. */
 /* Fixed width, so the card keeps its size for a screen whatever the numbers; long names are cut with an ellipsis. */
-.cov-card { width: 280px; min-width: 0; box-sizing: border-box; }
-.cov-card .cov-row { grid-template-columns: 70px 1fr 34px; }
-.cov-card .card-head, .cov-who { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cov-who { color: var(--muted); }
+/* Wide enough for the table's longest names and joint calls ("#12 Steinbergs", "Under + Show") at 11px. */
+.cov-card { width: 290px; min-width: 0; box-sizing: border-box; }
+.cov-card .cov-row { grid-template-columns: 54px 1fr 34px; }
+.cov-card .card-head { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* The title with the countdown to the screen (blue once it is set) in the card's top-right corner. */
 .cov-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 /* The countdown badge, styled as in the Unslop look in both looks: red before the screen, blue once it is set. */
@@ -812,30 +836,32 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .cov-bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .07); overflow: hidden; }
 .cov-bar > span { display: block; height: 100%; border-radius: 4px; transition: width .12s linear; }
 .cov-pct { text-align: right; }
-.cov-called { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--line); }
-.cov-note { color: var(--muted); font-size: 10.5px; }
-/* The trace panel's moment readout (TracePanel.svelte): always shown, hovered or current. */
-/* The Coverage Read card's tick on the defender's tagged call (shown from the screen on). */
-.cov-tick { margin-left: 5px; font-style: normal; color: var(--ink); font-weight: 700; }
 .cov-card .card-head { margin-top: 5px; }
-/* The card's last rows: the most likely joint call and the tagged call, the call names in one column, then the
-   percentage or a mark (green tick: the model's call was the tagged one; red cross: it was not). */
-.cov-joint { display: grid; grid-template-columns: 1fr auto 34px; column-gap: 10px; row-gap: 1px; align-items: baseline;
-  margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.cov-joint .cov-k { color: var(--muted); }
+/* The card's table: per defender and combined, the model's expected call and its probability, the tagged (actual)
+   call, then a mark (green tick: the expected call was the tagged one; red cross: it was not). */
+.cov-table {
+  display: grid; grid-template-columns: minmax(0, 1fr) 70px 28px 70px 10px; column-gap: 5px; row-gap: 1px;
+  align-items: baseline; margin-top: 5px; padding-top: 3px; border-top: 1px solid var(--line); white-space: nowrap;
+  font-size: 11px; font-variant-numeric: tabular-nums;
+}
+.cov-th { color: var(--muted); font-size: 10.5px; }
+.cov-table .cov-k { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.cov-table .tbd { color: var(--muted); }
+.cov-table .combined { margin-top: 2px; padding-top: 2px; border-top: 1px solid var(--line); }
+.cov-table .cov-k.combined { color: var(--ink); font-weight: 600; }
 .cov-mark { text-align: right; font-weight: 700; }
 .cov-mark.right { color: #3ccb7f; }
 .cov-mark.wrong { color: #f0605d; }
 
 /* ---- Day theme: the night/day switch in the bottom-right corner (data-theme="light" on <html>, lib/look.ts) ----
-   The same layout on light surfaces. The shared variables carry most of it; the rules below cover the places that
+   The same layout on warm off-white and grey surfaces (no pure white). The shared variables carry most of it; the rules below cover the places that
    use a fixed dark colour. The court keeps its hardwood and its dark label plates in both themes. */
 :root[data-theme="light"] {
-  --bg: #EDF0F5;
-  --panel: #FFFFFF;
-  --raised: #F3F5F9;
-  --hover: #E6EBF3;
-  --line: #D5DCE6;
+  --bg: #E6E3DC;
+  --panel: #F6F4EF;
+  --raised: #EDEAE3;
+  --hover: #E2DED5;
+  --line: #D3CEC4;
   --ink: #172033;
   --muted: #5A6780;
   --off: #2B74DB;
@@ -847,29 +873,29 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 :root[data-theme="light"] :is(.tabs, .play-list, .side, .doc, .ann-stack.top) { scrollbar-color: #B8C1D1 transparent; }
 :root[data-theme="light"] .chip { background: #DCE7FA; }
-:root[data-theme="light"] .play-item { border-bottom-color: #E7EBF1; }
-:root[data-theme="light"] .play-item.active { background: #E2ECFB; }
+:root[data-theme="light"] .play-item { border-bottom-color: #E4E0D8; }
+:root[data-theme="light"] .play-item.active { background: #E3E8EF; }
 :root[data-theme="light"] .pi-and1 { color: #B87400; }
-:root[data-theme="light"] .pi-tags i { background: #E7EBF2; color: #3E4A5F; }
+:root[data-theme="light"] .pi-tags i { background: #E6E2DA; color: #3E4A5F; }
 :root[data-theme="light"] .pi-tags i.oreb { background: #FBEAD0; color: #93560A; }
 :root[data-theme="light"] .roster .num { box-shadow: 0 0 0 1px rgba(0, 0, 0, .2); }
-:root[data-theme="light"] .stage-note { background: rgba(255, 255, 255, .82); }
-:root[data-theme="light"] .trace-chart .grid { stroke: #E3E7EE; }
+:root[data-theme="light"] .stage-note { background: rgba(246, 244, 239, .85); }
+:root[data-theme="light"] .trace-chart .grid { stroke: #E2DED6; }
 :root[data-theme="light"] .trace-chart .sample { stroke: #8E9AAE; }
 :root[data-theme="light"] .trace-chart .mark, :root[data-theme="light"] .strip-mark { stroke: #6B788F; }
 :root[data-theme="light"] :is(.trace-chart .mark.foul, .trace-chart .mark.rebound, .strip-mark.foul, .strip-mark.rebound, .leaders line, .strip-played) { stroke: #A0AABB; }
 :root[data-theme="light"] .trace-chart .mark.cut { stroke: #3D6FC0; }
-:root[data-theme="light"] .strip-rail { stroke: #DCE1EA; }
-:root[data-theme="light"] .strip-shot { stroke: #FFFFFF; }
+:root[data-theme="light"] .strip-rail { stroke: #DCD8CF; }
+:root[data-theme="light"] .strip-shot { stroke: #F6F4EF; }
 :root[data-theme="light"] :is(.strip-shot.on, .strip-head) { stroke: var(--ink); }
 :root[data-theme="light"] :is(.icon-btn.primary svg) { fill: #FFFFFF; }
 :root[data-theme="light"] .icon-btn.primary:hover { background: #4A8BE8; }
 :root[data-theme="light"] .switch input:checked + .switch-track::after { background: #FFFFFF; }
 :root[data-theme="light"] .switch.two-way input:checked + .switch-track::after { background: var(--off); }
 :root[data-theme="light"] :is(.multi-list, .trace-card, .spacing-tip) { box-shadow: 0 6px 18px rgba(23, 32, 51, .14); }
-:root[data-theme="light"] .ann-card { background: rgba(255, 255, 255, .95); box-shadow: 0 4px 14px rgba(23, 32, 51, .16); }
-:root[data-theme="light"] .player-card { background: color-mix(in srgb, var(--team-fill, var(--raised)) 10%, #FFFFFF); }
-:root[data-theme="light"] .pc-views button { border-color: rgba(0, 0, 0, .12); background: rgba(255, 255, 255, .7); }
+:root[data-theme="light"] .ann-card { background: rgba(246, 244, 239, .95); box-shadow: 0 4px 14px rgba(23, 32, 51, .16); }
+:root[data-theme="light"] .player-card { background: color-mix(in srgb, var(--team-fill, var(--raised)) 10%, #F6F4EF); }
+:root[data-theme="light"] .pc-views button { border-color: rgba(0, 0, 0, .12); background: rgba(246, 244, 239, .7); }
 :root[data-theme="light"] .pc-views button:hover { background: rgba(0, 0, 0, .05); }
 :root[data-theme="light"] .pc-views button.on { background: var(--team-edge, #F5B02E); }
 :root[data-theme="light"] :is(.ps-axis, .cov-bar) { background: rgba(0, 0, 0, .08); }

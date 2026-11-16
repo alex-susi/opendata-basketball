@@ -61,10 +61,6 @@
         <span class="switch-track"></span>
         <span class:on={viewer.atEnd === "next"}>Next play</span>
       </label>
-      <button type="button" class="text-btn" class:recording={viewer.recording} disabled={!play} title="Record this play once through and save it as a video"
-              onclick={() => (viewer.recording = !viewer.recording)}>
-        {viewer.recording ? "Cancel recording" : "Save Video"}
-      </button>
     </div>
     <!-- Left column: what is drawn on the court. Right column: the trace panel under it, its captions, dead-ball time and court control. -->
     <div class="toggle-grid by-column four">

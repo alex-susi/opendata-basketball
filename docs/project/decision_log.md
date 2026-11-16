@@ -2455,3 +2455,12 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Player Tracking table: more space either side of the rule between the two teams. The trace panel's tabs share a 236 px chart area (was 226) so the table still fits when its headers wrap in a narrow window.
 - Timeline hover cards have no minimum width, so short cards (a handoff) are as narrow as their longest line.
 - No model, input or result changed.
+
+## 2026-11-16 — Web viewer: score bar polish, logo crops, coverage card table, controls row
+
+- Score bar: both scores' ink now sits 11 px from the join between the team boxes (the away box pads 10 px against the home box's 12 px, measured from the italic glyphs). The whole bar is in one flow, so its shadow falls on both sides, with a thin edge (light at night, dark by day). Bigger (52 px tall, 220 px team boxes) and a smaller possession ball tucked against the name.
+- Logos: the separate wordmarks under three crests are cropped off everywhere the logo shows: BC Barcelona ("BARÇA"), Real Madrid ("Realmadrid Baloncesto"), UCAM Murcia ("UCAM Universidad Club de Baloncesto"). `web/scripts/crop_logos.R` does it from the downloaded files kept in `web/scripts/logo_sources/`; noted in `web/public/logos/SOURCES.md`.
+- Day theme: warm off-white and grey surfaces (page #E6E3DC, panels #F6F4EF), no pure white; the canvas surround matches.
+- Screen Coverage Read card: Screener and Ballhandler as their own rows; coverage names capitalised; the last rows are a table with one row per defender (number and last name) and a Combined row: the model's expected call, its probability, the tagged call (TBD until the screen) and a tick or cross for each, so the model can be right about one defender and wrong about the other. Card 290 px (the table's longest names and joint calls need it at 11 px).
+- Controls row: previous / play / next (smaller), the speed over the elapsed / total time, Save Video (moved from the Display panel) and a moon / sun switch for night and day. The Current / Unslop switch is removed; the site opens in the current look (an old saved Unslop choice is cleared), and `?look=unslop` still works.
+- No model, input or result changed.

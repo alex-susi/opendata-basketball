@@ -22,15 +22,6 @@
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
   import { live, season, viewer } from "./lib/viewer.svelte";
-  import { applyLook, applyTheme, type Look } from "./lib/look";
-  import { page } from "./lib/theme.svelte";
-
-  // The corner's Current / Unslop switch (main.ts puts the starting look on the page before this mounts).
-  let look = $state<Look>(document.documentElement.dataset.look === "unslop" ? "unslop" : "current");
-  function setLook(next: Look): void {
-    look = next;
-    applyLook(next);
-  }
 
   const ROUTE = "#/play/";
   const ARCHETYPES = "#/archetypes";
@@ -207,27 +198,6 @@
   {/each}
   <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
-
-<!-- The night / day and look switches float in the bottom-right corner on every tab (the tab bar has no room left
-     for them). -->
-<div class="look-box">
-  <label class="switch two-way look-switch" title="Switch between the dark night theme and the light day theme">
-    <span class:on={!page.light}>Night</span>
-    <input type="checkbox" role="switch" aria-label="Use the light day theme" checked={page.light}
-           onchange={(ev) => applyTheme(ev.currentTarget.checked ? "light" : "dark")} />
-    <span class="switch-track"></span>
-    <span class:on={page.light}>Day</span>
-  </label>
-  <span class="look-sep" aria-hidden="true"></span>
-  <label class="switch two-way look-switch" title="Switch between the site's current look and the unslop polish pass">
-    <span class:on={look === "current"}>Current</span>
-    <input type="checkbox" role="switch" aria-label="Use the unslop look" checked={look === "unslop"}
-           onchange={(ev) => setLook(ev.currentTarget.checked ? "unslop" : "current")} />
-    <span class="switch-track"></span>
-    <span class:on={look === "unslop"}>Unslop</span>
-  </label>
-  <a class="look-credit" href="https://github.com/heydamir/unslop" target="_blank" rel="noopener">by @heydamir</a>
-</div>
 
 <div class="app" hidden={tab !== "viewer"} style:--left-w="{leftW}px">
   <aside class="left" bind:this={leftEl}>
