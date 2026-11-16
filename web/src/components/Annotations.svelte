@@ -43,9 +43,6 @@
   const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame, 1) : null);
   // A player as the card names him: jersey number, then last name ("#12 Steinbergs").
   const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
-  // Calls coloured as in the strips (screen_coverage/01_scripts/R/strips.R), stepped for the dark card.
-  const COV_COL: Record<string, string> = { "over + show": "#3987e5", "over + soft": "#d95926", "under + soft": "#199e70",
-                                            "under + show": "#c98500", switch: "#d55181" };
   // A call as the card writes it: each word capitalised ("over + show" → "Over + Show").
   const cap = (call: string) => call.replace(/\b[a-z]/g, (c) => c.toUpperCase());
   const fmtT = (t: number) => `${t >= 0 ? "+" : "−"}${Math.abs(t).toFixed(2)} s`;
@@ -100,20 +97,29 @@
     <!-- The model's expected call for each defender and for both together, its probability, the tagged call once the
          screen is set (TBD before) and whether the two agree (green tick or red cross, blank before the screen). Each
          defender is judged on his own part of the call, so the model can be right about one and wrong about the other. -->
+    <!-- Columns: name | gap | expected call, its % | gap | actual call, mark. The headers centre over their two columns;
+         the rule above Combined runs unbroken across each pair. -->
     <span class="cov-table">
-      <span></span><span class="cov-th">Expected</span><span></span><span class="cov-th">Actual</span><span></span>
-      {#each [{ label: who(r.screen.bd), exp: lead(dp.ball).label, pct: lead(dp.ball).pct, act: partOf(r.screen.call, "ball"), color: PART_COLORS },
-              { label: who(r.screen.sd), exp: lead(dp.big).label, pct: lead(dp.big).pct, act: partOf(r.screen.call, "big"), color: PART_COLORS },
-              { label: "Combined", exp: calls[top], pct: r.pct[top], act: r.screen.call, color: COV_COL }] as row, i (i)}
+      <span></span><span></span><span class="cov-th">Expected</span><span></span><span class="cov-th">Actual</span>
+      {#each [{ label: who(r.screen.bd), exp: lead(dp.ball).label, pct: lead(dp.ball).pct, act: partOf(r.screen.call, "ball") },
+              { label: who(r.screen.sd), exp: lead(dp.big).label, pct: lead(dp.big).pct, act: partOf(r.screen.call, "big") },
+              { label: "Combined", exp: calls[top], pct: r.pct[top], act: r.screen.call }] as row, i (i)}
         <span class="cov-k" class:combined={i === 2}>{row.label}</span>
-        <span style:color={row.color[row.exp]} class:combined={i === 2}>{cap(row.exp)}</span>
+        <span></span>
+        <span class="cov-exp" class:combined={i === 2}>{@render call(row.exp)}</span>
         <span class="cov-pct" class:combined={i === 2}>{Math.round(row.pct)}%</span>
-        <span style:color={shown ? row.color[row.act] : null} class:tbd={!shown} class:combined={i === 2}>{shown ? cap(row.act) : "TBD"}</span>
+        <span></span>
+        <span class="cov-act" class:tbd={!shown} class:combined={i === 2}>{#if shown}{@render call(row.act)}{:else}TBD{/if}</span>
         <span class="cov-mark" class:right={shown && row.exp === row.act} class:wrong={shown && row.exp !== row.act} class:combined={i === 2}
               title={shown ? (row.exp === row.act ? "The model's expected call is the tagged call" : "The model's expected call is not the tagged call") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : ""}</span>
       {/each}
     </span>
   </div>
+{/snippet}
+
+<!-- A call with each defender's part in its own colour (as in the bars above) and the "+" in grey. -->
+{#snippet call(c: string)}
+  {#each c.split(" + ") as part, j (j)}{#if j}<span class="cov-plus">{" + "}</span>{/if}<span style:color={PART_COLORS[part]}>{cap(part)}</span>{/each}
 {/snippet}
 
 {#snippet bars(title: string, rows: PartRow[])}

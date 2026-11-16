@@ -28,6 +28,7 @@ Baloncesto", Málaga).
 | 1339 | Malaga | 135096 Baloncesto Málaga | xp0jou1792766377.png |
 | 1340 | BC Barcelona | 135082 FC Barcelona Basquet | 0tz26j1729097443.png |
 
-Three badges carry the club's name as separate text under the crest; the site shows the crest alone. 1334 (UCAM
-Murcia), 1338 (Real Madrid) and 1340 (BC Barcelona) are cropped to the crest by `web/scripts/crop_logos.R` from the
-downloaded files kept in `web/scripts/logo_sources/` (2026-11-16).
+The downloaded files are kept in `web/scripts/logo_sources/` (named by team id). The site shows
+`web/public/logos/trimmed/<team id>.png`, written with `logos.json` by `web/scripts/crop_logos.R` (2026-11-16): every
+badge trimmed to its drawing and centred on a 512 x 512 square, and three cropped to the crest because they carry the
+club name as separate text under it: 1334 (UCAM Murcia), 1338 (Real Madrid) and 1340 (BC Barcelona).

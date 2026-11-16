@@ -247,17 +247,19 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   display: flex; align-items: center; gap: 10px; width: var(--team-w); height: 100%; padding: 0 12px 0 0;
   background-image: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, .14));
 }
-/* The light divider is drawn inside the away box. The home score's italic ink reaches about a pixel past its box
+/* The divider between the boxes (the bar's edge colour) is drawn inside the away box. The home score's italic ink reaches about a pixel past its box
    and the away score's starts about a pixel inside, so the away box pads 10px against the home box's 12px: both
    scores' ink sits 11px from the join. */
 .bug-team.away {
   flex-direction: row-reverse; padding: 0 0 0 10px;
-  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .55);
+  box-shadow: inset 1px 0 0 var(--bug-edge);
 }
 /* The logo on a darker panel of the team colour at the box's outer end, drawn larger than the panel so its edges
    are clipped a little. */
+/* Flex centring (not a grid row, which starts at the top and lets an oversized logo spill off the bottom only), so
+   the logo is clipped evenly top and bottom. */
 .bug-logo {
-  display: grid; place-items: center; width: 60px; height: 100%; flex: none; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; width: 60px; height: 100%; flex: none; overflow: hidden;
   background: rgba(0, 0, 0, .2); box-shadow: inset -1px 0 0 rgba(255, 255, 255, .18);
 }
 .bug-team.away .bug-logo { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .18); }
@@ -819,7 +821,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
    full ink; the bar colours are the strips' call colours stepped for the dark card. */
 /* Fixed width, so the card keeps its size for a screen whatever the numbers; long names are cut with an ellipsis. */
 /* Wide enough for the table's longest names and joint calls ("#12 Steinbergs", "Under + Show") at 11px. */
-.cov-card { width: 290px; min-width: 0; box-sizing: border-box; }
+.cov-card { width: 296px; min-width: 0; box-sizing: border-box; }
 .cov-card .cov-row { grid-template-columns: 54px 1fr 34px; }
 .cov-card .card-head { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* The title with the countdown to the screen (blue once it is set) in the card's top-right corner. */
@@ -840,11 +842,16 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* The card's table: per defender and combined, the model's expected call and its probability, the tagged (actual)
    call, then a mark (green tick: the expected call was the tagged one; red cross: it was not). */
 .cov-table {
-  display: grid; grid-template-columns: minmax(0, 1fr) 70px 28px 70px 10px; column-gap: 5px; row-gap: 1px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 10px 66px 32px 14px 66px 14px; column-gap: 0; row-gap: 1px;
   align-items: baseline; margin-top: 5px; padding-top: 3px; border-top: 1px solid var(--line); white-space: nowrap;
   font-size: 11px; font-variant-numeric: tabular-nums;
 }
-.cov-th { color: var(--muted); font-size: 10.5px; }
+.cov-th { grid-column: span 2; color: var(--muted); font-size: 10.5px; text-align: center; }
+/* The expected call sits right against its %; the actual call starts its pair, the mark at the pair's end. */
+.cov-exp { text-align: right; }
+.cov-table .cov-pct { padding-left: 5px; text-align: left; }
+.cov-act { text-align: left; }
+.cov-plus { color: var(--muted); }
 .cov-table .cov-k { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
 .cov-table .tbd { color: var(--muted); }
 .cov-table .combined { margin-top: 2px; padding-top: 2px; border-top: 1px solid var(--line); }

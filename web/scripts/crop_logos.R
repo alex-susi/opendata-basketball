@@ -1,19 +1,25 @@
 ## ═════════════════════════════════════════════════════════════════════════════
-# Crops the wordmark off the team logos that carry their name as separate text under the crest (BC Barcelona's
-# "BARÇA", Real Madrid's "Realmadrid Baloncesto", UCAM Murcia's "UCAM Universidad Club de Baloncesto"), so only the
-# crest shows on the site (score bar, rosters, midcourt).
+# Prepares the team logos the site shows (score bar, rosters, midcourt) from the downloaded badges kept in
+# web/scripts/logo_sources/ (see web/public/logos/SOURCES.md).
 #
-# Reads the downloaded badges kept in web/scripts/logo_sources/ (see web/public/logos/SOURCES.md) and writes
-# web/public/logos/<team id>.png: the crest is the ink above the first clear horizontal gap of at least GAP_ROWS rows,
-# trimmed to its own bounds and centred on a transparent 512 x 512 square. Run from the repository root:
+# - Three badges carry the club's name as separate text under the crest (BC Barcelona's "BARÇA", Real Madrid's
+#   "Realmadrid Baloncesto", UCAM Murcia's "UCAM Universidad Club de Baloncesto"). For these the crest is the ink
+#   above the first clear horizontal gap of at least GAP_ROWS rows; the text below is dropped.
+# - Every logo is then trimmed to its own ink and centred on a transparent SIZE x SIZE square, so the drawing (not
+#   the downloaded canvas, which can carry uneven margins) sits in the middle wherever it is shown.
+#
+# Writes web/public/logos/trimmed/<team id>.png and web/public/logos/logos.json. The folder name is new on purpose,
+# so browsers holding the old images fetch these. Run from the repository root:
 #   Rscript web/scripts/crop_logos.R
 ## ═════════════════════════════════════════════════════════════════════════════
 
 library(magick)
+library(jsonlite)
 
 SOURCES   <- "web/scripts/logo_sources"
-OUT       <- "web/public/logos"
-TEAMS     <- c("1334", "1338", "1340")
+OUT_DIR   <- "web/public/logos/trimmed"
+MANIFEST  <- "web/public/logos/logos.json"
+WORDMARK  <- c("1334", "1338", "1340")
 GAP_ROWS  <- 6
 ALPHA_INK <- 0.1
 SIZE      <- 512
@@ -23,20 +29,28 @@ SIZE      <- 512
 
 
 ## ═════════════════════════════════════════════════════════════════════════════
-## 01 - CREST BOUNDS -----------------------------------------------------------
+## 01 - INK BOUNDS -------------------------------------------------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-# Rows and columns of the crest: from the first row with ink down to the first run of GAP_ROWS rows without ink.
-crest_bounds <- function(alpha) {
+# The alpha channel as a rows x columns matrix in 0-1 (magick's raster is [channel, x, y]).
+alpha_of <- function(img) {
+  t(matrix(as.integer(image_data(img, "rgba")[4, , ]), nrow = image_info(img)$width)) / 255
+}
+
+# Rows and columns holding ink. With crest_only, the rows stop at the first run of GAP_ROWS rows without ink below
+# the first inked row (the crest above a separate wordmark).
+ink_bounds <- function(alpha, crest_only) {
   ink_row <- apply(alpha > ALPHA_INK, 1, any)
   first <- which(ink_row)[1]
-  last <- length(ink_row)
-  run <- 0
-  for (r in first:length(ink_row)) {
-    run <- if (ink_row[r]) 0 else run + 1
-    if (run >= GAP_ROWS) {
-      last <- r - run
-      break
+  last <- max(which(ink_row))
+  if (crest_only) {
+    run <- 0
+    for (r in first:length(ink_row)) {
+      run <- if (ink_row[r]) 0 else run + 1
+      if (run >= GAP_ROWS) {
+        last <- r - run
+        break
+      }
     }
   }
   cols <- which(apply(alpha[first:last, , drop = FALSE] > ALPHA_INK, 2, any))
@@ -48,19 +62,22 @@ crest_bounds <- function(alpha) {
 
 
 ## ═════════════════════════════════════════════════════════════════════════════
-## 02 - CROP AND WRITE ---------------------------------------------------------
+## 02 - CROP, CENTRE AND WRITE -------------------------------------------------
 ## ═════════════════════════════════════════════════════════════════════════════
 
-for (team in TEAMS) {
+dir.create(OUT_DIR, showWarnings = FALSE)
+teams <- sub("\\.png$", "", list.files(SOURCES, "\\.png$"))
+manifest <- list()
+for (team in teams) {
   img <- image_read(file.path(SOURCES, paste0(team, ".png")))
-  # magick's raster is [channel, x, y]; the alpha channel as a rows x columns matrix in 0-1.
-  alpha <- t(matrix(as.integer(image_data(img, "rgba")[4, , ]), nrow = image_info(img)$width)) / 255
-  b <- crest_bounds(alpha)
+  b <- ink_bounds(alpha_of(img), team %in% WORDMARK)
   w <- b$right - b$left + 1
   h <- b$bottom - b$top + 1
-  crest <- image_crop(img, sprintf("%dx%d+%d+%d", w, h, b$left - 1, b$top - 1))
+  ink <- image_crop(img, sprintf("%dx%d+%d+%d", w, h, b$left - 1, b$top - 1))
   side <- max(w, h)
-  square <- image_extent(crest, sprintf("%dx%d", side, side), gravity = "center", color = "none")
-  image_write(image_resize(square, sprintf("%dx%d", SIZE, SIZE)), file.path(OUT, paste0(team, ".png")), format = "png")
-  cat(team, ": crest rows", b$top, "-", b$bottom, ", columns", b$left, "-", b$right, "\n")
+  square <- image_extent(ink, sprintf("%dx%d", side, side), gravity = "center", color = "none")
+  image_write(image_resize(square, sprintf("%dx%d", SIZE, SIZE)), file.path(OUT_DIR, paste0(team, ".png")), format = "png")
+  manifest[[team]] <- paste0("trimmed/", team, ".png")
+  cat(team, ": ink rows", b$top, "-", b$bottom, ", columns", b$left, "-", b$right, "\n")
 }
+write(toJSON(manifest, auto_unbox = TRUE, pretty = TRUE), MANIFEST)

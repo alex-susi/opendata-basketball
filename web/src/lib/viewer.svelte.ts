@@ -68,7 +68,7 @@ export const live = $state({
   /** Height (px) the cards over the court need (Annotations.svelte); the court window is kept at least this tall. */
   annNeed: 0,
   /** The court's box on the canvas (CSS px) and which half is the backcourt, for the cards over it. */
-  box: null as { left: number; top: number; w: number; h: number; backLeft: boolean } | null,
+  box: null as { left: number; top: number; w: number; h: number; backLeft: boolean; floorRight: number } | null,
 });
 
 /** Season figures by "<canonical id>:<team id>" (season.json), once loaded. */

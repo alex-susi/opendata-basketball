@@ -68,7 +68,7 @@
     if ((ctl?.court !== had?.court || ctl?.half !== had?.half) && (drawn % 6 === 0 || !viewer.playing)) live.control = ctl;
     hits = info.hits;
     const b = info.box, was = live.box;
-    if (!was || was.left !== b.left || was.top !== b.top || was.w !== b.w || was.h !== b.h || was.backLeft !== b.backLeft) live.box = b;
+    if (!was || was.left !== b.left || was.top !== b.top || was.w !== b.w || was.h !== b.h || was.backLeft !== b.backLeft || was.floorRight !== b.floorRight) live.box = b;
     // The cards and rosters follow the frame a few times a second while playing (every frame when paused).
     if ((drawn % 4 === 0 || !viewer.playing) && info.i0 !== live.i0) live.i0 = info.i0;
     if (info.onCourt.length !== live.onCourt.length || info.onCourt.some((id, i) => id !== live.onCourt[i])) live.onCourt = info.onCourt;

@@ -2464,3 +2464,11 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Screen Coverage Read card: Screener and Ballhandler as their own rows; coverage names capitalised; the last rows are a table with one row per defender (number and last name) and a Combined row: the model's expected call, its probability, the tagged call (TBD until the screen) and a tick or cross for each, so the model can be right about one defender and wrong about the other. Card 290 px (the table's longest names and joint calls need it at 11 px).
 - Controls row: previous / play / next (smaller), the speed over the elapsed / total time, Save Video (moved from the Display panel) and a moon / sun switch for night and day. The Current / Unslop switch is removed; the site opens in the current look (an old saved Unslop choice is cleared), and `?look=unslop` still works.
 - No model, input or result changed.
+
+## 2026-11-16 — Web viewer: logo files, score bar width, coverage table spacing
+
+- Logos: every badge is now trimmed to its drawing and centred on a 512 px square, written to `web/public/logos/trimmed/` (new paths, so browsers holding the old uncropped Barcelona / Real Madrid / UCAM files fetch the new ones). `web/scripts/crop_logos.R` builds them and `logos.json` from the originals in `web/scripts/logo_sources/`; the old `web/public/logos/<id>.png` files are removed.
+- Score bar logos were sitting low: the oversized logo spilled off the bottom of its panel only. They now centre with flex and clip evenly.
+- Score bar: the divider between the team boxes uses the bar's edge colour (light at night, dark by day). Each team box is sized so the clock box ends level with the court floor's right edge (measured within 1 px at 1600 px wide), never under 166 px.
+- Screen Coverage Read table: joint calls coloured part by part as in the bars above, the "+" grey; expected call set right against its %, a wider gap before Actual; Expected and Actual headers centred over their two columns; the rule above Combined runs unbroken across each pair. Card 296 px.
+- No model, input or result changed.

@@ -85,6 +85,10 @@
   // How far the court's centre line sits from the middle of the header (the stage and the header share a column).
   let headW = $state(0);
   const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
+  // Each team box of the score bar is as wide as makes the clock box end level with the court's right sideline end
+  // (the floor's right edge): from the centre line, one team box and the clock box (never under 166 px, what the names and scores need; a narrow window gives up the alignment).
+  let bugClockW = $state(96);
+  const bugTeamW = $derived(live.box ? Math.max(166, Math.round(live.box.floorRight - (live.box.left + live.box.w / 2) - bugClockW)) : null);
   // A team's three-letter name on the scorebug (its full name is the box's tooltip). Unlisted names fall back to the
   // first three letters of their last word.
   const ABBR: Record<string, string> = {
@@ -220,7 +224,7 @@
   <header class="play-head-box">
     <div class="play-head" style:--court-shift="{courtShift}px" bind:clientWidth={headW}>
       {#if play && home && away}
-        <div class="bug" title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
+        <div class="bug" style:--team-w={bugTeamW != null ? `${bugTeamW}px` : null} title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
           {#each [{ side: "home", kit: home, name: play.home, logo: homeLogo, score: play.homeScore, ball: homeIsOff },
                   { side: "away", kit: away, name: play.away, logo: awayLogo, score: play.awayScore, ball: !homeIsOff }] as t (t.side)}
             <span class="bug-team {t.side}" style:background-color={t.kit.fill} style:color={t.kit.ink} title={t.name}>
@@ -230,7 +234,7 @@
               <span class="bug-score">{t.score}</span>
             </span>
           {/each}
-          <span class="bug-clock">
+          <span class="bug-clock" bind:offsetWidth={bugClockW}>
             <span class="bug-time" title="Game clock">{live.gameClock}</span>
             <span class="bug-period-line"><span class="shot-clock" title="Shot clock">{live.shotClock}</span><span title="Quarter">{periodName(play.period)}</span></span>
           </span>
