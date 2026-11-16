@@ -261,7 +261,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   font-size: 14px; font-weight: 700; line-height: 1.4;
 }
 .period-line .period { justify-self: end; }
-.shot-clock { display: inline-block; min-width: 24px; padding: 0 5px; border-radius: 5px; background: #0F1522; color: #F5B02E; text-align: center; }
+/* The shot clock: the number alone in amber, with a thin dark outline drawn behind the fill. */
+.shot-clock {
+  display: inline-block; min-width: 22px; color: #F5B02E; text-align: left;
+  -webkit-text-stroke: 1.5px #0B0E14; paint-order: stroke fill;
+}
 
 /* A narrower centre column keeps the one row with slightly smaller type. */
 @container playhead (max-width: 780px) {
@@ -305,10 +309,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   max-width: 220px; height: 26px; padding: 2px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--raised);
   color: var(--ink); font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none;
 }
-/* The readout: three right-aligned rows (seconds, frame, value). */
-.trace-read { display: grid; justify-items: end; min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; line-height: 1.3; }
-.trace-at { display: contents; }
-.trace-row { white-space: nowrap; }
+/* The value, at the right end of the header line. */
+.trace-read { margin-left: auto; min-width: 0; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* Fixed widths, so the menus never shift with the chosen name. */
+.trace-pick select.pick-player { width: 210px; }
+.trace-pick select.pick-metric { width: 175px; }
 .trace-chart .now-dot { stroke: var(--panel); }
 .trace-read b { color: var(--ink); }
 .trace-chart { position: relative; min-height: 126px; }
@@ -712,7 +717,6 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* The trace panel's Player Tracking tab (TrackingTable.svelte): one table, a heading row per team. */
 /* The active tab's controls and readout, right-aligned on the tabs' line. */
-.trace-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 12px; margin-left: auto; }
 .track-scroll { overflow-x: auto; }
 .track-table th.al, .track-table td.al { text-align: left; }
 .track-table { min-width: 100%; margin: 2px 0 6px; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -782,7 +786,11 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .cov-who { color: var(--muted); }
 /* The title with the countdown to the screen (blue once it is set) in the card's top-right corner. */
 .cov-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.cov-flag { margin-left: 0; }
+/* The countdown badge, styled as in the Unslop look in both looks: red before the screen, blue once it is set. */
+.cov-flag {
+  margin-left: 0; padding: 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0; background: #c94545;
+  font-variant-numeric: tabular-nums;
+}
 .cov-flag.set { background: #2f7de1; }
 .cov-row { display: grid; grid-template-columns: 92px 1fr 34px; align-items: center; gap: 8px; color: var(--muted);
   font-variant-numeric: tabular-nums; }

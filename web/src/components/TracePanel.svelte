@@ -12,8 +12,9 @@
   // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
   // chart to move playback there. A third tab, Player Tracking, swaps the chart for a table of the ten players on
-  // court (TrackingTable.svelte). The readout on the right has three rows: the playback seconds, the tracking frame
-  // and the value. Shown or hidden from the Display panel.
+  // court (TrackingTable.svelte). The header's right end shows the value alone (and, for a paired measure, the other
+  // player's number and last name); the playback seconds and tracking frame are under the court (lib/draw.ts).
+  // Shown or hidden from the Display panel.
   import ActionCard from "./ActionCard.svelte";
   import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
   import { clamp } from "../lib/geometry";
@@ -107,13 +108,8 @@
   });
 
   const hovered = $derived<TraceSample | null>(hoverK == null ? null : samples.find((s) => s.k === hoverK) ?? null);
-  // The moment the readout names, on every tab: the hovered sample while the pointer is over the chart, otherwise the
-  // playback position. Seconds are the timeline's (playback seconds); the frame is the tracking frame (25 per second,
-  // the frame column of exported tables such as screen_coverage/zz_Archive/03_outputs/per_frame/strips.csv).
-  const frameAt = (k: number) => (play && seq.length ? play.frames[seq[clamp(Math.round(k), 0, seq.length - 1)]] : null);
-  const moment = $derived(hovered ? { t: hovered.t, f: frameAt(hovered.k) } : { t: tNow, f: frameAt(viewer.pos) });
-  const name = (p: PlayerTrack | null | undefined) => (p ? `#${p.jersey} ${p.name}` : "–");
-  const teamOf = (p: PlayerTrack) => (play ? (p.role === "off" ? play.off : play.def) : "");
+  // The other player of a paired measure: number and last name.
+  const name = (p: PlayerTrack | null | undefined) => (p ? `#${p.jersey} ${p.last}` : "–");
   const kitText = (p: PlayerTrack | null | undefined) => (p && play ? pageText(play.colors[p.role].text) : undefined);
   const fmt = (v: number | null | undefined) => (v == null || Number.isNaN(v) ? "–" : `${v.toFixed(1)} ${unit}`);
 
@@ -161,8 +157,7 @@
       <button type="button" role="radio" aria-checked={viewer.trace === "players"} class:on={viewer.trace === "players"}
               onclick={() => (viewer.trace = "players")}>Player Tracking</button>
     </div>
-    <!-- Each tab's own controls and readout, on the right of the same line. -->
-    <div class="trace-tools">
+    <!-- Each tab's own controls straight after the tabs, so they never move; the value at the right end. -->
     {#if viewer.trace === "players"}
       <div class="seg" role="radiogroup" aria-label="Columns shown">
         {#each TRACK_GROUPS as g (g.key)}
@@ -170,11 +165,10 @@
                   onclick={() => (viewer.trackCols = g.key)}>{g.label}</button>
         {/each}
       </div>
-      {#if play}<span class="trace-read">{@render at()}</span>{/if}
     {:else if viewer.trace === "player"}
       <label class="trace-pick">
         <span>Player</span>
-        <select value={focus ? String(focus.id) : ""} onchange={pick} style:color={kitText(focus)}>
+        <select class="pick-player" value={focus ? String(focus.id) : ""} onchange={pick} style:color={kitText(focus)}>
           <option value="">Click a player…</option>
           {#each ["off", "def"] as role (role)}
             {@const group = tracked.filter((p) => p.role === role)}
@@ -188,33 +182,18 @@
       </label>
       <label class="trace-pick" title={info.title}>
         <span>Track</span>
-        <select value={viewer.metric} onchange={pickMetric}>
+        <select class="pick-metric" value={viewer.metric} onchange={pickMetric}>
           {#each METRICS as m (m.key)}<option value={m.key} title={m.title}>{m.label}</option>{/each}
         </select>
       </label>
-      {#if play}
-        <span class="trace-read">
-          {@render at()}
-          <span class="trace-row">
-            {#if focus}
-              {@const v = hovered ? hovered.v : now?.v}
-              {@const opp = hovered ? play.players.find((p) => p.id === hovered.opp) : now?.opp}
-              {info.label} <b>{fmt(v)}</b>{#if info.pair && opp}&nbsp;· <b style:color={kitText(opp)}>{name(opp)}</b>{#if !hovered}&nbsp;<span>({teamOf(opp)})</span>{/if}{/if}
-            {:else}
-              No player picked
-            {/if}
-          </span>
-        </span>
+      {#if play && focus}
+        {@const v = hovered ? hovered.v : now?.v}
+        {@const opp = hovered ? play.players.find((p) => p.id === hovered.opp) : now?.opp}
+        <span class="trace-read"><b>{fmt(v)}</b>{#if info.pair && opp}&nbsp;· <b style:color={kitText(opp)}>{name(opp)}</b>{/if}</span>
       {/if}
-    {:else if viewer.trace === "ball"}
-      {#if play}
-        <span class="trace-read">
-          {@render at()}
-          <span class="trace-row">Ball Height <b>{fmt(hovered ? hovered.v : now?.v)}</b></span>
-        </span>
-      {/if}
+    {:else if viewer.trace === "ball" && play}
+      <span class="trace-read"><b>{fmt(hovered ? hovered.v : now?.v)}</b></span>
     {/if}
-    </div>
   </div>
 
   <div class="trace-chart" bind:clientWidth={width} bind:this={chartEl}>
@@ -296,6 +275,3 @@
   </div>
 </div>
 
-{#snippet at()}
-  <span class="trace-at" title="Where the readout is: seconds of playback on the timeline below, and the tracking frame (25 frames a second). Shows the hovered moment while the pointer is over the chart, otherwise the current one."><span class="trace-row"><b>{moment.t.toFixed(2)} s</b></span><span class="trace-row">Frame <b>{moment.f ?? "–"}</b></span></span>
-{/snippet}

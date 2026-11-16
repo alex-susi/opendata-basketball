@@ -56,7 +56,7 @@
 :root[data-look="unslop"] .poss-ball.on { filter: none; }
 :root[data-look="unslop"] .game-time { font-weight: 600; }
 :root[data-look="unslop"] .period-line { margin-top: 4px; font-weight: 500; }
-:root[data-look="unslop"] .shot-clock { padding: 0 4px; border-radius: 4px; background: #0e0e0f; }
+:root[data-look="unslop"] .shot-clock { -webkit-text-stroke-color: #0e0e0f; }
 
 /* ═══ 5. Court, trace panel and timeline ═══ */
 :root[data-look="unslop"] .stage-note { background: rgba(20, 20, 21, .82); }
@@ -109,6 +109,7 @@
 :root[data-look="unslop"] .ps-fill { font-weight: 600; }
 :root[data-look="unslop"] .stat-info { font-size: 9px; font-style: normal; font-weight: 600; }
 :root[data-look="unslop"] .event-flag { padding: 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0; background: #c94545; }
+:root[data-look="unslop"] .cov-flag.set { background: #2f7de1; }
 :root[data-look="unslop"] :is(.cov-tick, .cov-mark) { font-weight: 600; }
 :root[data-look="unslop"] .cov-bar > span { transition: none; }
 

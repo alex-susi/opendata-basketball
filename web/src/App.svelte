@@ -95,7 +95,8 @@
   let headW = $state(0);
   const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
   // The clocks' centre: halfway between the away side's possession-ball slot (kept in place when the home team has the
-  // ball) and the court's right edge, in the header's coordinates. The slot is measured again whenever the scorebug
+  // ball) and the right edge of the court's panel (the header's right edge, the two share a column), in the header's
+  // coordinates. The slot is measured again whenever the scorebug
   // or the away team's name changes size, the court moves or a new play loads, so the clocks never sit on stale
   // numbers.
   let awayEnd = $state<HTMLElement>();
@@ -116,13 +117,12 @@
     void headW; void courtShift; void play?.id; void live.box;
     tick().then(measureSlot);
   });
-  // Where the court ends too close to the ball for that (a narrow window), the clocks move right just enough to clear
-  // the ball, staying inside the header.
+  // In a narrow window the clocks keep at least 10 px clear of the ball and inside the header.
   let clockW = $state(0);
   const clockX = $derived.by(() => {
-    if (slotEnd == null || !live.box) return null;
-    const mid = (slotEnd + live.box.left + live.box.w) / 2, half = clockW / 2;
-    return Math.round(Math.min(Math.max(mid, slotEnd + 10 + half), headW - 4 - half));
+    if (slotEnd == null || !headW) return null;
+    const mid = (slotEnd + headW) / 2, half = clockW / 2;
+    return Math.round(Math.min(Math.max(mid, slotEnd + 10 + half), headW - half));
   });
   const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
   loadLogos();

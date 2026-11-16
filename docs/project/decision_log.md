@@ -2421,3 +2421,11 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Screen Coverage Read card always shows each frame's raw percentages (Raw / Avg 0.08 s switch removed). Its defender subheaders are title case ("On the Ball · #55 Perez"), the "before the screen / screen set" text is gone and the countdown sits beside the title. Shot card subheaders are title case too.
 - New Night / Day switch in the bottom-right corner (`?theme=light`), working with both the Current and Unslop looks. The court and its dark label plates stay the same by day. Team colours on panels are darkened by day where too pale on white.
 - No model, input or result changed.
+
+## 2026-11-16 — Web viewer: second pass on the header, trace panel and court caption
+
+- Trace panel: the Player and Track menus sit straight after the tabs at fixed widths, so they no longer shift. The right end shows the value only, with the other player as number and last name for paired measures ("4.8 ft · #2 Rousselle"). No repeated measure name or team name.
+- Under the court: playback seconds and tracking frame on the left, level with the court's left edge ("9.40 s · Frame 69928"). Event labels on the right, level with the court's right edge. A label now stays 20 frames (0.8 s), at most two at once, and the older one drops as soon as the two no longer fit. A recorded video shows the data credit on the left instead of the seconds and frame.
+- Screen Coverage Read countdown uses the Unslop badge in both looks, red before the screen and blue after (the blue had been lost in the Unslop look).
+- Game clock block centred between the possession-ball slot and the right edge of the court's panel. The shot clock is the amber number with a thin dark outline, no box.
+- No model, input or result changed.

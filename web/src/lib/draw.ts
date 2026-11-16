@@ -8,13 +8,13 @@ import { logoImage } from "./logos.svelte";
 import { COLORS, HEADER_TOP, HOOP_X, MARGIN, PAD, REACH, courtLayout, drawCourt, px, py, type CourtView, type Layout } from "./court";
 import type { LaneFrame } from "./coverage";
 import { clamp, clock, convexHull, polygonArea, quarter, type Point } from "./geometry";
-import { ballHandler, blend, cursorAt, type Cursor } from "./sequence";
+import { ballHandler, blend, cursorAt, FPS, type Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
 import { metricInfo, playerValue, type Metric } from "./trace";
 import type { Play, PlayerTrack, Sample, TeamColors } from "./types";
 
 const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
-const CAPTION_FRAMES = 62;   // how long an event label stays up
+const CAPTION_FRAMES = 20;   // how long an event label stays up (0.8 s), unless a newer one crowds it out sooner
 
 export interface DrawOptions {
   view: CourtView;
@@ -422,22 +422,36 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
 
 export const DATA_CREDIT = "Data: Liga Endesa ACB 2025/2026 via SkillCorner";
 
-// Under the court, centred and bold: both recent event labels if they fit, otherwise the latest one. On the page the
-// data credit is in the tab bar; a recorded video carries it here, at the right, since it leaves the page behind.
-function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[], credit: boolean): void {
-  const y = L.top + L.ch + 14;
+// The line under the court. Left, level with the court's left edge: the playback seconds and the tracking frame
+// ("9.40 s · Frame 69928", numbers bold), or in a recorded video the data credit (on the page it is in the tab bar; a
+// video leaves the page behind). Right, level with the court's right edge: the event labels of the last 0.8 s, at most
+// two; when two do not fit beside the left text, only the newest, cut short if even that does not fit.
+function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[], secs: number, frame: number, credit: boolean): void {
+  const y = L.top + L.ch + 14, x0 = L.left, x1 = L.left + L.cw;
   ctx.textBaseline = "middle";
-  if (credit && L.cw >= 420) {
-    ctx.textAlign = "right";
-    ctx.font = `400 11px ${FONT}`;
-    ctx.fillStyle = COLORS.paperMuted;
-    ctx.fillText(DATA_CREDIT, L.left + L.cw, y);
+  ctx.textAlign = "left";
+  const left: [string, string, number][] = credit
+    ? [[DATA_CREDIT, COLORS.paperMuted, 400]]
+    : [[`${secs.toFixed(2)} s`, COLORS.paperInk, 700], ["  ·  ", COLORS.paperMuted, 400], ["Frame ", COLORS.paperMuted, 400], [String(frame), COLORS.paperInk, 700]];
+  let x = x0;
+  for (const [text, color, weight] of left) {
+    ctx.font = `${weight} ${credit ? 11 : 12}px ${FONT}`;
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+    x += ctx.measureText(text).width;
   }
+  if (!labels.length) return;
   ctx.font = `700 13px ${FONT}`;
   ctx.fillStyle = COLORS.paperInk;
-  ctx.textAlign = "center";
+  ctx.textAlign = "right";
+  const room = x1 - x - 24;
   const both = labels.join("   ·   ");
-  ctx.fillText(ctx.measureText(both).width <= L.cw - 16 ? both : labels[labels.length - 1] ?? "", L.left + L.cw / 2, y, L.cw);
+  let text = ctx.measureText(both).width <= room ? both : labels[labels.length - 1];
+  if (ctx.measureText(text).width > room) {
+    while (text.length > 1 && ctx.measureText(`${text}…`).width > room) text = text.slice(0, -1);
+    text = `${text.trimEnd()}…`;
+  }
+  ctx.fillText(text, x1, y);
 }
 
 /**
@@ -522,7 +536,7 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
 
   const labels = play.events.filter((e) => frame >= e.f && frame - e.f <= CAPTION_FRAMES).slice(-2).map((e) => e.label);
   if (header) drawHeader(ctx, L, play, c);
-  drawCaption(ctx, L, labels, header);
+  drawCaption(ctx, L, labels, pos / FPS, frame, header);
   return { onCourt: dots.off.concat(dots.def).map((d) => d.p.id), handler, areaOff, areaDef,
            gameClock: clock(play.gc[c.i0]), shotClock: shotClockText(play.sc[c.i0]),
            hits: all.map((d) => ({ id: d.p.id, x: px(L, d.x), y: py(L, d.y), r })),
