@@ -33,7 +33,7 @@
   const AXIS = 36;
   // Every tab is this tall (app.css, .trace-chart: the Player Tracking table fits it), so switching tabs never moves
   // the court; the chart's plot takes whatever the captions and axes leave.
-  const CHART_H = 226;
+  const CHART_H = 236;
   // Captions: the action in a band above the plot. Captions that crowd tilt away from their line (lib/sequence.ts,
   // layoutTimeline), each joined to it by a short leader. The players' names that used to sit in a band under the
   // axis are gone (2026-11-16); the plot takes their height, so the panel keeps its size.

@@ -2447,3 +2447,11 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - The three trace panel tabs share one height (chart area 226 px), so switching tabs no longer moves the court; the tracking table rows are 17 px so the ten players fit it.
 - Trace chart axes have titles: "Time (s)" under the time axis, and the measure with its unit up the left of the y axis ("Ball Height (ft)", "Gap to Opponent (ft)", "Toward Basket (ft/s)"…).
 - No model, input or result changed.
+
+## 2026-11-16 — Web viewer: score bar logos, roster logos, small spacing fixes
+
+- Roster heading logos back to 20 px (their size rule had been dropped with the old scorebug styles, so they drew full size).
+- Score bar logos larger (54 px, edges clipped) on a darker panel of the team colour at each box's outer end, in place of the white disc.
+- Player Tracking table: more space either side of the rule between the two teams. The trace panel's tabs share a 236 px chart area (was 226) so the table still fits when its headers wrap in a narrow window.
+- Timeline hover cards have no minimum width, so short cards (a handoff) are as narrow as their longest line.
+- No model, input or result changed.
