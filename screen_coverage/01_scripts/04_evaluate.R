@@ -6,7 +6,8 @@
 # screen_coverage/02_cache/v1_2026-11-11/ (v1's logistic_per_frame.rds and seqheads_<game>.rds folds).
 #
 # Models, all held out by game and scored on the same 1,463 screens and frames:
-#   live transformer, v2       the time-aware transformer under the past-only rules (R/past_only.R)
+#   live transformer, v2       the time-aware transformer under the past-only rules (R/past_only.R); since 2026-11-15
+#                              stopped on the main time-weight curve with four random starts (03_train_transformer.R)
 #   live transformer, v1       the same model before 2026-11-12 (positions could be filled from up to two frames
 #                              later; "so far" counted every earlier tag and leaned on the other games' mix)
 #   logistic baseline, v2/v1   the four-player logistic model that, like the transformer, is never told when the
@@ -65,7 +66,7 @@ for (g in sort(unique(L1$X$game_id))) {
 }
 SQ2 <- load_seqheads(root)
 TF1 <- "live transformer, v1 (until 2026-11-12)"
-TF2 <- "live transformer, v2 (past-only)"
+TF2 <- "live transformer, v2 (past-only; main-curve stopping since 2026-11-15)"
 LB1 <- "logistic baseline, v1"
 LB2 <- "logistic baseline, v2"
 LB0 <- "logistic baseline without so far, v2"

@@ -155,24 +155,28 @@ td.strong { font-weight: 700; }
       <span class="chip">5 coverage calls</span>
       <span class="chip">every result held out by game</span>
       <span class="chip ok">past-only inputs, tested</span>
-      <span class="chip live">live: time-aware transformer, v2</span>
+      <span class="chip live">live: time-aware transformer, v2, graded on the main curve</span>
     </div>
   </header>
 
   <section>
     <h2>Current status</h2>
     <div class="panel status">
-      <p><b>As of 2026-11-15.</b> The live model uses only what had happened by the moment of each prediction (the <b>v2</b>, past-only rules), a test confirms it, and it is now on the play viewer's Coverage Read card. It is compared with one baseline only: a logistic model that, like it, is never told when the screen comes. The lane experiment (roll lane, pop space, drive lanes) is <b>closed</b>: none of it was adopted, and the live model is unchanged.</p>
+      <p><b>As of 2026-11-15.</b> The live model uses only what had happened by the moment of each prediction (the <b>v2</b>, past-only rules), a test confirms it, and it is on the play viewer's Coverage Read card. Since 2026-11-15 it is graded mostly on the moments a ball handler can use: training stops on a fixed time-weight curve (full weight from 0.9 s before the pick frame until the handler comes off the screener's shoulder) and four random starts are averaged. It is compared with one baseline only: a logistic model that, like it, is never told when the screen comes. The lane experiment, a two-step time-to-screen model and a hoop-speed input were tested and <b>not adopted</b>.</p>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Piece</th><th>State</th></tr></thead>
           <tbody>
-            <tr><td>Live model: time-aware transformer, two heads</td><td>v2, trained on all 10 held-out games, exported to the Coverage Read card (<span class="file">06_export_live.R</span>).</td></tr>
+            <tr><td>Live model: time-aware transformer, two heads</td><td>v2 inputs; since 2026-11-15 stopped on the main time-weight curve with four random starts averaged; all 10 held-out games, exported to the Coverage Read card (<span class="file">06_export_live.R</span>). Main-curve score 1.114 for the full call (0.696 the ball handler's defender, 0.790 the screener's), against 1.116 for the flat-stopping version it replaced.</td></tr>
+            <tr><td>Grading curve</td><td>Fixed 2026-11-15 from tracking and event timing, never from model results (<span class="file">R/window_weights.R</span>, <span class="file">13_window_anchors.R</span>): weight 0 before −1.8 s (handler and screener start coming together), rising to 1 at −0.9 s (within 15 ft), 1 through +0.24 s (closest moment), falling to 0 at +0.5 s. Narrow and flat curves are kept as checks.</td></tr>
             <tr><td>Baseline: logistic, never told the timing</td><td>v2, plus a version without the defense's calls so far.</td></tr>
-            <tr><td>"Future can't change the past" test</td><td>Passes: 180 of 180 sampled prediction rows, for both models (<span class="file">05_test_past_only.R</span>).</td></tr>
+            <tr><td>"Future can't change the past" test</td><td>Passes: 180 of 180 sampled prediction rows, for both models, rerun on the new live model's four networks (<span class="file">05_test_past_only.R</span>).</td></tr>
+            <tr><td>Calibration</td><td>Checked 2026-11-15 (<span class="file">15_calibration.R</span>). Honest from about −0.5 s on; earlier, the leading call is overstated by several points, and confident switch reads before the pick frame are the clearest problem.</td></tr>
+            <tr><td>Two-step time-to-screen model</td><td>Tested 2026-11-15, not adopted. Step 1 estimates time to the pick frame within 0.25 s on average (0.15 s near the screen), but feeding it to the model changed the main-curve score by +0.000 (learned) and −0.005 (physics); wrong estimates cost little because the model leans on them lightly (<span class="file">03_outputs/time_to_screen/</span>, <span class="file">timing_compare/</span>).</td></tr>
+            <tr><td>Hoop-speed input</td><td>Tested 2026-11-15, not adopted: full call +0.002 (−0.004 to +0.008), ball handler's defender −0.003, screener's defender +0.004 (<span class="file">03_outputs/hoop_speed_compare/</span>).</td></tr>
             <tr><td>Lane experiment, stage 1: roll lanes (variant B)</td><td>Tested 2026-11-15, not adopted (experiment closed): the big's score at −0.4 s moved by −0.004 (95% interval −0.016 to +0.011), less than retraining the live model with two other random starts moves it (−0.007). Passes the past-only test (180/180). Outputs: <span class="file">screen_coverage/03_outputs/experiments/lanes/</span>.</td></tr>
             <tr><td>Lane experiment, stages 2-3: pop and drive options (screened)</td><td>Screened 2026-11-15 with the logistic baseline instead of training transformers. Both technically pass the gate set beforehand, each at one moment only and by tiny amounts: pop helps the big at −0.8 s by 0.0025 (not at −0.4 s); drive routes help the guard at −0.4 s by 0.0038 (not at −0.8 s). Both are below what a transformer comparison can resolve, and the pop pass gap mostly re-measures the two screen defenders. Closed by the owner on 2026-11-15 without training transformer variants. Outputs: <span class="file">experiments/lanes/screening/</span>.</td></tr>
-            <tr><td>Project folder</td><td><span class="file">screen_coverage/</span>: <span class="file">01_scripts/</span> (six pipeline scripts, <span class="file">01_…</span> to <span class="file">06_…</span>), <span class="file">02_cache/</span>, <span class="file">03_outputs/</span>, <span class="file">04_docs/</span> (this page) and <span class="file">zz_Archive/</span> (earlier models and tests, same layout).</td></tr>
+            <tr><td>Project folder</td><td><span class="file">screen_coverage/</span>: <span class="file">01_scripts/</span> (six pipeline scripts, <span class="file">01_…</span> to <span class="file">06_…</span>, then checks and experiments <span class="file">07_…</span> to <span class="file">21_…</span>), <span class="file">02_cache/</span>, <span class="file">03_outputs/</span>, <span class="file">04_docs/</span> (this page) and <span class="file">zz_Archive/</span> (earlier models and tests, same layout).</td></tr>
           </tbody>
         </table>
       </div>
@@ -446,12 +450,13 @@ td.strong { font-weight: 700; }
     <ol class="steps">
       <li><div><h3>Screens, frame rows and the logistic baseline</h3><p><span class="file">01_logistic_baseline.R</span>. The 1,463 screens with all four players tracked from −2 s to +1 s, one row per screen and frame, the four-player measures and tonight's tendencies at each frame, and the baseline: a logistic model never told when the screen comes (with and without the tendencies).</p></div></li>
       <li><div><h3>Movement histories</h3><p><span class="file">02_build_sequences.R</span>. The ten players' measures at every frame from −3.6 s to +1 s, past-only.</p></div></li>
-      <li><div><h3>Train the live model</h3><p><span class="file">03_train_transformer.R</span>, once per held-out game: the next game validates, eight train. Saves its predictions and networks.</p></div></li>
+      <li><div><h3>Train the live model</h3><p><span class="file">03_train_transformer.R</span>, once per held-out game: the next game validates, eight train; training stops on the validation game's main-curve score and four random starts are averaged (since 2026-11-15). Saves its predictions, the validation game's predictions and the networks.</p></div></li>
       <li><div><h3>Evaluate</h3><p><span class="file">04_evaluate.R</span>. Scores against the baseline and against v1, each defender's read, each call, the left-out screens, and probability strips for the film-check screens (<span class="file">screen_coverage/03_outputs/evaluation/</span>).</p></div></li>
       <li><div><h3>Test that the future can't change the past</h3><p><span class="file">05_test_past_only.R</span>. Details in the audit section.</p></div></li>
-      <li><div><h3>Export to the play viewer</h3><p><span class="file">06_export_live.R</span>. The Coverage Read card shows each defender's call (on the ball: over, under, switch; on the screener: show, soft, switch) and the most likely combination, ticking the tagged call once the screen is set; a Model Attention toggle rings the players the model mixes in.</p></div></li>
+      <li><div><h3>Export to the play viewer</h3><p><span class="file">06_export_live.R</span>. The Coverage Read card shows each defender's call (on the ball: over, under, switch; on the screener: show, soft, switch) and the most likely combination, ticking the tagged call once the screen is set; a Model Attention toggle rings the players the model mixes in. A Display-panel switch shows each frame's raw percentages (default) or the average of the last two frames (0.08 s).</p></div></li>
     </ol>
     <p class="caption">Lane experiment (2026-11-15), alongside the live pipeline and never exported as the live model: <span class="file">02_build_sequences.R --variant=A|B|C</span> and <span class="file">03_train_transformer.R --variant=… --seeds=…</span> build and train each variant in <span class="file">02_cache/experiments/lanes/</span> (without <span class="file">--variant</span> both behave exactly as before); <span class="file">07_test_lane_geometry.R</span> checks the geometry on hand-made cases and that the variants' movement inputs equal the live ones; <span class="file">05_test_past_only.R --variant=B</span> runs the past-only test on them; <span class="file">08_evaluate_lanes.R</span> scores them against the live model; <span class="file">09_lane_figures.R</span> draws the stills and the viewer's Roll Lanes overlay file; <span class="file">10_lane_diagnostics.R</span> checks why: the big's call by the nearest helper's gap, and the logistic baseline with that gap added; <span class="file">11_screen_pop_drive.R</span> screens the pop and drive options the same way before any transformer is trained.</p>
+    <p class="caption">Scoring and checks added 2026-11-15: <span class="file">R/window_weights.R</span> holds the fixed time-weight curves (main, narrow, flat); <span class="file">13_window_anchors.R</span> measured their anchor times from tracking and event timing; <span class="file">14_weighted_scores.R</span> scores the live model, the baseline and the league mix under each curve; <span class="file">15_calibration.R</span> checks whether the percentages match how often calls happen, and how often the card's leading call flips; <span class="file">16_screen_timing_check.R</span> asks whether a projected screen spot or time could help. Experiments, none adopted: <span class="file">17_time_to_screen.R</span> (step 1 of a two-step timing model), <span class="file">03_train_transformer.R --timing=none|physics|learned [--extra=hoop_speed]</span>, <span class="file">18_timing_compare.R</span>, <span class="file">19_timing_stress.R</span> and <span class="file">20_hoop_speed_compare.R</span>, all in <span class="file">02_cache/experiments/timing/</span>. <span class="file">21_promote_main_curve.R</span> made the main-curve model live from the timing experiment's "none" runs; the model it replaced is kept in <span class="file">02_cache/v2_flat_2026-11-12/</span>.</p>
     <p class="caption">Earlier work, now in <span class="file">screen_coverage/zz_Archive/</span>: the snapshot model at four moments, the ten-player token transformers and their comparisons, the screen-geometry test, and the logistic models fitted separately at each moment (they know exactly how far away the screen is, a kind of hindsight, so they are no longer a fair comparison). Their findings are in the change log.</p>
   </section>
 
@@ -517,14 +522,15 @@ td.strong { font-weight: 700; }
       <table>
         <thead><tr><th>Model</th><th class="num">Before screen</th><th class="num">At −0.4 s</th><th class="num">After screen</th></tr></thead>
         <tbody>
-          <tr class="live"><td><b>Time-aware transformer, two heads, v2</b> <span class="chip live">live</span></td><td class="num"><b>1.278</b></td><td class="num"><b>1.127</b></td><td class="num"><b>0.760</b></td></tr>
+          <tr class="live"><td><b>Time-aware transformer, two heads, v2, main-curve stopping, 4 starts</b> <span class="chip live">live</span></td><td class="num"><b>1.277</b></td><td class="num"><b>1.123</b></td><td class="num"><b>0.779</b></td></tr>
+          <tr class="old"><td>Same model, flat stopping, 2 starts (live 2026-11-12 to 2026-11-15)</td><td class="num">1.278</td><td class="num">1.127</td><td class="num">0.760</td></tr>
           <tr class="old"><td>Same model, v1 (live until 2026-11-12)</td><td class="num">1.276</td><td class="num">1.126</td><td class="num">0.761</td></tr>
           <tr><td>Logistic baseline, v2</td><td class="num">1.336</td><td class="num">1.219</td><td class="num">0.900</td></tr>
           <tr><td>Logistic baseline without tonight's tendencies, v2</td><td class="num">1.374</td><td class="num">1.249</td><td class="num">0.908</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="caption">"Before" is −2.0 to −0.04 s around the screen tag; "after" is 0 to +1.0 s. Live model minus baseline: −0.058 before (95% interval −0.086 to −0.029, better in 8 of 10 games) and −0.141 after (−0.164 to −0.113, all 10). v2 minus v1 for the live model: +0.002 before (−0.006 to +0.011) and −0.002 after (−0.016 to +0.012). <span class="file">screen_coverage/03_outputs/evaluation/</span></p>
+    <p class="caption">"Before" is −2.0 to −0.04 s around the screen tag; "after" is 0 to +1.0 s. Live model minus baseline: −0.059 before (95% interval −0.091 to −0.026, better in 8 of 10 games) and −0.121 after (−0.142 to −0.098, all 10). Live minus v1: +0.001 before (−0.010 to +0.012) and +0.018 after (−0.002 to +0.037). Since 2026-11-15 the live model stops training on the main time-weight curve, which counts nothing after +0.5 s, so it gives up a little after the screen (0.779 against 0.760) for the moments a ball handler can use; on the main-curve score it is 1.1143 against 1.1163 for the flat-stopping version (difference −0.002, 95% interval −0.012 to +0.010). <span class="file">screen_coverage/03_outputs/evaluation/</span>, <span class="file">03_outputs/weighted_scores/</span>, <span class="file">03_outputs/timing_compare/</span></p>
 
     <h3>How often the top call is right</h3>
     <figure class="figure">
@@ -787,7 +793,8 @@ td.strong { font-weight: 700; }
           <div class="step-body">
             <div class="mathbox">
               <math display="block"><mi mathvariant="script">L</mi><mo>=</mo><mo>−</mo><mfrac><mn>1</mn><mi>B</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>B</mi></munderover><mi>log</mi><mspace width="0.2em"></mspace><mi>P</mi><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>∣</mo><msub><mi mathvariant="bold">X</mi><mi>i</mi></msub><mo>,</mo><msub><mi mathvariant="bold">c</mi><mi>i</mi></msub><mo>)</mo><mo>,</mo><mspace width="1em"></mspace><mi>log</mi><mspace width="0.2em"></mspace><mi>σ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mtext> and </mtext><mi>log</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>σ</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>)</mo><mo>=</mo><mi>log</mi><mspace width="0.2em"></mspace><mi>σ</mi><mo>(</mo><mo>−</mo><mi>z</mi><mo>)</mo><mtext> summed per call</mtext></math>
-              <math display="block"><msub><mi>P</mi><mtext>final</mtext></msub><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>(</mo><msup><mi>P</mi><mrow><mo>(</mo><mtext>seed 1</mtext><mo>)</mo></mrow></msup><mo>+</mo><msup><mi>P</mi><mrow><mo>(</mo><mtext>seed 2</mtext><mo>)</mo></mrow></msup><mo>)</mo></math>
+              <math display="block"><msub><mi>P</mi><mtext>final</mtext></msub><mo>=</mo><mfrac><mn>1</mn><mn>4</mn></mfrac><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mn>4</mn></munderover><msup><mi>P</mi><mrow><mo>(</mo><mtext>seed </mtext><mi>k</mi><mo>)</mo></mrow></msup></math>
+              <math display="block"><mtext>stopping score</mtext><mo>=</mo><mfrac><mrow><msub><mo>∑</mo><mi>f</mi></msub><msub><mi>w</mi><mi>f</mi></msub><mspace width="0.2em"></mspace><mo>(</mo><mo>−</mo><mi>log</mi><mspace width="0.2em"></mspace><mi>P</mi><mo>(</mo><msub><mi>y</mi><mi>f</mi></msub><mo>)</mo><mo>)</mo></mrow><mrow><msub><mo>∑</mo><mi>f</mi></msub><msub><mi>w</mi><mi>f</mi></msub></mrow></mfrac><mo>,</mo><mspace width="1em"></mspace><msub><mi>w</mi><mi>f</mi></msub><mo>=</mo><mtext>main time weight of frame </mtext><mi>f</mi></math>
             </div>
             <div class="tablewrap">
               <table>
@@ -796,10 +803,10 @@ td.strong { font-weight: 700; }
                   <tr><td>Split, per held-out game</td><td>8 games train, the next game in order validates, the held-out game is predicted</td></tr>
                   <tr><td>Rows per epoch</td><td>3 random frames per training screen (about 3,500), shuffled into batches of 128</td></tr>
                   <tr><td>Optimiser</td><td>AdamW, learning rate 5 × 10<sup>−4</sup>, weight decay 0.05</td></tr>
-                  <tr><td>Stopping</td><td>validation log loss on every third frame of the validation game; keep the best epoch; stop after 15 epochs without improvement (at most 150)</td></tr>
+                  <tr><td>Stopping</td><td>validation log loss on every third frame of the validation game that has weight on the main time curve, weighted by it (full weight from −0.9 s to +0.24 s around the pick frame, ramps to zero at −1.8 s and +0.5 s); keep the best epoch; stop after 15 epochs without improvement (at most 150). Until 2026-11-15 every third frame from −2 s to +1 s counted equally</td></tr>
                   <tr><td>Dropout</td><td>0.2 in every attention layer and before the last read-out layer</td></tr>
-                  <tr><td>Random starts</td><td>2 (seeds 1 and 2); their probabilities are averaged</td></tr>
-                  <tr><td>Typical run</td><td>best epochs around 40-60; about 14 minutes per held-out game on one CPU thread</td></tr>
+                  <tr><td>Random starts</td><td>4 (seeds 1-4, two until 2026-11-15); their probabilities are averaged</td></tr>
+                  <tr><td>Typical run</td><td>best epochs around 20-70; about 6 minutes per random start and held-out game on one CPU thread</td></tr>
                 </tbody>
               </table>
             </div>
@@ -851,7 +858,8 @@ td.strong { font-weight: 700; }
       <li><b>Vendor labels and positions.</b> The coverage calls are SkillCorner's tags, not a staff's, and some positions are the vendor's estimates.</li>
       <li><b>The screen is known.</b> Every model is told which four players are in the screen, which is only certain afterwards. A live system would also need to detect the screen coming.</li>
       <li><b>When a call becomes readable.</b> Tonight's tendencies assume a coverage is known 1 s after its tag. That is a judgment, not something the data states.</li>
-      <li><b>Drift after the screen.</b> Even with its memory of contact, the live model's read slips back after about +0.5 s (log loss 0.72 at +0.4 s, 0.84 at +1 s).</li>
+      <li><b>Drift after the screen.</b> Even with its memory of contact, the live model's read slips back after about +0.5 s (log loss 0.73 at +0.4 s, 0.87 at +1 s; <span class="file">03_outputs/timing_compare/by_time.csv</span>, "none"). Training now stops on moments up to +0.5 s only, which makes the late drift a little larger (it was 0.72 and 0.84).</li>
+      <li><b>Honest percentages, mostly.</b> From about −0.5 s on, the card's percentages match how often calls happen. Earlier, its leading call is stated too high (8 points at −2 s, 5 at −1 s), after the pick frame about 5 points too low, and a confident switch read (60%+) before the pick frame comes true only about a third of the time (21 screens from −0.5 s to the pick frame; <span class="file">15_calibration.R</span>).</li>
       <li><b>Attention is not an explanation.</b> The model's attention is spread almost evenly across the ten players, so the attention rings show little.</li>
       <li><b>What 55% means.</b> It is a lean toward the likely coverage, not a prediction to bet on.</li>
     </ul>
@@ -866,19 +874,20 @@ td.strong { font-weight: 700; }
         <li>An ice detector as a separate output once more games are available.</li>
       </ul></div>
       <div><h3>Training and tuning</h3><ul class="tight">
-        <li>A small search over width, layers, heads, dropout and learning rate, inside the training games only.</li>
-        <li>More random starts, averaged; temperature scaling so 70% means 70%.</li>
+        <li>A small search over width, layers, heads, dropout and learning rate, scored on the pooled held-out main-curve score. Picking per fold on one validation game is unreliable: twice on 2026-11-15 a version won 7 of 10 validation games and showed no test gain.</li>
+        <li>Four random starts are now averaged. Temperature scaling as one number would barely help (1.1143 to 1.1137) and would make the after-screen reads more underconfident; a softening that depends on time from the pick frame fits the calibration pattern.</li>
         <li>Class weights if catching switches and under + show matters more than overall scores.</li>
         <li>Pretraining on all tracking frames (for example, predicting where players move next) before learning the calls.</li>
       </ul></div>
       <div><h3>New inputs</h3><ul class="tight">
         <li>Ball position and height.</li>
+        <li>Tested 2026-11-15 and not adopted: a two-step time-to-screen estimate (physics or learned; the model already reads timing from movement) and each player's speed toward the hoop (already implied by his distance to the hoop at nine moments).</li>
         <li>Personnel threat: the screener's pop rate and the handler's pull-up rate, built without leaking the season's own outcomes.</li>
         <li>Explicit help-defender measures: distance to the roll lane and closing speed were tested on 2026-11-15 and added nothing measurable. The pop (catch space beyond the arc, passing-lane clearance) and drive (direct, screen-side and reject lanes) options passed a logistic screen only narrowly, and the experiment was closed. If revisited: a pass gap that ignores defenders beside the handler, and the screener's shooting threat.</li>
       </ul></div>
       <div><h3>Making it live and checking it</h3><ul class="tight">
         <li>A screen-detection step ("a screen is coming, from this teammate") so the card switches on without the tag.</li>
-        <li>Results by team, screen location and shot clock, plus calibration curves.</li>
+        <li>Results by team, screen location and shot clock. Calibration curves were added on 2026-11-15 (<span class="file">03_outputs/calibration/</span>).</li>
         <li>A test on new games, since ten games may not carry over to other matchups.</li>
       </ul></div>
     </div>
@@ -909,12 +918,12 @@ td.strong { font-weight: 700; }
   <section>
     <h2>Suggested next steps</h2>
     <ol class="steps plain">
-      <li><div><p><b>Average more random starts</b>: two more starts of the unchanged model moved its scores by about as much as the roll lanes did (after the tag: −0.014, interval −0.028 to 0.000). Averaging four starts may be a cheap gain; any later comparison should be judged against this noise.</p></div></li>
+      <li><div><p><b>Decide on the tuning round</b>: a small search over size, dropout and learning rate, picked on the pooled held-out main-curve score (not per fold), with four starts per candidate. Any gain must beat the run-to-run noise of about 0.007.</p></div></li>
+      <li><div><p><b>Fix the early overconfidence</b>: a softening of the probabilities that depends on time from the pick frame, fitted on validation games only, and a look at the confident switch reads before the pick frame that came true only a third of the time.</p></div></li>
       <li><div><p><b>Film-check the strips</b> in <span class="file">screen_coverage/03_outputs/evaluation/figures/strips/</span>: 12 screens, now drawn with the live v2 model and its own −0.4 s call.</p></div></li>
       <li><div><p><b>Grade the 33 left-out screens frame by frame</b>, deciding from the past only whether each moment can be predicted; report both versions.</p></div></li>
       <li><div><p><b>Check the 1 s "readable" assumption</b>: rerun with 0 s, 2 s and "once the trip is over" to see whether the tendency gain depends on it.</p></div></li>
       <li><div><p><b>Fix the drift after the screen</b> with a longer history or a contact detector.</p></div></li>
-      <li><div><p><b>Calibrate and tune</b> with a small search inside the training games.</p></div></li>
       <li><div><p><b>Add screen detection</b> if a truly live version matters; <b>revisit ice</b> as its own detector when more games are available.</p></div></li>
     </ol>
   </section>
@@ -924,6 +933,21 @@ td.strong { font-weight: 700; }
     <div class="log">
       <div class="entry">
         <time datetime="2026-11-15">2026-11-15 (latest)</time>
+        <div>
+          <h3>Graded on the moments that matter: new live model; timing, hoop-speed and calibration checks</h3>
+          <ul class="tight">
+            <li><b>Grading curve fixed.</b> The −2 s to +1 s window and its equal weighting had no recorded reason. The owner asked for weights tied to the ball handler's decision. Anchors measured from tracking and event timing only (<span class="file">13_window_anchors.R</span>): the approach starts at a median −1.8 s, the pair is within 15 ft by −0.9 s, the closest moment is +0.24 s after the pick frame, the handler first commits around then, and the ball leaves his hands about +2.1 s. Main curve: 0 → 1 from −1.8 to −0.9 s, 1 to +0.24 s, 1 → 0 by +0.5 s (<span class="file">R/window_weights.R</span>, <span class="file">14_weighted_scores.R</span>).</li>
+            <li><b>Live model replaced</b> (the owner's request): training now stops on the main-curve score and averages four random starts. Same inputs and architecture. Main-curve score 1.1143 against 1.1163 (difference −0.002, 95% interval −0.012 to +0.010); before the screen 1.277 (was 1.278), at −0.4 s 1.123 (was 1.127), after the screen 0.779 (was 0.760, as expected: the curve gives no weight after +0.5 s). Passes the past-only test. The replaced model is kept in <span class="file">02_cache/v2_flat_2026-11-12/</span> (<span class="file">21_promote_main_curve.R</span>).</li>
+            <li><b>Calibration</b> (<span class="file">15_calibration.R</span>), new live model: the leading call is stated 1.4 points above its hit rate overall (95% interval −0.3 to +3.3; the replaced model 2.7), 8 points too high at −2 s, 5 at −1 s, about 5 too low after the pick frame; confident switch reads before the pick frame come true about a third of the time. The best single softening is small (temperature 1.04, main-curve score 1.1143 → 1.1137).</li>
+            <li><b>Card</b>: a Raw / Avg 0.08s switch replaces the fixed 0.2 s average, which lagged the read by a few frames; raw is the default and flips its leading call 2.25 times per screen over the 3 s window (0.08 s: 2.03; 0.2 s: 1.78).</li>
+            <li><b>Two-step time-to-screen model, not adopted.</b> Step 1 (<span class="file">17_time_to_screen.R</span>) estimates the time to the pick frame within 0.25 s on average; the screener's speed ÷ deceleration is a poor clock (about 1.2 s off) because screeners brake harder at the end, while the handler-screener closing equation is good (0.36 s). Given to the coverage model, neither helped (learned +0.0003, physics −0.0048 on the main curve); in a stress test, even the true time gave nothing, so the model already reads timing from movement (<span class="file">18_timing_compare.R</span>, <span class="file">19_timing_stress.R</span>).</li>
+            <li><b>Hoop-speed input, not adopted.</b> Each player's speed toward the hoop, aimed at the owner's Hankins/Perez review (Perez sank under while the model read over): no gain on the full call (+0.002) and slightly worse on the ball handler's defender (−0.003); the model already has each player's distance to the hoop at nine moments (<span class="file">20_hoop_speed_compare.R</span>).</li>
+            <li><b>Selection warning</b>: both experiments beat the baseline on 7 of 10 validation games and not on the test games, so tuning should pick on the pooled held-out score, not per fold.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-15">2026-11-15</time>
         <div>
           <h3>"Under the hood" reference section</h3>
           <ul class="tight">

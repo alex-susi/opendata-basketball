@@ -1,0 +1,13 @@
+anchor,screens,censored,p10,p25,median,p75,p90
+handler's touch starts,1450,,-8.41,-6.08,-3.72,-1.8,-1
+pair closing > 1 ft/s begins,1457,0.234,-3.4,-2.92,-2.08,-1.32,-0.84
+screener moving at handler > 1 ft/s begins,1236,0.188,-3.4,-2.76,-1.96,-1.24,-0.6
+pair closing > 2 ft/s begins,1444,0.174,-3.4,-2.64,-1.82,-1.2,-0.72
+screener moving at handler > 2 ft/s begins,1096,0.128,-3.34,-2.48,-1.76,-1.19,-0.6
+pair closing > 3 ft/s begins,1426,0.123,-3.24,-2.36,-1.64,-1.08,-0.6
+screener moving at handler > 3 ft/s begins,942,0.079,-2.92,-2.24,-1.6,-1.08,-0.6
+pair within 15 ft (until contact),1305,,-2.4,-1.28,-0.88,-0.64,-0.48
+pair within 10 ft (until contact),1410,,-1.16,-0.6,-0.4,-0.28,-0.12
+contact (closest within 0.48 s of tag),1463,,0.04,0.12,0.24,0.32,0.48
+drive starts (pick's touch),407,,-0.72,-0.32,0.08,1.16,3.28
+handler's touch ends,1450,,0.88,1.34,2.08,3.06,5

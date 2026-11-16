@@ -137,6 +137,18 @@
         <label class="toggle" title={sec.title}><input type="checkbox" bind:checked={viewer.ann[sec.key]} />{sec.label}</label>
       {/each}
     </div>
+    {#if viewer.ann.coverage}
+      <!-- The Coverage Read card's percentages: this frame's raw value, or the average of the last two frames. -->
+      <div class="control-read">
+        <span class="control-note">Coverage Read percentages</span>
+        <div class="seg control-scope" role="radiogroup" aria-label="Coverage Read percentages">
+          <button type="button" role="radio" aria-checked={viewer.covSmooth === 1} class:on={viewer.covSmooth === 1}
+                  title="Each frame's own probabilities, as the model gives them" onclick={() => (viewer.covSmooth = 1)}>Raw</button>
+          <button type="button" role="radio" aria-checked={viewer.covSmooth === 2} class:on={viewer.covSmooth === 2}
+                  title="Averaged over this frame and the one before (0.08 s), never a later frame" onclick={() => (viewer.covSmooth = 2)}>Avg 0.08s</button>
+        </div>
+      </div>
+    {/if}
   </div>
 
   {#each sides as side}

@@ -1,0 +1,154 @@
+/* The "Unslop" look: a polish pass over the current look, shown only while the tab bar's Current / Unslop switch is
+   on (data-look="unslop" on <html>, set in lib/look.ts). Every rule here is scoped to that attribute, so with the
+   switch off the site is exactly app.css.
+
+   Adapted from unslop by Damir Sokolovsky (@heydamir), https://github.com/heydamir/unslop, CC BY 4.0.
+
+   What it changes, following unslop's light "polish mode" (keep the layout, colour coding and title case; fix only
+   what the audit found):
+   - Surfaces: graphite greys instead of slate blue, with hairline borders, so the court, the team colours and the
+     coloured tags are the only colour on screen.
+   - Weight: 700 and 800 come down to 500 or 600; hierarchy comes from size and colour.
+   - Sizes: font sizes snap to 11, 12, 13, 14, 16, 20 (nothing under 11px); paddings and radii to the 4px grid.
+   - No italics, no glow on the possession ball, no animated bar widths.
+   Kept as they are on purpose: the title case on headings and labels, the archetype / action / team pills and their
+   colours, the offense blue and defense orange. */
+
+/* ═══ 1. Neutral ramp ═══ */
+:root[data-look="unslop"] {
+  --bg: #141415;
+  --panel: #19191b;
+  --raised: #232325;
+  --hover: #2c2c2f;
+  --line: rgba(237, 237, 237, .09);
+  --ink: #ededed;
+  --muted: #a1a1a6;
+  --radius: 12px;
+  --u-faint: #85858b;
+  --u-card: rgba(20, 20, 21, .94);
+  --u-scroll: #3a3a3e;
+}
+:root[data-look="unslop"] body { font-size: 13px; line-height: 1.45; }
+:root[data-look="unslop"] :is(.tabs, .play-list, .side, .doc, .ann-stack.top) { scrollbar-color: var(--u-scroll) transparent; }
+
+/* ═══ 2. Tab bar ═══ */
+:root[data-look="unslop"] .tabs .brand { margin-right: 16px; font-size: 15px; font-weight: 600; }
+:root[data-look="unslop"] .tabs button { font-weight: 500; }
+:root[data-look="unslop"] .tabs .tab-sep { margin: 0 4px 0 8px; font-size: 12px; font-weight: 400; color: var(--u-faint); }
+
+/* ═══ 3. Left column ═══ */
+:root[data-look="unslop"] .filters summary, :root[data-look="unslop"] .plays-head { font-weight: 600; }
+:root[data-look="unslop"] .filter-grid .field-label { font-size: 12px; }
+:root[data-look="unslop"] :is(.field select, .multi-box, .multi-list) { border-radius: 8px; }
+:root[data-look="unslop"] .multi-search { border-radius: 4px; }
+:root[data-look="unslop"] .chip { background: #2e2e32; }
+:root[data-look="unslop"] .game-head { padding: 4px 12px; background: var(--bg); font-weight: 500; }
+:root[data-look="unslop"] .play-item { padding: 8px 12px; border-bottom-color: var(--line); }
+:root[data-look="unslop"] .play-item.active { background: var(--raised); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+:root[data-look="unslop"] .pi-and1 { font-size: 11px; font-weight: 600; }
+:root[data-look="unslop"] .pi-tags i { background: #2a2a2e; color: #c9c9ce; }
+:root[data-look="unslop"] .chip.pill-chip .team-pill, :root[data-look="unslop"] .multi-option .team-pill { font-size: 12px; }
+
+/* ═══ 4. Play header and clocks ═══ */
+:root[data-look="unslop"] .play-head-note { font-size: 20px; font-weight: 500; }
+:root[data-look="unslop"] .scorebug { font-size: 20px; font-weight: 600; }
+:root[data-look="unslop"] .scorebug b { font-weight: 600; }
+:root[data-look="unslop"] .scorebug .team { gap: 8px; }
+:root[data-look="unslop"] .poss-ball.on { filter: none; }
+:root[data-look="unslop"] .game-time { font-weight: 600; }
+:root[data-look="unslop"] .period-line { margin-top: 4px; font-weight: 500; }
+:root[data-look="unslop"] .shot-clock { padding: 0 4px; border-radius: 4px; background: #0e0e0f; }
+
+/* ═══ 5. Court, trace panel and timeline ═══ */
+:root[data-look="unslop"] .stage-note { background: rgba(20, 20, 21, .82); }
+:root[data-look="unslop"] .trace-head { font-size: 13px; }
+:root[data-look="unslop"] :is(.seg, .speed, .text-btn, .control-read) { border-radius: 8px; }
+:root[data-look="unslop"] .seg button { font-weight: 500; }
+:root[data-look="unslop"] .trace-pick { font-size: 12px; font-weight: 500; }
+:root[data-look="unslop"] .trace-pick select { border-radius: 8px; font-size: 13px; font-weight: 500; }
+:root[data-look="unslop"] .trace-chart .grid { stroke: #2a2a2d; }
+:root[data-look="unslop"] .trace-chart .axis { font-size: 11px; }
+:root[data-look="unslop"] .trace-chart .unit { font-style: normal; }
+:root[data-look="unslop"] .trace-chart .sample { stroke: #8a8a90; }
+:root[data-look="unslop"] .trace-card { font-size: 13px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+:root[data-look="unslop"] .strip-rail { stroke: #333337; }
+:root[data-look="unslop"] .strip-played, :root[data-look="unslop"] .leaders line { stroke: #6e6e74; }
+:root[data-look="unslop"] .strip-shot { stroke: #0e0e0f; }
+
+/* ═══ 6. Right column ═══ */
+:root[data-look="unslop"] .side .panel { padding: 12px; }
+:root[data-look="unslop"] .side h2 { font-size: 14px; font-weight: 600; }
+:root[data-look="unslop"] .display .sub-head { margin: 12px 0 8px; font-size: 12px; color: var(--u-faint); }
+:root[data-look="unslop"] :is(.toggle, .switch) { gap: 8px; }
+:root[data-look="unslop"] .control-read { padding: 8px; font-size: 12px; }
+:root[data-look="unslop"] .control-scope button { font-size: 11px; }
+:root[data-look="unslop"] .text-btn { padding: 4px 12px; font-weight: 500; }
+:root[data-look="unslop"] .icon-btn.primary svg { fill: #0e0e0f; }
+:root[data-look="unslop"] .roster-head { margin-bottom: 8px; }
+:root[data-look="unslop"] .roster-sub .hull::before { font-weight: 400; }
+:root[data-look="unslop"] .roster li { gap: 8px; border-radius: 8px; }
+:root[data-look="unslop"] .roster .num { font-weight: 600; }
+:root[data-look="unslop"] .roster .arch { font-size: 11px; font-weight: 500; }
+:root[data-look="unslop"] .roster li.has-ball .name { font-weight: 600; }
+
+/* ═══ 7. Cards over the court, player card, stat tables ═══ */
+:root[data-look="unslop"] :is(.ann-card, .season-card) {
+  padding: 8px 12px; border-radius: 8px; background: var(--u-card); box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+  font-size: 12px;
+}
+:root[data-look="unslop"] .season-card { background: var(--raised); }
+:root[data-look="unslop"] :is(.ann-card b, .season-card b) { font-size: 13px; font-weight: 600; }
+/* Group headings in the shot card: title case like every other heading, instead of tracked capitals. */
+:root[data-look="unslop"] .card-head {
+  margin: 8px 0 2px; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: capitalize;
+  opacity: 1;
+}
+:root[data-look="unslop"] .trace-card .card-line { font-size: 12px; }
+:root[data-look="unslop"] .player-card { background: color-mix(in srgb, var(--team-fill, var(--raised)) 18%, #1a1a1c); }
+:root[data-look="unslop"] .player-card.inline { padding: 8px 12px; font-size: 12px; }
+:root[data-look="unslop"] .pc-views button { border-color: var(--line); border-radius: 8px; background: rgba(0, 0, 0, .3); font-size: 11px; font-weight: 500; }
+:root[data-look="unslop"] .ps-pie text { font-size: 11px; font-weight: 600; }
+:root[data-look="unslop"] :is(.ps-key, .pc-empty, .stat-title, .stat-grid) { font-size: 12px; }
+:root[data-look="unslop"] :is(.ps-comps, .ps-fill, .pc-foot, .stat-grid .stat-head, .stat-n, .stat-foot, .cov-note) { font-size: 11px; }
+:root[data-look="unslop"] .ps-fill { font-weight: 600; }
+:root[data-look="unslop"] .stat-info { font-size: 9px; font-style: normal; font-weight: 600; }
+:root[data-look="unslop"] .event-flag { padding: 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0; background: #c94545; }
+:root[data-look="unslop"] :is(.cov-tick, .cov-mark) { font-weight: 600; }
+:root[data-look="unslop"] .cov-bar > span { transition: none; }
+
+/* ═══ 8. Player tracking table ═══ */
+:root[data-look="unslop"] .track-table th { font-weight: 500; }
+:root[data-look="unslop"] :is(.track-table tr.has-ball td.name, .track-table .opp) { font-weight: 600; }
+:root[data-look="unslop"] .track-table .num { margin-right: 8px; font-size: 11px; font-weight: 600; }
+:root[data-look="unslop"] .group-spacing .info { font-size: 9px; font-weight: 600; }
+:root[data-look="unslop"] .spacing-tip { padding: 8px 12px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+
+/* ═══ 9. Reading tabs (Archetypes, Rebounding, Explore) ═══ */
+:root[data-look="unslop"] .doc-inner { padding: 32px 24px 64px; }
+:root[data-look="unslop"] .doc h1 { font-size: 32px; font-weight: 500; letter-spacing: -.01em; }
+:root[data-look="unslop"] .doc h2 { margin-bottom: 16px; font-size: 20px; font-weight: 500; }
+:root[data-look="unslop"] .doc h3 { font-size: 16px; font-weight: 600; }
+:root[data-look="unslop"] .doc section { margin-top: 64px; }
+:root[data-look="unslop"] .doc section + section { padding-top: 40px; }
+:root[data-look="unslop"] .steps li::before { font-weight: 500; }
+:root[data-look="unslop"] .pc-sign { font-weight: 500; }
+:root[data-look="unslop"] .score .fill { background: #8a8a90; }
+:root[data-look="unslop"] .scores th, :root[data-look="unslop"] .scores td { padding: 8px 12px; }
+:root[data-look="unslop"] .dt-groups th { font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: capitalize; }
+:root[data-look="unslop"] .finder-stats dd { font-size: 20px; font-weight: 500; }
+:root[data-look="unslop"] .player text { font-weight: 600; }
+:root[data-look="unslop"] .x-fig h4 { font-size: 14px; font-weight: 500; }
+:root[data-look="unslop"] .decision b { font-size: 14px; }
+
+/* ═══ 10. The look switch and its credit (shown in both looks) ═══ */
+/* A small floating control in the bottom-right corner, over the page on every tab. */
+.look-box {
+  position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 8px; height: 32px;
+  padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--raised);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .4); font-size: 12px;
+}
+.look-box .look-switch { margin: 0; }
+.look-credit { display: none; color: var(--u-faint, var(--muted)); font-size: 11px; white-space: nowrap; text-decoration: none; }
+.look-credit:hover { color: var(--ink); text-decoration: underline; }
+:root[data-look="unslop"] .look-credit { display: block; }
+@media print { .look-box { display: none; } }

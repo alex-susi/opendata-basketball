@@ -5,7 +5,8 @@
 # Writes web/public/data/coverage_frames.json, read by the viewer's Coverage Read card
 # (web/src/components/Annotations.svelte, web/src/lib/coverage.ts). Per possession: every scored screen with its tag
 # frame, its four players, the tagged call, and the held-out probability of each call (whole percent) at every frame
-# from -2 s to +1 s, raw (the card smooths them over the last 0.2 s itself and sums them to each defender's call).
+# from -2 s to +1 s, raw (the card shows them raw or averaged over the last 2 frames, a Display-panel switch, and
+# sums them to each defender's call; smooth_frames below is kept in the file but no longer read).
 #
 # The live model is the time-aware transformer with two linked heads (03_train_transformer.R), built under the
 # past-only rules (R/past_only.R): each player's last 1.6 s, never told when the screen comes. Each game's screens come

@@ -1,0 +1,8 @@
+group,frames,share,none,physics,learned,learned_gain
+"step-1 error [0,0.1]",33164,0.3977,1.0806,1.0883,1.0815,-9e-04
+"step-1 error (0.1,0.25]",27817,0.3336,1.1163,1.1211,1.1158,5e-04
+"step-1 error (0.25,0.5]",15157,0.1818,1.1272,1.1325,1.1271,1e-04
+"step-1 error (0.5,1]",4548,0.0545,1.2047,1.1985,1.1897,0.0151
+"step-1 error (1,Inf]",2705,0.0324,1.4569,1.4231,1.4695,-0.0126
+"error > 0.5 s, thinks the screen is sooner",5467,,1.4105,,1.3976,0.0128
+"error > 0.5 s, thinks the screen is later",1786,,1.0297,,1.0325,-0.0028

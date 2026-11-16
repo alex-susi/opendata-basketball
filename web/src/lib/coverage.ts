@@ -6,7 +6,8 @@
 // frame from 2 s before the screen tag to 1 s after it. The live model (named in the file's `model`) is never told when
 // the screen comes: it reads each of the ten players' last 1.6 s, time to act, the defense's earlier calls in the game
 // and how close the handler has come to the screener; each game's screens come from the network trained without that
-// game. The card smooths them over the last few frames (never a later one) and sums them to each defender's call.
+// game. The card shows each frame's raw value or averages the last 2 frames (never a later one), as the Display
+// panel's switch sets, and sums them to each defender's call. (The file's smooth_frames, 5, is no longer used.)
 
 export interface CoverageScreen {
   id: string;
@@ -50,8 +51,9 @@ export interface CoverageRead {
 }
 
 /** The read at a frame: the screen whose window holds the frame (the nearest tag when windows overlap), and its
- * probabilities averaged over the last `smooth_frames` frames up to this one. Null outside every window. */
-export function coverageAt(cov: CoverageFile, possession: string, frame: number): CoverageRead | null {
+ * probabilities averaged over the last `smooth` frames up to this one (1 = the frame's raw value; the Display panel's
+ * Raw / 0.08 s switch). Null outside every window. */
+export function coverageAt(cov: CoverageFile, possession: string, frame: number, smooth: number): CoverageRead | null {
   const list = cov.possessions[possession];
   if (!list?.length) return null;
   const [lo, hi] = cov.offsets;
@@ -63,7 +65,7 @@ export function coverageAt(cov: CoverageFile, possession: string, frame: number)
   }
   if (!best) return null;
   const k = Math.round(frame - best.f0) - lo;
-  const from = Math.max(0, k - cov.smooth_frames + 1);
+  const from = Math.max(0, k - Math.max(1, smooth) + 1);
   const pct = best.p.map((series) => {
     let sum = 0;
     for (let i = from; i <= k; i++) sum += series[i];

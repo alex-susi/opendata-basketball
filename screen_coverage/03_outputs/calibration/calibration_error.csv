@@ -1,0 +1,35 @@
+model,score,call,points,lo,hi
+transformer,joint,all calls (mean),1.13,,
+transformer,guard,all calls (mean),0.99,,
+transformer,big,all calls (mean),1.92,,
+logistic,joint,all calls (mean),1.22,,
+logistic,guard,all calls (mean),1.33,,
+logistic,big,all calls (mean),1.25,,
+transformer,joint,over + show,1.59,,
+transformer,joint,over + soft,1.85,,
+transformer,joint,under + soft,1,,
+transformer,joint,under + show,0.55,,
+transformer,joint,switch,0.66,,
+transformer,guard,over,1.3,,
+transformer,guard,under,1.01,,
+transformer,guard,switch,0.66,,
+transformer,big,show,2.65,,
+transformer,big,soft,2.45,,
+transformer,big,switch,0.66,,
+logistic,joint,over + show,1.89,,
+logistic,joint,over + soft,1.36,,
+logistic,joint,under + soft,1.21,,
+logistic,joint,under + show,0.44,,
+logistic,joint,switch,1.21,,
+logistic,guard,over,1.1,,
+logistic,guard,under,1.67,,
+logistic,guard,switch,1.21,,
+logistic,big,show,1.14,,
+logistic,big,soft,1.41,,
+logistic,big,switch,1.21,,
+transformer,joint,top call: stated minus right,1.39,-0.25,3.28
+transformer,guard,top call: stated minus right,0.87,-0.79,2.85
+transformer,big,top call: stated minus right,2.03,0.26,3.84
+logistic,joint,top call: stated minus right,-0.1,-1.5,0.94
+logistic,guard,top call: stated minus right,-0.53,-2.51,1.42
+logistic,big,top call: stated minus right,-0.1,-1.46,1.33

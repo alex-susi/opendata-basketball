@@ -1,0 +1,5 @@
+model,logloss
+level now,0.5053
+level now + own motion,0.43
+level now + own motion + true time,0.3752
+live transformer,0.3974

@@ -22,6 +22,14 @@
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
   import { live, season, viewer } from "./lib/viewer.svelte";
+  import { applyLook, type Look } from "./lib/look";
+
+  // The tab bar's Current / Unslop switch (main.ts puts the starting look on the page before this mounts).
+  let look = $state<Look>(document.documentElement.dataset.look === "unslop" ? "unslop" : "current");
+  function setLook(next: Look): void {
+    look = next;
+    applyLook(next);
+  }
 
   const ROUTE = "#/play/";
   const ARCHETYPES = "#/archetypes";
@@ -202,6 +210,18 @@
   {/each}
   <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
+
+<!-- The look switch floats in the bottom-right corner on every tab (the tab bar has no room left for it). -->
+<div class="look-box">
+  <label class="switch two-way look-switch" title="Switch between the site's current look and the unslop polish pass">
+    <span class:on={look === "current"}>Current</span>
+    <input type="checkbox" role="switch" aria-label="Use the unslop look" checked={look === "unslop"}
+           onchange={(ev) => setLook(ev.currentTarget.checked ? "unslop" : "current")} />
+    <span class="switch-track"></span>
+    <span class:on={look === "unslop"}>Unslop</span>
+  </label>
+  <a class="look-credit" href="https://github.com/heydamir/unslop" target="_blank" rel="noopener">by @heydamir</a>
+</div>
 
 <div class="app" hidden={tab !== "viewer"} style:--left-w="{leftW}px">
   <aside class="left" bind:this={leftEl}>

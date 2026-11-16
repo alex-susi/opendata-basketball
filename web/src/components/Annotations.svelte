@@ -39,7 +39,7 @@
 
   let cov = $state<CoverageFile | null>(null);
   $effect(() => { if (viewer.ann.coverage && !cov) loadCoverage().then((c) => { cov = c; }); });
-  const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame) : null);
+  const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame, viewer.covSmooth) : null);
   // A player as the card names him: jersey number, then last name ("#12 Steinbergs").
   const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
   // Calls coloured as in the strips (screen_coverage/01_scripts/R/strips.R), stepped for the dark card.

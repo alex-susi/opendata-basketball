@@ -7,10 +7,15 @@
 # closeness, and the memory of contact: the closest the handler has been to the screener over the last 2 s, and how
 # long ago).
 #
-# Training: the next game in order is the validation game, eight games train; each epoch
-# draws 3 random prediction frames per training screen; early stopping on the validation game (every third frame);
-# two random starts averaged. Standardisation uses the training screens only. Each player's history is mirrored with
-# the prediction frame so that the screener is on the y >= 0 side then.
+# Training: the next game in order is the validation game, eight games train; each epoch draws 3 random prediction
+# frames per training screen, evenly across -2 s to +1 s; early stopping on the validation game's log loss weighted
+# by the fixed "main" time curve (R/window_weights.R: full weight from -0.9 s to +0.24 s around the pick frame, ramps
+# to zero at -1.8 s and +0.5 s), on its every third frame with weight > 0; four random starts averaged (each seeded
+# on its own, so separate runs of starts 1-2 and 3-4 average to the same model). Since 2026-11-15; before that the
+# stopping score counted every third frame from -2 s to +1 s equally and two starts were averaged (snapshot
+# 02_cache/v2_flat_2026-11-12/). Standardisation uses the training screens only. Each player's history is mirrored
+# with the prediction frame so that the screener is on the y >= 0 side then. The validation game's predictions at
+# every frame are saved with the test game's.
 #
 # Writes screen_coverage/02_cache/tf/seqheads_<gameId>.rds: for the test game's rows (in the row order of
 # logistic_per_frame.rds) the five joint-call probabilities, the three head probabilities (switch, under | not
@@ -23,6 +28,15 @@
 # screen_coverage/02_cache/experiments/lanes/<variant>/sequences.rds (02_build_sequences.R --variant) and writes to
 # that folder's tf_s<seeds>/. The roll-lane distance and closing speed are standardised with the valid training
 # entries only and set to 0 (in standardised space) wherever their flag is 0. Without --variant nothing changes.
+#
+# Timing experiment (2026-11-15): --timing=none|physics|learned [--seeds=1,2] trains under the fixed time weights
+# (R/window_weights.R, curve "main"): early stopping on the main-curve weighted log loss of the validation game (its
+# every third frame with weight > 0), and the validation game's predictions at every frame are saved with the test
+# game's. physics / learned add the step-1 time-to-screen inputs of 17_time_to_screen.R for this fold to the context
+# (physics: screener time to stop, handler-screener time to meet, and their flags; learned: the median estimate and its
+# 10-90% spread); none adds nothing (the current model's settings under the new stopping rule). Writes to
+# screen_coverage/02_cache/experiments/timing/<timing>/tf_s<seeds>/. With --extra=hoop_speed (2026-11-15) each player
+# also gets his speed toward or away from the hoop as a movement channel; files go to <timing>+hoop_speed/.
 ## ═════════════════════════════════════════════════════════════════════════════
 
 source_root <- function() {
@@ -41,16 +55,30 @@ arg <- function(name, default = NULL) {
 }
 FOLD <- as.integer(arg("fold"))
 VARIANT <- arg("variant", NA_character_)
-SEEDS <- as.integer(strsplit(arg("seeds", "1,2"), ",")[[1]])
+TIMING <- arg("timing", NA_character_)
+EXTRA <- arg("extra", NA_character_)
+# Live and timing runs stop on the main time curve and average four starts; the closed lane experiment keeps the
+# flat stopping score and two starts it was run with.
+WEIGHTED <- is.na(VARIANT)
+SEEDS <- as.integer(strsplit(arg("seeds", if (WEIGHTED) "1,2,3,4" else "1,2"), ",")[[1]])
+source(file.path(root, "screen_coverage", "01_scripts", "R", "window_weights.R"))
 cache_dir <- file.path(root, "screen_coverage", "02_cache")
 seq_path <- file.path(cache_dir, "sequences.rds")
 tf_dir <- file.path(cache_dir, "tf")
+if (!is.na(VARIANT) && !is.na(TIMING)) stop("--variant and --timing are separate experiments")
 if (!is.na(VARIANT)) {
   source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_variants.R"))
   if (!VARIANT %in% names(LANE_VARIANTS)) stop("Unknown --variant: ", VARIANT)
   seq_path <- file.path(lane_dir(root, VARIANT), "sequences.rds")
   tf_dir <- lane_tf_dir(root, VARIANT, SEEDS)
-} else if (!identical(SEEDS, 1:2)) stop("--seeds is for the lane experiment only (with --variant)")
+} else if (!is.na(TIMING)) {
+  source(file.path(root, "screen_coverage", "01_scripts", "R", "time_to_screen.R"))
+  if (!TIMING %in% c("none", "physics", "learned")) stop("Unknown --timing: ", TIMING)
+  if (!is.na(EXTRA) && EXTRA != "hoop_speed") stop("Unknown --extra: ", EXTRA)
+  version_dir <- if (is.na(EXTRA)) TIMING else paste(TIMING, EXTRA, sep = "+")
+  tf_dir <- file.path(cache_dir, "experiments", "timing", version_dir, paste0("tf_s", paste(range(SEEDS), collapse = "-")))
+} else if (!identical(SEEDS, 1:4)) stop("--seeds is for the lane and timing experiments only (with --variant or --timing)")
+if (!is.na(EXTRA) && is.na(TIMING)) stop("--extra is for the timing experiment only (with --timing)")
 dir.create(tf_dir, recursive = TRUE, showWarnings = FALSE)
 out_path <- file.path(tf_dir, sprintf("seqheads_%d.rds", FOLD))
 if (file.exists(out_path) && !"--force" %in% commandArgs(TRUE)) quit(save = "no")
@@ -66,7 +94,7 @@ if (file.exists(out_path) && !"--force" %in% commandArgs(TRUE)) quit(save = "no"
 # Training: random starts averaged (seeds 1 and 2 unless --seeds), epoch cap, early-stopping patience, batch size,
 # learning rate, weight decay.
 N_SEEDS <- length(SEEDS)
-MAX_EPOCHS <- 150L
+MAX_EPOCHS <- as.integer(arg("max-epochs", "150"))     # lowered only for smoke tests
 PATIENCE <- 15L
 BATCH <- 128L
 LR <- 5e-4
@@ -97,12 +125,33 @@ if (!is.na(VARIANT) && (!identical(SQ$variant, VARIANT) || !identical(SQ$feats, 
 X <- L$X
 CALLS <- L$calls
 base <- SQ$base
+# --extra=hoop_speed: one more movement channel per player and frame, his speed away from (+) or toward (-) the
+# hoop, from the cached position and 0.2 s velocity (0 when he is absent). It does not change when the history is
+# mirrored (the hoop is on y = 0), so it is not in SQ$flip.
+if (identical(EXTRA, "hoop_speed")) {
+  fx <- base[, , , "x"]
+  fy <- base[, , , "y"]
+  hv <- -((HOOP_X - fx) * base[, , , "vx"] - fy * base[, , , "vy"]) / pmax(hoop_dist(fx, fy), 1e-6)
+  hv[base[, , , "present"] != 1] <- 0
+  nm <- c(dimnames(base)[[4]], "hoop_v")
+  base <- array(c(base, hv), c(dim(base)[1:3], length(nm)), dimnames = list(NULL, NULL, NULL, nm))
+  SQ$feats <- nm
+  rm(fx, fy, hv)
+}
 NS <- dim(base)[1]
 NB <- dim(base)[2]
 NF <- dim(base)[4]
 flat <- matrix(base, nrow = NS * NB)                      # row (b - 1) * NS + s, columns player-major within feature
 y_all <- match(X$call, CALLS)
 ctx_all <- SQ$ctx
+# Timing experiment: this fold's step-1 inputs, every game estimated by models that never saw it (17_time_to_screen.R).
+step1_cols <- character(0)
+if (!is.na(TIMING) && TIMING != "none") {
+  S1 <- readRDS(file.path(cache_dir, "experiments", "timing", "step1.rds"))
+  if (!identical(S1$rules, PAST_ONLY_RULES) || !identical(S1$screen_ids, L$P$id)) stop("step1.rds is stale: rerun 17_time_to_screen.R")
+  step1_cols <- if (TIMING == "physics") TTS_PHYSICS else TTS_LEARNED
+  ctx_all <- cbind(ctx_all, S1$folds[[as.character(FOLD)]]$m[, step1_cols, drop = FALSE])
+}
 
 # Leave one game out: the fold's game is the test set, the next game in order validates, the other eight train.
 games <- sort(unique(X$game_id))
@@ -110,6 +159,13 @@ val_g <- games[(match(FOLD, games) %% length(games)) + 1L]
 tr <- which(!X$game_id %in% c(FOLD, val_g))
 va <- which(X$game_id == val_g & X$off %% EVERY == 0L)
 te <- which(X$game_id == FOLD)
+# Live and timing runs: validation frames are those with weight on the main curve, and the loss is weighted by it.
+w_va <- rep(1, length(va))
+if (WEIGHTED) {
+  va <- which(X$game_id == val_g & X$off %% EVERY == 0L & window_weight(X$off, "main") > 0)
+  w_va <- window_weight(X$off[va], "main")
+}
+va_all <- which(X$game_id == val_g)
 tr_by_screen <- split(tr, X$idx[tr])
 
 #' Raw history [n, 10, 9, NF] for prediction rows r: steps now, -0.2 s, ..., -1.6 s, mirrored per row
@@ -168,6 +224,7 @@ as_c <- function(r) torch_tensor(scale(ctx_all[r, , drop = FALSE], cmu, csd))
 Xva <- as_x(va)
 Cva <- as_c(va)
 Yva <- torch_tensor(y_all[va], dtype = torch_long())
+Wva <- torch_tensor(w_va / sum(w_va))
 
 
 
@@ -179,6 +236,8 @@ Yva <- torch_tensor(y_all[va], dtype = torch_long())
 
 # Loss: mean negative log probability of the true joint call. Each random start's best network is saved here.
 nll <- function(logits, yy) -joint_logp(logits)$gather(2, yy$unsqueeze(2))$mean()
+# Validation loss: weighted by the time curve in the timing experiment (equal weights otherwise, the same as nll).
+nll_va <- function(logits) -(joint_logp(logits)$gather(2, Yva$unsqueeze(2))$squeeze(2) * Wva)$sum()
 net_path <- function(seed) file.path(tf_dir, sprintf("seqheads_%d_seed%d.pt", FOLD, seed))
 
 t0 <- Sys.time()
@@ -214,7 +273,7 @@ fit_seed <- function(seed) {
     }
     # Validation loss: keep the best epoch's weights and stop after PATIENCE epochs without improvement.
     net$eval()
-    vl <- with_no_grad(nll(net(Xva, Cva), Yva)$item())
+    vl <- with_no_grad(nll_va(net(Xva, Cva))$item())
     curve[[ep]] <- data.table(seed = seed, epoch = ep, train = tot / length(draw), val = vl)
     if (vl < best - 1e-4) {
       best <- vl
@@ -233,8 +292,15 @@ fit_seed <- function(seed) {
     list(prob = as_array(joint_logp(o$logits)$exp()), heads = as_array(torch_sigmoid(o$logits)),
          att = apply(w[, , 1:4, , drop = FALSE], c(1, 4), mean))
   })
+  # Live and timing runs: the validation game's joint-call probabilities at every frame, for selection scores later.
+  val_prob <- NULL
+  if (WEIGHTED) {
+    vchunks <- split(va_all, ceiling(seq_along(va_all) / 2000))
+    val_prob <- do.call(rbind, lapply(vchunks, function(r) as_array(with_no_grad(joint_logp(net(as_x(r), as_c(r)))$exp()))))
+  }
   list(prob = do.call(rbind, lapply(parts, `[[`, "prob")), heads = do.call(rbind, lapply(parts, `[[`, "heads")),
-       att = do.call(rbind, lapply(parts, `[[`, "att")), curve = rbindlist(curve), best_ep = best_ep, best_val = best)
+       att = do.call(rbind, lapply(parts, `[[`, "att")), curve = rbindlist(curve), best_ep = best_ep, best_val = best,
+       val_prob = val_prob)
 }
 
 
@@ -260,6 +326,19 @@ if (!is.na(VARIANT)) {
                                      FRAMES_PER_EPOCH = FRAMES_PER_EPOCH, EVERY = EVERY, K_STEPS = K_STEPS))
   saved$norm$feats <- SQ$feats
   saved$norm$masked <- masked
+}
+# Live and timing runs: the stopping curve, the starts, and the validation game's predictions. Timing experiment:
+# which version, the step-1 columns added and the feature axis.
+if (WEIGHTED) {
+  saved$stopping <- list(curve = "main", seeds = SEEDS,
+                         settings = list(MAX_EPOCHS = MAX_EPOCHS, PATIENCE = PATIENCE, BATCH = BATCH, LR = LR, WD = WD,
+                                         FRAMES_PER_EPOCH = FRAMES_PER_EPOCH, EVERY = EVERY, K_STEPS = K_STEPS))
+  saved$val_rows <- va_all
+  saved$val_prob <- avg("val_prob")
+}
+if (!is.na(TIMING)) {
+  saved$timing <- list(version = TIMING, extra = EXTRA, feats = SQ$feats, seeds = SEEDS, step1_cols = step1_cols,
+                       curve = "main", ctx_cols = colnames(ctx_all), settings = saved$stopping$settings)
 }
 saveRDS(saved, out_path)
 message(sprintf("seqheads fold %d: best epochs %s, val log loss %s, %.0f s", FOLD,

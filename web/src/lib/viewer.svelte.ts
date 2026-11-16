@@ -25,6 +25,8 @@ export const viewer = $state({
   controlScope: "court" as "court" | "half",
   /** Annotation sections (the Display panel's Annotations toggles; annotate.ts, Annotations.svelte). */
   ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false, glass: true, coverage: true, attention: false, lanes: false },
+  /** The Coverage Read card's probabilities: each frame's raw value (1) or averaged over the last 2 frames, 0.08 s. */
+  covSmooth: 1 as 1 | 2,
   /** The trace panel under the court. */
   showTrace: true,
   /** What it shows: the ball's height, one player's distance to the closest opponent, or the players on court. */
