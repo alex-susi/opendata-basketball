@@ -50,13 +50,6 @@
 
 /* ═══ 4. Play header and clocks ═══ */
 :root[data-look="unslop"] .play-head-note { font-size: 20px; font-weight: 500; }
-:root[data-look="unslop"] .scorebug { font-size: 20px; font-weight: 600; }
-:root[data-look="unslop"] .scorebug b { font-weight: 600; }
-:root[data-look="unslop"] .scorebug .team { gap: 8px; }
-:root[data-look="unslop"] .poss-ball.on { filter: none; }
-:root[data-look="unslop"] .game-time { font-weight: 600; }
-:root[data-look="unslop"] .period-line { margin-top: 4px; font-weight: 500; }
-:root[data-look="unslop"] .shot-clock { -webkit-text-stroke-color: #0e0e0f; }
 
 /* ═══ 5. Court, trace panel and timeline ═══ */
 :root[data-look="unslop"] .stage-note { background: rgba(20, 20, 21, .82); }
@@ -67,7 +60,6 @@
 :root[data-look="unslop"] .trace-pick select { border-radius: 8px; font-size: 13px; font-weight: 500; }
 :root[data-look="unslop"] .trace-chart .grid { stroke: #2a2a2d; }
 :root[data-look="unslop"] .trace-chart .axis { font-size: 11px; }
-:root[data-look="unslop"] .trace-chart .unit { font-style: normal; }
 :root[data-look="unslop"] .trace-chart .sample { stroke: #8a8a90; }
 :root[data-look="unslop"] .trace-card { font-size: 13px; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
 :root[data-look="unslop"] .strip-rail { stroke: #333337; }

@@ -243,7 +243,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   if (shot.rt != null) creation.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
   else if (shot.est) creation.push({ k: "Release Time", ...blank });
   const speed = shooterSpeed(play, shot);
-  if (speed != null) creation.push({ k: "Shooter Speed", v: `${speed.toFixed(1)} ft/s` });
+  if (speed != null) creation.push({ k: "Speed at Release", v: `${speed.toFixed(1)} ft/s` });
   if (shot.drb != null) creation.push({ k: "Dribbles", v: String(shot.drb) });
   if (shot.cns != null) creation.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
   if (shot.type) creation.push({ k: "Type", v: titleCase(words(shot.type)) });
@@ -281,16 +281,17 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
 const fmtNum = (v: number | null | undefined, digits: number, unit: string): string =>
   v == null || Number.isNaN(v) ? "–" : `${v.toFixed(digits)} ${unit}`;
 
-/** One player's movement over an action, from the tracking (smoothed; see motion.ts). */
-function movementLines(play: Play, pid: number, f0: number, f1: number, whose: string): Line[] {
+/** One player's movement over an action, from the tracking (smoothed; see motion.ts). The rows are not prefixed with
+ * his part ("Driver Max Speed"): the card names him in its player rows above. */
+function movementLines(play: Play, pid: number, f0: number, f1: number): Line[] {
   const m = stretch(play, pid, f0, f1);
   if (!m) return [];
   return [
     { k: "Duration", v: `${m.secs.toFixed(1)} s` },
-    { k: `${whose} Max Speed`, v: fmtNum(m.maxSpeed, 1, "ft/s") },
-    { k: `${whose} Distance Covered`, v: fmtNum(m.dist, 1, "ft") },
-    { k: `${whose} Peak Acceleration`, v: fmtNum(m.accel, 1, "ft/s²") },
-    { k: `${whose} Peak Deceleration`, v: fmtNum(m.decel, 1, "ft/s²") },
+    { k: "Max Speed", v: fmtNum(m.maxSpeed, 1, "ft/s") },
+    { k: "Distance Covered", v: fmtNum(m.dist, 1, "ft") },
+    { k: "Peak Acceleration", v: fmtNum(m.accel, 1, "ft/s²") },
+    { k: "Peak Deceleration", v: fmtNum(m.decel, 1, "ft/s²") },
   ];
 }
 
@@ -306,7 +307,7 @@ export function driveLines(play: Play, d: AnnDrive): Line[] {
     lines.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
   }
   lines.push({ k: "Drive Length", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1, "ft") });
-  lines.push(...movementLines(play, d.pid, d.f, d.f1, "Driver"));
+  lines.push(...movementLines(play, d.pid, d.f, d.f1));
   return lines;
 }
 
@@ -323,17 +324,16 @@ export function cutLines(play: Play, c: AnnCut): Line[] {
   }
   const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
   lines.push({ k: "Got the Ball", v: catchAt ? `Yes, ${((catchAt.f0 - c.f) / 25).toFixed(1)} s in` : "No" });
-  lines.push(...movementLines(play, c.pid, c.f, c.f1, "Cutter"));
+  lines.push(...movementLines(play, c.pid, c.f, c.f1));
   return lines;
 }
 
 /** A closeout: the gap the defender closed (event fields), then how he ran out. */
 export function closeoutLines(play: Play, c: AnnCloseout): Line[] {
   return [
-    { k: "Ball Handler", v: nameOf(play, c.pid) },
     { k: "Gap", v: `${c.d0.toFixed(1)} ft → ${c.d1.toFixed(1)} ft` },
     ...(c.act ? [{ k: "After the Catch", v: c.act.charAt(0).toUpperCase() + c.act.slice(1) }] : []),
-    ...movementLines(play, c.def, c.f, c.f1, "Defender"),
+    ...movementLines(play, c.def, c.f, c.f1),
   ];
 }
 

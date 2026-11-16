@@ -164,17 +164,17 @@ describe("readouts", () => {
     for (const line of card.lines) expect(line.k).toMatch(/^[A-Z]/);
     // Shooter speed sits between release time and dribbles; the potential assist has its own line after the pass.
     const keys = rows.map((l) => l.k);
-    if (keys.includes("Shooter Speed")) {
-      expect(card.lines.find((l) => l.k === "Shooter Speed")!.v).toMatch(/^\d+\.\d ft\/s$/);
-      if (keys.includes("Release Time")) expect(keys.indexOf("Release Time")).toBe(keys.indexOf("Shooter Speed") - 1);
-      if (keys.includes("Dribbles")) expect(keys.indexOf("Dribbles")).toBe(keys.indexOf("Shooter Speed") + 1);
+    if (keys.includes("Speed at Release")) {
+      expect(card.lines.find((l) => l.k === "Speed at Release")!.v).toMatch(/^\d+\.\d ft\/s$/);
+      if (keys.includes("Release Time")) expect(keys.indexOf("Release Time")).toBe(keys.indexOf("Speed at Release") - 1);
+      if (keys.includes("Dribbles")) expect(keys.indexOf("Dribbles")).toBe(keys.indexOf("Speed at Release") + 1);
     }
     expect(keys.indexOf("Potential Assist")).toBe(keys.indexOf("Pass") + 1);
   });
 
   it("gives most released shots a shooter speed", () => {
     const shots = sample.flatMap((play) => play.ann!.shots.map((shot) => ({ play, shot })));
-    const speeds = shots.map(({ play, shot }) => shotCard(play, shot, { peak: false, season: null }).lines.find((l) => l.k === "Shooter Speed"));
+    const speeds = shots.map(({ play, shot }) => shotCard(play, shot, { peak: false, season: null }).lines.find((l) => l.k === "Speed at Release"));
     expect(speeds.filter(Boolean).length / shots.length).toBeGreaterThan(0.8);
   });
 
@@ -193,8 +193,8 @@ describe("readouts", () => {
 
   it("describe drives and closeouts with the tracked movement", () => {
     const withDrive = sample.find((p) => p.ann!.drives.length)!;
-    expect(driveLines(withDrive, withDrive.ann!.drives[0]).map((l) => l.k)).toContain("Driver Max Speed");
+    expect(driveLines(withDrive, withDrive.ann!.drives[0]).map((l) => l.k)).toContain("Max Speed");
     const withCloseout = sample.find((p) => p.ann!.closeouts.length);
-    if (withCloseout) expect(closeoutLines(withCloseout, withCloseout.ann!.closeouts[0]).map((l) => l.k)).toContain("Defender Max Speed");
+    if (withCloseout) expect(closeoutLines(withCloseout, withCloseout.ann!.closeouts[0]).map((l) => l.k)).toContain("Max Speed");
   });
 });

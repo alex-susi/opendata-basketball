@@ -27,13 +27,18 @@
 
   let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
-  const M = { left: 38, right: 12 };
-  const AXIS = 20;          // the time axis's numbers, under the plot
+  // Room on the left for the y axis's numbers and its title (turned on its side), and under the plot for the time
+  // axis's numbers and its title.
+  const M = { left: 56, right: 12 };
+  const AXIS = 36;
+  // Every tab is this tall (app.css, .trace-chart: the Player Tracking table fits it), so switching tabs never moves
+  // the court; the chart's plot takes whatever the captions and axes leave.
+  const CHART_H = 226;
   // Captions: the action in a band above the plot. Captions that crowd tilt away from their line (lib/sequence.ts,
   // layoutTimeline), each joined to it by a short leader. The players' names that used to sit in a band under the
   // axis are gone (2026-11-16); the plot takes their height, so the panel keeps its size.
   const BAND = 43, LEADER = 5;
-  const PLOT_H = $derived(viewer.showTickLabels ? 129 : 92);
+
   const TICK_FONT = '600 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';   // matches .tick-label
   const measurer = document.createElement("canvas").getContext("2d")!;
   const measure = (text: string) => {
@@ -79,8 +84,11 @@
   const empty: Timeline = { ticks: [], cuts: [], marks: [] };
   const timeline = $derived(play && seq.length && plotW > 10 ? layoutTimeline(play, seq, plotW, measure) : empty);
   const top = $derived(viewer.showTickLabels ? BAND + 2 : 12);
-  const bottom = $derived(top + PLOT_H);
-  const H = $derived(bottom + AXIS + 6);
+  const H = CHART_H;
+  const bottom = $derived(H - AXIS);
+  const PLOT_H = $derived(bottom - top);
+  // The axis titles: what is measured and its unit.
+  const yTitle = $derived(viewer.trace === "ball" ? "Ball Height (ft)" : `${info.axis} (${info.unit})`);
   const Y = (v: number) => bottom - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * PLOT_H;
   const yTicks = $derived(Array.from({ length: Math.round((yMax - yMin) / yAxis.step) + 1 }, (_, i) => yMin + i * yAxis.step));
   const yMinor = $derived(yTicks.slice(1).map((v) => v - yAxis.step / 2));
@@ -225,8 +233,10 @@
         {#each xTicks as t (t)}
           <text class="axis" x={X(t)} y={bottom + 14} text-anchor="middle">{t % 1 ? t.toFixed(1) : t}</text>
         {/each}
-        <text class="axis unit" x={M.left - 6} y={top - 6} text-anchor="end">{unit}</text>
-        <text class="axis unit" x={M.left + plotW} y={bottom + 14} text-anchor="end" dx="12">s</text>
+        <text class="axis-title" x={M.left + plotW / 2} y={bottom + 31} text-anchor="middle">Time (s)</text>
+        {#if kind}
+          <text class="axis-title" transform="translate(12 {top + PLOT_H / 2}) rotate(-90)" text-anchor="middle" dominant-baseline="middle">{yTitle}</text>
+        {/if}
         {#each timeline.cuts as cut}
           <line class="cut" x1={M.left + cut * plotW} x2={M.left + cut * plotW} y1={bottom - 5} y2={bottom + 3}><title>Footage skips here</title></line>
         {/each}

@@ -17,6 +17,8 @@ export type Metric = "nearest" | "teammate" | "matchup" | "hoop" | "ball" | "spe
 export interface MetricInfo {
   key: Metric;
   label: string;
+  /** The trace panel's y-axis title, short enough to run up the side of the plot. */
+  axis: string;
   unit: string;
   title: string;
   /** Another player the measure is taken against, joined to the followed player on the court. */
@@ -25,14 +27,14 @@ export interface MetricInfo {
 
 /** The measures, in the order of the panel's menu. */
 export const METRICS: MetricInfo[] = [
-  { key: "nearest", label: "Nearest Opponent", unit: "ft", title: "Floor distance to the closest player of the other team", pair: true },
-  { key: "matchup", label: "Gap to Matchup", unit: "ft", title: "Floor distance to his assigned matchup: the defender guarding him, or the man he guards (matchups table)", pair: true },
-  { key: "teammate", label: "Nearest Teammate", unit: "ft", title: "Floor distance to the closest teammate (spacing)", pair: true },
-  { key: "hoop", label: "Distance to Basket", unit: "ft", title: "Floor distance to the basket the offense attacks" },
-  { key: "ball", label: "Distance to Ball", unit: "ft", title: "Floor distance to the ball (ball height left out)" },
-  { key: "speed", label: "Speed", unit: "ft/s", title: "Smoothed speed" },
-  { key: "accel", label: "Acceleration", unit: "ft/s²", title: "Change in smoothed speed over 0.4 s; negative while slowing down" },
-  { key: "toward", label: "Speed Toward Basket", unit: "ft/s", title: "Speed toward the basket the offense attacks; negative while moving away from it" },
+  { key: "nearest", axis: "Gap to Opponent", label: "Nearest Opponent", unit: "ft", title: "Floor distance to the closest player of the other team", pair: true },
+  { key: "matchup", axis: "Gap to Matchup", label: "Gap to Matchup", unit: "ft", title: "Floor distance to his assigned matchup: the defender guarding him, or the man he guards (matchups table)", pair: true },
+  { key: "teammate", axis: "Gap to Teammate", label: "Nearest Teammate", unit: "ft", title: "Floor distance to the closest teammate (spacing)", pair: true },
+  { key: "hoop", axis: "To Basket", label: "Distance to Basket", unit: "ft", title: "Floor distance to the basket the offense attacks" },
+  { key: "ball", axis: "To Ball", label: "Distance to Ball", unit: "ft", title: "Floor distance to the ball (ball height left out)" },
+  { key: "speed", axis: "Speed", label: "Speed", unit: "ft/s", title: "Smoothed speed" },
+  { key: "accel", axis: "Acceleration", label: "Acceleration", unit: "ft/s²", title: "Change in smoothed speed over 0.4 s; negative while slowing down" },
+  { key: "toward", axis: "Toward Basket", label: "Speed Toward Basket", unit: "ft/s", title: "Speed toward the basket the offense attacks; negative while moving away from it" },
 ];
 
 export const metricInfo = (m: Metric): MetricInfo => METRICS.find((x) => x.key === m) ?? METRICS[0];

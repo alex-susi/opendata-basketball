@@ -4,7 +4,7 @@
   // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
   // shots. Static counterpart of play_viewer/01_app/app.R.
-  import { tick, untrack } from "svelte";
+  import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
   import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
@@ -18,12 +18,12 @@
   import { loadMeta, loadPlay, loadPlays, loadPlaystyle, loadSample, loadSeason } from "./lib/data";
   import { loadLogos, logoUrl } from "./lib/logos.svelte";
   import { emptyFilters, filterPlays } from "./lib/filters";
-  import { clamp, quarter } from "./lib/geometry";
+  import { clamp } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
   import type { Meta, Play, PlayRow } from "./lib/types";
   import { live, season, viewer } from "./lib/viewer.svelte";
   import { applyLook, applyTheme, type Look } from "./lib/look";
-  import { page, pageText } from "./lib/theme.svelte";
+  import { page } from "./lib/theme.svelte";
 
   // The corner's Current / Unslop switch (main.ts puts the starting look on the page before this mounts).
   let look = $state<Look>(document.documentElement.dataset.look === "unslop" ? "unslop" : "current");
@@ -94,36 +94,17 @@
   // How far the court's centre line sits from the middle of the header (the stage and the header share a column).
   let headW = $state(0);
   const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
-  // The clocks' centre: halfway between the away side's possession-ball slot (kept in place when the home team has the
-  // ball) and the right edge of the court's panel (the header's right edge, the two share a column), in the header's
-  // coordinates. The slot is measured again whenever the scorebug
-  // or the away team's name changes size, the court moves or a new play loads, so the clocks never sit on stale
-  // numbers.
-  let awayEnd = $state<HTMLElement>();
-  let slotEnd = $state<number | null>(null);
-  function measureSlot(): void {
-    const head = awayEnd?.closest(".play-head");
-    slotEnd = awayEnd && head ? awayEnd.getBoundingClientRect().right - head.getBoundingClientRect().left : null;
-  }
-  $effect(() => {
-    const slot = awayEnd;
-    if (!slot) return;
-    const watch = new ResizeObserver(measureSlot);
-    for (const el of [slot.closest(".scorebug"), slot.closest(".team")]) if (el) watch.observe(el);
-    measureSlot();
-    return () => watch.disconnect();
-  });
-  $effect(() => {
-    void headW; void courtShift; void play?.id; void live.box;
-    tick().then(measureSlot);
-  });
-  // In a narrow window the clocks keep at least 10 px clear of the ball and inside the header.
-  let clockW = $state(0);
-  const clockX = $derived.by(() => {
-    if (slotEnd == null || !headW) return null;
-    const mid = (slotEnd + headW) / 2, half = clockW / 2;
-    return Math.round(Math.min(Math.max(mid, slotEnd + 10 + half), headW - half));
-  });
+  // A team's three-letter name on the scorebug (its full name is the box's tooltip). Unlisted names fall back to the
+  // first three letters of their last word.
+  const ABBR: Record<string, string> = {
+    "BAXI Manresa": "MAN", "Coviran Granada": "GRA", "Casademont Zaragoza": "ZAR", "Leche Rio Breogan": "BRE",
+    "CB UCAM Murcia": "MUR", "Club Joventut Badalona": "JOV", "Basquet Girona": "GIR", "San Pablo Burgos": "BUR",
+    "Dreamland Gran Canaria": "GCA", "Bitci Baskonia": "BKN", "BC MoraBanc Andorra": "AND", "Bilbao Basket": "BIL",
+    Malaga: "MAL", "Valencia BC": "VAL", "Real Madrid": "RMA", "Lenovo Tenerife": "TEN", "BC Barcelona": "BAR",
+  };
+  const teamAbbr = (name: string) => ABBR[name] ?? (name.split(" ").at(-1) ?? name).slice(0, 3).toUpperCase();
+  // The quarter as a broadcast shows it: 1st, 2nd, 3rd, 4th, then OT, 2OT…
+  const periodName = (p: number) => (p <= 4 ? `${p}${["st", "nd", "rd", "th"][p - 1]}` : p === 5 ? "OT" : `${p - 4}OT`);
   const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
   loadLogos();
   const note = $derived(problem || (!meta ? "Loading plays…" : !rows.length ? "No possessions match these filters." : ""));
@@ -263,27 +244,26 @@
          onpointermove={dragLeft} ondblclick={() => setLeft(LEFT_DEFAULT)} onkeydown={keyLeft}></div>
   </aside>
 
-  <!-- Above the court only, so the right column starts level with the court. The scorebug's score sits on the
-       court's centre line; the running clocks are centred between the scorebug's end and the court's right edge. A
-       basketball just outside the logo marks the team with the ball. -->
+  <!-- Above the court only, so the right column starts level with the court. A broadcast-style score bar: the join
+       between the two team boxes sits on the court's centre line, the clock box follows the away team's box, and a
+       basketball beside a team's name marks the team with the ball (app.css, .bug). -->
   <header class="play-head-box">
     <div class="play-head" style:--court-shift="{courtShift}px" bind:clientWidth={headW}>
       {#if play && home && away}
-        <div class="scorebug" title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
-          <span class="team home" style:color={pageText(home.text)}>
-            {@render ball(homeIsOff)}
-            {#if homeLogo}<img class="logo" src={homeLogo} alt="" />{:else}<span class="kit" style:background={home.fill}></span>{/if}<span class="team-name">{play.home}</span>
+        <div class="bug" title={`${play.game} · score at the start of the possession · ${play.off} have the ball`}>
+          {#each [{ side: "home", kit: home, name: play.home, logo: homeLogo, score: play.homeScore, ball: homeIsOff },
+                  { side: "away", kit: away, name: play.away, logo: awayLogo, score: play.awayScore, ball: !homeIsOff }] as t (t.side)}
+            <span class="bug-team {t.side}" style:background-color={t.kit.fill} style:color={t.kit.ink} title={t.name}>
+              <span class="bug-logo">{#if t.logo}<img src={t.logo} alt="" />{/if}</span>
+              <span class="bug-abbr">{teamAbbr(t.name)}</span>
+              {@render ball(t.ball)}
+              <span class="bug-score">{t.score}</span>
+            </span>
+          {/each}
+          <span class="bug-clock">
+            <span class="bug-time" title="Game clock">{live.gameClock}</span>
+            <span class="bug-period-line"><span class="shot-clock" title="Shot clock">{live.shotClock}</span><span title="Quarter">{periodName(play.period)}</span></span>
           </span>
-          <b>{play.homeScore} – {play.awayScore}</b>
-          <span class="team away" style:color={pageText(away.text)}>
-            <span class="team-name">{play.away}</span>{#if awayLogo}<img class="logo" src={awayLogo} alt="" />{:else}<span class="kit" style:background={away.fill}></span>{/if}
-            <span class="ball-slot" bind:this={awayEnd}>{@render ball(!homeIsOff)}</span>
-          </span>
-        </div>
-        <!-- The game clock is centred on the gap between the quarter and the shot clock. -->
-        <div class="game-clock" style:left={clockX != null ? `${clockX}px` : null} bind:clientWidth={clockW}>
-          <span class="game-time" title="Game clock">{live.gameClock}</span>
-          <span class="period-line"><span class="period">{quarter(play.period)}</span><span><span class="shot-clock" title="Shot clock">{live.shotClock}</span></span></span>
         </div>
       {:else}
         <h1 class="play-head-note">{meta ? "No play selected" : "Loading plays…"}</h1>

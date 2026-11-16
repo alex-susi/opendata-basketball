@@ -2438,3 +2438,12 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Timeline hover cards no longer carry the points-per-action and chances table, so they are narrower.
 - Player Tracking table: the team heading rows (team, offense/defense, spacing) are gone; a thin rule separates the two teams.
 - No model, input or result changed.
+
+## 2026-11-16 — Web viewer: score bar, hover cards, trace panel heights
+
+- Scorebug redrawn as a broadcast score bar: home box, away box (each in the team's kit colour with a faint sheen, logo on a white disc, three-letter name, score at the inner end, heavy condensed italics), then a dark clock box with the game clock over the shot clock (yellow) and quarter (1st…4th, OT). The join between the team boxes sits on the court's centre line; a basketball beside the name marks possession. Same in every look and theme; the full team name is the box's tooltip.
+- Timeline hover cards: the bold top row is the action alone ("Pick", "Made 2", "Turnover"), then one row per player by his part in it (Screener / Ballhandler, Setter / Receiver, Screener / Cutter, Driver, Cutter, Defender / Ballhandler, Shooter, Rebounder; fouls and turnovers keep their Fouler / Fouled and Lost By / Stolen By rows, moved up). Movement rows lost their role prefix ("Max Speed", not "Driver Max Speed"); the shot card's "Shooter Speed" is now "Speed at Release".
+- Player Tracking jersey numbers sit in 17 px round badges, centred both ways.
+- The three trace panel tabs share one height (chart area 226 px), so switching tabs no longer moves the court; the tracking table rows are 17 px so the ten players fit it.
+- Trace chart axes have titles: "Time (s)" under the time axis, and the measure with its unit up the left of the y axis ("Ball Height (ft)", "Gap to Opponent (ft)", "Toward Basket (ft/s)"…).
+- No model, input or result changed.
