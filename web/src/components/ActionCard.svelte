@@ -22,9 +22,9 @@
   const SCREEN_ROLES: Record<string, [string, string]> = {
     pick: ["Screener", "Ballhandler"], handoff: ["Setter", "Receiver"], off_ball_screen: ["Screener", "Cutter"],
   };
-  // Rows the detail lines already carry for a foul, a turnover, a drive or a cut: shown with the players instead,
+  // Rows the detail lines already carry for a foul, a turnover, a drive, a cut or a rebound (its shooter): shown with the players instead,
   // above the card's subheaders (as the shot card's Shooter row).
-  const PLAYER_KEYS = new Set(["Fouler", "Fouled", "Lost By", "Stolen By", "Defender"]);
+  const PLAYER_KEYS = new Set(["Fouler", "Fouled", "Lost By", "Stolen By", "Defender", "Shooter"]);
   function rolesFor(tick: Tick): Line[] {
     const ev = tick.event, ann = play.ann;
     const fallback = (): Line[] => {

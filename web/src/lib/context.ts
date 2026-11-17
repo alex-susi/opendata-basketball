@@ -119,7 +119,6 @@ const ZONE_OF_REGION: Record<string, keyof NonNullable<SeasonFigures["zone"]>> =
   "right wing two": "mid", "middle two": "mid", "left corner three": "c3", "right corner three": "c3",
   "left wing three": "ab3", "right wing three": "ab3", "middle three": "ab3",
 };
-const ZONE_NAMES = { ra: "the Restricted Area", paint: "the Paint", mid: "Mid-Range", c3: "the Corner 3", ab3: "ATB Three" };
 
 /** A player's season in a few lines (offense only: the aggregates have no defensive figures). */
 export function seasonLines(fig: SeasonFigures | null): Line[] {
@@ -135,12 +134,13 @@ export function seasonLines(fig: SeasonFigures | null): Line[] {
   return lines;
 }
 
-/** The shooter's season from the shot's zone, e.g. "13/25 (52%) from mid-range". */
+/** The shooter's season from the shot's zone (the aggregates' coarser zones: restricted area, paint, mid-range, corner
+ * three, above-the-break three), e.g. "13/25 (52%)". The card shows it under the shot's Region. */
 export function shotSeasonLine(fig: SeasonFigures | null, shot: AnnShot): Line | null {
   const zone = shot.region ? ZONE_OF_REGION[shot.region] : undefined;
   const pair = zone && fig?.zone?.[zone];
   if (!zone || !pair) return null;
-  return { k: "Season", v: `${pair[1]}/${pair[0]} (${share(pair[1], pair[0])}) from ${ZONE_NAMES[zone]}` };
+  return { k: "Season", v: `${pair[1]}/${pair[0]} (${share(pair[1], pair[0])})` };
 }
 
 /** Season points per pick for both players against the coverage called on each (picks only). */
@@ -163,6 +163,8 @@ const MUTED = "#93A0B8";
 
 export interface Card {
   title: string;
+  /** The player, at the title line's right end (the shot card's shooter). */
+  who?: string;
   tone?: string;
   /** A badge beside the title (a blocked shot's "Blocked"). */
   flag?: string;
@@ -233,12 +235,18 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   const where: Line[] = [];
   if (shot.dist != null) where.push({ k: "Distance (ft)", v: shot.dist.toFixed(1) });
   if (shot.region) where.push({ k: "Region", v: regionName(shot.region) });
+  if (opts.season && !shot.conflict) {   // a flagged spot would name the wrong zone
+    const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
+    if (line) where.push(line);
+  }
   group("Location", where);
 
   const defense: Line[] = [];
   if (shot.cl) defense.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
-  if (shot.defDist != null) defense.push({ k: "Closest Defender Distance (ft)", v: shot.defDist.toFixed(1), tone });
   if (shot.defId != null) defense.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
+  if (shot.defDist != null) defense.push({ k: "Distance (ft)", v: shot.defDist.toFixed(1), tone });   // to that defender
+  if (shot.blocked && shot.blocker != null) defense.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
+  if (shot.fouled) defense.push({ k: "Shooting Foul", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
   group("Defense", defense);
 
   const creation: Line[] = [];
@@ -252,20 +260,11 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   else if (shot.est) creation.push({ k: "Type", ...blank });
   if (shot.sc != null) creation.push({ k: "Shot Clock (s)", v: shot.sc.toFixed(1) });
   creation.push(...passLines(play, shot));
-  group("Creation", creation);
-
-  const result: Line[] = [];
-  if (shot.blocked && shot.blocker != null) result.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
-  if (shot.fouled) result.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
-  if (opts.peak) {
+  if (opts.peak) {   // the ball's flight, with Tracking Readouts on
     const peak = shotPeak(play, shot);
-    if (peak != null) result.push({ k: "Max Ball Height (ft)", v: peak.toFixed(1) });
+    if (peak != null) creation.push({ k: "Max Ball Height (ft)", v: peak.toFixed(1) });
   }
-  if (opts.season && !shot.conflict) {   // a flagged spot would name the wrong zone
-    const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
-    if (line) result.push(line);
-  }
-  group("Result and Season", result);
+  group("Creation", creation);
 
   // One line per rebounding role, with how many attackers took it (the shooter's own crash counts as a crash).
   const roles = (play.ann?.glass ?? []).filter((g) => g.f === shot.f);
@@ -275,7 +274,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
       .map(([c, w]) => ({ k: w, v: String(c), tone: c ? undefined : MUTED })));
   }
   if (shot.est) group("Data Note", [{ k: "Shot Context", v: shot.conflict ? `From Tracking, Spot ${shot.three ? "Inside" : "Beyond"} the Arc` : "From Tracking", tone: shot.conflict ? "#F5B02E" : MUTED }]);
-  return { title: `${madeOf(shot)} · ${nameOf(play, shot.pid)}`, tone: shot.made ? "#2FAE5A" : "#E04848", flag: shot.blocked ? "Blocked" : undefined, lines };
+  return { title: madeOf(shot), who: nameOf(play, shot.pid), tone: shot.made ? "#2FAE5A" : "#E04848", flag: shot.blocked ? "Blocked" : undefined, lines };
 }
 
 // ---- drives and closeouts --------------------------------------------------------------------------
@@ -396,7 +395,7 @@ function spotAt(play: Play, pid: number, f: number): { x: number; y: number } | 
   return { x: p.x[i], y: p.y[i] };
 }
 
-/** A rebound, grouped. Rebound: offensive or defensive (or a team rebound), the miss it came from and how long after
+/** A rebound: the shooter of the miss, then grouped. Rebound: offensive or defensive (or a team rebound), the miss and how long after
  * the release. Location: where the rebounder was when he got it (court region, distance to the basket the offense
  * attacks, from the tracking). Glass: for an offensive rebounder, his role while the shot was in the air, how far he
  * was from the basket at the release and when the ball came down, and whether a defender boxed him out; for a
@@ -405,7 +404,7 @@ export function reboundLines(play: Play, r: AnnRebound): Line[] {
   const shot = lastShot(play, r.f);
   const reb: Line[] = [{ k: "Type", v: r.team ? `Team, ${r.def ? "Defensive" : "Offensive"}` : r.def ? "Defensive" : "Offensive" }];
   if (shot) {
-    reb.push({ k: "Off", v: `${madeOf(shot).replace("Made", "Missed")} · ${nameOf(play, shot.pid)}` });
+    reb.push({ k: "Off", v: madeOf(shot).replace("Made", "Missed") });
     reb.push({ k: "After Release (s)", v: ((r.f - shot.f) / 25).toFixed(1) });
   }
   const where: Line[] = [];
@@ -430,7 +429,9 @@ export function reboundLines(play: Play, r: AnnRebound): Line[] {
   if (roles.length) {
     glass.push({ k: "Attackers Crashing", v: String(roles.filter((g) => g.role === "crash" || g.role === "follow").length) });
   }
-  return [...grouped("Rebound", reb), ...grouped("Location", where), ...grouped("On the Glass", glass)];
+  // The shooter first, outside the groups: the hover card shows him with the players (ActionCard.svelte, PLAYER_KEYS).
+  const shooter: Line[] = shot ? [{ k: "Shooter", v: nameOf(play, shot.pid) }] : [];
+  return [...shooter, ...grouped("Rebound", reb), ...grouped("Location", where), ...grouped("On the Glass", glass)];
 }
 
 // ---- possession card -----------------------------------------------------------------------------

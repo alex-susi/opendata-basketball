@@ -75,7 +75,8 @@
 
 {#snippet card(c: Card)}
   <div class="ann-card">
-    <b style:color={c.tone}>{c.title}{#if c.flag}<i class="event-flag">{c.flag}</i>{/if}</b>
+    <!-- The title, and for a shot the shooter at the line's right end. -->
+    <span class="card-title"><b style:color={c.tone}>{c.title}{#if c.flag}<i class="event-flag">{c.flag}</i>{/if}</b>{#if c.who}<b style:color={c.tone}>{c.who}</b>{/if}</span>
     {#each c.lines as line}
       {#if line.head}<span class="card-head">{line.k}</span>{:else}<span class="card-line" class:wrap={line.wrap}><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>{/if}
     {/each}

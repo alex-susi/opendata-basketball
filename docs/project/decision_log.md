@@ -2579,3 +2579,9 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Player Tracking, All: both header lines right-aligned.
 - Seen, not changed: crowded action captions can tilt past the trace panel's right edge, giving it a sideways scrollbar.
 - Check, 105 tests and type check pass.
+
+## 2026-11-17 (close) — Site: shot and rebound card layout
+
+- Shot card: the Result and Season group is gone. Season (the shooter's makes/attempts and % from the shot's zone, no "from …") sits under Region in Location. Defense lists Closest Defender, then his Distance (ft), then Blocked By and Shooting Foul (renamed from Fouled so the hover card no longer pulls it up with the players). Max Ball Height (Tracking Readouts on) ends Creation. The title drops the dot: the result at the left, the shooter at the right end (`Card.who`, `.card-title`).
+- Rebound card: the shooter has his own row under Rebounder; the Off row gives the miss alone. The card is about 150 px wide.
+- Check, 105 tests and type check pass. The court card's new title line was not seen rendered (the browser pane was hidden); the hover cards were.

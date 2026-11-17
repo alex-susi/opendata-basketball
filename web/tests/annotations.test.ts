@@ -151,7 +151,8 @@ describe("readouts", () => {
     const play = sample.find((p) => p.ann!.shots.some((s) => s.region && s.sq != null))!;
     const shot = play.ann!.shots.find((s) => s.region && s.sq != null)!;
     const card = shotCard(play, shot, { peak: true, season: null });
-    expect(card.title).toMatch(/^(Made|Missed|Blocked) [23] · #/);
+    expect(card.title).toMatch(/^(Made|Missed) [23]$/);   // the shooter is apart, at the line's right end
+    expect(card.who).toMatch(/^#/);
     // Groups under subheaders: quality, then location, then defense and creation.
     const heads = card.lines.filter((l) => l.head).map((l) => l.k);
     expect(heads.slice(0, 2)).toEqual(["Shot Quality", "Location"]);
