@@ -8,6 +8,7 @@
   // shots. Static counterpart of play_viewer/01_app/app.R.
   import { toPage } from "./lib/fit.svelte";
   import { untrack } from "svelte";
+  import AppearanceMenus from "./components/AppearanceMenus.svelte";
   import Archetypes from "./components/Archetypes.svelte";
   import DocFrame from "./components/DocFrame.svelte";
   import ThemeSwitch from "./components/ThemeSwitch.svelte";
@@ -22,6 +23,7 @@
   import TimelineStrip from "./components/TimelineStrip.svelte";
   import { loadMeta, loadPlay, loadPlays, loadPlaystyle, loadSample, loadSeason } from "./lib/data";
   import { loadLogos, logoUrl } from "./lib/logos.svelte";
+  import { teamAbbr } from "./lib/teams";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
@@ -104,15 +106,7 @@
   const BUG_TEAM_MAX = 240;
   let bugClockW = $state(96);
   const bugTeamW = $derived(live.box ? Math.min(BUG_TEAM_MAX, Math.max(166, Math.round(live.box.floorRight - (live.box.left + live.box.w / 2) - bugClockW))) : null);
-  // A team's three-letter name on the scorebug (its full name is the box's tooltip). Unlisted names fall back to the
-  // first three letters of their last word.
-  const ABBR: Record<string, string> = {
-    "BAXI Manresa": "MAN", "Coviran Granada": "GRA", "Casademont Zaragoza": "ZAR", "Leche Rio Breogan": "BRE",
-    "CB UCAM Murcia": "MUR", "Club Joventut Badalona": "JOV", "Basquet Girona": "GIR", "San Pablo Burgos": "BUR",
-    "Dreamland Gran Canaria": "GCA", "Bitci Baskonia": "BKN", "BC MoraBanc Andorra": "AND", "Bilbao Basket": "BIL",
-    Malaga: "MAL", "Valencia BC": "VAL", "Real Madrid": "RMA", "Lenovo Tenerife": "TEN", "BC Barcelona": "BAR",
-  };
-  const teamAbbr = (name: string) => ABBR[name] ?? (name.split(" ").at(-1) ?? name).slice(0, 3).toUpperCase();
+  // A team's three-letter name on the scorebug (lib/teams.ts; its full name is the box's tooltip).
   // The quarter as a broadcast shows it: 1st, 2nd, 3rd, 4th, then OT, 2OT…
   const periodName = (p: number) => (p <= 4 ? `${p}${["st", "nd", "rd", "th"][p - 1]}` : p === 5 ? "OT" : `${p - 4}OT`);
   const awayLogo = $derived(play ? logoUrl(play.homeTeam === play.offTeam ? play.defTeam : play.offTeam) : null);
@@ -229,6 +223,8 @@
       {/each}
     </div>
   </div>
+  <!-- Font and Colors: trial typefaces and colour schemes for the whole site (AppearanceMenus.svelte). -->
+  <AppearanceMenus />
   <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
 

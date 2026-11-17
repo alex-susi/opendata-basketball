@@ -34,7 +34,7 @@
       lines.push({ k: "Chance Quality", v: `${chance.q} / 5${chance.q < 3 ? " · Low" : ""}`, tone: chance.q < 3 ? "#F5B02E" : undefined });
     }
     lines.push({ k: "Extrapolated", v: `${guessed} of ${seen.length} Players` });
-    if (errs.length) lines.push({ k: "Mean Error", v: `${(errs.reduce((a, b) => a + b, 0) / errs.length).toFixed(1)} ft (90% within)` });
+    if (errs.length) lines.push({ k: "Mean Error (ft, 90% within)", v: (errs.reduce((a, b) => a + b, 0) / errs.length).toFixed(1) });
     return { title: "Tracking", lines };
   });
 
@@ -95,7 +95,8 @@
     {@render bars(`On the Ball · ${who(r.screen.bd)}`, dp.ball)}
     {@render bars(`On the Screener · ${who(r.screen.sd)}`, dp.big)}
     <!-- The model's expected call for each defender and for both together, its probability, the tagged call once the
-         screen is set (TBD before) and whether the two agree (green tick or red cross, blank before the screen). Each
+         screen is set (TBD before), right-aligned, and whether the two agree (green tick or red cross; before the screen a
+         no-break space, so the empty cell keeps a text baseline and its rule lines up with TBD's). Each
          defender is judged on his own part of the call, so the model can be right about one and wrong about the other. -->
     <!-- Columns: name | gap | expected call, its % | gap | actual call, mark. The headers centre over their two columns;
          the rule above Combined runs unbroken across each pair. -->
@@ -111,7 +112,7 @@
         <span></span>
         <span class="cov-act" class:tbd={!shown} class:combined={i === 2}>{#if shown}{@render call(row.act)}{:else}TBD{/if}</span>
         <span class="cov-mark" class:right={shown && row.exp === row.act} class:wrong={shown && row.exp !== row.act} class:combined={i === 2}
-              title={shown ? (row.exp === row.act ? "The model's expected call is the tagged call" : "The model's expected call is not the tagged call") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : ""}</span>
+              title={shown ? (row.exp === row.act ? "The model's expected call is the tagged call" : "The model's expected call is not the tagged call") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
       {/each}
     </span>
   </div>

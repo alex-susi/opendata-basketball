@@ -8,6 +8,7 @@
 // (Annotations.svelte, SidePanel.svelte). Event locations come from the event tables (annotations.R); everything
 // else is the tracking at the current frame.
 
+import { canvasType } from "./appearance.svelte";
 import { COLORS, px, py, type Layout } from "./court";
 import { CONTEST_COLORS, SCREEN_NAMES, coverageText, frameIndex, lastShot, playerOf } from "./context";
 import { clamp } from "./geometry";
@@ -17,7 +18,8 @@ import type { Cursor } from "./sequence";
 import { withAlpha } from "./teamColors";
 import type { AnnShot, Play, PlayerTrack, Role, TeamColors } from "./types";
 
-const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+// The canvas text font: the Play Viewer font from the Font menu (lib/appearance.svelte.ts), read on every draw.
+const font = () => canvasType.family;
 const INK = "#141822";
 const LOST = "#E04848";
 
@@ -206,7 +208,7 @@ function routeArrow(k: Ctx, pid: number, f0: number, f1: number, color: string, 
 
 /** A small dark label centred on (x, y), in px. */
 export function tag(ctx: CanvasRenderingContext2D, x: number, y: number, text: string, color: string, size = 10): void {
-  ctx.font = `700 ${size}px ${FONT}`;
+  ctx.font = `700 ${size}px ${font()}`;
   const w = ctx.measureText(text).width + 8, h = size + 6;
   ctx.fillStyle = withAlpha(COLORS.panel, 0.9);
   ctx.beginPath();
@@ -242,7 +244,7 @@ function letter(k: Ctx, x: number, y: number, text: string, fill: string, ink: s
   ctx.strokeStyle = "rgba(11,14,20,.6)";
   ctx.stroke();
   ctx.fillStyle = ink;
-  ctx.font = `800 8px ${FONT}`;
+  ctx.font = `800 8px ${font()}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, cx, cy + 0.5);
@@ -348,7 +350,7 @@ function drawEventsUnder(k: Ctx): void {
       ctx.strokeStyle = kit.mark;
       ctx.stroke();
       ctx.fillStyle = kit.mark;
-      ctx.font = `700 ${Math.round(0.75 * k.r)}px ${FONT}`;
+      ctx.font = `700 ${Math.round(0.75 * k.r)}px ${font()}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(p.jersey, gx, gy + 0.5);
@@ -474,7 +476,7 @@ export function drawAnnotationsUnder(k: Ctx, o: AnnSections): void {
 /** A small pill beside a dot, like an exponent: openness, help, switch. */
 function script(k: Ctx, s: Spot, text: string, ink: string, left = false): void {
   const { ctx, r } = k, size = 9;
-  ctx.font = `700 ${size}px ${FONT}`;
+  ctx.font = `700 ${size}px ${font()}`;
   const w = ctx.measureText(text).width + 7, h = size + 4;
   const cx = X(k, s.x), cy = Y(k, s.y) - 0.82 * r;
   const x0 = left ? cx - 0.62 * r - w : cx + 0.62 * r;

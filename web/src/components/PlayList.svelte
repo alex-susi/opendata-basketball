@@ -1,11 +1,14 @@
 <script lang="ts">
-  // The list of possessions that match the filters, grouped by game. Each entry: quarter, clock and length with the
-  // result right-aligned on the same line, then the team on offense and, with Show Details on, the play's actions
-  // (screens, drives, offensive rebounds and so on, hidden by default). Every field wraps instead of
-  // being cut off, so the whole entry stays readable however narrow the column is.
+  // The list of possessions that match the filters, grouped by game (each game's header: the teams abbreviated with
+  // the final score, its date indented on the line below). With Show Details off (the default) each entry is one
+  // line: quarter, clock and length, the team on offense abbreviated, the result (the player who ended it is in the
+  // tooltip). With it on: quarter, clock and length with the result and the player right-aligned on the same line, the
+  // team's full name, then the play's actions (screens, drives, offensive rebounds and so on). Fields wrap instead of
+  // being cut off, so an entry stays readable however narrow the column is.
   import { tick } from "svelte";
   import { quarter } from "../lib/geometry";
   import { shortScreen } from "../lib/sequence";
+  import { gameParts, teamAbbr } from "../lib/teams";
   import type { PlayRow } from "../lib/types";
   import TeamPill from "./TeamPill.svelte";
 
@@ -55,12 +58,13 @@
   <div class="play-list" bind:this={list}>
     {#each rows as row, i (row.id)}
       {#if i === 0 || rows[i - 1].game !== row.game}
-        <div class="game-head">{row.game}</div>
+        {@const g = gameParts(row.game)}
+        <div class="game-head" title={row.game}><span>{g.teams}</span>{#if g.date}<span class="game-date">{g.date}</span>{/if}</div>
       {/if}
-      <button type="button" class="play-item" class:active={row.id === selectedId} onclick={() => onselect(row.id)}>
+      <button type="button" class="play-item" class:compact={!details} class:active={row.id === selectedId} onclick={() => onselect(row.id)}>
         <span class="pi-top"><b>{quarter(row.q)} {row.clock}</b><span class="pi-secs">{row.secs}s</span></span>
-        <span class="pi-team"><TeamPill name={row.off} colors={teamColors[String(row.offTeam)]} /></span>
-        <span class="pi-result {outcome(row)}">{row.who ? `${row.result} · ${row.who}` : row.result}{#if row.and1}<i class="pi-and1" title="Made while fouled: a basket plus a free throw">And-1</i>{/if}</span>
+        <span class="pi-team" title={details ? null : row.off}><TeamPill name={details ? row.off : teamAbbr(row.off)} colors={teamColors[String(row.offTeam)]} /></span>
+        <span class="pi-result {outcome(row)}" title={!details && row.who ? `${row.result} · ${row.who}` : null}>{details && row.who ? `${row.result} · ${row.who}` : row.result}{#if row.and1}<i class="pi-and1" title="Made while fouled: a basket plus a free throw">And-1</i>{/if}</span>
         {#if details && (row.typeLabels || row.oreb > 0)}
           <span class="pi-tags">
             {#if row.oreb > 0}<i class="oreb" title="Offensive rebounds collected by a player in this possession">{oreb(row)}</i>{/if}

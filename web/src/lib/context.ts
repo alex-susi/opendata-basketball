@@ -229,26 +229,26 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   group("Shot Quality", quality);
 
   const where: Line[] = [];
-  if (shot.dist != null) where.push({ k: "Distance", v: `${shot.dist.toFixed(1)} ft` });
+  if (shot.dist != null) where.push({ k: "Distance (ft)", v: shot.dist.toFixed(1) });
   if (shot.region) where.push({ k: "Region", v: regionName(shot.region) });
   group("Location", where);
 
   const defense: Line[] = [];
   if (shot.cl) defense.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
-  if (shot.defDist != null) defense.push({ k: "Closest Defender Distance", v: `${shot.defDist.toFixed(1)} ft`, tone });
+  if (shot.defDist != null) defense.push({ k: "Closest Defender Distance (ft)", v: shot.defDist.toFixed(1), tone });
   if (shot.defId != null) defense.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
   group("Defense", defense);
 
   const creation: Line[] = [];
-  if (shot.rt != null) creation.push({ k: "Release Time", v: `${shot.rt.toFixed(1)} s` });
-  else if (shot.est) creation.push({ k: "Release Time", ...blank });
+  if (shot.rt != null) creation.push({ k: "Release Time (s)", v: shot.rt.toFixed(1) });
+  else if (shot.est) creation.push({ k: "Release Time (s)", ...blank });
   const speed = shooterSpeed(play, shot);
-  if (speed != null) creation.push({ k: "Speed at Release", v: `${speed.toFixed(1)} ft/s` });
+  if (speed != null) creation.push({ k: "Speed at Release (ft/s)", v: speed.toFixed(1) });
   if (shot.drb != null) creation.push({ k: "Dribbles", v: String(shot.drb) });
   if (shot.cns != null) creation.push({ k: "Creation", v: shot.cns ? "Catch and Shoot" : "Off the Dribble" });
   if (shot.type) creation.push({ k: "Type", v: titleCase(words(shot.type)) });
   else if (shot.est) creation.push({ k: "Type", ...blank });
-  if (shot.sc != null) creation.push({ k: "Shot Clock", v: `${shot.sc.toFixed(1)} s` });
+  if (shot.sc != null) creation.push({ k: "Shot Clock (s)", v: shot.sc.toFixed(1) });
   creation.push(...passLines(play, shot));
   group("Creation", creation);
 
@@ -257,7 +257,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   if (shot.fouled) result.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
   if (opts.peak) {
     const peak = shotPeak(play, shot);
-    if (peak != null) result.push({ k: "Ball Peak", v: `${peak.toFixed(1)} ft` });
+    if (peak != null) result.push({ k: "Ball Peak (ft)", v: peak.toFixed(1) });
   }
   if (opts.season && !shot.conflict) {   // a flagged spot would name the wrong zone
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
@@ -278,8 +278,9 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
 
 // ---- drives and closeouts --------------------------------------------------------------------------
 
-const fmtNum = (v: number | null | undefined, digits: number, unit: string): string =>
-  v == null || Number.isNaN(v) ? "–" : `${v.toFixed(digits)} ${unit}`;
+// A number alone (its unit is in the row's label, so values line up), or a dash when missing.
+const fmtNum = (v: number | null | undefined, digits: number): string =>
+  v == null || Number.isNaN(v) ? "–" : v.toFixed(digits);
 
 /** One player's movement over an action, from the tracking (smoothed; see motion.ts). The rows are not prefixed with
  * his part ("Driver Max Speed"): the card names him in its player rows above. */
@@ -287,11 +288,11 @@ function movementLines(play: Play, pid: number, f0: number, f1: number): Line[] 
   const m = stretch(play, pid, f0, f1);
   if (!m) return [];
   return [
-    { k: "Duration", v: `${m.secs.toFixed(1)} s` },
-    { k: "Max Speed", v: fmtNum(m.maxSpeed, 1, "ft/s") },
-    { k: "Distance Covered", v: fmtNum(m.dist, 1, "ft") },
-    { k: "Peak Acceleration", v: fmtNum(m.accel, 1, "ft/s²") },
-    { k: "Peak Deceleration", v: fmtNum(m.decel, 1, "ft/s²") },
+    { k: "Duration (s)", v: m.secs.toFixed(1) },
+    { k: "Max Speed (ft/s)", v: fmtNum(m.maxSpeed, 1) },
+    { k: "Distance Covered (ft)", v: fmtNum(m.dist, 1) },
+    { k: "Peak Acceleration (ft/s²)", v: fmtNum(m.accel, 1) },
+    { k: "Peak Deceleration (ft/s²)", v: fmtNum(m.decel, 1) },
   ];
 }
 
@@ -313,12 +314,12 @@ export function driveLines(play: Play, d: AnnDrive): Line[] {
   const drive: Line[] = [];
   if (d.cat) drive.push({ k: "Created From", v: DRIVE_CATEGORY[d.cat] ?? titleCase(words(d.cat)) });
   if (d.dir) drive.push({ k: "Direction", v: titleCase(d.dir) });
-  drive.push({ k: "Drive Length", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1, "ft") });
+  drive.push({ k: "Drive Length (ft)", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1) });
   if (d.end) drive.push({ k: "Ended With", v: titleCase(words(d.end)) });
   const defense: Line[] = [{ k: "Blow-By", v: d.blowby ? "Yes" : "No" }];
   if (d.def != null) {
     const a = gapAt(play, d.pid, d.def, d.f), b = gapAt(play, d.pid, d.def, d.f1);
-    defense.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
+    defense.push({ k: "Separation (ft)", v: `${fmtNum(a, 1)} → ${fmtNum(b, 1)}` });
   }
   return [...lines, ...grouped("Drive", drive), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, d.pid, d.f, d.f1))];
 }
@@ -333,13 +334,14 @@ export function cutLines(play: Play, c: AnnCut): Line[] {
   const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
   const cut: Line[] = [
     { k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-Ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
-    { k: "Got the Ball", v: catchAt ? `Yes, ${((catchAt.f0 - c.f) / 25).toFixed(1)} s in` : "No" },
+    { k: "Got the Ball", v: catchAt ? "Yes" : "No" },
+    ...(catchAt ? [{ k: "Time to Catch (s)", v: ((catchAt.f0 - c.f) / 25).toFixed(1) }] : []),
   ];
   const defense: Line[] = [];
   if (c.cov && c.cov !== "none") defense.push({ k: "Coverage", v: titleCase(COVERAGE[c.cov] ?? c.cov) });
   if (m) {
     const a = gapAt(play, c.pid, m.def, c.f), b = gapAt(play, c.pid, m.def, c.f1);
-    defense.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
+    defense.push({ k: "Separation (ft)", v: `${fmtNum(a, 1)} → ${fmtNum(b, 1)}` });
   }
   return [...lines, ...grouped("Cut", cut), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, c.pid, c.f, c.f1))];
 }
@@ -347,31 +349,29 @@ export function cutLines(play: Play, c: AnnCut): Line[] {
 /** A closeout, grouped. Closeout: the gap the defender closed (event fields) and what the ball handler did after the
  * catch. Movement: how the defender ran out. */
 export function closeoutLines(play: Play, c: AnnCloseout): Line[] {
-  const closeout: Line[] = [{ k: "Gap", v: `${c.d0.toFixed(1)} ft → ${c.d1.toFixed(1)} ft` }];
+  const closeout: Line[] = [{ k: "Gap (ft)", v: `${c.d0.toFixed(1)} → ${c.d1.toFixed(1)}` }];
   if (c.act) closeout.push({ k: "After the Catch", v: c.act.charAt(0).toUpperCase() + c.act.slice(1) });
   return [...grouped("Closeout", closeout), ...grouped("Defender Movement", movementLines(play, c.def, c.f, c.f1))];
 }
 
-/** Each screen defender by the player he guards, for the coverage group. */
-const SCREEN_DEFENDERS: Record<AnnScreen["kind"], [string, string]> = {
-  pick: ["Ballhandler's Defender", "Screener's Defender"], handoff: ["Receiver's Defender", "Setter's Defender"],
-  off_ball_screen: ["Cutter's Defender", "Screener's Defender"],
+/** The two attackers in a screen, by their parts: the one using it, then the screener (setter). */
+const SCREEN_PARTS: Record<AnnScreen["kind"], [string, string]> = {
+  pick: ["Ballhandler", "Screener"], handoff: ["Receiver", "Setter"], off_ball_screen: ["Cutter", "Screener"],
 };
 const SPOT_NAMES: Record<string, string> = { middle: "Middle", wing: "Wing", stepUp: "Step-Up" };
 
-/** A pick, handoff or off-ball screen, grouped. Coverage: each screen defender (his matchup as the screen is set)
- * and the coverage he played, when coverage is shown. Location: the screen's spot (SkillCorner's locationType; picks
- * and handoffs only). */
+/** A pick, handoff or off-ball screen, grouped. Coverage: for each attacker, his defender (his matchup as the screen
+ * is set; "Receiver's Defender") and, on the next row, the coverage that defender played ("Receiver Coverage"), when
+ * coverage is shown. Location: the screen's spot (SkillCorner's locationType; picks and handoffs only). */
 export function screenLines(play: Play, s: AnnScreen, coverage: boolean): Line[] {
   const defOf = (off: number) => play.ann?.matchups.find((x) => x.off === off && x.f <= s.f && x.f1 >= s.f)?.def;
   const cov: Line[] = [];
   if (coverage) {
-    const [useK, scrK] = SCREEN_DEFENDERS[s.kind];
-    for (const [k, off, c] of [[useK, s.use, s.covUse], [scrK, s.scr, s.covScr]] as [string, number, string | undefined][]) {
-      const word = c && c !== "none" ? titleCase(COVERAGE[c] ?? c) : null;
+    const [usePart, scrPart] = SCREEN_PARTS[s.kind];
+    for (const [part, off, c] of [[usePart, s.use, s.covUse], [scrPart, s.scr, s.covScr]] as [string, number, string | undefined][]) {
       const def = defOf(off);
-      if (!word && def == null) continue;
-      cov.push({ k, v: [def != null ? nameOf(play, def) : null, word].filter(Boolean).join(" · ") });
+      if (def != null) cov.push({ k: `${part}'s Defender`, v: nameOf(play, def) });
+      if (c && c !== "none") cov.push({ k: `${part} Coverage`, v: titleCase(COVERAGE[c] ?? c) });
     }
   }
   const where: Line[] = [];
@@ -414,7 +414,8 @@ export function possessionCard(play: Play, f: number, gc: number): Card {
   const cur = touches.reduce<(typeof touches)[number] | null>((a, t) => (!a || t.f0 >= a.f0 ? t : a), null);
   if (cur) {
     lines.push({ k: "Dribbles", v: String(dribbles.filter((d) => d.pid === cur.pid && d.f >= cur.f0 && d.f <= Math.min(f, cur.f1)).length) });
-    lines.push({ k: "Ball", v: `${nameOf(play, cur.pid)} ${((Math.min(f, cur.f1) - cur.f0) / 25).toFixed(1)} s` });
+    lines.push({ k: "Ball", v: nameOf(play, cur.pid) });
+    lines.push({ k: "Held (s)", v: ((Math.min(f, cur.f1) - cur.f0) / 25).toFixed(1) });
   } else {
     lines.push({ k: "Dribbles", v: "0" });
   }

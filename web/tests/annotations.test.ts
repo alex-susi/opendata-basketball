@@ -158,23 +158,23 @@ describe("readouts", () => {
     const rows = card.lines.filter((l) => !l.head);
     expect(rows[0]).toEqual({ k: "SkillCorner Shot Quality", v: expect.stringMatching(/^\d+ \/ 100$/) });
     expect(rows[1].k).toBe("SkillCorner xPoints");   // no percentile without the league's xPoints
-    expect(rows[2]).toEqual({ k: "Distance", v: expect.stringMatching(/^\d+\.\d ft$/) });
+    expect(rows[2]).toEqual({ k: "Distance (ft)", v: expect.stringMatching(/^\d+\.\d$/) });   // the unit in the label
     expect(rows[3].k).toBe("Region");
     expect(rows[3].v).toMatch(/^[A-Z]/);
     for (const line of card.lines) expect(line.k).toMatch(/^[A-Z]/);
     // Shooter speed sits between release time and dribbles; the potential assist has its own line after the pass.
     const keys = rows.map((l) => l.k);
-    if (keys.includes("Speed at Release")) {
-      expect(card.lines.find((l) => l.k === "Speed at Release")!.v).toMatch(/^\d+\.\d ft\/s$/);
-      if (keys.includes("Release Time")) expect(keys.indexOf("Release Time")).toBe(keys.indexOf("Speed at Release") - 1);
-      if (keys.includes("Dribbles")) expect(keys.indexOf("Dribbles")).toBe(keys.indexOf("Speed at Release") + 1);
+    if (keys.includes("Speed at Release (ft/s)")) {
+      expect(card.lines.find((l) => l.k === "Speed at Release (ft/s)")!.v).toMatch(/^\d+\.\d$/);
+      if (keys.includes("Release Time (s)")) expect(keys.indexOf("Release Time (s)")).toBe(keys.indexOf("Speed at Release (ft/s)") - 1);
+      if (keys.includes("Dribbles")) expect(keys.indexOf("Dribbles")).toBe(keys.indexOf("Speed at Release (ft/s)") + 1);
     }
     expect(keys.indexOf("Potential Assist")).toBe(keys.indexOf("Pass") + 1);
   });
 
   it("gives most released shots a shooter speed", () => {
     const shots = sample.flatMap((play) => play.ann!.shots.map((shot) => ({ play, shot })));
-    const speeds = shots.map(({ play, shot }) => shotCard(play, shot, { peak: false, season: null }).lines.find((l) => l.k === "Speed at Release"));
+    const speeds = shots.map(({ play, shot }) => shotCard(play, shot, { peak: false, season: null }).lines.find((l) => l.k === "Speed at Release (ft/s)"));
     expect(speeds.filter(Boolean).length / shots.length).toBeGreaterThan(0.8);
   });
 
@@ -187,14 +187,15 @@ describe("readouts", () => {
     const touches = Number(card.lines.find((l) => l.k === "Touches")!.v);
     if (touches) {
       expect(card.lines.find((l) => l.k === "Dribbles")!.v).toMatch(/^\d+$/);
-      expect(card.lines.find((l) => l.k === "Ball")!.v).toMatch(/^#\S+ .+ \d+\.\d s$/);
+      expect(card.lines.find((l) => l.k === "Ball")!.v).toMatch(/^#\S+ .+$/);
+      expect(card.lines.find((l) => l.k === "Held (s)")!.v).toMatch(/^\d+\.\d$/);
     }
   });
 
   it("describe drives and closeouts with the tracked movement", () => {
     const withDrive = sample.find((p) => p.ann!.drives.length)!;
-    expect(driveLines(withDrive, withDrive.ann!.drives[0]).map((l) => l.k)).toContain("Max Speed");
+    expect(driveLines(withDrive, withDrive.ann!.drives[0]).map((l) => l.k)).toContain("Max Speed (ft/s)");
     const withCloseout = sample.find((p) => p.ann!.closeouts.length);
-    if (withCloseout) expect(closeoutLines(withCloseout, withCloseout.ann!.closeouts[0]).map((l) => l.k)).toContain("Max Speed");
+    if (withCloseout) expect(closeoutLines(withCloseout, withCloseout.ann!.closeouts[0]).map((l) => l.k)).toContain("Max Speed (ft/s)");
   });
 });

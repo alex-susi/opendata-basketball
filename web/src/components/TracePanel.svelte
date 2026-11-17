@@ -276,8 +276,10 @@
           {/if}
         {/each}
         {#each changes as c (c.k)}
-          <circle class="change-dot" class:on={hoverChange === c} cx={X(c.t)} cy={Y(c.v!)} r={hoverChange === c ? 6 : 4.5}
-                  fill={kitText(playerOf(c.to))} />
+          {@const half = hoverChange === c ? 5.5 : 4.2}
+          <!-- A square, so a change of partner stands apart from the round samples on the line. -->
+          <rect class="change-dot" class:on={hoverChange === c} x={X(c.t) - half} y={Y(c.v!) - half} width={half * 2} height={half * 2}
+                rx="1" fill={kitText(playerOf(c.to))} />
         {/each}
         {#if now?.v != null}
           <circle class="now-dot" cx={X(tNow)} cy={Y(now.v)} r="5.5" fill={color} stroke-width="1.5" />

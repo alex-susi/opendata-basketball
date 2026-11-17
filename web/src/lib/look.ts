@@ -6,6 +6,7 @@
 //          <html data-look="unslop">). Its switch was removed 2026-11-16: the site opens in the current look unless
 //          the address asks for ?look=unslop, and an Unslop choice saved by the old switch is ignored.
 
+import { applyAppearance } from "./appearance.svelte";
 import { COLORS } from "./court";
 import { page } from "./theme.svelte";
 
@@ -65,6 +66,7 @@ function remember(param: string, key: string, value: string, fallback: string): 
 export function applyLook(look: Look): void {
   document.documentElement.dataset.look = look;
   Object.assign(COLORS, CANVAS[look][themeNow()]);
+  applyAppearance();   // the chosen colour scheme and fonts on top (lib/appearance.svelte.ts)
 }
 
 /** Puts the night or day theme on the page (and the canvas colours that go with it and the look). */
@@ -72,5 +74,6 @@ export function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme;
   page.light = theme === "light";
   Object.assign(COLORS, CANVAS[lookNow()][theme]);
+  applyAppearance();   // this theme's chosen colour scheme
   remember("theme", THEME_KEY, theme, "dark");
 }

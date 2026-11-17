@@ -2,6 +2,7 @@
 // caption. The clock and score are on the page, not the canvas, except in a recorded video (drawHeader). Ported
 // from draw(), drawPlayer(), drawHeader() and drawCaption() in the Shiny app's www/player.js.
 
+import { canvasType } from "./appearance.svelte";
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
 import { controlAt, drawControl, motionLimits } from "./control";
 import { logoImage } from "./logos.svelte";
@@ -13,7 +14,8 @@ import { withAlpha } from "./teamColors";
 import { metricInfo, playerValue, type Metric } from "./trace";
 import type { Play, PlayerTrack, Sample, TeamColors } from "./types";
 
-const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+// The canvas text font: the Play Viewer font from the Font menu (lib/appearance.svelte.ts), read on every draw.
+const font = () => canvasType.family;
 const CAPTION_FRAMES = 20;   // how long an event label stays up (0.8 s), unless a newer one crowds it out sooner
 
 export interface DrawOptions {
@@ -265,7 +267,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillStyle = kit.ink;
-  ctx.font = `700 ${Math.round(r * (d.p.jersey.length > 1 ? 0.95 : 1.1))}px ${FONT}`;
+  ctx.font = `700 ${Math.round(r * (d.p.jersey.length > 1 ? 0.95 : 1.1))}px ${font()}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(d.p.jersey, x, y + 0.5);
@@ -274,7 +276,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
 
 // A small dark label centred on x.
 function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: string, color: string, size: number): void {
-  ctx.font = `700 ${size}px ${FONT}`;
+  ctx.font = `700 ${size}px ${font()}`;
   const w = ctx.measureText(text).width + 10, h = size + 7, left = x - w / 2;
   ctx.fillStyle = COLORS.panel;
   ctx.globalAlpha = 0.92;
@@ -293,7 +295,7 @@ function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: str
 function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number, above: boolean, text: string,
                     fill: string, stroke: string, ink: string): void {
   const size = Math.round(clamp((0.62 * r) / DOT_GROWTH, 8.5, 11)), h = size + 4;   // sized as before the dots grew
-  ctx.font = `700 ${size}px ${FONT}`;
+  ctx.font = `700 ${size}px ${font()}`;
   const w = ctx.measureText(text).width + 8;
   const left = px(L, d.x) + 0.62 * r, cy = py(L, d.y) + (above ? -0.82 : 0.82) * r;
   ctx.beginPath();
@@ -405,7 +407,7 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
     [`  ${clock(play.gc[c.i0])}`, COLORS.paperInk, 700], [gap, COLORS.paperMuted, 400], [play.home, home.text, 700],
     [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.paperInk, 700], [play.away, away.text, 700]];
   const span = (size: number) => parts.reduce((sum, [text, , weight]) => {
-    ctx.font = `${weight} ${size}px ${FONT}`;
+    ctx.font = `${weight} ${size}px ${font()}`;
     return sum + ctx.measureText(text).width;
   }, 0);
   const size = Math.max(9, Math.min(15, Math.floor((15 * (L.W - 24)) / span(15))));
@@ -413,7 +415,7 @@ function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cur
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   for (const [text, color, weight] of parts) {
-    ctx.font = `${weight} ${size}px ${FONT}`;
+    ctx.font = `${weight} ${size}px ${font()}`;
     ctx.fillStyle = color;
     ctx.fillText(text, x, L.top - HEADER_TOP / 2);
     x += ctx.measureText(text).width;
@@ -424,7 +426,7 @@ export const DATA_CREDIT = "Data: Liga Endesa ACB 2025/2026 via SkillCorner";
 
 // The line under the court, centred between the court's baseline-to-baseline floor and the bottom of the canvas,
 // and kept within the floor's width. Left, level with the floor's left edge: the playback seconds and the tracking frame
-// ("9.40 s · Frame 69928", numbers bold), or in a recorded video the data credit (on the page it is in the tab bar; a
+// ("9.40 s | Frame 69928", numbers bold), or in a recorded video the data credit (on the page it is in the tab bar; a
 // video leaves the page behind). Right, level with the floor's right edge: the event labels of the last 0.8 s, at most
 // two; when two do not fit beside the left text, only the newest, cut short if even that does not fit.
 function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[], secs: number, frame: number, credit: boolean): void {
@@ -434,16 +436,16 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[],
   ctx.textAlign = "left";
   const left: [string, string, number][] = credit
     ? [[DATA_CREDIT, COLORS.paperMuted, 400]]
-    : [[`${secs.toFixed(2)} s`, COLORS.paperInk, 700], ["  ·  ", COLORS.paperMuted, 400], ["Frame ", COLORS.paperMuted, 400], [String(frame), COLORS.paperInk, 700]];
+    : [[`${secs.toFixed(2)} s`, COLORS.paperInk, 700], ["  |  ", COLORS.paperMuted, 400], ["Frame ", COLORS.paperMuted, 400], [String(frame), COLORS.paperInk, 700]];
   let x = x0;
   for (const [text, color, weight] of left) {
-    ctx.font = `${weight} ${credit ? 11 : 12}px ${FONT}`;
+    ctx.font = `${weight} ${credit ? 11 : 12}px ${font()}`;
     ctx.fillStyle = color;
     ctx.fillText(text, x, y);
     x += ctx.measureText(text).width;
   }
   if (!labels.length) return;
-  ctx.font = `700 13px ${FONT}`;
+  ctx.font = `700 13px ${font()}`;
   ctx.fillStyle = COLORS.paperInk;
   ctx.textAlign = "right";
   const room = x1 - x - 24;

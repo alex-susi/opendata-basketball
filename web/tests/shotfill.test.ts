@@ -55,7 +55,7 @@ describe("shots without SkillCorner context", () => {
     const get = (k: string) => lines.find((l) => l.k === k)?.v;
     expect(get("SkillCorner Shot Quality")).toBe("Not Provided");
     expect(get("Type")).toBe("Not Provided");
-    expect(get("Distance")).toMatch(/ ft$/);
+    expect(get("Distance (ft)")).toMatch(/^\d+\.\d$/);
     expect(get("Contest")).toMatch(/\(Est\.\)$/);
     expect(get("Shot Context")).toBe("From Tracking");
   });
