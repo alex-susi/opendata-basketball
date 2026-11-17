@@ -2,10 +2,11 @@
   // The filter panel. Mirrors the inputs of the Shiny app (same labels, same choices from meta.json), with three
   // changes made here on the client: games written as on the possession list (teams abbreviated with the score, the
   // date under them); the Player filter searchable, each player with his team's pill (abbreviated); the actions in
-  // alphabetical order, the pick named "On-ball Screen".
+  // alphabetical order, the pick named "On-ball Screen", and offensive rebounds among them (no Offensive Rebound filter of
+  // their own any more).
   // One filter per row while the left column is narrow; a filter and the drop-down that qualifies it share a row
   // once the column is dragged wide enough (.filters is a size container, see app.css).
-  import { emptyFilters, type FilterState } from "../lib/filters";
+  import { emptyFilters, OREB_ACTION, type FilterState } from "../lib/filters";
   import { gameParts, teamAbbr } from "../lib/teams";
   import type { Meta, Option } from "../lib/types";
   import MultiSelect from "./MultiSelect.svelte";
@@ -14,7 +15,10 @@
   let { meta, filters = $bindable() }: { meta: Meta; filters: FilterState } = $props();
 
   const ACTION_NAMES: Record<string, string> = { pick: "On-ball Screen" };
-  const actions = $derived(meta.types.map((o) => ({ ...o, label: ACTION_NAMES[o.value] ?? o.label }))
+  // Offensive rebounds are an action here too (a player collected at least one in the possession; team rebounds,
+  // the ball out off the defense, do not count). They used to have a filter of their own.
+  const actions = $derived([...meta.types.map((o) => ({ ...o, label: ACTION_NAMES[o.value] ?? o.label })),
+                            { value: OREB_ACTION, label: "Offensive Rebound" }]
     .sort((a, b) => a.label.localeCompare(b.label)));
   // A player's label is "Name (Team)": split it, and find the team's id for its colours.
   const teamIds = $derived(new Map(meta.team.map((t) => [t.label, t.value])));
@@ -75,16 +79,6 @@
       <MultiSelect label="Quarter" options={meta.period} placeholder="All" bind:value={filters.period} />
       <MultiSelect label="Result" options={meta.result} placeholder="Any result" bind:value={filters.result} />
     </div>
-    <div class="pair even">
-      <MultiSelect label="Shot type" options={meta.shotType} placeholder="Any shot type" bind:value={filters.shotType} />
-      <label class="field" title="Offensive rebounds a player collected in the possession. Team rebounds (the ball went out off the defense) are not counted.">
-        <span class="field-label">Offensive rebound</span>
-        <select bind:value={filters.oreb}>
-          <option value="any">Any</option>
-          <option value="with">Yes</option>
-          <option value="without">No</option>
-        </select>
-      </label>
-    </div>
+    <MultiSelect label="Shot type" options={meta.shotType} placeholder="Any shot type" bind:value={filters.shotType} />
   </div>
 </details>

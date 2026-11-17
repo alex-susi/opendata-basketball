@@ -33,7 +33,15 @@
   // Keep the selected play in view when the selection or the list changes.
   $effect(() => {
     void [selectedId, rows];
-    tick().then(() => list?.querySelector(".play-item.active")?.scrollIntoView({ block: "nearest" }));
+    // Scroll the list only (scrollIntoView would also scroll the page when the list sits below the viewer, in tall
+    // narrow windows). Below the sticky game header when the row is above the visible part.
+    tick().then(() => {
+      const row = list?.querySelector<HTMLElement>(".play-item.active");
+      if (!row) return;
+      const top = row.offsetTop - list.offsetTop, head = list.querySelector<HTMLElement>(".game-head")?.offsetHeight ?? 0;
+      if (top - head < list.scrollTop) list.scrollTop = top - head;
+      else if (top + row.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top + row.offsetHeight - list.clientHeight;
+    });
   });
 </script>
 

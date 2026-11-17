@@ -259,7 +259,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   if (shot.fouled) result.push({ k: "Fouled", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
   if (opts.peak) {
     const peak = shotPeak(play, shot);
-    if (peak != null) result.push({ k: "Ball Peak (ft)", v: peak.toFixed(1) });
+    if (peak != null) result.push({ k: "Max Ball Height (ft)", v: peak.toFixed(1) });
   }
   if (opts.season && !shot.conflict) {   // a flagged spot would name the wrong zone
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
@@ -293,8 +293,8 @@ function movementLines(play: Play, pid: number, f0: number, f1: number): Line[] 
     { k: "Duration (s)", v: m.secs.toFixed(1) },
     { k: "Max Speed (ft/s)", v: fmtNum(m.maxSpeed, 1) },
     { k: "Distance Covered (ft)", v: fmtNum(m.dist, 1) },
-    { k: "Peak Acceleration (ft/s²)", v: fmtNum(m.accel, 1) },
-    { k: "Peak Deceleration (ft/s²)", v: fmtNum(m.decel, 1) },
+    { k: "Max Acceleration (ft/s²)", v: fmtNum(m.accel, 1) },
+    { k: "Max Deceleration (ft/s²)", v: fmtNum(m.decel, 1) },
   ];
 }
 

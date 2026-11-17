@@ -10,5 +10,5 @@ export const page = $state({ light: false });
 export function pageText(hex: string): string;
 export function pageText(hex: string | undefined): string | undefined;
 export function pageText(hex: string | undefined): string | undefined {
-  return hex && page.light ? readableOn(hex, "#F6F4EF", 3.2) : hex;
+  return hex && page.light ? readableOn(hex, "#F9F5EC", 3.2) : hex;
 }

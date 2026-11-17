@@ -2568,3 +2568,14 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Rebound hover card (`reboundLines`, lib/context.ts): Rebound (type, the miss it came from, seconds after the release), Location (court region, distance to the basket and from the shooter's spot, from tracking), On the Glass (an offensive rebounder's role, distance to the basket at release and landing, whether he was boxed out; for a defensive rebounder, whom he boxed out; attackers crashing).
 - Colors menu: a vibrancy slider (Muted, Standard, Vivid) scales every scheme colour's saturation, for night and day and the framed pages.
 - Check, 105 tests and type check pass.
+
+## 2026-11-17 (end of day) — Site: fixed vibrancy, tall narrow layout, filter and card tidy-ups
+
+- Colors: the vibrancy slider is gone. Night schemes stay at standard saturation; day schemes are vivid (saturation about 1.9x in HSL, baked into `SCHEMES.light`), and the site's own day colours in app.css, lib/look.ts and lib/theme.svelte.ts are the vivid Warm Paper.
+- Tall narrow windows (761 to 1399 px wide and at most 1.25x as wide as tall): the viewer's row is as tall as the Display panel and rosters, so the trace panel or timeline ends level with the rosters and the court takes the rest; the filters and possession list sit below side by side and the page scrolls. The possession list now scrolls itself (no scrollIntoView) so a new play never scrolls the page.
+- Possession list (Show Details off): fixed clock and length columns, so every row's length and team pill line up.
+- Filters: "Offensive Rebound" is now a choice in the Action filter (`OREB_ACTION` in lib/filters.ts: a possession with at least one player offensive rebound); its own filter is gone. `FilterState.oreb` stays for the Shiny parity test.
+- Cards: "Peak" is now "Max" (Max Acceleration, Max Deceleration, Max Ball Height), label-to-value gap 12 px in hover cards. Hovering a shot in the trace panel shows its card whether or not Shot Details is on.
+- Player Tracking, All: both header lines right-aligned.
+- Seen, not changed: crowded action captions can tilt past the trace panel's right edge, giving it a sideways scrollbar.
+- Check, 105 tests and type check pass.

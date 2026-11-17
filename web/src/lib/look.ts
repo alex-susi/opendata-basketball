@@ -20,7 +20,7 @@ const DARK_TEXT = { paperInk: COLORS.paperInk, paperMuted: COLORS.paperMuted };
 const CANVAS: Record<Look, Record<Theme, Partial<typeof COLORS>>> = {
   current: {
     dark: { paper: COLORS.paper, panel: COLORS.panel, ...DARK_TEXT },
-    light: { paper: "#F6F4EF", panel: COLORS.panel, paperInk: "#172033", paperMuted: "#5A6780" },
+    light: { paper: "#F9F5EC", panel: COLORS.panel, paperInk: "#0A1B40", paperMuted: "#496291" },
   },
   unslop: {
     dark: { paper: "#19191b", panel: "#0e0e0f", ...DARK_TEXT },

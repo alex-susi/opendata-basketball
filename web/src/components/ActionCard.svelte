@@ -70,7 +70,8 @@
   function linesFor(tick: Tick): { lines: Line[] } {
     const ev = tick.event, ann = play.ann, none = { lines: [] };
     if (!ann) return none;
-    if ((ev.kind === "made" || ev.kind === "missed") && viewer.ann.shot) {
+    // The shot card shows here whether or not Shot Details is on (that toggle is for the card over the court).
+    if (ev.kind === "made" || ev.kind === "missed") {
       const shot = ann.shots.find((s) => s.f === ev.f);
       return shot ? { lines: shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data, xpts: season.sample?.league.xpts }).lines } : none;
     }

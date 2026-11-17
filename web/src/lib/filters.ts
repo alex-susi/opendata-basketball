@@ -17,6 +17,10 @@ export interface FilterState {
   oreb: "any" | "with" | "without";
 }
 
+/** The Action filter's "Offensive Rebound" choice: not a play type in the data but the possession's oreb count, so it
+ * matches plays where a player collected at least one (combined with the other actions by Any / All like them). */
+export const OREB_ACTION = "oreb";
+
 export function emptyFilters(): FilterState {
   return { game: [], period: [], result: [], shotType: [], types: [], typesMode: "any", team: [], teamSide: "any",
            player: "", playerRole: "any", oreb: "any" };
@@ -35,7 +39,8 @@ export function filterPlays(plays: PlayRow[], f: FilterState): PlayRow[] {
     if (f.oreb === "with" && !(p.oreb > 0)) return false;
     if (f.oreb === "without" && p.oreb > 0) return false;
     if (f.types.length) {
-      const ok = f.typesMode === "all" ? f.types.every((t) => p.types.includes(t)) : p.types.some((t) => f.types.includes(t));
+      const has = (t: string) => (t === OREB_ACTION ? p.oreb > 0 : p.types.includes(t));
+      const ok = f.typesMode === "all" ? f.types.every(has) : f.types.some(has);
       if (!ok) return false;
     }
     if (teams.length) {
@@ -45,7 +50,8 @@ export function filterPlays(plays: PlayRow[], f: FilterState): PlayRow[] {
     if (player !== null) {
       const onOff = p.offIds.includes(player), onDef = p.defIds.includes(player);
       // "In the action": named in an action event of a selected play type, or of any type (shots included) when none is selected.
-      const acted = p.actors.some(([type, pid]) => pid === player && (!f.types.length || f.types.includes(type)));
+      const acting = f.types.filter((t) => t !== OREB_ACTION);
+      const acted = p.actors.some(([type, pid]) => pid === player && (!acting.length || acting.includes(type)));
       const ok = f.playerRole === "off" ? onOff : f.playerRole === "def" ? onDef : f.playerRole === "actor" ? acted : onOff || onDef;
       if (!ok) return false;
     }

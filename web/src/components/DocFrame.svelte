@@ -14,7 +14,7 @@
   // font and scheme go in as one style element of overrides on the page's own variables.
   $effect(() => {
     const theme = page.light ? "light" : "dark";
-    void [appearance.docFont, appearance.dark, appearance.light, appearance.vibrancy];
+    void [appearance.docFont, appearance.dark, appearance.light];
     if (!loads || !frame) return;
     try {
       const doc = frame.contentDocument;
