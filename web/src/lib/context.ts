@@ -222,13 +222,15 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   const group = (title: string, rows: Line[]) => { if (rows.length) lines.push(head(title), ...rows); };
 
   const quality: Line[] = [];
-  if (shot.sq != null) quality.push({ k: "SkillCorner Shot Quality", v: `${Math.round(shot.sq)} / 100` });
-  else if (shot.est) quality.push({ k: "SkillCorner Shot Quality", ...blank });
+  // SkillCorner's shot quality (0-100) read as an expected make rate, xFG%. Their docs do not say it is a calibrated
+  // make probability, so the % is their score as given, not a fitted one.
+  if (shot.sq != null) quality.push({ k: "xFG%", v: `${Math.round(shot.sq)}%` });
+  else if (shot.est) quality.push({ k: "xFG%", ...blank });
   if (xp != null) {
-    quality.push({ k: "SkillCorner xPoints", v: xp.toFixed(2) });
+    quality.push({ k: "xPoints", v: xp.toFixed(2) });
     if (opts.xpts?.length) quality.push({ k: "xPoints Percentile", v: ordinal(Math.min(100, Math.max(1, Math.round(xPointsPercentile(xp, opts.xpts))))) });
   } else if (shot.est) {
-    quality.push({ k: "SkillCorner xPoints", ...blank });
+    quality.push({ k: "xPoints", ...blank });
   }
   group("Shot Quality", quality);
 

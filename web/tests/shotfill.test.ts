@@ -53,7 +53,7 @@ describe("shots without SkillCorner context", () => {
     const { play, shot } = shots.find((x) => x.shot.est && !x.shot.conflict)!;
     const lines = shotCard(play, shot, { peak: false, season: null }).lines;
     const get = (k: string) => lines.find((l) => l.k === k)?.v;
-    expect(get("SkillCorner Shot Quality")).toBe("Not Provided");
+    expect(get("xFG%")).toBe("Not Provided");
     expect(get("Type")).toBe("Not Provided");
     expect(get("Distance (ft)")).toMatch(/^\d+\.\d$/);
     expect(get("Contest")).toMatch(/\(Est\.\)$/);

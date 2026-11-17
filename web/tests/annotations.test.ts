@@ -157,12 +157,12 @@ describe("readouts", () => {
     const heads = card.lines.filter((l) => l.head).map((l) => l.k);
     expect(heads.slice(0, 2)).toEqual(["Shot Quality", "Location"]);
     const rows = card.lines.filter((l) => !l.head);
-    expect(rows[0]).toEqual({ k: "SkillCorner Shot Quality", v: expect.stringMatching(/^\d+ \/ 100$/) });
-    expect(rows[1].k).toBe("SkillCorner xPoints");   // no percentile without the league's xPoints
+    expect(rows[0]).toEqual({ k: "xFG%", v: expect.stringMatching(/^\d+%$/) });
+    expect(rows[1].k).toBe("xPoints");   // no percentile without the league's xPoints
     expect(rows[2]).toEqual({ k: "Distance (ft)", v: expect.stringMatching(/^\d+\.\d$/) });   // the unit in the label
     expect(rows[3].k).toBe("Region");
     expect(rows[3].v).toMatch(/^[A-Z]/);
-    for (const line of card.lines) expect(line.k).toMatch(/^[A-Z]/);
+    for (const line of card.lines) expect(line.k).toMatch(/^(x[A-Z]|[A-Z])/);   // title case; xFG%, xPoints as written
     // Shooter speed sits between release time and dribbles; the potential assist has its own line after the pass.
     const keys = rows.map((l) => l.k);
     if (keys.includes("Speed at Release (ft/s)")) {

@@ -2585,3 +2585,8 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Shot card: the Result and Season group is gone. Season (the shooter's makes/attempts and % from the shot's zone, no "from …") sits under Region in Location. Defense lists Closest Defender, then his Distance (ft), then Blocked By and Shooting Foul (renamed from Fouled so the hover card no longer pulls it up with the players). Max Ball Height (Tracking Readouts on) ends Creation. The title drops the dot: the result at the left, the shooter at the right end (`Card.who`, `.card-title`).
 - Rebound card: the shooter has his own row under Rebounder; the Off row gives the miss alone. The card is about 150 px wide.
 - Check, 105 tests and type check pass. The court card's new title line was not seen rendered (the browser pane was hidden); the hover cards were.
+
+## 2026-11-17 (close, later) — Site: shot quality rows renamed
+
+- Shot cards (over the court and in the trace hover): "SkillCorner Shot Quality" is now "xFG%" with the score shown as a percent (36%), "SkillCorner xPoints" is now "xPoints". The group heading stays Shot Quality. Caveat kept in the code: SkillCorner's docs do not say the 0-100 score is a calibrated make probability, so xFG% here is their score as given, not a fitted or validated rate. The player card's season shot-quality tables keep their SkillCorner titles.
+- 105 tests pass (the title-case test now allows the x-prefixed names).
