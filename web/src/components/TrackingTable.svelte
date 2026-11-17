@@ -13,7 +13,7 @@
   // The columns come in three groups, picked at the panel's header right end (All shows every column, with short
   // two-line headers, and scrolls sideways if it must). The table is centred in the tab's height. The groups:
   //   Movement  speed, acceleration, speed toward the basket and across it, top speed so far and distance covered
-  //             (tracking smoothed as the Tracking menu says, lib/motion.ts)
+  //             (lightly smoothed tracking, lib/motion.ts)
   //   Position  court region (lib/regions.ts), distance to the basket, in the paint, the nearest opponent and how
   //             that gap changed over the last second, a contest level for the offense from that gap
   //             (lib/regions.ts), and the matchup: the defender assigned to an offensive player, or the player a
@@ -34,11 +34,11 @@
   // short: the header in the All view, where every column must fit a one-line name (the unit goes on a second line).
   interface Column { key: string; head: string; short: string; unit?: string; title: string; group: Exclude<TrackGroup, "all">; left?: boolean }
   const COLUMNS: Column[] = [
-    { key: "speed", head: "Speed", short: "Speed", unit: "ft/s", title: "Speed now (smoothed as set in the Tracking menu)", group: "movement" },
-    { key: "accel", head: "Acceleration", short: "Accel", unit: "ft/s²", title: "Change in speed (0.4 s when smoothed, less for Light and Raw in the Tracking menu); negative while slowing down", group: "movement" },
+    { key: "speed", head: "Speed", short: "Speed", unit: "ft/s", title: "Speed now: positions averaged over 0.12 s, then their change over 0.08 s. Blank for the first 0.08 s of a player's tracking", group: "movement" },
+    { key: "accel", head: "Acceleration", short: "Accel", unit: "ft/s²", title: "Change in speed over 0.16 s (from 0.08 s before to 0.08 s after); negative while slowing down. Blank for the first 0.16 s of a player's tracking", group: "movement" },
     { key: "toward", head: "Toward Basket", short: "To Bskt", unit: "ft/s", title: "Speed toward the basket (negative: away from it)", group: "movement" },
     { key: "across", head: "Sideways", short: "Sideways", unit: "ft/s", title: "Speed across the line to the basket", group: "movement" },
-    { key: "top", head: "Top Speed", short: "Top Speed", unit: "ft/s", title: "Fastest speed so far in this play (as set in the Tracking menu)", group: "movement" },
+    { key: "top", head: "Top Speed", short: "Top Speed", unit: "ft/s", title: "Fastest speed so far in this play", group: "movement" },
     { key: "covered", head: "Distance Covered", short: "Dist Covered", unit: "ft", title: "Distance covered so far in this play", group: "movement" },
     { key: "region", head: "Court Region", short: "Region", title: "Where he stands, in SkillCorner's regions", group: "position", left: true },
     { key: "hoop", head: "To Basket", short: "Bskt Dist", unit: "ft", title: "Distance to the basket the offense attacks", group: "position" },

@@ -1,18 +1,26 @@
 // Tracking readouts derived from player positions: speed, distance covered, spacing, the rim protector and how
 // open each player is. Pure, so the tests can run it in Node.
 //
-// How much tracking is smoothed comes from the tab bar's Tracking menu (lib/smoothing.svelte.ts: smoothed, light or
-// raw; motion() keeps one result per play and level). Smoothed and light average positions over a few frames on each
-// side (within an unbroken run of frames) before differencing: raw broadcast tracking jitters by a foot or so, which
-// would otherwise read as speed; a step faster than MAX_SPEED is then treated as a tracking jump and left out of both
-// speed and distance. Raw differences the tracked positions as they are and drops nothing.
+// Smoothing (2026-11-17, the former "Light" setting; the Smoothed / Light / Raw switch was removed): positions are
+// averaged over POS_HALF frames on each side (within an unbroken run of frames) before differencing, since raw
+// broadcast tracking jitters by a foot or so, which would otherwise read as speed. Speed at a frame is taken from the
+// averaged positions one frame before and one after (0.08 s); acceleration from the speeds ACC_HALF frames before and
+// after (0.16 s). A step faster than MAX_SPEED or an acceleration past MAX_ACCEL is treated as a tracking jump and left
+// out. At the start of a player's tracking (the play's first frame, or after a gap) there is no earlier frame to
+// average with, and the one-sided values jumped (accelerations of 30+ ft/s² on frame 0): speed is left blank until
+// SPEED_AFTER frames in (0.08 s) and acceleration until SPEED_AFTER + ACC_HALF frames in (0.16 s).
 
 import { HOOP_X, KEY_HALF_W, KEY_X, HALF_L } from "./court";
 import { FPS } from "./sequence";
-import { smoothing, smoothNow, type SmoothLevel } from "./smoothing.svelte";
 import type { Play, Role, Series } from "./types";
 
-const MAX_SPEED = 35;   // ft/s; sprinting players reach about 25
+const POS_HALF = 1;      // frames each side averaged into a position (3 frames, 0.12 s)
+const ACC_HALF = 2;      // frames each side of the speed difference behind an acceleration (0.16 s)
+const SPEED_AFTER = 2;   // frames into a run of tracking before a speed is given (0.08 s)
+const MAX_SPEED = 35;    // ft/s; sprinting players reach about 25
+
+/** Frames each side averaged when drawing drive and cut paths and player trails (lib/annotate.ts, lib/draw.ts). */
+export const PATH_HALF = POS_HALF;
 
 export interface Motion {
   /** Per player (same order as play.players): smoothed speed in ft/s, NaN where unknown. */
@@ -24,16 +32,17 @@ export interface Motion {
   vy: Series[];
   /** Per player: fastest speed so far in the play. */
   top: Series[];
+  /** Per player: frames since his current unbroken run of tracking began (0 on its first frame, NaN untracked). */
+  inRun: Series[];
 }
 
-const cache = new WeakMap<Play, Partial<Record<SmoothLevel, Motion>>>();
+const cache = new WeakMap<Play, Motion>();
 
 function joined(play: Play, i: number, j: number): boolean {
   return Math.abs(play.frames[j] - play.frames[i]) === Math.abs(j - i);
 }
 
 function smooth(play: Play, v: Series, half: number): Series {
-  if (half === 0) return v;
   const n = v.length, out = new Float64Array(n).fill(NaN);
   for (let i = 0; i < n; i++) {
     if (Number.isNaN(v[i])) continue;
@@ -46,32 +55,30 @@ function smooth(play: Play, v: Series, half: number): Series {
   return out;
 }
 
-/** Speed and distance covered for every player of a play (computed once per play and smoothing level). */
+/** Speed and distance covered for every player of a play (computed once per play). */
 export function motion(play: Play): Motion {
-  const level = smoothing.level, set = smoothNow();
-  const byLevel = cache.get(play) ?? {};
-  cache.set(play, byLevel);
-  let m = byLevel[level];
+  let m = cache.get(play);
   if (m) return m;
   const n = play.frames.length;
-  const cap = set.caps ? MAX_SPEED : Infinity;
   // The frame `k` steps from i (k < 0 before, k > 0 after) if it is joined to i and tracked, else i itself.
   const near = (sx: Series, i: number, k: number) => {
     const j = i + k;
     return j >= 0 && j < n && joined(play, i, j) && !Number.isNaN(sx[j]) ? j : i;
   };
-  m = { speed: [], covered: [], vx: [], vy: [], top: [] };
+  m = { speed: [], covered: [], vx: [], vy: [], top: [], inRun: [] };
   for (const p of play.players) {
-    const sx = smooth(play, p.x, set.pos), sy = smooth(play, p.y, set.pos);
-    const speed = new Float64Array(n).fill(NaN), covered = new Float64Array(n);
+    const sx = smooth(play, p.x, POS_HALF), sy = smooth(play, p.y, POS_HALF);
+    const speed = new Float64Array(n).fill(NaN), covered = new Float64Array(n), inRun = new Float64Array(n).fill(NaN);
     const vx = new Float64Array(n).fill(NaN), vy = new Float64Array(n).fill(NaN), top = new Float64Array(n);
     for (let i = 0; i < n; i++) {
-      const a = near(sx, i, -set.back);
-      // Raw looks back one frame; on a play's first frame (nothing before) it looks one frame ahead instead.
-      const b = set.fwd === 0 && a === i ? near(sx, i, 1) : near(sx, i, set.fwd);
-      if (b > a && !Number.isNaN(sx[i])) {
+      if (!Number.isNaN(sx[i])) {
+        const cont = i > 0 && joined(play, i - 1, i) && !Number.isNaN(sx[i - 1]);
+        inRun[i] = cont ? inRun[i - 1] + 1 : 0;
+      }
+      const a = near(sx, i, -1), b = near(sx, i, 1);
+      if (b > a && !Number.isNaN(sx[i]) && inRun[i] >= SPEED_AFTER) {
         const v = (Math.hypot(sx[b] - sx[a], sy[b] - sy[a]) * FPS) / (b - a);
-        if (v <= cap) {
+        if (v <= MAX_SPEED) {
           speed[i] = v;
           vx[i] = ((sx[b] - sx[a]) * FPS) / (b - a);
           vy[i] = ((sy[b] - sy[a]) * FPS) / (b - a);
@@ -81,7 +88,7 @@ export function motion(play: Play): Motion {
       top[i] = Math.max(i ? top[i - 1] : 0, Number.isNaN(speed[i]) ? 0 : speed[i]);
       if (i && joined(play, i - 1, i) && !Number.isNaN(sx[i - 1]) && !Number.isNaN(sx[i])) {
         const step = Math.hypot(sx[i] - sx[i - 1], sy[i] - sy[i - 1]);
-        if (step * FPS <= cap) covered[i] += step;
+        if (step * FPS <= MAX_SPEED) covered[i] += step;
       }
     }
     m.speed.push(speed);
@@ -89,8 +96,9 @@ export function motion(play: Play): Motion {
     m.vx.push(vx);
     m.vy.push(vy);
     m.top.push(top);
+    m.inRun.push(inRun);
   }
-  byLevel[level] = m;
+  cache.set(play, m);
   return m;
 }
 
@@ -134,22 +142,21 @@ const MAX_ACCEL = 40;      // ft/s²; larger values are tracking jumps (sprinter
 
 /**
  * A player's acceleration at frame index i, ft/s² (negative when slowing), or NaN: the change between his speed
- * accBack frames before and accFwd frames after (lib/smoothing.svelte.ts; smoothed: 5 and 5, 0.4 s; light: 2 and 2;
- * raw: from the previous frame to this one). Near the ends of a play or of a run of frames the span shrinks, to no
- * fewer than accMin frames. Accelerations past MAX_ACCEL are dropped unless the level is raw.
+ * ACC_HALF frames before and ACC_HALF frames after (0.16 s). The earlier speed must be there, so nothing is given until
+ * 4 frames (0.16 s) into a run of tracking; near the end of a run the later side shrinks, to no fewer than 2 frames in
+ * all. Accelerations past MAX_ACCEL are dropped as tracking jumps.
  */
 export function accelAt(play: Play, speed: Series, i: number): number {
-  const set = smoothNow();
   const ok = (j: number) => j >= 0 && j < speed.length && !Number.isNaN(speed[j]) && joined(play, i, j);
-  let a = i - set.accBack, b = i + set.accFwd;
-  while (a < i && !ok(a)) a++;
+  const a = i - ACC_HALF;
+  // Speed exists only SPEED_AFTER frames into a run, so requiring the speed ACC_HALF frames back gives no acceleration
+  // until SPEED_AFTER + ACC_HALF = 4 frames (0.16 s) in.
+  if (!ok(a)) return NaN;
+  let b = i + ACC_HALF;
   while (b > i && !ok(b)) b--;
-  // Raw on a first frame (no earlier speed): the change from the next frame's speed to the one after. (This frame's
-  // own raw speed already looks one frame ahead, so it would match the next frame's.)
-  if (set.accFwd === 0 && a === i && ok(i + 1) && ok(i + 2)) { a = i + 1; b = i + 2; }
-  if (b - a < set.accMin || Number.isNaN(speed[a]) || Number.isNaN(speed[b])) return NaN;
+  if (b - a < 2) return NaN;
   const v = ((speed[b] - speed[a]) * FPS) / (b - a);
-  return !set.caps || Math.abs(v) <= MAX_ACCEL ? v : NaN;
+  return Math.abs(v) <= MAX_ACCEL ? v : NaN;
 }
 
 export interface Stretch {

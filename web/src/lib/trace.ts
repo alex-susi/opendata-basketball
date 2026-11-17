@@ -2,7 +2,7 @@
 //   ball:    the ball's height (ft) from the tracking.
 //   player:  one player's measure, picked in the panel (METRICS): his distance to the nearest opponent, the nearest
 //            teammate, his assigned matchup, the basket or the ball, or his speed, acceleration or speed toward the
-//            basket (smoothed as the Tracking menu says, lib/motion.ts).
+//            basket (lightly smoothed, lib/motion.ts).
 // Samples are taken every few steps of the playback sequence, so the x axis is playback time
 // (dead-ball time is skipped when the viewer skips it). Pure, so the tests can run it in Node.
 
@@ -32,8 +32,8 @@ export const METRICS: MetricInfo[] = [
   { key: "teammate", axis: "Gap to Teammate", label: "Nearest Teammate", unit: "ft", title: "Floor distance to the closest teammate (spacing)", pair: true },
   { key: "hoop", axis: "To Basket", label: "Distance to Basket", unit: "ft", title: "Floor distance to the basket the offense attacks" },
   { key: "ball", axis: "To Ball", label: "Distance to Ball", unit: "ft", title: "Floor distance to the ball (ball height left out)" },
-  { key: "speed", axis: "Speed", label: "Speed", unit: "ft/s", title: "Speed (smoothed as set in the Tracking menu)" },
-  { key: "accel", axis: "Acceleration", label: "Acceleration", unit: "ft/s²", title: "Change in speed (0.4 s when smoothed, less for Light and Raw in the Tracking menu); negative while slowing down" },
+  { key: "speed", axis: "Speed", label: "Speed", unit: "ft/s", title: "Speed: positions averaged over 0.12 s, then their change over 0.08 s" },
+  { key: "accel", axis: "Acceleration", label: "Acceleration", unit: "ft/s²", title: "Change in speed over 0.16 s (from 0.08 s before to 0.08 s after); negative while slowing down. Blank for the first 0.16 s of a player's tracking" },
   { key: "toward", axis: "Toward Basket", label: "Speed Toward Basket", unit: "ft/s", title: "Speed toward the basket the offense attacks; negative while moving away from it" },
 ];
 

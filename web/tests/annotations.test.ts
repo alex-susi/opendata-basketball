@@ -8,7 +8,6 @@ import { closeoutLines, driveLines, frameIndex, ownChances, possessionCard, shot
 import { decodePlay } from "../src/lib/decode";
 import { accelAt, motion, spacing } from "../src/lib/motion";
 import { contestOf, courtRegion } from "../src/lib/regions";
-import { smoothing } from "../src/lib/smoothing.svelte";
 import type { PeriodIndex, Play, PlayRow } from "../src/lib/types";
 
 const DATA = join(__dirname, "..", "public", "data");
@@ -194,23 +193,23 @@ describe("readouts", () => {
     }
   });
 
-  it("follow the Tracking menu: raw speeds jitter more than smoothed ones, and smoothed comes back unchanged", () => {
-    const play = sample.find((p) => p.players.length >= 10)!;
-    const at = play.players.findIndex((p) => p.x.filter((v) => !Number.isNaN(v)).length > 100);
-    const jitter = (v: Float64Array) => {   // mean absolute frame-to-frame change in speed
-      let sum = 0, n = 0;
-      for (let i = 1; i < v.length; i++) if (!Number.isNaN(v[i]) && !Number.isNaN(v[i - 1])) { sum += Math.abs(v[i] - v[i - 1]); n++; }
-      return sum / n;
-    };
-    const before = motion(play).speed[at];
-    smoothing.level = "raw";
-    const raw = motion(play).speed[at];
-    smoothing.level = "light";
-    const light = motion(play).speed[at];
-    smoothing.level = "smoothed";
-    expect(motion(play).speed[at]).toBe(before);   // cached per level
-    expect(jitter(raw)).toBeGreaterThan(jitter(light));
-    expect(jitter(light)).toBeGreaterThan(jitter(before));
+  it("give no speed in a player's first 0.08 s of tracking and no acceleration in his first 0.16 s", () => {
+    for (const play of sample.slice(0, 5)) {
+      const m = motion(play);
+      play.players.forEach((p, at) => {
+        for (let i = 0; i < play.frames.length; i++) {
+          const run = m.inRun[at][i];
+          if (Number.isNaN(run)) continue;
+          if (run < 2) expect(m.speed[at][i]).toBeNaN();
+          if (run < 4) expect(accelAt(play, m.speed[at], i)).toBeNaN();
+        }
+      });
+      // and both are given once a player has been tracked long enough (not every frame: tracking jumps are dropped)
+      const at = play.players.findIndex((p) => p.x.filter((v) => !Number.isNaN(v)).length > 50);
+      const later = [...m.speed[at].keys()].filter((i) => m.inRun[at][i] >= 4);
+      expect(later.some((i) => !Number.isNaN(m.speed[at][i]))).toBe(true);
+      expect(later.some((i) => !Number.isNaN(accelAt(play, m.speed[at], i)))).toBe(true);
+    }
   });
 
   it("describe drives and closeouts with the tracked movement", () => {

@@ -2611,3 +2611,9 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Display only: the screen-coverage model, its exports and the season figures are untouched (the model already reads raw positions with 0.2 s backward differences).
 - Under 1400 px the tab bar drops the "Tracking" label, tightens tab padding and shortens the credit to "Data: SkillCorner" so it stays readable.
 - New test: raw speeds jitter more than light, light more than smoothed, and smoothed is unchanged. 106 tests pass.
+
+## 2026-11-17 (close, last+2) — Site: one smoothing setting, no start-of-tracking spikes
+
+- The Tracking switch is gone; the viewer always uses the former Light setting (`lib/motion.ts`): positions averaged 1 frame each side (0.12 s), speed from the averaged positions one frame before and after (0.08 s), acceleration from the speeds 2 frames before and after (0.16 s), jumps over 35 ft/s and 40 ft/s² dropped. Drive/cut paths and trails average 1 frame each side (`PATH_HALF`). `lib/smoothing.svelte.ts` deleted; the full credit is back in the tab bar.
+- Speed is blank for a player's first 0.08 s of tracking (the play's first frames, or after a gap) and acceleration for his first 0.16 s. The one-sided values there had produced spikes such as 36 ft/s² at t = 0 on the Player Trace chart. New test checks both rules (`Motion.inRun`). 106 tests pass.
+- This is a display change (Player Trace, Player Tracking, hover cards, shot card's speed at release). The screen-coverage model and season figures are unchanged.
