@@ -2617,3 +2617,10 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - The Tracking switch is gone; the viewer always uses the former Light setting (`lib/motion.ts`): positions averaged 1 frame each side (0.12 s), speed from the averaged positions one frame before and after (0.08 s), acceleration from the speeds 2 frames before and after (0.16 s), jumps over 35 ft/s and 40 ft/s² dropped. Drive/cut paths and trails average 1 frame each side (`PATH_HALF`). `lib/smoothing.svelte.ts` deleted; the full credit is back in the tab bar.
 - Speed is blank for a player's first 0.08 s of tracking (the play's first frames, or after a gap) and acceleration for his first 0.16 s. The one-sided values there had produced spikes such as 36 ft/s² at t = 0 on the Player Trace chart. New test checks both rules (`Motion.inRun`). 106 tests pass.
 - This is a display change (Player Trace, Player Tracking, hover cards, shot card's speed at release). The screen-coverage model and season figures are unchanged.
+
+## 2026-11-17 (close, last+3) — Site: label tidy-ups
+
+- Scorebug: the game clock is upright (team names and scores stay italic).
+- "Off-Ball" is now "Off-ball" everywhere on the site (drive "Created From", cut type, player card rows, the cut filter options). The two cut labels were also fixed in `web/scripts/export_data.R` and in the already-exported `public/data/meta.json`, so no re-export is needed.
+- Movement rows in the hover cards: "Max Accel (ft/s²)", "Max Decel (ft/s²)", "Dist Covered (ft)".
+- 106 tests pass.

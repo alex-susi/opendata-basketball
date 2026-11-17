@@ -202,8 +202,8 @@ const ACT_ROWS: { k: string; season?: (s: SeasonFigures) => [number, number] | u
   { k: "Pick Screener", season: (s) => s.screener, act: "pickS" },
   { k: "Drives", season: (s) => (s.drives && s.drives.length > 2 ? [s.drives[0], s.drives[2] as number] : undefined), act: "drive" },
   { k: "Handoffs", act: "handoff", title: "As the receiver" },
-  { k: "Off-Ball Screens", act: "obs", title: "As the cutter" },
-  { k: "Off-Ball Screener", act: "obsS" },
+  { k: "Off-ball Screens", act: "obs", title: "As the cutter" },
+  { k: "Off-ball Screener", act: "obsS" },
   { k: "Post-Ups", act: "post" },
   { k: "Isolations", act: "iso" },
   { k: "Attacking Closeouts", act: "closeout", title: "Catching the ball as a defender closes out" },
@@ -263,7 +263,7 @@ export function playstyleOf(style: Playstyle | null, p: PlayerTrack): StyleSide[
 const COV: Record<string, string> = { ice: "ICE", none: "No Coverage" };
 const covName = (c: string) => COV[c] ?? titleCase(words(c));
 const DRIVE_CAT: Record<string, string> = {
-  pick: "Off Picks", handoff: "Off Handoffs", offBallScreen: "Off Off-Ball Screens", iso: "From Isolations",
+  pick: "Off Picks", handoff: "Off Handoffs", offBallScreen: "Off Off-ball Screens", iso: "From Isolations",
   closeout: "Attacking Closeouts", miscellaneous: "Other",
 };
 

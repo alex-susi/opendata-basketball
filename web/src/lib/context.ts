@@ -293,9 +293,9 @@ function movementLines(play: Play, pid: number, f0: number, f1: number): Line[] 
   return [
     { k: "Duration (s)", v: m.secs.toFixed(1) },
     { k: "Max Speed (ft/s)", v: fmtNum(m.maxSpeed, 1) },
-    { k: "Distance Covered (ft)", v: fmtNum(m.dist, 1) },
-    { k: "Max Acceleration (ft/s²)", v: fmtNum(m.accel, 1) },
-    { k: "Max Deceleration (ft/s²)", v: fmtNum(m.decel, 1) },
+    { k: "Dist Covered (ft)", v: fmtNum(m.dist, 1) },
+    { k: "Max Accel (ft/s²)", v: fmtNum(m.accel, 1) },
+    { k: "Max Decel (ft/s²)", v: fmtNum(m.decel, 1) },
   ];
 }
 
@@ -304,7 +304,7 @@ const grouped = (title: string, rows: Line[]): Line[] => (rows.length ? [head(ti
 
 /** How a drive was created (SkillCorner's category), in words. */
 const DRIVE_CATEGORY: Record<string, string> = {
-  pick: "Pick", handoff: "Handoff", offBallScreen: "Off-Ball Screen", iso: "Isolation", closeout: "Closeout",
+  pick: "Pick", handoff: "Handoff", offBallScreen: "Off-ball Screen", iso: "Isolation", closeout: "Closeout",
   miscellaneous: "Other",
 };
 
@@ -336,7 +336,7 @@ export function cutLines(play: Play, c: AnnCut): Line[] {
   if (m) lines.push({ k: "Defender", v: nameOf(play, m.def) });
   const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
   const cut: Line[] = [
-    { k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-Ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
+    { k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
     { k: "Got the Ball", v: catchAt ? "Yes" : "No" },
     ...(catchAt ? [{ k: "Time to Catch (s)", v: ((catchAt.f0 - c.f) / 25).toFixed(1) }] : []),
   ];

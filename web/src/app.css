@@ -356,7 +356,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   /* The divider from the away box, in the bar's edge colour like the join between the team boxes. */
   box-shadow: inset 1px 0 0 var(--bug-edge);
 }
-.bug-time { font-size: 25px; }
+.bug-time { font-size: 25px; font-style: normal; }   /* the game clock upright, unlike the team names and scores */
 .bug-period-line { display: flex; gap: 8px; font-size: 15px; font-style: normal; font-weight: 700; }
 .shot-clock { min-width: 18px; color: #F5C518; text-align: right; }
 
