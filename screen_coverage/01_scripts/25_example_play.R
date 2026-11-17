@@ -69,13 +69,17 @@ pos <- lapply(seq_along(S$base_offs), function(o) {
   lapply(1:10, function(j) if (present[o, j]) c(p$sx[j], p$sy[j]) else NULL)
 })
 
-# The four screen players' movement inputs at each predicted frame.
-four <- function(f, digits = 1) {
-  m <- B[match(X$off, S$base_offs), 1:4, f]
-  round(m, digits)
+# All 16 movement inputs of the four screen players at each predicted frame, before standardising. The model mirrors
+# the y-type columns so the screener is on the y >= 0 side at the prediction frame (R/past_only.R, seq_history), so
+# they are mirrored here the same way.
+at <- match(X$off, S$base_offs)
+flip <- ifelse(B[at, 2, "y"] < 0, -1, 1)
+four <- function(f) {
+  m <- B[at, 1:4, f]
+  if (f %in% S$flip) m <- m * flip
+  round(m, if (f %in% c("turn", "present")) 0 else if (f == "lvl_hold") 2 else 1)
 }
-inputs <- list(lvl = four("lvl"), lvl_v = four("lvl_v"), lvl_hold = four("lvl_hold", 2), speed = four("speed"),
-               accel = four("accel"), turn = four("turn", 0))
+inputs <- setNames(lapply(S$feats, four), S$feats)
 ctx <- S$ctx[rows, ]
 screen <- list(tta = round(X$tta_now, 1), d_hs = round(X$d_hs, 1), closeness = round(X$closeness, 2),
                hs_min = round(ctx[, "hs_min"], 1), since_hs_min = round(ctx[, "since_hs_min"], 2),

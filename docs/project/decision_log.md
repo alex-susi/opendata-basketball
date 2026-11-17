@@ -2518,3 +2518,11 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Saved files rewritten without retraining by new `24_rename_soft_to_drop.R` (111 files: caches, outputs, site JSON). Checked that every rewritten table matches the old one except the rename, row order and timestamps. Figures redrawn by rerunning scripts 04, 09, 10, 11, 12, 15, 22, 23 (all exit 0). Archived figures in `screen_coverage/zz_Archive/03_outputs/` still say soft (archive scripts not rerun).
 - Historical entries in this log from 2026-11-09 on now say drop.
 - No model, input or score changed.
+
+## 2026-11-16 — Screen Coverage Model tab, frame sliders, Show Details
+
+- Site: new "Screen Coverage Model" tab right after Play viewer (`#/coverage-model`). It shows `web/public/docs/screen_coverage_model.html`, a copy of `screen_coverage/04_docs/screen_coverage_model.html`, in a frame that follows the site's night/day theme (`web/src/components/ScreenCoverageModel.svelte`). Copy the page again whenever it changes.
+- Site: the Possessions panel has a "Show Details" switch, off by default and remembered per browser. Each play's actions (screen types, offensive rebounds) show only when it is on (`PlayList.svelte`).
+- Both coverage pages: Each coverage has two sliders (full coverage, and the two defenders) showing recall and precision at any frame from −2 s to +1 s, Main curve by default. Data from new `26_matrices_by_frame.R` → `03_outputs/confusion/by_frame.json` (per-frame counts sum to 1,463 screens, main-curve counts match `22_confusion_matrices.R`).
+- Both pages: Example Play shows all 16 inputs for each of the four screen players at every frame, mirrored as the model sees them (`25_example_play.R` now exports all 16).
+- Site check, 105 tests and build pass. Artifacts republished (reads version 16, primer version 2). No model, input or score changed.

@@ -1,6 +1,7 @@
 <script lang="ts">
   // The list of possessions that match the filters, grouped by game. Each entry: quarter, clock and length with the
-  // result right-aligned on the same line, then the team on offense and the tags. Every field wraps instead of
+  // result right-aligned on the same line, then the team on offense and, with Show Details on, the play's actions
+  // (screens, drives, offensive rebounds and so on, hidden by default). Every field wraps instead of
   // being cut off, so the whole entry stays readable however narrow the column is.
   import { tick } from "svelte";
   import { quarter } from "../lib/geometry";
@@ -12,6 +13,15 @@
     rows: PlayRow[]; selectedId: string | null; onselect: (id: string) => void; wide?: boolean; ontogglewidth?: () => void;
     teamColors?: Record<string, [string, string]>;
   } = $props();
+
+  // Show Details: the actions in each play. Off by default, remembered in this browser only.
+  const DETAILS_KEY = "acb-viewer-show-details";
+  let details = $state(false);
+  try { details = localStorage.getItem(DETAILS_KEY) === "1"; } catch { /* storage unavailable: keep the default */ }
+  function setDetails(on: boolean): void {
+    details = on;
+    try { localStorage.setItem(DETAILS_KEY, on ? "1" : "0"); } catch { /* not remembered */ }
+  }
 
   let list: HTMLDivElement;
   const outcome = (row: PlayRow) => (row.result.startsWith("Made") ? "made" : row.result.startsWith("Missed") ? "missed" : "");
@@ -35,6 +45,13 @@
       {/if}
     </span>
   </div>
+  <div class="plays-sub">
+    <label class="switch" title="Show the actions in each play (screens, drives, offensive rebounds)">
+      <input type="checkbox" role="switch" checked={details} onchange={(ev) => setDetails((ev.currentTarget as HTMLInputElement).checked)} />
+      <span class="switch-track"></span>
+      <span>Show Details</span>
+    </label>
+  </div>
   <div class="play-list" bind:this={list}>
     {#each rows as row, i (row.id)}
       {#if i === 0 || rows[i - 1].game !== row.game}
@@ -44,7 +61,7 @@
         <span class="pi-top"><b>{quarter(row.q)} {row.clock}</b><span class="pi-secs">{row.secs}s</span></span>
         <span class="pi-team"><TeamPill name={row.off} colors={teamColors[String(row.offTeam)]} /></span>
         <span class="pi-result {outcome(row)}">{row.who ? `${row.result} · ${row.who}` : row.result}{#if row.and1}<i class="pi-and1" title="Made while fouled: a basket plus a free throw">And-1</i>{/if}</span>
-        {#if row.typeLabels || row.oreb > 0}
+        {#if details && (row.typeLabels || row.oreb > 0)}
           <span class="pi-tags">
             {#if row.oreb > 0}<i class="oreb" title="Offensive rebounds collected by a player in this possession">{oreb(row)}</i>{/if}
             {#if row.typeLabels}{#each row.typeLabels.split("|") as type, k}<i>{shortScreen(type)}{#if (row.typeCounts?.[k] ?? 1) > 1}&nbsp;×{row.typeCounts?.[k]}{/if}</i>{/each}{/if}

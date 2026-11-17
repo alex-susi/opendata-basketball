@@ -179,6 +179,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .plays-head-end { display: flex; align-items: baseline; gap: 10px; }
 .plays-head .count { font-weight: 500; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .width-btn { white-space: nowrap; }
+.plays-sub { padding: 6px 12px 4px; border-bottom: 1px solid var(--line); }
+.plays-sub .switch { margin: 0; }
 .play-list { flex: 1; overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 .game-head {
   position: sticky; top: 0; z-index: 1; padding: 5px 12px; background: var(--raised);
@@ -564,6 +566,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* ---- Archetypes tab: a reading page on the same dark surface. Its markup comes from the Shiny app
    (public/data/archetypes.html), so these rules mirror play_viewer/01_app/www/style.css. ---- */
 .doc { height: calc(100vh - var(--bar)); overflow-y: auto; scrollbar-color: #3A4866 transparent; }
+/* Screen Coverage Model tab: the standalone readme in a frame that fills the tab and scrolls itself. */
+.doc.doc-framed { overflow: hidden; }
+.doc-frame { display: block; width: 100%; height: 100%; border: 0; }
 .doc-inner { max-width: 1080px; margin: 0 auto; padding: 28px 20px 56px; font-size: 16px; line-height: 1.55; }
 .doc h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }
 .doc h2 { margin: 0 0 18px; font-size: 21px; font-weight: 700; }

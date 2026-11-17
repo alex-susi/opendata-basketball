@@ -1,11 +1,13 @@
 <script lang="ts">
-  // Eleven tabs: the three below, then eight exploration tabs (one per candidate topic, components/explore/), with no divider between them. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
+  // Twelve tabs: the four below, then eight exploration tabs (one per candidate topic, components/explore/), with no divider between them. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
-  // controls beside the header, then display options and the rosters level with the court. The Archetypes tab
+  // controls beside the header, then display options and the rosters level with the court. The Screen Coverage Model
+  // tab is the live screen-coverage model's readme (screen_coverage/04_docs, shown in a frame). The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
   // shots. Static counterpart of play_viewer/01_app/app.R.
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
+  import ScreenCoverageModel from "./components/ScreenCoverageModel.svelte";
   import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
   import Explore from "./components/explore/Explore.svelte";
@@ -24,6 +26,7 @@
   import { live, season, viewer } from "./lib/viewer.svelte";
 
   const ROUTE = "#/play/";
+  const COVERAGE_MODEL = "#/coverage-model";
   const ARCHETYPES = "#/archetypes";
   const REBOUNDING = "#/rebounding";
   const EXPLORE = "#/explore/";
@@ -33,8 +36,9 @@
     { id: "crash", label: "Crashing" }, { id: "lanes", label: "Driving lanes" }, { id: "advantage", label: "Advantage" },
     { id: "gravity", label: "Gravity" }, { id: "coverage", label: "Pick coverage" },
   ];
-  type Tab = string;   // "viewer", "archetypes", "rebounding" or "x-<topic>"
+  type Tab = string;   // "viewer", "coverage-model", "archetypes", "rebounding" or "x-<topic>"
   const tabOfHash = (h: string): Tab => {
+    if (h === COVERAGE_MODEL) return "coverage-model";
     if (h === ARCHETYPES) return "archetypes";
     if (h === REBOUNDING) return "rebounding";
     if (h.startsWith(EXPLORE) && TOPICS.some((t) => t.id === h.slice(EXPLORE.length))) return `x-${h.slice(EXPLORE.length)}`;
@@ -106,6 +110,7 @@
 
   // The address names the selected play, or the document tab while one is open.
   function address(): string {
+    if (tab === "coverage-model") return COVERAGE_MODEL;
     if (tab === "archetypes") return ARCHETYPES;
     if (tab === "rebounding") return REBOUNDING;
     if (tab.startsWith("x-")) return EXPLORE + tab.slice(2);
@@ -195,6 +200,7 @@
 <nav class="tabs">
   <span class="brand">PySport Analytics Cup</span>
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
+  <button type="button" class:on={tab === "coverage-model"} onclick={() => show("coverage-model")}>Screen Coverage Model</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
   <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
   {#each TOPICS as t (t.id)}
@@ -272,6 +278,10 @@
 
   <SidePanel {play} onskip={setSkip} />
 </div>
+
+<main class="doc doc-framed" hidden={tab !== "coverage-model"}>
+  {#if opened["coverage-model"]}<ScreenCoverageModel />{/if}
+</main>
 
 <main class="doc" hidden={tab !== "archetypes"}>
   {#if opened.archetypes}<Archetypes />{/if}
