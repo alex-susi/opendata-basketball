@@ -3,11 +3,11 @@
   // trace panel is off). Actions within a few pixels of each other share the card, a section each. Fixed to the
   // window, so a scrolling panel never clips it; a card with details opens upward, over the court. Each section opens
   // with the action alone in bold ("Pick"), then one row per player named by his part in it (Screener, Ballhandler,
-  // Driver, Defender…), then the action's details.
+  // Driver, Defender…), then the action's details in groups, each under a subheader (lib/context.ts).
   //   x     the pointer's tick line, window px (the card centres on it, kept inside the window)
   //   y     the top of the timeline, window px
   import { toPage } from "../lib/fit.svelte";
-  import { closeoutLines, coverageText, cutLines, driveLines, nameOf, shotCard, titleCase, type Line } from "../lib/context";
+  import { closeoutLines, cutLines, driveLines, nameOf, screenLines, shotCard, titleCase, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { foulLines, turnoverLines } from "../lib/whistles";
   import { FPS, type Tick } from "../lib/sequence";
@@ -22,8 +22,9 @@
   const SCREEN_ROLES: Record<string, [string, string]> = {
     pick: ["Screener", "Ballhandler"], handoff: ["Setter", "Receiver"], off_ball_screen: ["Screener", "Cutter"],
   };
-  // Rows the detail lines already carry for a foul or a turnover: shown with the players instead.
-  const PLAYER_KEYS = new Set(["Fouler", "Fouled", "Lost By", "Stolen By"]);
+  // Rows the detail lines already carry for a foul, a turnover, a drive or a cut: shown with the players instead,
+  // above the card's subheaders (as the shot card's Shooter row).
+  const PLAYER_KEYS = new Set(["Fouler", "Fouled", "Lost By", "Stolen By", "Defender"]);
   function rolesFor(tick: Tick): Line[] {
     const ev = tick.event, ann = play.ann;
     const fallback = (): Line[] => {
@@ -97,11 +98,7 @@
       return none;
     }
     const screen = ann.screens.find((r) => r.f === ev.f && r.kind === ev.kind);
-    if (!screen) return none;
-    const lines: Line[] = [];
-    const cov = coverageText(screen);
-    if (viewer.ann.defense && cov) lines.push({ k: "Coverage", v: cov });
-    return { lines };
+    return screen ? { lines: screenLines(play, screen, viewer.ann.defense) } : none;
   }
   const cards = $derived(ticks.map((tick) => {
     const { lines } = linesFor(tick);

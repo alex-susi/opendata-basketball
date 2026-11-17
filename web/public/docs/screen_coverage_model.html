@@ -215,7 +215,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <header>
     <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · live model trained 2026-11-15</span>
     <h1>Screen Coverage Model</h1>
-    <p class="lede">A time-aware transformer that reads how both screen defenders will cover an on-ball screen, from player tracking alone.</p>
+    <p class="lede">A transformer model that uses player tracking data to predict how the defense will guard on-ball screens.</p>
     <ul class="tight">
       <li>A probability for each of five coverages every 0.04 s, from 2 s before the screen to 1 s after</li>
       <li>Built only from what has already happened at each moment</li>
@@ -235,29 +235,41 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <section id="question">
     <div class="head">
       <h2>The question</h2>
-      <p class="sub">Which coverage the two screen defenders will play, read from movement before the screen</p>
+      <p class="sub">Can we predict how the defense will react to an on-ball screen in the moments leading up to it?</p>
     </div>
     <ul class="tight">
       <li>SkillCorner's picks table labels both screen defenders on every on-ball screen
         <ul>
-          <li>Ball handler's defender · over, under or switch (<code>bhrDefType</code>)</li>
-          <li>Screener's defender, the big · show, drop or switch (<code>scrDefType</code>, where SkillCorner's raw label for drop is soft)</li>
+          <li>Ball handler's defender (<code>bhrDefType</code>)
+            <ul>
+              <li>Over the screen</li>
+              <li>Under the screen</li>
+              <li>Switch</li>
+            </ul>
+          </li>
+          <li>Screener's defender (<code>scrDefType</code>)
+            <ul>
+              <li>Show</li>
+              <li>Drop</li>
+              <li>Switch</li>
+            </ul>
+          </li>
         </ul>
       </li>
       <li>Together they form one of five coverages</li>
-      <li>Ice (14 screens) and blitz (4) are too rare to learn and are left out</li>
-      <li>Use · tell a ball handler, scout or film room how the screen will be defended, and how early that is readable</li>
+      <li>Ice (14 screens) and blitz (4) are too rare to learn and are left out for now</li>
+      <li>A useful model could help tell a ball handler, scout or film room how the screen will be defended, and how early that is readable</li>
     </ul>
     <div class="split">
       <div class="tablewrap">
         <table>
-          <thead><tr><th>Coverage</th><th class="num">Screens</th><th class="num">Share</th></tr></thead>
+          <thead><tr><th>Ball handler's defender</th><th>Screener's defender</th><th class="num">Screens</th><th class="num">Share</th></tr></thead>
           <tbody>
-            <tr><td class="call"><span class="swatch" style="background:var(--c-overshow)"></span>over + show</td><td class="num">502</td><td class="num">34%</td></tr>
-            <tr><td class="call"><span class="swatch" style="background:var(--c-overdrop)"></span>over + drop</td><td class="num">496</td><td class="num">33%</td></tr>
-            <tr><td class="call"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="num">218</td><td class="num">15%</td></tr>
-            <tr><td class="call"><span class="swatch" style="background:var(--c-underdrop)"></span>under + drop</td><td class="num">167</td><td class="num">11%</td></tr>
-            <tr><td class="call"><span class="swatch" style="background:var(--c-undershow)"></span>under + show</td><td class="num">113</td><td class="num">8%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-overshow)"></span>over</td><td class="call">show</td><td class="num">502</td><td class="num">34%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-overdrop)"></span>over</td><td class="call">drop</td><td class="num">496</td><td class="num">33%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-switch)"></span>switch</td><td class="call">switch</td><td class="num">218</td><td class="num">15%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-underdrop)"></span>under</td><td class="call">drop</td><td class="num">167</td><td class="num">11%</td></tr>
+            <tr><td class="call"><span class="swatch" style="background:var(--c-undershow)"></span>under</td><td class="call">show</td><td class="num">113</td><td class="num">8%</td></tr>
           </tbody>
         </table>
       </div>
@@ -312,12 +324,11 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <section id="inputs">
     <div class="head">
       <h2>Model inputs</h2>
-      <p class="sub">What the live model sees at each prediction moment</p>
     </div>
     <ul class="tight">
-      <li>All ten players' movement over the last 1.6 s, the way a coach watches film</li>
-      <li>Nine numbers about the screen as a whole</li>
-      <li>No names, no scouting labels, no warning of when the screen lands</li>
+      <li>All ten players' movement over the last 1.6 s</li>
+      <li>Nine numbers about the screen itself</li>
+      <li>No player names, no warning of when the screen will be set</li>
     </ul>
 
     <div class="block" id="clock">

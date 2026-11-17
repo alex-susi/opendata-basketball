@@ -58,9 +58,15 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   background: var(--panel); border-bottom: 1px solid var(--line);
   position: relative; z-index: 30;
 }
+/* The brand and the night / day switch, left of the first tab. When the left column shows (1400 px and wider) the
+   group is as wide as that column plus the gap after it, less the tab bar's own gap, so the Play Viewer tab starts
+   level with the court panel's left edge and follows it when the column is dragged wider. */
+.tabs-lead { display: flex; align-items: stretch; flex: none; }
+@media (min-width: 1400px) { .tabs-lead { min-width: calc(var(--left-w, 250px) + 8px); } }
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
-/* The night / day switch, left of the first tab. */
-.tabs-theme { display: flex; align-items: center; margin-right: 8px; }
+/* The switch is centred on the tab labels, which sit 1 px high because of the 2 px underline under each tab. */
+.tabs-theme { display: flex; align-items: center; margin-right: 8px; padding-bottom: 2px; }
+.tabs .theme-switch { margin: 0; }
 .tabs button {
   padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted);
   font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
@@ -298,7 +304,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .poss-ball.on { visibility: visible; }
 .bug-clock {
   display: grid; align-content: center; justify-items: center; gap: 4px; width: 96px; height: 100%;
-  background: linear-gradient(180deg, #2A2D33, #121417); color: #FFFFFF; font-variant-numeric: tabular-nums;
+  /* Mid charcoal grey, so the clock never reads as part of a team in black (Bilbao, Granada's and others' second kits). */
+  background: linear-gradient(180deg, #5A606B, #3B4049); color: #FFFFFF; font-variant-numeric: tabular-nums;
 }
 .bug-time { font-size: 25px; }
 .bug-period-line { display: flex; gap: 8px; font-size: 15px; font-style: normal; font-weight: 700; }

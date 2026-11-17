@@ -295,46 +295,88 @@ function movementLines(play: Play, pid: number, f0: number, f1: number): Line[] 
   ];
 }
 
-/** A drive: how it went (event fields), then the driver's movement and his separation from his defender. */
+/** Lines under a subheader, or nothing when there are no lines (as the shot card's groups). */
+const grouped = (title: string, rows: Line[]): Line[] => (rows.length ? [head(title), ...rows] : []);
+
+/** How a drive was created (SkillCorner's category), in words. */
+const DRIVE_CATEGORY: Record<string, string> = {
+  pick: "Pick", handoff: "Handoff", offBallScreen: "Off-Ball Screen", iso: "Isolation", closeout: "Closeout",
+  miscellaneous: "Other",
+};
+
+/** A drive: the driver's defender (shown with the players by the hover card), then grouped details. Drive: how it was
+ * created, where it went and how it ended. Defense: the blow-by and the gap to his defender at the start and end.
+ * Movement: how he ran (tracking). */
 export function driveLines(play: Play, d: AnnDrive): Line[] {
   const lines: Line[] = [];
-  if (d.dir) lines.push({ k: "Direction", v: titleCase(d.dir) });
-  lines.push({ k: "Blow-By", v: d.blowby ? "Yes" : "No" });
-  if (d.end) lines.push({ k: "Ended With", v: titleCase(words(d.end)) });
+  if (d.def != null) lines.push({ k: "Defender", v: nameOf(play, d.def) });
+  const drive: Line[] = [];
+  if (d.cat) drive.push({ k: "Created From", v: DRIVE_CATEGORY[d.cat] ?? titleCase(words(d.cat)) });
+  if (d.dir) drive.push({ k: "Direction", v: titleCase(d.dir) });
+  drive.push({ k: "Drive Length", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1, "ft") });
+  if (d.end) drive.push({ k: "Ended With", v: titleCase(words(d.end)) });
+  const defense: Line[] = [{ k: "Blow-By", v: d.blowby ? "Yes" : "No" }];
   if (d.def != null) {
-    lines.push({ k: "Defender", v: nameOf(play, d.def) });
     const a = gapAt(play, d.pid, d.def, d.f), b = gapAt(play, d.pid, d.def, d.f1);
-    lines.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
+    defense.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
   }
-  lines.push({ k: "Drive Length", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1, "ft") });
-  lines.push(...movementLines(play, d.pid, d.f, d.f1));
-  return lines;
+  return [...lines, ...grouped("Drive", drive), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, d.pid, d.f, d.f1))];
 }
 
-/** A cut: its kind, the coverage on a screen, his defender and the gap to him, whether he got the ball, and how he
- * ran. His defender is his matchup when the cut starts (else the nearest opponent then). */
+/** A cut: his defender (shown with the players), then grouped details. Cut: its kind and whether he got the ball.
+ * Defense: the coverage on a screen and the gap to his defender. Movement: how he ran. His defender is his matchup
+ * when the cut starts (else the nearest opponent then). */
 export function cutLines(play: Play, c: AnnCut): Line[] {
-  const lines: Line[] = [{ k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-Ball Screen, ${c.kind === "in" ? "In" : "Out"}` }];
-  if (c.cov && c.cov !== "none") lines.push({ k: "Coverage", v: titleCase(c.cov) });
+  const lines: Line[] = [];
   const m = play.ann?.matchups.find((x) => x.off === c.pid && x.f <= c.f && x.f1 >= c.f);
-  if (m) {
-    lines.push({ k: "Defender", v: nameOf(play, m.def) });
-    const a = gapAt(play, c.pid, m.def, c.f), b = gapAt(play, c.pid, m.def, c.f1);
-    lines.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
-  }
+  if (m) lines.push({ k: "Defender", v: nameOf(play, m.def) });
   const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
-  lines.push({ k: "Got the Ball", v: catchAt ? `Yes, ${((catchAt.f0 - c.f) / 25).toFixed(1)} s in` : "No" });
-  lines.push(...movementLines(play, c.pid, c.f, c.f1));
-  return lines;
+  const cut: Line[] = [
+    { k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-Ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
+    { k: "Got the Ball", v: catchAt ? `Yes, ${((catchAt.f0 - c.f) / 25).toFixed(1)} s in` : "No" },
+  ];
+  const defense: Line[] = [];
+  if (c.cov && c.cov !== "none") defense.push({ k: "Coverage", v: titleCase(COVERAGE[c.cov] ?? c.cov) });
+  if (m) {
+    const a = gapAt(play, c.pid, m.def, c.f), b = gapAt(play, c.pid, m.def, c.f1);
+    defense.push({ k: "Separation", v: `${fmtNum(a, 1, "ft")} → ${fmtNum(b, 1, "ft")}` });
+  }
+  return [...lines, ...grouped("Cut", cut), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, c.pid, c.f, c.f1))];
 }
 
-/** A closeout: the gap the defender closed (event fields), then how he ran out. */
+/** A closeout, grouped. Closeout: the gap the defender closed (event fields) and what the ball handler did after the
+ * catch. Movement: how the defender ran out. */
 export function closeoutLines(play: Play, c: AnnCloseout): Line[] {
-  return [
-    { k: "Gap", v: `${c.d0.toFixed(1)} ft → ${c.d1.toFixed(1)} ft` },
-    ...(c.act ? [{ k: "After the Catch", v: c.act.charAt(0).toUpperCase() + c.act.slice(1) }] : []),
-    ...movementLines(play, c.def, c.f, c.f1),
-  ];
+  const closeout: Line[] = [{ k: "Gap", v: `${c.d0.toFixed(1)} ft → ${c.d1.toFixed(1)} ft` }];
+  if (c.act) closeout.push({ k: "After the Catch", v: c.act.charAt(0).toUpperCase() + c.act.slice(1) });
+  return [...grouped("Closeout", closeout), ...grouped("Defender Movement", movementLines(play, c.def, c.f, c.f1))];
+}
+
+/** Each screen defender by the player he guards, for the coverage group. */
+const SCREEN_DEFENDERS: Record<AnnScreen["kind"], [string, string]> = {
+  pick: ["Ballhandler's Defender", "Screener's Defender"], handoff: ["Receiver's Defender", "Setter's Defender"],
+  off_ball_screen: ["Cutter's Defender", "Screener's Defender"],
+};
+const SPOT_NAMES: Record<string, string> = { middle: "Middle", wing: "Wing", stepUp: "Step-Up" };
+
+/** A pick, handoff or off-ball screen, grouped. Coverage: each screen defender (his matchup as the screen is set)
+ * and the coverage he played, when coverage is shown. Location: the screen's spot (SkillCorner's locationType; picks
+ * and handoffs only). */
+export function screenLines(play: Play, s: AnnScreen, coverage: boolean): Line[] {
+  const defOf = (off: number) => play.ann?.matchups.find((x) => x.off === off && x.f <= s.f && x.f1 >= s.f)?.def;
+  const cov: Line[] = [];
+  if (coverage) {
+    const [useK, scrK] = SCREEN_DEFENDERS[s.kind];
+    for (const [k, off, c] of [[useK, s.use, s.covUse], [scrK, s.scr, s.covScr]] as [string, number, string | undefined][]) {
+      const word = c && c !== "none" ? titleCase(COVERAGE[c] ?? c) : null;
+      const def = defOf(off);
+      if (!word && def == null) continue;
+      cov.push({ k, v: [def != null ? nameOf(play, def) : null, word].filter(Boolean).join(" · ") });
+    }
+  }
+  const where: Line[] = [];
+  if (s.spot && s.spot !== "unknown") where.push({ k: "Spot", v: SPOT_NAMES[s.spot] ?? titleCase(words(s.spot)) });
+  return [...grouped("Coverage", cov), ...grouped("Location", where)];
 }
 
 // ---- possession card -----------------------------------------------------------------------------

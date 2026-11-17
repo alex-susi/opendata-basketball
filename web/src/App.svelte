@@ -209,9 +209,12 @@
 
 <svelte:window onhashchange={openLinked} />
 
-<nav class="tabs">
-  <span class="brand">PySport Analytics Cup</span>
-  <span class="tabs-theme"><ThemeSwitch /></span>
+<!-- --left-w here too: on wide windows the first tab starts level with the court's left edge (app.css, .tabs-lead). -->
+<nav class="tabs" style:--left-w="{leftW}px">
+  <span class="tabs-lead">
+    <span class="brand">PySport Analytics Cup</span>
+    <span class="tabs-theme"><ThemeSwitch /></span>
+  </span>
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "coverage-model"} onclick={() => show("coverage-model")}>Screen Coverage Model</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
