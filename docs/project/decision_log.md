@@ -2535,3 +2535,9 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Narrow windows: from 761 to 1199 px the page is laid out 1200 px wide and zoomed to the window (`web/src/lib/fit.svelte.ts`), so the three-column viewer shrinks in proportion instead of wrapping. The old 1180 px reflow is removed. Pointer maths and fixed cards convert window pixels to page pixels (`toPage`) in Stage, TimelineStrip, TracePanel, ActionCard, PlayerCard and the column drag. Phones keep their one-column layout.
 - Coverage pages: Example Play moved after Results, its slider under the court. Reads artifact version 17, primer version 3.
 - Check, 105 tests and build pass.
+
+## 2026-11-16 — Site: theme switch in the tab bar, hover-out filter column on narrower windows
+
+- The night / day switch moved from the playback row to the tab bar, left of Play viewer (`ThemeSwitch.svelte`). The playback row (buttons, speed and time, Save Video) is now spread across its column.
+- Windows 761 to 1399 px wide: the filters and possessions column is hidden behind a slim "Filters · Possessions" tab at the left edge. Hovering the tab (or tabbing into the column) slides the column out over the court, and it slides back when the pointer leaves. The court and trace panel take the column's width and keep their size while it is shown (890 px court at a 1280 px window either way). At 1400 px and wider nothing changes. Phones keep their layout. CSS in `app.css` (`.left-tab` and the 761-1399 px block).
+- Check, 105 tests and build pass.

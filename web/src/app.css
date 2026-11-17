@@ -59,6 +59,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   position: relative; z-index: 30;
 }
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+/* The night / day switch, left of the first tab. */
+.tabs-theme { display: flex; align-items: center; margin-right: 8px; }
 .tabs button {
   padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted);
   font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
@@ -447,16 +449,17 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .side h2 { margin-bottom: 8px; font-size: 13.5px; font-weight: 700; }
 /* Playback controls, beside the play's header and above the Display panel: buttons at the left, time at the right,
    the speed centred in the space between. */
-/* One row: the three buttons, the speed over the time (centred on each other), Save Video, the moon / sun switch. */
-.controls { display: flex; align-items: center; gap: 7px; }
-.control-buttons { display: flex; align-items: center; gap: 4px; }
+/* One row spread across the column: the three buttons, the speed over the time (centred on each other), Save Video.
+   The moon / sun switch lives in the tab bar (.tabs-theme). */
+.controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.control-buttons { display: flex; align-items: center; gap: 8px; }
 .control-buttons .icon-btn { width: 27px; height: 27px; }
 .control-buttons .icon-btn svg { width: 15px; height: 15px; }
 .control-buttons .icon-btn.primary { width: 33px; height: 33px; }
 .control-buttons .icon-btn.primary svg { width: 17px; height: 17px; }
 .speed-time { display: grid; justify-items: center; gap: 2px; }
 .time-label { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.controls .save-video { margin-left: auto; padding: 4px 6px; font-size: 11px; white-space: nowrap; }
+.controls .save-video { padding: 4px 8px; font-size: 11px; white-space: nowrap; }
 .theme-switch { margin: 0; gap: 4px; }
 .theme-switch .switch-track { width: 24px; }
 .theme-switch input:checked + .switch-track::after { transform: translateX(8px); }
@@ -555,6 +558,29 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- narrower windows (761 to 1199 px): no reflow. lib/fit.svelte.ts draws the page 1200 px wide and zooms it
    down to the window, so everything shrinks in proportion. ---- */
+
+/* The left column (filters and possessions) is hidden unless the window is at least 1400 px wide. Narrower (down to
+   the phone layout), the court and trace panel take its width, and the column waits at the left edge behind a slim
+   tab. Hovering the tab (or tabbing into the column) slides it out over the court, and it slides back when the
+   pointer leaves. The court keeps its size either way. */
+.left-tab { display: none; }
+@media (min-width: 761px) and (max-width: 1399px) {
+  .app { grid-template-columns: minmax(0, 1fr) 330px; grid-template-areas: "head ctrl" "viewer side"; padding-left: 34px; }
+  .left {
+    position: fixed; z-index: 25; top: var(--bar); bottom: 0; left: 0; width: var(--left-w, 250px); padding: 12px;
+    background: var(--bg); border-right: 1px solid var(--line); box-shadow: 6px 0 24px rgba(0, 0, 0, .45);
+    transform: translateX(-100%); transition: transform .16s ease-out;
+  }
+  .left:hover, .left:focus-within { transform: none; }
+  .left-resize { display: none; }
+  .left-tab {
+    position: absolute; top: 0; bottom: 0; right: -26px; display: flex; align-items: center; justify-content: center;
+    width: 26px; background: var(--panel); border-right: 1px solid var(--line); color: var(--muted); cursor: default;
+  }
+  .left-tab span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; font-weight: 600; letter-spacing: .04em; white-space: nowrap; }
+  .left:hover .left-tab, .left:focus-within .left-tab { color: var(--ink); }
+}
+@media (min-width: 761px) and (max-width: 1399px) and (prefers-reduced-motion: reduce) { .left { transition: none; } }
 
 /* ---- phones: one column, court first ---- */
 @media (max-width: 760px) {

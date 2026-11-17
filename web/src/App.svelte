@@ -10,6 +10,7 @@
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
   import DocFrame from "./components/DocFrame.svelte";
+  import ThemeSwitch from "./components/ThemeSwitch.svelte";
   import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
   import Explore from "./components/explore/Explore.svelte";
@@ -210,6 +211,7 @@
 
 <nav class="tabs">
   <span class="brand">PySport Analytics Cup</span>
+  <span class="tabs-theme"><ThemeSwitch /></span>
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "coverage-model"} onclick={() => show("coverage-model")}>Screen Coverage Model</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
@@ -229,6 +231,8 @@
 
 <div class="app" hidden={tab !== "viewer"} style:--left-w="{leftW}px">
   <aside class="left" bind:this={leftEl}>
+    <!-- Narrow windows only (app.css): the column hides at the left edge and this tab shows it while hovered. -->
+    <div class="left-tab" aria-hidden="true"><span>Filters · Possessions</span></div>
     {#if meta}
       <Filters {meta} bind:filters />
     {/if}
