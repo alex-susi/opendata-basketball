@@ -9,6 +9,7 @@
 // else is the tracking at the current frame.
 
 import { canvasType } from "./appearance.svelte";
+import { smoothNow } from "./smoothing.svelte";
 import { COLORS, px, py, type Layout } from "./court";
 import { CONTEST_COLORS, SCREEN_NAMES, coverageText, frameIndex, lastShot, playerOf } from "./context";
 import { clamp } from "./geometry";
@@ -111,7 +112,9 @@ function arrow(k: Ctx, x0: number, y0: number, x1: number, y1: number, color: st
   ctx.restore();
 }
 
-const PATH_SMOOTH = 3;   // frames either side averaged when tracing a player's path (tracking jitters by about a foot)
+// Frames either side averaged when tracing a player's path (tracking jitters by about a foot): 3 smoothed, 1 light,
+// 0 raw (the Tracking menu, lib/smoothing.svelte.ts).
+const pathSmooth = () => smoothNow().path;
 
 /**
  * A player's tracked path from frame f0 to frame f1 (tracking frame numbers), lightly smoothed, in feet. Breaks in
@@ -124,7 +127,8 @@ function pathOf(k: Ctx, pid: number, f0: number, f1: number): [number, number][]
   for (let i = frameIndex(k.play, f0); i < frames.length && frames[i] <= f1; i++) {
     if (frames[i] < f0) continue;
     let sx = 0, sy = 0, n = 0;
-    for (let j = Math.max(0, i - PATH_SMOOTH); j <= Math.min(frames.length - 1, i + PATH_SMOOTH); j++) {
+    const half = pathSmooth();
+    for (let j = Math.max(0, i - half); j <= Math.min(frames.length - 1, i + half); j++) {
       if (Math.abs(frames[j] - frames[i]) !== Math.abs(j - i) || frames[j] > f1 || frames[j] < f0 || Number.isNaN(p.x[j])) continue;
       sx += p.x[j]; sy += p.y[j]; n++;
     }

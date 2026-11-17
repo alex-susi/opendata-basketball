@@ -8,6 +8,7 @@ import { closeoutLines, driveLines, frameIndex, ownChances, possessionCard, shot
 import { decodePlay } from "../src/lib/decode";
 import { accelAt, motion, spacing } from "../src/lib/motion";
 import { contestOf, courtRegion } from "../src/lib/regions";
+import { smoothing } from "../src/lib/smoothing.svelte";
 import type { PeriodIndex, Play, PlayRow } from "../src/lib/types";
 
 const DATA = join(__dirname, "..", "public", "data");
@@ -191,6 +192,25 @@ describe("readouts", () => {
       expect(card.lines.find((l) => l.k === "Ball")!.v).toMatch(/^#\S+ .+$/);
       expect(card.lines.find((l) => l.k === "Held (s)")!.v).toMatch(/^\d+\.\d$/);
     }
+  });
+
+  it("follow the Tracking menu: raw speeds jitter more than smoothed ones, and smoothed comes back unchanged", () => {
+    const play = sample.find((p) => p.players.length >= 10)!;
+    const at = play.players.findIndex((p) => p.x.filter((v) => !Number.isNaN(v)).length > 100);
+    const jitter = (v: Float64Array) => {   // mean absolute frame-to-frame change in speed
+      let sum = 0, n = 0;
+      for (let i = 1; i < v.length; i++) if (!Number.isNaN(v[i]) && !Number.isNaN(v[i - 1])) { sum += Math.abs(v[i] - v[i - 1]); n++; }
+      return sum / n;
+    };
+    const before = motion(play).speed[at];
+    smoothing.level = "raw";
+    const raw = motion(play).speed[at];
+    smoothing.level = "light";
+    const light = motion(play).speed[at];
+    smoothing.level = "smoothed";
+    expect(motion(play).speed[at]).toBe(before);   // cached per level
+    expect(jitter(raw)).toBeGreaterThan(jitter(light));
+    expect(jitter(light)).toBeGreaterThan(jitter(before));
   });
 
   it("describe drives and closeouts with the tracked movement", () => {

@@ -113,6 +113,20 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   .tabs .brand, .tabs .credit { display: none; }
   .tab-menu-list { position: fixed; top: var(--bar); left: auto; right: 8px; }
 }
+/* The Tracking switch (Smoothed / Light / Raw), after the Colors menu: a small label and a compact segmented control. */
+.track-smooth { display: flex; flex: none; align-items: center; gap: 6px; margin-left: 8px; }
+.track-smooth-label { color: var(--muted); font-size: 11px; font-weight: 600; }
+.tabs .track-smooth .seg button { padding: 2px 8px; border-bottom: 0; font-size: 11.5px; font-weight: 600; }
+.tabs .track-smooth .seg button + button { border-left: 1px solid var(--line); }
+/* Under 1400 px the bar is crowded: tighter tabs, no "Tracking" label (its tooltip remains), and the credit shortened
+   so it stays readable. */
+.credit-short { display: none; }
+@media (min-width: 761px) and (max-width: 1399px) {
+  .tabs > button, .tabs .tab-menu-btn { padding: 0 9px; }
+  .track-smooth-label { display: none; }
+  .credit-full { display: none; }
+  .credit-short { display: inline; }
+}
 /* The data credit, at the right end of the bar. */
 .tabs .credit {
   display: flex; align-items: center; margin-left: auto; padding-left: 16px; color: var(--muted); font-size: 12px;

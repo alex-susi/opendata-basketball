@@ -181,7 +181,7 @@ export function passLines(play: Play, shot: AnnShot): Line[] {
   ];
 }
 
-/** The shooter's speed at release (ft/s, smoothed as in motion.ts), from the tracking; null when he is not tracked
+/** The shooter's speed at release (ft/s, smoothed as the Tracking menu says, motion.ts), from the tracking; null when he is not tracked
  * then. */
 export function shooterSpeed(play: Play, shot: AnnShot): number | null {
   const j = play.players.findIndex((p) => p.id === shot.pid);
@@ -285,7 +285,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
 const fmtNum = (v: number | null | undefined, digits: number): string =>
   v == null || Number.isNaN(v) ? "–" : v.toFixed(digits);
 
-/** One player's movement over an action, from the tracking (smoothed; see motion.ts). The rows are not prefixed with
+/** One player's movement over an action, from the tracking (smoothed as the Tracking menu says; see motion.ts). The rows are not prefixed with
  * his part ("Driver Max Speed"): the card names him in its player rows above. */
 function movementLines(play: Play, pid: number, f0: number, f1: number): Line[] {
   const m = stretch(play, pid, f0, f1);

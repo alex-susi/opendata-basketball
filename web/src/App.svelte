@@ -24,6 +24,7 @@
   import { loadMeta, loadPlay, loadPlays, loadPlaystyle, loadSample, loadSeason } from "./lib/data";
   import { loadLogos, logoUrl } from "./lib/logos.svelte";
   import { teamAbbr } from "./lib/teams";
+  import { SMOOTH_LEVELS, SMOOTHING, setSmoothing, smoothing } from "./lib/smoothing.svelte";
   import { emptyFilters, filterPlays } from "./lib/filters";
   import { clamp } from "./lib/geometry";
   import { buildSeq, cursorAt, seqIndexOfFrame } from "./lib/sequence";
@@ -225,7 +226,17 @@
   </div>
   <!-- Font and Colors: trial typefaces and colour schemes for the whole site (AppearanceMenus.svelte). -->
   <AppearanceMenus />
-  <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
+  <!-- Tracking: how much speeds, accelerations, paths and trails are smoothed for display (lib/smoothing.svelte.ts). -->
+  <span class="track-smooth">
+    <span class="track-smooth-label">Tracking</span>
+    <span class="seg" role="radiogroup" aria-label="Tracking smoothing">
+      {#each SMOOTH_LEVELS as lv (lv)}
+        <button type="button" role="radio" aria-checked={smoothing.level === lv} class:on={smoothing.level === lv}
+                title={SMOOTHING[lv].title} onclick={() => setSmoothing(lv)}>{SMOOTHING[lv].label}</button>
+      {/each}
+    </span>
+  </span>
+  <span class="credit"><span class="credit-full">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span><span class="credit-short">Data: SkillCorner</span></span>
 </nav>
 
 <div class="app" hidden={tab !== "viewer"} style:--left-w="{leftW}px">

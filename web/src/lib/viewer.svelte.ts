@@ -5,19 +5,21 @@ import type { Playstyle, Sample } from "./types";
 import type { CourtView } from "./court";
 import type { Metric } from "./trace";
 
+// Display defaults (2026-11-17): only Player Trails and Skip Dead Ball on; hulls, archetypes, court control and every
+// annotation off.
 export const viewer = $state({
   /** Playback position: an index into the current play's frame sequence, fractional between frames. */
   pos: 0,
   playing: false,
   speed: 1,
   view: "full" as CourtView,
-  showDef: true,
-  showOff: true,
+  showDef: false,
+  showOff: false,
   skipDead: true,
   /** At the end of a play: play it again from the top, or go on to the next play in the list and play that. */
   atEnd: "loop" as "loop" | "next",
   /** Ring each player on the court in his archetype's colour. */
-  showArch: true,
+  showArch: false,
   /** A trail behind each player on the court, longer the faster he moves. */
   showTrails: true,
   /** Court control under the players (time-to-ball version, control.ts). */
@@ -25,7 +27,7 @@ export const viewer = $state({
   /** The court control readout: shares of the whole court, or of the half the offense attacks. */
   controlScope: "court" as "court" | "half",
   /** Annotation sections (the Display panel's Annotations toggles; annotate.ts, Annotations.svelte). */
-  ann: { events: true, defense: true, shot: true, tracking: false, possession: true, quality: false, glass: true, coverage: true, attention: false, lanes: false },
+  ann: { events: false, defense: false, shot: false, tracking: false, possession: false, quality: false, glass: false, coverage: false, attention: false, lanes: false },
   /** The trace panel under the court. */
   showTrace: true,
   /** What it shows: the ball's height, one player's chosen measure (metric), or the players on court. */

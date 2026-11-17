@@ -3,6 +3,7 @@
 // from draw(), drawPlayer(), drawHeader() and drawCaption() in the Shiny app's www/player.js.
 
 import { canvasType } from "./appearance.svelte";
+import { smoothNow } from "./smoothing.svelte";
 import { annContext, drawAnnotationsOver, drawAnnotationsUnder, type AnnSections } from "./annotate";
 import { controlAt, drawControl, motionLimits } from "./control";
 import { logoImage } from "./logos.svelte";
@@ -316,18 +317,20 @@ function drawScript(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
 // over a few neighbouring frames to iron out tracking jitter; a trail never crosses a cut in the footage or a
 // missing position, and one whose ends are less than TRAIL_MIN ft apart fades out.
 const TRAIL_FRAMES = 15;   // 0.6 s at 25 fps
-const TRAIL_SMOOTH = 2;    // frames averaged on each side (never later than the current frame)
+// Frames averaged on each side (never later than the current frame): 2 smoothed, 1 light, 0 raw (lib/smoothing.svelte.ts).
+const trailSmooth = () => smoothNow().trail;
 const TRAIL_MIN = 1.5;     // ft: below this the trail is not drawn; it reaches full strength TRAIL_FADE ft later
 const TRAIL_FADE = 2;
 
 // A player's smoothed position at frame index i, using only frames joined to it, no later than `last`.
 function smoothAt(play: Play, p: PlayerTrack, i: number, last: number): Point | null {
   let sx = 0, sy = 0, n = 0;
-  for (let j = i; j >= Math.max(0, i - TRAIL_SMOOTH) && !Number.isNaN(p.x[j]); j--) {
+  const half = trailSmooth();
+  for (let j = i; j >= Math.max(0, i - half) && !Number.isNaN(p.x[j]); j--) {
     sx += p.x[j]; sy += p.y[j]; n++;
     if (j > 0 && play.frames[j] - play.frames[j - 1] !== 1) break;
   }
-  for (let j = i + 1; j <= Math.min(last, i + TRAIL_SMOOTH) && play.frames[j] - play.frames[j - 1] === 1 && !Number.isNaN(p.x[j]); j++) {
+  for (let j = i + 1; j <= Math.min(last, i + half) && play.frames[j] - play.frames[j - 1] === 1 && !Number.isNaN(p.x[j]); j++) {
     sx += p.x[j]; sy += p.y[j]; n++;
   }
   return n ? [sx / n, sy / n] : null;

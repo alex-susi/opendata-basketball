@@ -2590,3 +2590,24 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 
 - Shot cards (over the court and in the trace hover): "SkillCorner Shot Quality" is now "xFG%" with the score shown as a percent (36%), "SkillCorner xPoints" is now "xPoints". The group heading stays Shot Quality. Caveat kept in the code: SkillCorner's docs do not say the 0-100 score is a calibrated make probability, so xFG% here is their score as given, not a fitted or validated rate. The player card's season shot-quality tables keep their SkillCorner titles.
 - 105 tests pass (the title-case test now allows the x-prefixed names).
+
+## 2026-11-17 (close, last) — Site: Display defaults
+
+- The viewer opens with only Player Trails and Skip Dead Ball on. Offensive and defensive hulls, Player Archetypes, Court Control and every Annotations toggle start off (`viewer` defaults in lib/viewer.svelte.ts; nothing is remembered between visits). Screen hover cards show coverage regardless of Defensive Context (owner's choice).
+
+## 2026-11-17 — Competition README for the Screen Coverage model
+
+- `README.md` replaced. The upstream SkillCorner README is gone from the root (it stays in git history and upstream). The new one describes the live Screen Coverage model in the cadence of the owner's nbaDraftLottery README (numbered sections, key findings, methodology, results, validation, repo structure, run steps, limitations).
+- Owner chose the two allowed figures/tables. A new Example Play still (court at −0.4 s plus the live probabilities, `screen_coverage/01_scripts/27_readme_figure.R` → `screen_coverage/03_outputs/readme/example_play.png`) and a held-out log loss table (main curve from `weighted_scores/scores.csv`, before/after from `evaluation/window_summary.csv`).
+- 915 words of prose (972 counting code blocks), under the 1,000 limit. Every number taken from the Screen Coverage Model tab and checked against its CSVs.
+- Open. `LICENSE.md` (linked from the README badge) does not exist yet. `04_evaluate.R` reads the git-ignored v1 snapshot in `02_cache/v1_2026-11-11/`, so a clean clone cannot run it as listed in the README.
+
+## 2026-11-17 (close, last+1) — Site: Tracking smoothing switch
+
+- Tab bar, after Colors: a Tracking switch (Smoothed / Light / Raw; `lib/smoothing.svelte.ts`, remembered per browser) sets how the viewer smooths tracking for display. It drives every speed, acceleration, top speed and distance covered (`lib/motion.ts`, used by the trace panel, Player Tracking, hover cards, shot card and court tags), plus drive/cut paths and player trails. Court dots are always the tracked positions.
+  - Smoothed (default, unchanged): positions averaged 2 frames each side, speed over 2 frames, acceleration over 0.4 s, jumps over 35 ft/s and 40 ft/s² dropped.
+  - Light: 1 frame each side, acceleration over 0.16 s, same jump limits.
+  - Raw: no averaging, no limits, one frame to the next (the first frame of a play looks forward instead).
+- Display only: the screen-coverage model, its exports and the season figures are untouched (the model already reads raw positions with 0.2 s backward differences).
+- Under 1400 px the tab bar drops the "Tracking" label, tightens tab padding and shortens the credit to "Data: SkillCorner" so it stays readable.
+- New test: raw speeds jitter more than light, light more than smoothed, and smoothed is unchanged. 106 tests pass.
