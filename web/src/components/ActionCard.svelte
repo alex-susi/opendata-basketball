@@ -7,7 +7,7 @@
   //   x     the pointer's tick line, window px (the card centres on it, kept inside the window)
   //   y     the top of the timeline, window px
   import { toPage } from "../lib/fit.svelte";
-  import { closeoutLines, cutLines, driveLines, nameOf, screenLines, shotCard, titleCase, type Line } from "../lib/context";
+  import { closeoutLines, cutLines, driveLines, nameOf, reboundLines, screenLines, shotCard, titleCase, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { foulLines, turnoverLines } from "../lib/whistles";
   import { FPS, type Tick } from "../lib/sequence";
@@ -96,6 +96,10 @@
     }
     if (ev.kind === "post" || ev.kind === "isolation") {
       return none;
+    }
+    if (ev.kind === "rebound") {
+      const r = ann.rebounds.find((x) => x.f === ev.f);
+      return r ? { lines: reboundLines(play, r) } : none;
     }
     const screen = ann.screens.find((r) => r.f === ev.f && r.kind === ev.kind);
     return screen ? { lines: screenLines(play, screen, viewer.ann.defense) } : none;

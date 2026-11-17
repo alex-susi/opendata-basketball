@@ -3,7 +3,8 @@
 //   Fonts    one for the Play Viewer (the tab bar, the viewer, the court's canvas text) and one for the reading tabs
 //            (Screen Coverage Model, Archetypes, Court Control, EDA). "Default" keeps each page's own type. The other
 //            faces are Google Fonts, fetched when first shown (the Font menu previews them all).
-//   Colors   one scheme for night and one for day. A scheme sets the surface variables (--bg, --panel, --raised,
+//   Colors   one scheme for night and one for day, and a vibrancy (muted, standard, vivid: each colour's saturation
+//            scaled, for both themes). A scheme sets the surface variables (--bg, --panel, --raised,
 //            --hover, --line, --ink, --muted) on <html> for the theme in force, the canvas surround (COLORS.paper,
 //            paperInk, paperMuted) and, through DocFrame, the matching variables of the framed reading pages. The first
 //            scheme of each theme is the site's own (app.css), so choosing it removes the overrides.
@@ -65,19 +66,48 @@ export const SCHEMES: Record<"dark" | "light", Scheme[]> = {
 };
 
 const KEY = "acb-viewer-appearance";
-export const appearance = $state({ viewerFont: "default", docFont: "default", dark: "slate", light: "warm" });
+// vibrancy: "0" muted, "1" as designed, "2" vivid (the Colors menu's slider, one setting for night and day).
+export const appearance = $state({ viewerFont: "default", docFont: "default", dark: "slate", light: "warm", vibrancy: "1" });
 try {
   const saved = JSON.parse(localStorage.getItem(KEY) ?? "{}");
-  for (const k of ["viewerFont", "docFont", "dark", "light"] as const) if (typeof saved[k] === "string") appearance[k] = saved[k];
+  for (const k of ["viewerFont", "docFont", "dark", "light", "vibrancy"] as const) if (typeof saved[k] === "string") appearance[k] = saved[k];
 } catch { /* storage unavailable: the defaults */ }
 
-/** The scheme in force for the night or day theme now. */
+// ---- vibrancy: each scheme colour's saturation scaled in HSL (lightness and hue kept) ----
+export const VIBRANCY = [{ label: "Muted", sat: 0.35 }, { label: "Standard", sat: 1 }, { label: "Vivid", sat: 1.9 }];
+const vibrancyOf = (): number => VIBRANCY[Number(appearance.vibrancy)]?.sat ?? 1;
+
+function saturate(hex: string, k: number): string {
+  if (k === 1) return hex;
+  const n = parseInt(hex.slice(1), 16), r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (d === 0) return hex;
+  const s = d / (1 - Math.abs(2 * l - 1));
+  let h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h = (h * 60 + 360) % 360;
+  const s2 = Math.min(1, s * k), c = (1 - Math.abs(2 * l - 1)) * s2, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+  const [r1, g1, b1] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return `#${[r1, g1, b1].map((v) => Math.round((v + m) * 255).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/** A scheme with the chosen vibrancy applied to every colour. */
+export function tuned(s: Scheme): Scheme {
+  const k = vibrancyOf();
+  if (k === 1) return s;
+  const out = { ...s };
+  for (const v of ["bg", "panel", "raised", "hover", "line", "ink", "muted"] as const) out[v] = saturate(s[v], k);
+  return out;
+}
+
+/** The scheme in force for the night or day theme now, with the vibrancy applied. */
 export const schemeNow = (): Scheme => {
   const list = SCHEMES[page.light ? "light" : "dark"];
-  return list.find((s) => s.id === appearance[page.light ? "light" : "dark"]) ?? list[0];
+  return tuned(list.find((s) => s.id === appearance[page.light ? "light" : "dark"]) ?? list[0]);
 };
-/** True when the scheme in force is the site's own (no overrides). */
-export const schemeIsDefault = (): boolean => schemeNow() === SCHEMES[page.light ? "light" : "dark"][0];
+/** True when the scheme in force is the site's own at standard vibrancy (no overrides). */
+export const schemeIsDefault = (): boolean =>
+  vibrancyOf() === 1 && (appearance[page.light ? "light" : "dark"] === SCHEMES[page.light ? "light" : "dark"][0].id
+    || !SCHEMES[page.light ? "light" : "dark"].some((s) => s.id === appearance[page.light ? "light" : "dark"]));
 
 const VARS = ["bg", "panel", "raised", "hover", "line", "ink", "muted"] as const;
 // The canvas surround as app.css and lib/look.ts set it, restored when the site's own scheme is chosen.

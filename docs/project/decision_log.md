@@ -2559,3 +2559,12 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Coverage read card: the empty mark cell before the screen holds a no-break space, so the rule above Combined no longer drops 11.5 px under Actual. TBD and the actual coverage are right-aligned.
 - Scorebug: clock box divided from the away box by the bar's edge colour, logos drawn at 74 px (62 px narrow) in their 60 px panels. Player Trace: a change of partner is a square marker. Court caption: "9.40 s | Frame 69928".
 - Check, 105 tests and type check pass.
+
+## 2026-11-17 (latest) — Site: trace fold button, filter upgrades, rebound card, vibrancy
+
+- Trace panel: a − button left of Ball Height folds it to the slim timeline, whose + (at its left) opens it again. The Display panel's Trace Panel and Action Names toggles are gone (captions always on), so its toggles take three rows. The header readout ends level with the plot's right edge.
+- Player Tracking: the table is centred in the tab's height and the column groups (Movement, Position, Ball, All) sit at the header's right end. All uses short names on one line with the unit on a second, indented line (Accel, To Bskt, Dist Covered, Bskt Dist, Nearest Opp, Sep Chg 1s, Min Played, Ball Time), so its headers take two lines and it no longer scrolls sideways at desktop width.
+- Filters: actions in alphabetical order, "Pick" shown as "On-ball Screen" (relabelled on the client, meta.json unchanged). The Player filter is searchable (single choice, `MultiSelect` `single`), each player with his team's abbreviated pill. Games in the Game filter read as on the possession list (teams and score, date below). The possession list's game date is now flush left.
+- Rebound hover card (`reboundLines`, lib/context.ts): Rebound (type, the miss it came from, seconds after the release), Location (court region, distance to the basket and from the shooter's spot, from tracking), On the Glass (an offensive rebounder's role, distance to the basket at release and landing, whether he was boxed out; for a defensive rebounder, whom he boxed out; attackers crashing).
+- Colors menu: a vibrancy slider (Muted, Standard, Vivid) scales every scheme colour's saturation, for night and day and the framed pages.
+- Check, 105 tests and type check pass.

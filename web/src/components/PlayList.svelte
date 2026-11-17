@@ -1,6 +1,6 @@
 <script lang="ts">
   // The list of possessions that match the filters, grouped by game (each game's header: the teams abbreviated with
-  // the final score, its date indented on the line below). With Show Details off (the default) each entry is one
+  // the final score, its date on the line below). With Show Details off (the default) each entry is one
   // line: quarter, clock and length, the team on offense abbreviated, the result (the player who ended it is in the
   // tooltip). With it on: quarter, clock and length with the result and the player right-aligned on the same line, the
   // team's full name, then the play's actions (screens, drives, offensive rebounds and so on). Fields wrap instead of

@@ -1,7 +1,8 @@
 <script lang="ts">
-  // A narrow timeline under the court, shown while the trace panel is off: the play's actions as small marks
-  // (made shots green, missed shots and turnovers red, the rest grey), no captions, the part already played filled
-  // and a white playhead. Hovering a mark opens its card (ActionCard.svelte); clicking or dragging seeks.
+  // A narrow timeline under the court, shown while the trace panel is folded: a + at its left that opens the panel
+  // again, then the play's actions as small marks (made shots green, missed shots and turnovers red, the rest grey),
+  // no captions, the part already played filled and a white playhead. Hovering a mark opens its card
+  // (ActionCard.svelte); clicking or dragging seeks.
   import { toPage } from "../lib/fit.svelte";
   import ActionCard from "./ActionCard.svelte";
   import { clamp } from "../lib/geometry";
@@ -37,7 +38,11 @@
   }
 </script>
 
-<div class="panel strip" bind:clientWidth={width}>
+<div class="panel strip">
+  <!-- Opens the full trace panel again (its − folds it back to this strip). -->
+  <button type="button" class="fold-btn" title="Expand the trace panel" aria-label="Expand the trace panel" aria-expanded="false"
+          onclick={() => (viewer.showTrace = true)}>+</button>
+  <div class="strip-plot" bind:clientWidth={width}>
   {#if play && width > 0}
     <svg bind:this={svg} {width} height={H} role="slider" aria-label="The play's timeline; click to move playback" tabindex="-1"
          aria-valuenow={Math.round(viewer.pos)} aria-valuemin={0} aria-valuemax={seq.length - 1}
@@ -63,4 +68,5 @@
       <ActionCard {play} ticks={hoverTicks} x={toPage(box.left) + PAD + hoverTicks[0].frac * plotW} y={toPage(box.top)} up />
     {/if}
   {/if}
+  </div>
 </div>

@@ -2,10 +2,11 @@
   // The Font and Colors menus in the tab bar, between EDA and the data credit. Each opens like the EDA menu (hover,
   // keyboard focus or a click) and stays open while the pointer is over it, so the options can be tried in turn.
   //   Font     two lists, Play Viewer and Reading Tabs, each option written in its own typeface.
-  //   Colors   the schemes for the theme in force (night or day), each row drawn in that scheme's own colours: its
+  //   Colors   a vibrancy slider (muted, standard, vivid) at the top right, then the schemes for the theme in force
+  //            (night or day), each row drawn in that scheme's own colours at that vibrancy: its
   //            page background around a panel with text and muted text, then its raised, hover and line colours.
   // Choices are remembered in this browser (lib/appearance.svelte.ts).
-  import { FONTS, SCHEMES, appearance, choose, loadFonts, type Scheme } from "../lib/appearance.svelte";
+  import { FONTS, SCHEMES, VIBRANCY, appearance, choose, loadFonts, tuned, type Scheme } from "../lib/appearance.svelte";
   import { page } from "../lib/theme.svelte";
 
   let open = $state<"" | "font" | "colors">("");
@@ -36,9 +37,17 @@
   <button type="button" class="tab-menu-btn" aria-haspopup="true" aria-expanded={open === "colors"}
           onclick={() => { open = open === "colors" ? "" : "colors"; }}>Colors <span class="tab-caret" aria-hidden="true">▾</span></button>
   <div class="tab-menu-list scheme-menu" role="menu">
-    <span class="menu-head">{page.light ? "Day" : "Night"} Schemes</span>
+    <!-- The heading, with the vibrancy slider at its right (three steps, the same for night and day). -->
+    <span class="menu-head scheme-head">
+      <span>{page.light ? "Day" : "Night"} Schemes</span>
+      <label class="vibrancy" title="Colour vibrancy for every scheme, night and day">
+        <span>{VIBRANCY[Number(appearance.vibrancy)]?.label ?? "Standard"}</span>
+        <input type="range" min="0" max="2" step="1" value={appearance.vibrancy} aria-label="Colour vibrancy"
+               oninput={(ev) => choose("vibrancy", (ev.currentTarget as HTMLInputElement).value)} />
+      </label>
+    </span>
     {#each SCHEMES[mode] as s, n (s.id)}
-      {@render row(s, n === 0)}
+      {@render row(tuned(s), n === 0)}
     {/each}
   </div>
 </div>

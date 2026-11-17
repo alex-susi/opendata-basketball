@@ -10,7 +10,8 @@
   // The trace panel's Player Tracking tab: the ten players on court at the current frame in one table, the offense's
   // five then the defense's, a thin rule between them (no heading rows: the numbers' kit colours tell the teams apart).
   // An orange dot marks the ball handler and a shield the rim protector (the defender nearest the basket).
-  // The columns come in three groups, picked in the panel's header (All shows every column and scrolls sideways):
+  // The columns come in three groups, picked at the panel's header right end (All shows every column, with short
+  // two-line headers, and scrolls sideways if it must). The table is centred in the tab's height. The groups:
   //   Movement  speed, acceleration, speed toward the basket and across it, top speed so far and distance covered
   //             (smoothed tracking, lib/motion.ts)
   //   Position  court region (lib/regions.ts), distance to the basket, in the paint, the nearest opponent and how
@@ -30,25 +31,26 @@
 
   let { play }: { play: Play } = $props();
 
-  interface Column { key: string; head: string; unit?: string; title: string; group: Exclude<TrackGroup, "all">; left?: boolean }
+  // short: the header in the All view, where every column must fit a one-line name (the unit goes on a second line).
+  interface Column { key: string; head: string; short: string; unit?: string; title: string; group: Exclude<TrackGroup, "all">; left?: boolean }
   const COLUMNS: Column[] = [
-    { key: "speed", head: "Speed", unit: "ft/s", title: "Smoothed speed now", group: "movement" },
-    { key: "accel", head: "Acceleration", unit: "ft/s²", title: "Change in smoothed speed over 0.4 s; negative while slowing down", group: "movement" },
-    { key: "toward", head: "Toward Basket", unit: "ft/s", title: "Speed toward the basket (negative: away from it)", group: "movement" },
-    { key: "across", head: "Sideways", unit: "ft/s", title: "Speed across the line to the basket", group: "movement" },
-    { key: "top", head: "Top Speed", unit: "ft/s", title: "Fastest smoothed speed so far in this play", group: "movement" },
-    { key: "covered", head: "Distance Covered", unit: "ft", title: "Distance covered so far in this play", group: "movement" },
-    { key: "region", head: "Court Region", title: "Where he stands, in SkillCorner's regions", group: "position", left: true },
-    { key: "hoop", head: "To Basket", unit: "ft", title: "Distance to the basket the offense attacks", group: "position" },
-    { key: "paint", head: "In Paint", title: "In the paint", group: "position" },
-    { key: "near", head: "Nearest Opp.", unit: "ft", title: "Distance to the nearest player of the other team, and who he is", group: "position" },
-    { key: "sep", head: "Separation Change, 1 s", unit: "ft", title: "How the gap to the nearest opponent changed over the last second (positive: more space)", group: "position" },
-    { key: "contest", head: "Contest", title: "Offense only: a contest level from the nearest defender's distance (under 3.5 ft plus, 3.5-5.5 average, 5.5-6.5 light, else open), a stand-in for SkillCorner's shot contest levels", group: "position" },
-    { key: "match", head: "Matchup", unit: "ft", title: "The defender assigned to him (offense) or the player he is assigned to (defense), and the gap between them", group: "position" },
-    { key: "min", head: "Minutes Played", title: "Minutes played entering this chance", group: "ball" },
-    { key: "touches", head: "Touches", title: "Touches this possession so far", group: "ball" },
-    { key: "dribbles", head: "Dribbles", title: "Dribbles this possession so far", group: "ball" },
-    { key: "ballTime", head: "Time on Ball", unit: "s", title: "Seconds with the ball this possession so far", group: "ball" },
+    { key: "speed", head: "Speed", short: "Speed", unit: "ft/s", title: "Smoothed speed now", group: "movement" },
+    { key: "accel", head: "Acceleration", short: "Accel", unit: "ft/s²", title: "Change in smoothed speed over 0.4 s; negative while slowing down", group: "movement" },
+    { key: "toward", head: "Toward Basket", short: "To Bskt", unit: "ft/s", title: "Speed toward the basket (negative: away from it)", group: "movement" },
+    { key: "across", head: "Sideways", short: "Sideways", unit: "ft/s", title: "Speed across the line to the basket", group: "movement" },
+    { key: "top", head: "Top Speed", short: "Top Speed", unit: "ft/s", title: "Fastest smoothed speed so far in this play", group: "movement" },
+    { key: "covered", head: "Distance Covered", short: "Dist Covered", unit: "ft", title: "Distance covered so far in this play", group: "movement" },
+    { key: "region", head: "Court Region", short: "Region", title: "Where he stands, in SkillCorner's regions", group: "position", left: true },
+    { key: "hoop", head: "To Basket", short: "Bskt Dist", unit: "ft", title: "Distance to the basket the offense attacks", group: "position" },
+    { key: "paint", head: "In Paint", short: "Paint", title: "In the paint", group: "position" },
+    { key: "near", head: "Nearest Opp.", short: "Nearest Opp", unit: "ft", title: "Distance to the nearest player of the other team, and who he is", group: "position" },
+    { key: "sep", head: "Separation Change, 1 s", short: "Sep Chg 1s", unit: "ft", title: "How the gap to the nearest opponent changed over the last second (positive: more space)", group: "position" },
+    { key: "contest", head: "Contest", short: "Contest", title: "Offense only: a contest level from the nearest defender's distance (under 3.5 ft plus, 3.5-5.5 average, 5.5-6.5 light, else open), a stand-in for SkillCorner's shot contest levels", group: "position" },
+    { key: "match", head: "Matchup", short: "Matchup", unit: "ft", title: "The defender assigned to him (offense) or the player he is assigned to (defense), and the gap between them", group: "position" },
+    { key: "min", head: "Minutes Played", short: "Min Played", title: "Minutes played entering this chance", group: "ball" },
+    { key: "touches", head: "Touches", short: "Touches", title: "Touches this possession so far", group: "ball" },
+    { key: "dribbles", head: "Dribbles", short: "Dribbles", title: "Dribbles this possession so far", group: "ball" },
+    { key: "ballTime", head: "Time on Ball", short: "Ball Time", unit: "s", title: "Seconds with the ball this possession so far", group: "ball" },
   ];
   const shown = $derived(viewer.trackCols === "all" ? COLUMNS : COLUMNS.filter((c) => c.group === viewer.trackCols));
 
@@ -142,7 +144,12 @@
         <th class="name">Player</th>
         {#each shown as c (c.key)}
           {@const words = c.head.split(" ")}
-          <th class:al={c.left} title={c.title}>{words.slice(0, -1).join(" ")}{words.length > 1 ? " " : ""}<span class="keep">{words.at(-1)}{#if c.unit}&nbsp;({c.unit}){/if}</span></th>
+          {#if viewer.trackCols === "all"}
+            <!-- All: the short name on one line, the unit under it (at most two header lines). -->
+            <th class:al={c.left} title={`${c.head}: ${c.title}`}><span class="th-short">{c.short}{#if c.unit}<span class="th-unit">({c.unit})</span>{/if}</span></th>
+          {:else}
+            <th class:al={c.left} title={c.title}>{words.slice(0, -1).join(" ")}{words.length > 1 ? " " : ""}<span class="keep">{words.at(-1)}{#if c.unit}&nbsp;({c.unit}){/if}</span></th>
+          {/if}
         {/each}
       </tr>
     </thead>

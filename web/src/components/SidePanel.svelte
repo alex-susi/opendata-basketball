@@ -62,8 +62,9 @@
         <span class:on={viewer.atEnd === "next"}>Next play</span>
       </label>
     </div>
-    <!-- Left column: what is drawn on the court. Right column: the trace panel under it, its captions, dead-ball time and court control. -->
-    <div class="toggle-grid by-column four">
+    <!-- Left column: what is drawn on the court. Right column: dead-ball time and court control. (The trace panel opens
+         and folds from its own +/− button; its action captions are always on.) -->
+    <div class="toggle-grid by-column">
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.off.fill} bind:checked={viewer.showOff} />Offensive hull</label>
       <label class="toggle"><input type="checkbox" style:accent-color={play?.colors.def.fill} bind:checked={viewer.showDef} />Defensive hull</label>
       <label class="toggle" title="Tag each player on the court with his archetype (abbreviated, in its colour), as beside his name below">
@@ -71,12 +72,6 @@
       </label>
       <label class="toggle" title="A fading trail behind each player: where he has been over the last 0.6 seconds, so a longer trail means a faster player">
         <input type="checkbox" bind:checked={viewer.showTrails} />Player trails
-      </label>
-      <label class="toggle" title="The panel under the court: the play's actions and either the ball's height or a player's distance to his nearest opponent">
-        <input type="checkbox" bind:checked={viewer.showTrace} />Trace panel
-      </label>
-      <label class="toggle" title="Caption the actions in the trace panel, above the chart">
-        <input type="checkbox" bind:checked={viewer.showTickLabels} />Action names
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
       <label class="toggle" title="Court control: at every spot, which team would get to the ball first if it were passed there now, allowing for the ball's travel time and each player's speed and direction. Pale is a toss-up.">

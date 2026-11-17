@@ -9,13 +9,14 @@
   //                  player and joins them with a line. For a paired measure, a dot on the line marks each moment
   //                  the other player becomes someone else; hovering it names who from and to.
   // Samples are every 0.2 s of playback (lib/trace.ts). Each action is a dashed line, captioned with the action
-  // above the plot (hidden when the Display panel's Action Names is off);
+  // above the plot (always shown since the Action Names toggle was removed 2026-11-17);
   // hovering near one shows its full description, with the shot's details, a screen's coverage and the players'
   // season figures when those annotations are on. A white line marks the current moment. Click or drag on the
   // chart to move playback there. A third tab, Player Tracking, swaps the chart for a table of the ten players on
-  // court (TrackingTable.svelte). The header's right end shows the value alone (and, for a paired measure, the other
-  // player's number and last name); the playback seconds and tracking frame are under the court (lib/draw.ts).
-  // Shown or hidden from the Display panel.
+  // court (TrackingTable.svelte), its column groups at the header's right end. The header's right end shows the value
+  // alone (and, for a paired measure, the other player's number and last name), ending level with the plot's right
+  // edge; the playback seconds and tracking frame are under the court (lib/draw.ts). The − at the header's left folds
+  // the panel to the slim timeline (TimelineStrip.svelte), whose + opens it again.
   import { toPage } from "../lib/fit.svelte";
   import ActionCard from "./ActionCard.svelte";
   import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
@@ -183,6 +184,9 @@
 
 <div class="panel trace">
   <div class="trace-head">
+    <!-- Folds the panel down to the slim timeline (TimelineStrip.svelte, whose + opens it again). -->
+    <button type="button" class="fold-btn" title="Collapse the trace panel to a simple timeline" aria-label="Collapse the trace panel"
+            aria-expanded="true" onclick={() => (viewer.showTrace = false)}>−</button>
     <div class="seg" role="radiogroup" aria-label="What the panel follows">
       <button type="button" role="radio" aria-checked={viewer.trace === "ball"} class:on={viewer.trace === "ball"}
               onclick={() => (viewer.trace = "ball")}>Ball Height</button>
@@ -193,7 +197,7 @@
     </div>
     <!-- Each tab's own controls straight after the tabs, so they never move; the value at the right end. -->
     {#if viewer.trace === "players"}
-      <div class="seg" role="radiogroup" aria-label="Columns shown">
+      <div class="seg trace-cols" role="radiogroup" aria-label="Columns shown">
         {#each TRACK_GROUPS as g (g.key)}
           <button type="button" role="radio" aria-checked={viewer.trackCols === g.key} class:on={viewer.trackCols === g.key}
                   onclick={() => (viewer.trackCols = g.key)}>{g.label}</button>

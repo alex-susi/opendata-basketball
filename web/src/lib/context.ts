@@ -3,7 +3,9 @@
 
 import { clock } from "./geometry";
 import { gapAt, motion, stretch } from "./motion";
-import type { AnnChance, AnnCloseout, AnnCut, AnnDrive, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
+import { HOOP_X } from "./court";
+import { courtRegion } from "./regions";
+import type { AnnChance, AnnCloseout, AnnCut, AnnDrive, AnnRebound, AnnScreen, AnnShot, Play, PlayerTrack, SeasonFigures } from "./types";
 
 export interface Line {
   k: string;
@@ -377,6 +379,58 @@ export function screenLines(play: Play, s: AnnScreen, coverage: boolean): Line[]
   const where: Line[] = [];
   if (s.spot && s.spot !== "unknown") where.push({ k: "Spot", v: SPOT_NAMES[s.spot] ?? titleCase(words(s.spot)) });
   return [...grouped("Coverage", cov), ...grouped("Location", where)];
+}
+
+// ---- rebounds --------------------------------------------------------------------------------------
+
+/** An attacker's rebounding role while the shot was in the air (web/scripts/glass.R), as the shot card names it. */
+const GLASS_ROLE: Record<string, string> = {
+  crash: "Crash", back: "Retreat", safety: "Safety", hold: "Hold", follow: "Followed His Shot", shooter: "Shooter",
+};
+
+/** A player's tracked spot at frame f (within 2 frames), in the play's frame (offense attacking +x), or null. */
+function spotAt(play: Play, pid: number, f: number): { x: number; y: number } | null {
+  const p = playerOf(play, pid);
+  const i = frameIndex(play, f);
+  if (!p || Math.abs(play.frames[i] - f) > 2 || Number.isNaN(p.x[i])) return null;
+  return { x: p.x[i], y: p.y[i] };
+}
+
+/** A rebound, grouped. Rebound: offensive or defensive (or a team rebound), the miss it came from and how long after
+ * the release. Location: where the rebounder was when he got it (court region, distance to the basket the offense
+ * attacks, from the tracking). Glass: for an offensive rebounder, his role while the shot was in the air, how far he
+ * was from the basket at the release and when the ball came down, and whether a defender boxed him out; for a
+ * defensive rebounder, the attackers he boxed out. The shot it came from is the last one released before it. */
+export function reboundLines(play: Play, r: AnnRebound): Line[] {
+  const shot = lastShot(play, r.f);
+  const reb: Line[] = [{ k: "Type", v: r.team ? `Team, ${r.def ? "Defensive" : "Offensive"}` : r.def ? "Defensive" : "Offensive" }];
+  if (shot) {
+    reb.push({ k: "Off", v: `${madeOf(shot).replace("Made", "Missed")} · ${nameOf(play, shot.pid)}` });
+    reb.push({ k: "After Release (s)", v: ((r.f - shot.f) / 25).toFixed(1) });
+  }
+  const where: Line[] = [];
+  const spot = r.pid != null ? spotAt(play, r.pid, r.f) : null;
+  if (spot) {
+    where.push({ k: "Region", v: regionName(courtRegion(spot.x, spot.y)) });
+    where.push({ k: "To Basket (ft)", v: Math.hypot(HOOP_X - spot.x, spot.y).toFixed(1) });
+    const from = shot ? spotAt(play, shot.pid, shot.f) : null;   // the shooter at his release, tracked
+    if (from) where.push({ k: "From Shot Spot (ft)", v: Math.hypot(from.x - spot.x, from.y - spot.y).toFixed(1) });
+  }
+  const glass: Line[] = [];
+  const roles = shot ? (play.ann?.glass ?? []).filter((g) => g.f === shot.f) : [];
+  const own = roles.find((g) => g.pid === r.pid);
+  if (own) {
+    glass.push({ k: "Role", v: GLASS_ROLE[own.role] ?? titleCase(own.role) });
+    glass.push({ k: "To Basket (ft)", v: `${own.d0.toFixed(1)} → ${own.d1.toFixed(1)}` });
+    if (own.boxed != null) glass.push({ k: "Boxed Out", v: own.boxed ? (own.boxer != null ? `By ${nameOf(play, own.boxer)}` : "Yes") : "No" });
+  } else if (r.def && r.pid != null) {
+    const boxed = roles.filter((g) => g.boxed && g.boxer === r.pid);
+    glass.push({ k: "Boxed Out", v: boxed.length ? boxed.map((g) => nameOf(play, g.pid)).join(", ") : "No One", wrap: boxed.length > 1 });
+  }
+  if (roles.length) {
+    glass.push({ k: "Attackers Crashing", v: String(roles.filter((g) => g.role === "crash" || g.role === "follow").length) });
+  }
+  return [...grouped("Rebound", reb), ...grouped("Location", where), ...grouped("On the Glass", glass)];
 }
 
 // ---- possession card -----------------------------------------------------------------------------
