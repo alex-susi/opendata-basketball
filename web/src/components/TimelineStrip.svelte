@@ -2,6 +2,7 @@
   // A narrow timeline under the court, shown while the trace panel is off: the play's actions as small marks
   // (made shots green, missed shots and turnovers red, the rest grey), no captions, the part already played filled
   // and a white playhead. Hovering a mark opens its card (ActionCard.svelte); clicking or dragging seeks.
+  import { toPage } from "../lib/fit.svelte";
   import ActionCard from "./ActionCard.svelte";
   import { clamp } from "../lib/geometry";
   import { layoutTimeline, type Tick, type Timeline } from "../lib/sequence";
@@ -23,13 +24,13 @@
   const xNow = $derived(PAD + (viewer.pos / end) * plotW);
   const shot = (t: Tick) => t.event.kind === "made" || t.event.kind === "missed";
 
-  const fracAt = (ev: PointerEvent) => clamp((ev.clientX - svg!.getBoundingClientRect().left - PAD) / plotW, 0, 1);
+  const fracAt = (ev: PointerEvent) => clamp((toPage(ev.clientX - svg!.getBoundingClientRect().left) - PAD) / plotW, 0, 1);
   function seek(ev: PointerEvent): void {
     if (seq.length) viewer.pos = fracAt(ev) * (seq.length - 1);
   }
   function hover(ev: PointerEvent): void {
     box = svg!.getBoundingClientRect();
-    const x = ev.clientX - box.left;
+    const x = toPage(ev.clientX - box.left);
     const near = timeline.ticks.filter((t) => Math.abs(PAD + t.frac * plotW - x) < 6).sort((a, b) => a.k - b.k);
     if (near.length !== hoverTicks.length || near.some((t, n) => t !== hoverTicks[n])) hoverTicks = near;
     if (svg!.hasPointerCapture(ev.pointerId)) seek(ev);
@@ -59,7 +60,7 @@
       <line class="strip-head" x1={xNow} x2={xNow} y1={2} y2={H - 2} />
     </svg>
     {#if hoverTicks.length && box}
-      <ActionCard {play} ticks={hoverTicks} x={box.left + PAD + hoverTicks[0].frac * plotW} y={box.top} up />
+      <ActionCard {play} ticks={hoverTicks} x={toPage(box.left) + PAD + hoverTicks[0].frac * plotW} y={toPage(box.top)} up />
     {/if}
   {/if}
 </div>

@@ -4,6 +4,7 @@
   // view's button in its secondary colour. Two placements:
   //   floating  beside a hovered roster row (fixed to the window), open while the pointer is on the row or the card
   //   inline    pinned (the row was clicked): under his team's roster in the right column, until closed
+  import { toPage } from "../lib/fit.svelte";
   import StatTable from "./StatTable.svelte";
   import { CARD_VIEWS, playerSections, playstyleOf } from "../lib/player";
   import type { PlayerTrack, TeamColors } from "../lib/types";
@@ -16,7 +17,7 @@
 
   let h = $state(0);
   // Level with the row, but kept inside the window.
-  const y = $derived(Math.max(8, Math.min(top, window.innerHeight - h - 8)));
+  const y = $derived(Math.max(8, Math.min(top, toPage(window.innerHeight) - h - 8)));
   const sections = $derived(viewer.cardView === "playstyle" ? [] : playerSections(viewer.cardView, season.data, season.sample, p));
   const style = $derived(viewer.cardView === "playstyle" ? playstyleOf(season.style, p) : []);
   const games = $derived(season.sample?.games ?? 10);

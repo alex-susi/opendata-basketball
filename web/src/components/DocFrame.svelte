@@ -1,10 +1,10 @@
 <script lang="ts">
-  // The Screen Coverage Model tab: the live screen-coverage model's readme. The page itself is the standalone
-  // screen_coverage/04_docs/screen_coverage_model.html, copied to public/docs/ so the site and the shared document
-  // never drift apart. It is shown in a frame filling the tab, and follows the site's night/day theme.
+  // A reading tab that shows a standalone page from public/docs/ in a frame filling the tab, following the site's
+  // night/day theme. Used for the Screen Coverage Model tab (a copy of screen_coverage/04_docs/
+  // screen_coverage_model.html, so the site and the shared document never drift apart) and the Court Control tab.
   import { page } from "../lib/theme.svelte";
 
-  const SRC = "docs/screen_coverage_model.html";
+  let { src, title }: { src: string; title: string } = $props();
   let frame = $state<HTMLIFrameElement | null>(null);
   let loads = $state(0);   // counts page loads, so the theme is set again after each one
 
@@ -19,4 +19,4 @@
   });
 </script>
 
-<iframe bind:this={frame} class="doc-frame" src={SRC} title="Screen Coverage Model" onload={() => { loads += 1; }}></iframe>
+<iframe bind:this={frame} class="doc-frame" {src} {title} onload={() => { loads += 1; }}></iframe>

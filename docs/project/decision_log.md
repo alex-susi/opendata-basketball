@@ -2526,3 +2526,12 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Both coverage pages: Each coverage has two sliders (full coverage, and the two defenders) showing recall and precision at any frame from −2 s to +1 s, Main curve by default. Data from new `26_matrices_by_frame.R` → `03_outputs/confusion/by_frame.json` (per-frame counts sum to 1,463 screens, main-curve counts match `22_confusion_matrices.R`).
 - Both pages: Example Play shows all 16 inputs for each of the four screen players at every frame, mirrored as the model sees them (`25_example_play.R` now exports all 16).
 - Site check, 105 tests and build pass. Artifacts republished (reads version 16, primer version 2). No model, input or score changed.
+
+## 2026-11-16 — Site: Court Control tab, EDA menu, scorebug cap, proportional scaling
+
+- Tab bar: Play viewer, Screen Coverage Model, Archetypes, Court Control, then an "EDA" menu (opens on hover, keyboard focus or a click) holding Rebounding and the eight exploration tabs. The EDA button names the open tab ("EDA · Gravity"). On phones the bar scrolls and the menu hangs from the window's right edge.
+- New Court Control tab (`#/court-control`): `web/public/docs/court_control.html`, a readme for the time-to-ball model in `web/src/lib/control.ts` (the five steps, each player's motion limits, the pass fit and held-out comparison from `web/outputs/court_control/fit_control_summary.csv`, constants, limits, files) with a "Try one spot" race for one attacker and one defender using control.ts's formulas. Shown through `DocFrame.svelte` (was ScreenCoverageModel.svelte), which both reading tabs now use.
+- Scorebug: each team box capped at 240 px (`BUG_TEAM_MAX` in App.svelte). On wide screens the bar ends short of the right sideline. The join stays on the centre line.
+- Narrow windows: from 761 to 1199 px the page is laid out 1200 px wide and zoomed to the window (`web/src/lib/fit.svelte.ts`), so the three-column viewer shrinks in proportion instead of wrapping. The old 1180 px reflow is removed. Pointer maths and fixed cards convert window pixels to page pixels (`toPage`) in Stage, TimelineStrip, TracePanel, ActionCard, PlayerCard and the column drag. Phones keep their one-column layout.
+- Coverage pages: Example Play moved after Results, its slider under the court. Reads artifact version 17, primer version 3.
+- Check, 105 tests and build pass.

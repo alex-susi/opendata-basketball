@@ -189,7 +189,6 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     <ul>
       <li class="toc-sec"><a href="#question">The question</a>
         <ul class="toc-sub"><li><a href="#terms">Key terms</a></li></ul></li>
-      <li class="toc-sec"><a href="#example">Example Play</a></li>
       <li class="toc-sec"><a href="#inputs">Model inputs</a>
         <ul class="toc-sub">
           <li><a href="#clock">Past-only on the clock</a></li>
@@ -205,6 +204,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
           <li><a href="#per-defender">Each defender</a></li>
           <li><a href="#per-coverage">Each coverage</a></li>
         </ul></li>
+      <li class="toc-sec"><a href="#example">Example Play</a></li>
       <li class="toc-sec"><a href="#checks">Checks</a></li>
       <li class="toc-sec"><a href="#limits">Limits</a></li>
       <li class="toc-sec"><a href="#hood">Under the hood</a></li>
@@ -305,80 +305,6 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
           </tbody>
         </table>
       </div>
-    </div>
-  </section>
-
-  <!-- ═══ 2. Example Play ═══ -->
-  <section id="example">
-    <div class="head">
-      <h2>Example Play</h2>
-      <p class="sub">Fall's screen for Marcos, Barcelona vs Gran Canaria (game 188630). Drag the slider to replay what the model saw and said</p>
-    </div>
-    <div class="play" id="play">
-      <div class="play-controls">
-        <button type="button" class="play-btn" id="play-go" aria-pressed="false">▶ Play</button>
-        <span class="play-time" id="play-time" aria-live="polite">−0.40 s</span>
-        <input type="range" id="play-slider" min="0" max="75" step="1" value="40" aria-label="Time from the pick frame">
-      </div>
-      <div class="play-controls">
-        <span class="eyebrow">Jump to</span>
-        <button type="button" class="play-btn" data-off="-10">−0.4 s</button>
-        <button type="button" class="play-btn" data-off="0">pick frame</button>
-        <button type="button" class="play-btn" data-off="10">+0.4 s</button>
-      </div>
-      <div class="play-grid">
-        <figure class="figure">
-          <div class="legend">
-            <span><i class="dot" style="background:var(--offense)"></i>screen's attackers</span>
-            <span><i class="dot" style="background:var(--defense)"></i>screen's defenders</span>
-            <span><i class="dot" style="border:2px solid var(--muted)"></i>the other six</span>
-            <span><i class="key" style="border-color:var(--muted);border-top-style:dashed"></i>screener's level</span>
-          </div>
-          <svg id="play-court" viewBox="0 0 520 404" role="img" aria-label="Half court replay of Fall's screen for Marcos, hoop at the top">
-            <defs><clipPath id="play-clip"><rect x="14" y="14" width="492" height="388"/></clipPath></defs>
-            <rect x="14" y="14" width="492" height="388" fill="var(--soft-fill)" stroke="var(--line)" stroke-width="1.5"/>
-            <g fill="none" stroke="var(--muted)" stroke-width="1.2" opacity="0.7">
-              <rect x="179.6" y="14" width="160.8" height="190.3"/>
-              <circle cx="260" cy="204.3" r="59"/>
-              <path d="M 43.5 14 L 43.5 112.5 A 221.5 221.5 0 0 0 476.5 112.5 L 476.5 14"/>
-              <path d="M 219 65.7 A 41 41 0 0 0 301 65.7"/>
-              <line x1="230.5" y1="53.4" x2="289.5" y2="53.4" stroke-width="2.5"/>
-            </g>
-            <circle cx="260" cy="65.7" r="7" fill="none" stroke="var(--fg)" stroke-width="2"/>
-            <g id="play-dyn" clip-path="url(#play-clip)"></g>
-          </svg>
-          <figcaption class="caption">Real tracking, hoop at the top. Dots trail each screen player's last 1.6 s, one every 0.2 s. Recorded coverage under + drop</figcaption>
-        </figure>
-        <div>
-          <h4>Model's probabilities</h4>
-          <div id="play-probs"></div>
-          <div class="legend"><span><i class="key" style="border-color:var(--accent)"></i>live transformer</span><span><i style="display:inline-block;width:2px;height:12px;background:var(--fg)"></i>logistic baseline</span></div>
-          <div class="parts" id="play-parts"></div>
-          <svg id="play-trace" viewBox="0 0 420 170" role="img" aria-label="The live model's five probabilities from 2 seconds before the screen to 1 second after. Click to move the replay">
-          </svg>
-          <p class="caption">Live probabilities over the whole replay. The shaded band is the main curve's weight. Click to jump</p>
-        </div>
-      </div>
-      <div class="tablewrap">
-          <table>
-            <thead><tr><th>All 16 inputs per player, at this moment</th><th class="num">Handler</th><th class="num">Screener</th><th class="num">On ball</th><th class="num">On screener</th></tr></thead>
-            <tbody id="play-inputs"></tbody>
-          </table>
-      </div>
-      <p class="caption">Values before standardising. The model reads the same 16 at this moment and every 0.2 s back to 1.6 s ago</p>
-      <div class="tablewrap">
-          <table>
-            <thead><tr id="play-screen-head"></tr></thead>
-            <tbody><tr id="play-screen"></tr></tbody>
-          </table>
-      </div>
-      <ul class="tight">
-        <li>Tobey (on the screener) stays below the level throughout, 10 ft at −2 s and 4.6 ft at −0.4 s as he steps up. Drop leads his read the whole way</li>
-        <li>Jefferson (on the ball) climbs from 2.2 ft below the level to 1 ft above by −0.6 s, so over leads before the screen (over + drop 46% at −0.4 s)</li>
-        <li>He slides under from the pick frame (1.9 ft below at +0.4 s) and under + drop climbs to the top (34% at the pick frame, 50% at +0.4 s). The baseline lands on the same read (45% at +0.4 s)</li>
-        <li>After about +0.6 s the read drifts back to over + drop, the drift listed in Limits</li>
-        <li>Data <span class="file">03_outputs/example_play/example_play.json</span> (<span class="file">25_example_play.R</span>)</li>
-      </ul>
     </div>
   </section>
 
@@ -741,6 +667,80 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
           </tbody>
         </table>
       </div>
+    </div>
+  </section>
+
+  <!-- ═══ Example Play (after Results) ═══ -->
+  <section id="example">
+    <div class="head">
+      <h2>Example Play</h2>
+      <p class="sub">Fall's screen for Marcos, Barcelona vs Gran Canaria (game 188630). Drag the slider to replay what the model saw and said</p>
+    </div>
+    <div class="play" id="play">
+      <div class="play-grid">
+        <figure class="figure">
+          <div class="legend">
+            <span><i class="dot" style="background:var(--offense)"></i>screen's attackers</span>
+            <span><i class="dot" style="background:var(--defense)"></i>screen's defenders</span>
+            <span><i class="dot" style="border:2px solid var(--muted)"></i>the other six</span>
+            <span><i class="key" style="border-color:var(--muted);border-top-style:dashed"></i>screener's level</span>
+          </div>
+          <svg id="play-court" viewBox="0 0 520 404" role="img" aria-label="Half court replay of Fall's screen for Marcos, hoop at the top">
+            <defs><clipPath id="play-clip"><rect x="14" y="14" width="492" height="388"/></clipPath></defs>
+            <rect x="14" y="14" width="492" height="388" fill="var(--soft-fill)" stroke="var(--line)" stroke-width="1.5"/>
+            <g fill="none" stroke="var(--muted)" stroke-width="1.2" opacity="0.7">
+              <rect x="179.6" y="14" width="160.8" height="190.3"/>
+              <circle cx="260" cy="204.3" r="59"/>
+              <path d="M 43.5 14 L 43.5 112.5 A 221.5 221.5 0 0 0 476.5 112.5 L 476.5 14"/>
+              <path d="M 219 65.7 A 41 41 0 0 0 301 65.7"/>
+              <line x1="230.5" y1="53.4" x2="289.5" y2="53.4" stroke-width="2.5"/>
+            </g>
+            <circle cx="260" cy="65.7" r="7" fill="none" stroke="var(--fg)" stroke-width="2"/>
+            <g id="play-dyn" clip-path="url(#play-clip)"></g>
+          </svg>
+          <figcaption class="caption">Real tracking, hoop at the top. Dots trail each screen player's last 1.6 s, one every 0.2 s. Recorded coverage under + drop</figcaption>
+        </figure>
+        <div>
+          <h4>Model's probabilities</h4>
+          <div id="play-probs"></div>
+          <div class="legend"><span><i class="key" style="border-color:var(--accent)"></i>live transformer</span><span><i style="display:inline-block;width:2px;height:12px;background:var(--fg)"></i>logistic baseline</span></div>
+          <div class="parts" id="play-parts"></div>
+          <svg id="play-trace" viewBox="0 0 420 170" role="img" aria-label="The live model's five probabilities from 2 seconds before the screen to 1 second after. Click to move the replay">
+          </svg>
+          <p class="caption">Live probabilities over the whole replay. The shaded band is the main curve's weight. Click to jump</p>
+        </div>
+      </div>
+      <div class="play-controls">
+        <button type="button" class="play-btn" id="play-go" aria-pressed="false">▶ Play</button>
+        <span class="play-time" id="play-time" aria-live="polite">−0.40 s</span>
+        <input type="range" id="play-slider" min="0" max="75" step="1" value="40" aria-label="Time from the pick frame">
+      </div>
+      <div class="play-controls">
+        <span class="eyebrow">Jump to</span>
+        <button type="button" class="play-btn" data-off="-10">−0.4 s</button>
+        <button type="button" class="play-btn" data-off="0">pick frame</button>
+        <button type="button" class="play-btn" data-off="10">+0.4 s</button>
+      </div>
+      <div class="tablewrap">
+          <table>
+            <thead><tr><th>All 16 inputs per player, at this moment</th><th class="num">Handler</th><th class="num">Screener</th><th class="num">On ball</th><th class="num">On screener</th></tr></thead>
+            <tbody id="play-inputs"></tbody>
+          </table>
+      </div>
+      <p class="caption">Values before standardising. The model reads the same 16 at this moment and every 0.2 s back to 1.6 s ago</p>
+      <div class="tablewrap">
+          <table>
+            <thead><tr id="play-screen-head"></tr></thead>
+            <tbody><tr id="play-screen"></tr></tbody>
+          </table>
+      </div>
+      <ul class="tight">
+        <li>Tobey (on the screener) stays below the level throughout, 10 ft at −2 s and 4.6 ft at −0.4 s as he steps up. Drop leads his read the whole way</li>
+        <li>Jefferson (on the ball) climbs from 2.2 ft below the level to 1 ft above by −0.6 s, so over leads before the screen (over + drop 46% at −0.4 s)</li>
+        <li>He slides under from the pick frame (1.9 ft below at +0.4 s) and under + drop climbs to the top (34% at the pick frame, 50% at +0.4 s). The baseline lands on the same read (45% at +0.4 s)</li>
+        <li>After about +0.6 s the read drifts back to over + drop, the drift listed in Limits</li>
+        <li>Data <span class="file">03_outputs/example_play/example_play.json</span> (<span class="file">25_example_play.R</span>)</li>
+      </ul>
     </div>
   </section>
 

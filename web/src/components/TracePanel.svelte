@@ -16,6 +16,7 @@
   // court (TrackingTable.svelte). The header's right end shows the value alone (and, for a paired measure, the other
   // player's number and last name); the playback seconds and tracking frame are under the court (lib/draw.ts).
   // Shown or hidden from the Display panel.
+  import { toPage } from "../lib/fit.svelte";
   import ActionCard from "./ActionCard.svelte";
   import TrackingTable, { TRACK_GROUPS } from "./TrackingTable.svelte";
   import { clamp } from "../lib/geometry";
@@ -140,7 +141,7 @@
 
   function tAt(ev: PointerEvent): number {
     const box = svg!.getBoundingClientRect();
-    return clamp(((ev.clientX - box.left - M.left) / plotW) * tEnd, 0, tEnd);
+    return clamp(((toPage(ev.clientX - box.left) - M.left) / plotW) * tEnd, 0, tEnd);
   }
   function seek(ev: PointerEvent): void {
     if (!play || !seq.length) return;
@@ -149,9 +150,9 @@
   // The sample under the pointer, and the action whose line is within a few pixels of it (for its card).
   function hover(ev: PointerEvent): void {
     chartBox = chartEl?.getBoundingClientRect() ?? null;
-    const box = svg!.getBoundingClientRect(), x = ev.clientX - box.left, t = tAt(ev);
+    const box = svg!.getBoundingClientRect(), x = toPage(ev.clientX - box.left), t = tAt(ev);
     hoverK = samples.length ? samples.reduce((a, b) => (Math.abs(b.t - t) < Math.abs(a.t - t) ? b : a)).k : null;
-    const y = ev.clientY - box.top;
+    const y = toPage(ev.clientY - box.top);
     let dot: PartnerChange | null = null, dotD = 9;
     for (const c of changes) {
       const d = Math.hypot(X(c.t) - x, Y(c.v!) - y);
@@ -308,7 +309,7 @@
         </div>
       {/if}
       {#if hoverTicks.length && chartBox}
-        <ActionCard {play} ticks={hoverTicks} x={chartBox.left + M.left + hoverTicks[0].frac * plotW} y={chartBox.top + top} />
+        <ActionCard {play} ticks={hoverTicks} x={toPage(chartBox.left) + M.left + hoverTicks[0].frac * plotW} y={toPage(chartBox.top) + top} />
       {/if}
     {/if}
   </div>

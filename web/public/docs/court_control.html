@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Court Control</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Court control: how the time-to-ball model in web/src/lib/control.ts scores the floor. Shown in the site's Court
+   Control tab. Update it when control.ts or its fit (web/scripts/fit_control.R) changes.
+   Writing rules: bullets over paragraphs, no semicolons, colons only right before a list. */
+:root {
+  --bg: #f5f7fa; --surface: #ffffff; --fg: #142030; --muted: #5a6577; --line: #d9dfe8; --accent: #1f5fd1;
+  --new: #c7374a; --good: #1d7a4f; --defense: #d4512b; --offense: #2a78d6; --soft-fill: #e9eff9; --chart-a: #c7374a;
+  --chart-b: #1f5fd1;
+  --c-overshow: #2a78d6; --c-overdrop: #eb6834; --c-underdrop: #1baf7a; --c-undershow: #c98500; --c-switch: #d55181;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141d; --surface: #151d29; --fg: #e5ebf3; --muted: #9aa6b8; --line: #2a3546; --accent: #6b9bf0;
+    --new: #f06a7d; --good: #4cc38a; --defense: #f07a52; --offense: #3987e5; --soft-fill: #1b2638; --chart-a: #e5576c;
+    --chart-b: #5a8ee8;
+    --c-overshow: #3987e5; --c-overdrop: #d95926; --c-underdrop: #199e70; --c-undershow: #c98500; --c-switch: #d55181;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141d; --surface: #151d29; --fg: #e5ebf3; --muted: #9aa6b8; --line: #2a3546; --accent: #6b9bf0;
+  --new: #f06a7d; --good: #4cc38a; --defense: #f07a52; --offense: #3987e5; --soft-fill: #1b2638; --chart-a: #e5576c;
+  --chart-b: #5a8ee8;
+  --c-overshow: #3987e5; --c-overdrop: #d95926; --c-underdrop: #199e70; --c-undershow: #c98500; --c-switch: #d55181;
+  color-scheme: dark;
+}
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.55; }
+
+/* Shell: floating contents list (R Markdown toc_float style) + one 940 px content column */
+.shell { display: grid; grid-template-columns: minmax(200px, 250px) minmax(0, 940px); justify-content: center; gap: 44px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.shell.toc-hidden { grid-template-columns: minmax(0, 940px); padding-left: max(40px, env(safe-area-inset-left, 0px)); }
+.shell.toc-hidden nav.toc { display: none; }
+.page { min-width: 0; padding-block: 40px 72px; display: flex; flex-direction: column; gap: 88px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; margin-top: 40px;
+  max-height: 85vh; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc a { display: block; padding: 6px 12px; border-top: 1px solid var(--line); color: var(--fg); text-decoration: none; font-size: .92rem; line-height: 1.3; }
+.toc > ul > li:first-child > a { border-top: none; }
+.toc-sub { display: none; }
+.toc-sec.open > .toc-sub { display: block; }
+.toc-sub a { padding-left: 26px; font-size: .84rem; color: var(--muted); }
+.toc a:hover { background: var(--soft-fill); }
+.toc a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.toc a.active, .toc a.active:hover { background: var(--fg); color: var(--bg); }
+#toc-toggle { position: fixed; left: env(safe-area-inset-left, 0px); top: 50%; transform: translateY(-50%); z-index: 20;
+  width: 18px; height: 44px; padding: 0; border: 1px solid var(--line); border-left: none; border-radius: 0 6px 6px 0;
+  background: var(--soft-fill); color: var(--muted); font-size: 16px; line-height: 42px; text-align: center; cursor: pointer; opacity: .9; }
+#toc-toggle:hover, #toc-toggle:focus-visible { opacity: 1; color: var(--fg); outline: none; }
+@media (max-width: 860px) {
+  .shell, .shell.toc-hidden { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  nav.toc { position: static; margin-top: 20px; max-height: none; }
+  .page { padding-top: 28px; }
+}
+
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height: 1.1; text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); text-transform: uppercase; }
+h2 { font-size: 2rem; text-transform: uppercase; }
+h3 { font-size: 1.45rem; }
+h4 { font-size: 1.1rem; color: var(--accent); margin-top: 12px; }
+section, .block { scroll-margin-top: 24px; }
+p { margin: 0; }
+section { display: flex; flex-direction: column; gap: 20px; }
+.head { display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 8px; }
+.sub { color: var(--muted); font-size: 1.05rem; }
+.block { display: flex; flex-direction: column; gap: 14px; }
+section > .block { margin-top: 32px; }
+.block > .sub { margin-top: -6px; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lede { font-size: 1.25rem; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--font-mono); font-size: .8rem; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--surface); white-space: nowrap; }
+.chip.live { color: var(--new); border-color: var(--new); }
+.chip.ok { color: var(--good); border-color: var(--good); }
+header { display: flex; flex-direction: column; gap: 16px; border-bottom: 3px solid var(--fg); padding-bottom: 24px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+.split > div { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-size: .9rem; }
+td.lead { font-weight: 600; white-space: nowrap; }
+td.fname { white-space: nowrap; font-weight: 600; }
+tr.live td { background: var(--soft-fill); }
+tr.group td { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); padding-top: 16px; border-bottom-color: var(--accent); }
+td ul { margin: 0; padding-left: 1.05rem; display: flex; flex-direction: column; gap: 2px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; vertical-align: 1px; }
+ul.tight, ol.tight { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 5px; }
+ul.tight li, ol.tight li { font-size: 1rem; }
+ul.tight ul { margin: 4px 0 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 3px; }
+ul.tight ul li { font-size: .95rem; color: var(--fg); }
+ul.small li { font-size: .9rem; color: var(--muted); }
+ol.steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+ol.steps > li { counter-increment: step; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 12px; }
+ol.steps > li::before { content: counter(step, decimal-leading-zero); font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: var(--accent); line-height: 1.2; }
+ol.steps > li > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+code, .file { font-family: var(--font-mono); font-size: .84em; background: var(--soft-fill); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.figure svg { width: 100%; height: auto; display: block; }
+.caption { font-size: .9rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .88rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { width: 22px; height: 0; border-top: 3px solid; display: inline-block; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: stretch; }
+@media (max-width: 760px) { .flow { grid-template-columns: 1fr; } }
+.flow .box { background: var(--soft-fill); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.flow .box b { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: .01em; }
+.flow .box span { font-size: .88rem; color: var(--muted); line-height: 1.4; }
+.flow .box .n { font-family: var(--font-mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.flow .box:not(:last-child)::after { content: "→"; position: absolute; right: -10px; top: 50%; transform: translate(50%, -50%); color: var(--muted); font-size: 1.1rem; }
+@media (max-width: 760px) { .flow .box:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -10px; transform: translate(50%, 50%); } }
+footer { border-top: 1px solid var(--line); padding-top: 16px; }
+svg text { font-family: var(--font-mono); }
+details.fold { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+details.fold > summary, details.step > summary { cursor: pointer; list-style: none; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+details.fold > summary::-webkit-details-marker, details.step > summary::-webkit-details-marker { display: none; }
+details.fold > summary { padding: 16px 20px; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.15; }
+details.fold > summary small { display: block; font-family: var(--font-body); font-weight: 400; font-size: .95rem; color: var(--muted); margin-top: 4px; }
+details.fold > summary::after, details.step > summary::after { content: "+"; font-family: var(--font-mono); font-size: 1.1rem; color: var(--accent); flex: none; }
+details.fold[open] > summary::after, details.step[open] > summary::after { content: "−"; }
+details.fold > summary:focus-visible, details.step > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.fold-body { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+details.step { border-top: 1px solid var(--line); }
+details.step > summary { padding: 12px 0; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+.step-body { padding: 0 0 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.mathbox { background: var(--soft-fill); border-radius: 8px; padding: 12px 14px; overflow-x: auto; display: flex; flex-direction: column; gap: 10px; }
+math { font-size: 1.08em; color: var(--fg); }
+math[display="block"] { margin: 0; }
+.shape { font-family: var(--font-mono); font-size: .86rem; white-space: nowrap; }
+.barcell { display: flex; align-items: center; gap: 8px; min-width: 11rem; }
+.bar { display: inline-block; height: 8px; border-radius: 2px; background: var(--accent); flex: none; }
+.ci { color: var(--muted); font-size: .8rem; }
+td.strong { font-weight: 700; }
+table.cm td { white-space: nowrap; padding: 6px 6px; }
+table.cm th.num { text-align: center; padding: 6px 4px; }
+table.cm td.num { text-align: center; font-size: .84rem; }
+td.call { white-space: nowrap; }
+table.cm td.diag { font-weight: 700; box-shadow: inset 0 0 0 2px var(--accent); }
+table.cm .n { color: var(--muted); font-size: .8rem; font-weight: 400; }
+/* Example Play: a scrubbable replay of one screen */
+.play { display: flex; flex-direction: column; gap: 14px; }
+.play-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.play-controls input[type="range"] { flex: 1 1 260px; accent-color: var(--accent); }
+.play-btn { font-family: var(--font-mono); font-size: .82rem; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); cursor: pointer; }
+.play-btn:hover { background: var(--soft-fill); }
+.play-btn[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.play-btn:focus-visible, .play-controls input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.play-time { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; min-width: 7.5rem; color: var(--accent); }
+.play-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 760px) { .play-grid { grid-template-columns: 1fr; } }
+.play-grid > div { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.probrow { display: grid; grid-template-columns: 7.4rem minmax(0, 1fr) 3.2rem; align-items: center; gap: 8px; font-size: .92rem; }
+.probtrack { position: relative; height: 14px; background: var(--soft-fill); border-radius: 3px; }
+.probfill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; transition: width .12s linear; }
+.probbase { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--fg); transition: left .12s linear; }
+.probval { font-family: var(--font-mono); font-size: .86rem; text-align: right; }
+.probrow.top .probval, .probrow.top .plab { font-weight: 700; }
+.parts { display: grid; grid-template-columns: 1fr; gap: 6px 14px; font-size: .88rem; }
+.parts b { font-family: var(--font-mono); font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .probfill, .probbase { transition: none; } }
+.cm-player { display: flex; flex-direction: column; gap: 12px; }
+.cm-stack { display: flex; flex-direction: column; gap: 14px; }
+.cm-stack > div, .cm-player .split > div { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--accent); }
+.cm-sum { margin-top: -4px; }
+.race-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 18px; align-items: start; }
+@media (max-width: 760px) { .race-grid { grid-template-columns: 1fr; } }
+.race-grid > div { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.race-row { display: grid; grid-template-columns: 11rem minmax(0, 1fr) 4.6rem; align-items: center; gap: 10px; font-size: .92rem; }
+.race-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+.race-row output { font-family: var(--font-mono); font-size: .86rem; text-align: right; }
+.race-who { font-family: var(--font-mono); font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; margin-top: 6px; }
+.race-who.off { color: var(--offense); }
+.race-who.def { color: var(--defense); }
+.race-share { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; }
+.race-bar { display: flex; height: 16px; border-radius: 3px; overflow: hidden; }
+.race-bar span { display: block; height: 100%; transition: width .12s linear; }
+@media (prefers-reduced-motion: reduce) { .race-bar span { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="toc" id="toc" aria-label="Contents">
+    <ul>
+      <li class="toc-sec"><a href="#question">The question</a>
+        <ul class="toc-sub"><li><a href="#terms">Key terms</a></li></ul></li>
+      <li class="toc-sec"><a href="#steps">One spot, five steps</a></li>
+      <li class="toc-sec"><a href="#race">Try one spot</a></li>
+      <li class="toc-sec"><a href="#limits-player">Each player's limits</a></li>
+      <li class="toc-sec"><a href="#fit">Fitting and checks</a>
+        <ul class="toc-sub"><li><a href="#constants">Constants</a></li></ul></li>
+      <li class="toc-sec"><a href="#viewer">In the play viewer</a></li>
+      <li class="toc-sec"><a href="#caveats">Limits</a></li>
+      <li class="toc-sec"><a href="#hood">Under the hood</a></li>
+    </ul>
+  </nav>
+
+<main class="page">
+  <header>
+    <span class="eyebrow">Spacing and passing lanes · ACB 2025-26 · tracking model, refitted 2026-11-08</span>
+    <h1>Court Control</h1>
+    <p class="lede">For every 2 ft spot on the floor, which team would get to the ball first if it were passed there right now.</p>
+    <ul class="tight">
+      <li>A basketball version of soccer's pitch control (Spearman 2016, 2017, Fernandez and Bornn 2018)</li>
+      <li>Built from the ten players' positions and velocities, the ball's position and each player's own speed limits</li>
+      <li>Fitted on 3,728 live passes and checked one game at a time</li>
+    </ul>
+    <div class="meta">
+      <span class="chip">10 tracked games</span>
+      <span class="chip">2 ft cells · 1,150 per court</span>
+      <span class="chip">every frame of live play</span>
+      <span class="chip ok">held-out pass test</span>
+      <span class="chip live">in the play viewer</span>
+    </div>
+  </header>
+
+  <!-- ═══ 1. The question ═══ -->
+  <section id="question">
+    <div class="head">
+      <h2>The question</h2>
+      <p class="sub">Who owns each part of the floor at this moment</p>
+    </div>
+    <ul class="tight">
+      <li>A ball passed to a spot gets there after a flight time. The first player to reach it takes it</li>
+      <li>Do this for every spot and the floor splits into ground the offense would win and ground the defense would win</li>
+      <li>Pale cells are toss-ups, deep colours are safe for one team</li>
+      <li>Use · open passing lanes, how well the offense spaces, how much floor a rotation gives up, and the offense's share of its half</li>
+      <li>Descriptive only. It says who could reach a pass, nothing about where the ball should go</li>
+    </ul>
+
+    <div class="block" id="terms">
+      <h3>Key terms</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td class="lead">Cell</td><td>A 2 ft by 2 ft square of the floor, scored at its centre</td></tr>
+            <tr><td class="lead">Control</td><td>The offense's share of a cell, from 0 (defense certain to get there first) to 1 (offense certain)</td></tr>
+            <tr><td class="lead">Ball time</td><td>Seconds for a pass to reach the cell from where the ball is now</td></tr>
+            <tr><td class="lead">Arrival time</td><td>Seconds for a player to reach the cell, allowing for how he is already moving</td></tr>
+            <tr><td class="lead">Motion limits</td><td>A player's own sprint speed, acceleration and braking, measured in the ten games</td></tr>
+            <tr><td class="lead">Court share</td><td>Average control over all cells, or over the half the offense attacks</td></tr>
+            <tr><td class="lead">Log loss</td><td>How surprised a model is by what happened. Lower is better</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 2. Steps ═══ -->
+  <section id="steps">
+    <div class="head">
+      <h2>One spot, five steps</h2>
+      <p class="sub">How the model scores a single cell. Every cell on the court is scored the same way, every frame</p>
+    </div>
+    <ol class="steps">
+      <li><div><h3>Ball time</h3><ul class="tight">
+        <li>t<sub>ball</sub> = 0.016 s + 0.0201 s per ft × distance from the ball to the cell</li>
+        <li>About 50 ft per s, measured from the ten games' passes</li>
+      </ul></div></li>
+      <li><div><h3>Each player's arrival time</h3><ul class="tight">
+        <li>He keeps his current velocity for a reaction time of 0.05 s</li>
+        <li>Then heads straight for the cell. His speed toward it changes no faster than his own acceleration, up to his own sprint speed</li>
+        <li>Moving away, he first has to stop, at his own braking rate, which carries him further away</li>
+        <li>Sideways velocity is ignored</li>
+      </ul></div></li>
+      <li><div><h3>Uncertain arrival</h3><ul class="tight">
+        <li>By time t, he has arrived with probability 1 / (1 + exp(−(t − arrival) · π / (√3 · 0.45 s)))</li>
+        <li>A logistic with a spread of 0.45 s, so a player a few tenths behind still has a chance</li>
+      </ul></div></li>
+      <li><div><h3>The race for the ball</h3><ul class="tight">
+        <li>From the moment the ball arrives, while nobody has it, every player who has arrived takes it at 50 per s</li>
+        <li>Stepped every 0.04 s until someone holds it with 99% certainty (at most 6 s)</li>
+        <li>So the first to arrive nearly always wins, and a near tie splits</li>
+      </ul></div></li>
+      <li><div><h3>The cell's control</h3><ul class="tight">
+        <li>The offense's five players' summed chances of taking it, out of all ten</li>
+        <li>Coloured in the offense's colour above 0.5, the defense's below, paler near 0.5</li>
+      </ul></div></li>
+    </ol>
+  </section>
+
+  <!-- ═══ 3. Race ═══ -->
+  <section id="race">
+    <div class="head">
+      <h2>Try one spot</h2>
+      <p class="sub">One attacker and one defender racing a pass to the same spot, run through the same formulas the site uses</p>
+    </div>
+    <div class="race-grid">
+      <div>
+        <div class="race-row"><label for="r-ball">Ball to the spot</label><input type="range" id="r-ball" min="0" max="50" step="1" value="20"><output for="r-ball"></output></div>
+        <span class="race-who off">Attacker</span>
+        <div class="race-row"><label for="r-od">Distance to the spot</label><input type="range" id="r-od" min="0" max="30" step="0.5" value="8"><output for="r-od"></output></div>
+        <div class="race-row"><label for="r-ou">Speed toward it (− away)</label><input type="range" id="r-ou" min="-18" max="18" step="1" value="0"><output for="r-ou"></output></div>
+        <span class="race-who def">Defender</span>
+        <div class="race-row"><label for="r-dd">Distance to the spot</label><input type="range" id="r-dd" min="0" max="30" step="0.5" value="10"><output for="r-dd"></output></div>
+        <div class="race-row"><label for="r-du">Speed toward it (− away)</label><input type="range" id="r-du" min="-18" max="18" step="1" value="12"><output for="r-du"></output></div>
+        <p class="caption">Both players at the league's limits · sprint 18.1 ft per s, acceleration 12.4 and braking 11.9 ft per s²</p>
+      </div>
+      <figure class="figure">
+        <div class="race-share" id="r-share" aria-live="polite"></div>
+        <div class="race-bar" aria-hidden="true"><span id="r-off" style="background:var(--offense)"></span><span id="r-def" style="background:var(--defense)"></span></div>
+        <svg id="r-chart" viewBox="0 0 420 190" role="img" aria-label="Each player's chance of having arrived over time, with the ball's arrival marked"></svg>
+        <figcaption class="caption" id="r-note"></figcaption>
+      </figure>
+    </div>
+    <ul class="tight">
+      <li>A defender closing at speed beats a standing attacker who is nearer, because the attacker still has to get going</li>
+      <li>Moving away costs more than standing still. He has to stop before he can come back</li>
+      <li>A long pass gives both players time, so the spot goes to whoever arrives first by a clear margin</li>
+    </ul>
+  </section>
+
+  <!-- ═══ 4. Player limits ═══ -->
+  <section id="limits-player">
+    <div class="head">
+      <h2>Each player's limits</h2>
+      <p class="sub">Every player runs at his own measured speed, acceleration and braking</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Limit</th><th>How it is measured</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">Sprint speed</td><td>His 99th percentile of live-play speed (velocity over 6 frames, capped at 30 ft per s). Scaled so the average player runs at 18.1 ft per s, the speed the model was first fitted with. Range 16.4 to 20.0 ft per s</td></tr>
+          <tr><td class="fname">Acceleration</td><td>His 99th percentile of speed gained between velocities 0.24 s apart. League 12.4 ft per s²</td></tr>
+          <tr><td class="fname">Braking</td><td>The same for speed lost. League 11.9 ft per s²</td></tr>
+          <tr><td class="fname">Small samples</td><td>Each limit is pulled toward his offensive archetype's average, with the weight of 10 live minutes</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="tight">
+      <li>Centres come out slowest, off-ball wings fastest</li>
+      <li>It is observed speed, so it mixes ability with role</li>
+      <li>Figures from <span class="file">web/scripts/sample_stats.R</span> ("Motion limits"), stored in <span class="file">sample.json</span></li>
+    </ul>
+  </section>
+
+  <!-- ═══ 5. Fit ═══ -->
+  <section id="fit">
+    <div class="head">
+      <h2>Fitting and checks</h2>
+      <p class="sub">The reaction time, spread and claim rate are chosen by how well control at the catch spot separates completed passes from interceptions</p>
+    </div>
+    <ul class="tight">
+      <li>3,728 live passes in the ten games, 66 intercepted (1.8%)
+        <ul>
+          <li>No inbounds, caught within 2 s, five tracked players a side and the ball in view</li>
+          <li>All ten players' positions and velocities at release, and the spot where the pass was taken</li>
+        </ul>
+      </li>
+      <li>Control at that spot, recalibrated by a two-parameter logistic, scored by log loss</li>
+      <li>The logistic absorbs passer choice. Passers pick safe passes, so raw control overstates the risk</li>
+      <li>Grid search over reaction time, spread and claim rate, one game held out at a time</li>
+    </ul>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Motion model</th><th class="num">Held-out log loss</th><th class="num">Games better</th><th class="num">Gain vs one speed</th></tr></thead>
+        <tbody>
+          <tr><td>No model (interception rate only)</td><td class="num">0.0893</td><td class="num">–</td><td class="num">–</td></tr>
+          <tr><td>One speed for everyone, top speed at once</td><td class="num">0.0263</td><td class="num">–</td><td class="num">–</td></tr>
+          <tr><td>Own sprint speed only</td><td class="num">0.0268</td><td class="num">3 of 10</td><td class="num">−0.0004</td></tr>
+          <tr class="live"><td><b>Own sprint, acceleration and braking</b> <span class="chip live">live</span></td><td class="num"><b>0.0215</b></td><td class="num"><b>8 of 10</b></td><td class="num"><b>+0.0050</b> (SE 0.0022)</td></tr>
+          <tr><td>Same, acceleration ×1.5</td><td class="num">0.0206</td><td class="num">9 of 10</td><td class="num">+0.0060</td></tr>
+          <tr><td>Same, acceleration ×2</td><td class="num">0.0214</td><td class="num">8 of 10</td><td class="num">+0.0052</td></tr>
+          <tr><td>Same, acceleration ×3</td><td class="num">0.0239</td><td class="num">8 of 10</td><td class="num">+0.0026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="tight">
+      <li>Speed alone does not help. How fast a player can get going and stop is what matters</li>
+      <li>The ×1.5 version scores a little better but adds a tuned factor for a gain within noise, so the live model uses the limits as measured</li>
+      <li>File <span class="file">web/outputs/court_control/fit_control_summary.csv</span></li>
+    </ul>
+
+    <div class="block" id="constants">
+      <h3>Constants</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Constant</th><th class="num">Value</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td class="fname">Reaction time</td><td class="num">0.05 s</td><td>Fitted</td></tr>
+            <tr><td class="fname">Arrival spread</td><td class="num">0.45 s</td><td>Fitted</td></tr>
+            <tr><td class="fname">Claim rate</td><td class="num">50 per s</td><td>Fitted</td></tr>
+            <tr><td class="fname">Ball flight</td><td class="num">0.016 s + 0.0201 s per ft</td><td>Measured from passes</td></tr>
+            <tr><td class="fname">Average sprint speed</td><td class="num">18.1 ft per s</td><td>League 99th percentile of live-play speed</td></tr>
+            <tr><td class="fname">Cell size</td><td class="num">2 ft</td><td>Set</td></tr>
+            <tr><td class="fname">Time step, cap</td><td class="num">0.04 s, 6 s</td><td>Set</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 6. Viewer ═══ -->
+  <section id="viewer">
+    <div class="head">
+      <h2>In the play viewer</h2>
+      <p class="sub">Computed live in the browser for the frame on screen</p>
+    </div>
+    <ul class="tight">
+      <li>Display › <b>Court control</b> shades every cell in the two teams' colours</li>
+      <li>The readout gives the offense's share of the whole court or of the half it attacks</li>
+      <li>Needs five players a side and the ball in view. Otherwise the layer is left off for that frame</li>
+    </ul>
+  </section>
+
+  <!-- ═══ 7. Limits ═══ -->
+  <section id="caveats">
+    <div class="head">
+      <h2>Limits</h2>
+      <p class="sub">What the model leaves out</p>
+    </div>
+    <ul class="tight">
+      <li><b>Straight lines.</b> Players run straight at each spot. No cutting around a body, no screens in the way</li>
+      <li><b>No hands or bodies.</b> A deflection, a lob over a defender or a bounce pass is the same as a chest pass</li>
+      <li><b>Few interceptions.</b> 66 in ten games, so the fit is coarse</li>
+      <li><b>Limits use all ten games.</b> Each player's motion limits include the held-out game's tracking (movement only, never pass outcomes)</li>
+      <li><b>Tracking error.</b> About 1 in 5 positions are vendor estimates for players off camera</li>
+      <li><b>Not where to pass.</b> Owning a spot says nothing about whether a pass there would lead to a good shot</li>
+    </ul>
+  </section>
+
+  <!-- ═══ 8. Hood ═══ -->
+  <section id="hood">
+    <div class="head">
+      <h2>Under the hood</h2>
+      <p class="sub">Where each part lives</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>File</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><span class="file">web/src/lib/control.ts</span></td><td>The model, run in the browser. Steps 1-5, constants, per-player limits</td></tr>
+          <tr><td><span class="file">web/scripts/sample_stats.R</span></td><td>Each player's sprint speed, acceleration and braking</td></tr>
+          <tr><td><span class="file">web/scripts/fit_control.R</span></td><td>The pass table, the grid search and the held-out comparison</td></tr>
+          <tr><td><span class="file">web/tests/control.test.ts</span></td><td>Checks the site against the original R model on reference cases</td></tr>
+          <tr><td><span class="file">zz_Archive/src/court_control/</span></td><td>The original R model, including the retired rebound, relevance and scoring layers</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <ul class="tight small">
+      <li>Tracking and event data from SkillCorner open data, Liga ACB 2025-26 (10 games)</li>
+      <li>Model in <span class="file">web/src/lib/control.ts</span>, fit in <span class="file">web/scripts/fit_control.R</span></li>
+    </ul>
+  </footer>
+</main>
+</div>
+
+<button id="toc-toggle" type="button" aria-controls="toc" aria-expanded="true" aria-label="Hide table of contents" title="Hide table of contents">&lsaquo;</button>
+
+<script>
+(function () {
+  /* Try one spot · the same arrival, uncertainty and claim steps as web/src/lib/control.ts, for two players */
+  var REACT = 0.05, SIGMA = 0.45, LAMBDA = 50, DT = 0.04, MAX_T = 6, TOL = 0.99;
+  var BALL0 = 0.0160704909212239, BALL1 = 0.0201103502526555, V = 18.1147264926486, A = 12.4, B = 11.9;
+  var NS = "http://www.w3.org/2000/svg";
+  function runTime(dist, u, v, a, d) {
+    var t = 0;
+    if (u < 0) { t = -u / d; dist += (u * u) / (2 * d); u = 0; }
+    u = Math.min(u, v);
+    var ramp = (v * v - u * u) / (2 * a);
+    if (ramp >= dist) return t + (Math.sqrt(u * u + 2 * a * dist) - u) / a;
+    return t + (v - u) / a + (dist - ramp) / v;
+  }
+  function arrivalOf(dist, u) {
+    // He keeps his velocity for the reaction time, so he is u·REACT closer (or further) when he starts.
+    var left = Math.max(0, dist - u * REACT);
+    return REACT + runTime(left, u, V, A, B);
+  }
+  var ids = ["r-ball", "r-od", "r-ou", "r-dd", "r-du"];
+  var el = {};
+  ids.forEach(function (id) { el[id] = document.getElementById(id); });
+  var chart = document.getElementById("r-chart");
+  function mk(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    parent.appendChild(n);
+    return n;
+  }
+  function run() {
+    var ball = +el["r-ball"].value, od = +el["r-od"].value, ou = +el["r-ou"].value, dd = +el["r-dd"].value, du = +el["r-du"].value;
+    el["r-ball"].nextElementSibling.textContent = ball + " ft";
+    el["r-od"].nextElementSibling.textContent = od + " ft";
+    el["r-ou"].nextElementSibling.textContent = ou + " ft/s";
+    el["r-dd"].nextElementSibling.textContent = dd + " ft";
+    el["r-du"].nextElementSibling.textContent = du + " ft/s";
+    var tBall = BALL0 + BALL1 * ball;
+    var tau = [arrivalOf(od, ou), arrivalOf(dd, du)];
+    var scale = Math.PI / Math.sqrt(3) / SIGMA, rate = LAMBDA * DT, P = [0, 0], tot = 0;
+    for (var s = 1; s <= Math.ceil(MAX_T / DT); s++) {
+      var t = tBall + s * DT, free = 1 - tot;
+      for (var j = 0; j < 2; j++) P[j] += (free * rate) / (1 + Math.exp(-(t - tau[j]) * scale));
+      tot = P[0] + P[1];
+      if (tot >= TOL) break;
+    }
+    var off = P[0] / Math.max(tot, 1e-9);
+    document.getElementById("r-share").textContent = "Attacker " + Math.round(100 * off) + "% · defender " + Math.round(100 * (1 - off)) + "%";
+    document.getElementById("r-off").style.width = (100 * off) + "%";
+    document.getElementById("r-def").style.width = (100 * (1 - off)) + "%";
+    document.getElementById("r-note").textContent = "Ball arrives at " + tBall.toFixed(2) + " s. Attacker arrives around " + tau[0].toFixed(2) +
+      " s, defender around " + tau[1].toFixed(2) + " s. Curves show each player's chance of having arrived";
+    // Chart: chance of having arrived over 0-2.5 s, the ball's arrival as a line.
+    while (chart.firstChild) chart.removeChild(chart.firstChild);
+    var X0 = 34, X1 = 410, Y0 = 12, Y1 = 160, TM = 2.5;
+    function tx(t) { return X0 + (t / TM) * (X1 - X0); }
+    function ty(p) { return Y1 - p * (Y1 - Y0); }
+    [0, 0.5, 1].forEach(function (p) {
+      mk("line", { x1: X0, x2: X1, y1: ty(p), y2: ty(p), stroke: "var(--line)" }, chart);
+      mk("text", { x: X0 - 5, y: ty(p) + 4, "font-size": 10, fill: "var(--muted)", "text-anchor": "end" }, chart).textContent = Math.round(100 * p) + "%";
+    });
+    [0, 0.5, 1, 1.5, 2, 2.5].forEach(function (t) {
+      mk("text", { x: tx(t), y: Y1 + 16, "font-size": 10, fill: "var(--muted)", "text-anchor": "middle" }, chart).textContent = t + (t === 2.5 ? " s" : "");
+    });
+    var bx = tx(Math.min(TM, tBall));
+    mk("line", { x1: bx, x2: bx, y1: Y0, y2: Y1, stroke: "var(--fg)", "stroke-dasharray": "3 3" }, chart);
+    mk("text", { x: bx + 4, y: Y0 + 10, "font-size": 10, fill: "var(--fg)" }, chart).textContent = "ball";
+    ["var(--offense)", "var(--defense)"].forEach(function (col, j) {
+      var pts = [];
+      for (var i = 0; i <= 100; i++) {
+        var t = (TM * i) / 100;
+        pts.push(tx(t).toFixed(1) + "," + ty(1 / (1 + Math.exp(-(t - tau[j]) * scale))).toFixed(1));
+      }
+      mk("polyline", { points: pts.join(" "), fill: "none", stroke: col, "stroke-width": 2.5 }, chart);
+    });
+  }
+  ids.forEach(function (id) { el[id].addEventListener("input", run); });
+  run();
+})();
+</script>
+
+<script>
+(function () {
+  /* Contents list · hide/show tab on the left edge (remembered per viewer), the entry in view filled,
+     and only the current section's subsections open */
+  var shell = document.querySelector(".shell");
+  var btn = document.getElementById("toc-toggle");
+  function setHidden(hidden) {
+    shell.classList.toggle("toc-hidden", hidden);
+    var label = hidden ? "Show table of contents" : "Hide table of contents";
+    btn.innerHTML = hidden ? "&rsaquo;" : "&lsaquo;";
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("title", label);
+    btn.setAttribute("aria-expanded", String(!hidden));
+    try { localStorage.setItem("courtControlTocHidden", hidden ? "1" : "0"); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem("courtControlTocHidden"); } catch (e) {}
+  setHidden(saved === "1");
+  btn.addEventListener("click", function () { setHidden(!shell.classList.contains("toc-hidden")); });
+
+  var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"));
+  var items = links.map(function (a) {
+    return { link: a, target: document.getElementById(a.getAttribute("href").slice(1)), sec: a.closest(".toc-sec") };
+  }).filter(function (it) { return it.target; });
+  var current = null;
+  function update() {
+    var pick = items[0];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].target.getBoundingClientRect().top <= 120) pick = items[i];
+    }
+    if (pick === current) return;
+    current = pick;
+    links.forEach(function (a) { a.classList.remove("active"); });
+    pick.link.classList.add("active");
+    document.querySelectorAll(".toc-sec").forEach(function (s) { s.classList.toggle("open", s === pick.sec); });
+  }
+  var queued = false;
+  window.addEventListener("scroll", function () {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(function () { queued = false; update(); });
+  }, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>

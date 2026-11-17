@@ -56,7 +56,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tabs {
   display: flex; align-items: stretch; gap: 4px; height: var(--bar); padding: 0 12px;
   background: var(--panel); border-bottom: 1px solid var(--line);
-  overflow-x: auto; scrollbar-width: thin; scrollbar-color: #3A4866 transparent;
+  position: relative; z-index: 30;
 }
 .tabs .brand { display: flex; align-items: center; margin-right: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; }
 .tabs button {
@@ -65,6 +65,25 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 .tabs button:hover { color: var(--ink); }
 .tabs button.on { color: var(--ink); border-bottom-color: var(--off); }
+/* The EDA menu: the descriptive tabs in a vertical list under the EDA button, open on hover, keyboard focus or a click. */
+.tab-menu { position: relative; display: flex; }
+.tab-caret { font-size: 10px; margin-left: 2px; }
+.tab-menu-list {
+  position: absolute; top: 100%; left: 0; z-index: 40; display: none; flex-direction: column; min-width: 190px; padding: 4px;
+  background: var(--raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 22px rgba(0, 0, 0, .45);
+}
+.tab-menu:hover .tab-menu-list, .tab-menu:focus-within .tab-menu-list, .tab-menu.open .tab-menu-list { display: flex; }
+.tabs .tab-menu-list button {
+  padding: 8px 12px; border-bottom: 0; border-left: 2px solid transparent; border-radius: 4px; text-align: left;
+}
+.tabs .tab-menu-list button:hover { background: var(--panel); }
+.tabs .tab-menu-list button.on { border-left-color: var(--off); color: var(--ink); }
+/* Phones: the bar scrolls sideways, so the menu hangs from the window's right edge instead of the button. */
+@media (max-width: 760px) {
+  .tabs { overflow-x: auto; scrollbar-width: thin; }
+  .tabs .brand, .tabs .credit { display: none; }
+  .tab-menu-list { position: fixed; top: var(--bar); left: auto; right: 8px; }
+}
 /* The data credit, at the right end of the bar. */
 .tabs .credit {
   display: flex; align-items: center; margin-left: auto; padding-left: 16px; color: var(--muted); font-size: 12px;
@@ -78,7 +97,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
   grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas: "left head ctrl" "left viewer side";
   gap: 10px 12px;
-  height: calc(100vh - var(--bar));
+  height: calc(100vh / var(--fit, 1) - var(--bar));
   padding: 12px;
 }
 .left { grid-area: left; }
@@ -534,20 +553,8 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .roster li.has-ball .name { font-weight: 700; }
 .roster li.has-ball .ball-mark { width: 9px; height: 9px; border-radius: 50%; background: #FFA62B; border: 1px solid #5C3200; }
 
-/* ---- narrower windows: side panels move under the court ---- */
-@media (max-width: 1180px) {
-  .app {
-    grid-template-columns: var(--left-w, 250px) minmax(0, 1fr); grid-template-rows: auto auto auto auto;
-    grid-template-areas: "left head" "left ctrl" "left viewer" "left side"; height: auto; min-height: calc(100vh - var(--bar));
-  }
-  .left { max-height: calc(100vh - 24px); position: sticky; top: 12px; }
-  .controls-box { max-width: 380px; padding: 0 4px; }
-  .viewer { min-height: calc(100vh - 100px - var(--bar)); }
-  .side { flex-direction: row; flex-wrap: wrap; overflow: visible; }
-  .side .panel { flex: 1 1 200px; min-width: 0; }
-  .side .display { flex-basis: 300px; }      /* two columns of toggles */
-  .side .roster { flex-basis: 300px; }       /* room for a name and its archetype tag */
-}
+/* ---- narrower windows (761 to 1199 px): no reflow. lib/fit.svelte.ts draws the page 1200 px wide and zooms it
+   down to the window, so everything shrinks in proportion. ---- */
 
 /* ---- phones: one column, court first ---- */
 @media (max-width: 760px) {
@@ -565,7 +572,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* ---- Archetypes tab: a reading page on the same dark surface. Its markup comes from the Shiny app
    (public/data/archetypes.html), so these rules mirror play_viewer/01_app/www/style.css. ---- */
-.doc { height: calc(100vh - var(--bar)); overflow-y: auto; scrollbar-color: #3A4866 transparent; }
+.doc { height: calc(100vh / var(--fit, 1) - var(--bar)); overflow-y: auto; scrollbar-color: #3A4866 transparent; }
 /* Screen Coverage Model tab: the standalone readme in a frame that fills the tab and scrolls itself. */
 .doc.doc-framed { overflow: hidden; }
 .doc-frame { display: block; width: 100%; height: 100%; border: 0; }
@@ -696,7 +703,7 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 
 /* The player card beside the rosters (PlayerCard.svelte): hoverable, pinned on a click. */
 .player-card {
-  width: 370px; max-height: calc(100vh - 16px); overflow-y: auto; pointer-events: auto;
+  width: 370px; max-height: calc(100vh / var(--fit, 1) - 16px); overflow-y: auto; pointer-events: auto;
   background: color-mix(in srgb, var(--team-fill, var(--raised)) 24%, #161D2B);
   border-color: color-mix(in srgb, var(--team-fill, var(--line)) 45%, var(--line));
 }

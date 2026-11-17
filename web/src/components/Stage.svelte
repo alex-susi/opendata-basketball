@@ -1,6 +1,7 @@
 <script lang="ts">
   // The court canvas: runs the animation clock, draws each frame and records video on request. Clicking a player
   // makes the trace panel follow his distance to the nearest opponent; clicking him again lets him go.
+  import { toPage } from "../lib/fit.svelte";
   import { onMount } from "svelte";
   import { attentionAt, lanesAt, loadCoverageAttention, loadCoverageLanes, type AttentionFile, type LanesFile } from "../lib/coverage";
   import { drawScene } from "../lib/draw";
@@ -82,7 +83,7 @@
 
   // The player under a click, if any (the nearest dot whose disc holds the point).
   function playerAt(ev: MouseEvent): number | null {
-    const box = canvas.getBoundingClientRect(), x = ev.clientX - box.left, y = ev.clientY - box.top;
+    const box = canvas.getBoundingClientRect(), x = toPage(ev.clientX - box.left), y = toPage(ev.clientY - box.top);
     let best: number | null = null, bestD = Infinity;
     for (const h of hits) {
       const d = Math.hypot(h.x - x, h.y - y);

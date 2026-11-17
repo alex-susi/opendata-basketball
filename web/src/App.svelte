@@ -1,13 +1,15 @@
 <script lang="ts">
-  // Twelve tabs: the four below, then eight exploration tabs (one per candidate topic, components/explore/), with no divider between them. The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
+  // The tab bar: Play viewer, Screen Coverage Model, Archetypes and Court Control, then an EDA menu (hover to open)
+  // holding Rebounding and the eight exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Screen Coverage Model
   // tab is the live screen-coverage model's readme (screen_coverage/04_docs, shown in a frame). The Archetypes tab
   // explains the tags beside each player's name; the Rebounding tab is a descriptive look at the ten games' missed
   // shots. Static counterpart of play_viewer/01_app/app.R.
+  import { toPage } from "./lib/fit.svelte";
   import { untrack } from "svelte";
   import Archetypes from "./components/Archetypes.svelte";
-  import ScreenCoverageModel from "./components/ScreenCoverageModel.svelte";
+  import DocFrame from "./components/DocFrame.svelte";
   import Controls from "./components/Controls.svelte";
   import Rebounding from "./components/Rebounding.svelte";
   import Explore from "./components/explore/Explore.svelte";
@@ -27,6 +29,7 @@
 
   const ROUTE = "#/play/";
   const COVERAGE_MODEL = "#/coverage-model";
+  const COURT_CONTROL = "#/court-control";
   const ARCHETYPES = "#/archetypes";
   const REBOUNDING = "#/rebounding";
   const EXPLORE = "#/explore/";
@@ -36,9 +39,12 @@
     { id: "crash", label: "Crashing" }, { id: "lanes", label: "Driving lanes" }, { id: "advantage", label: "Advantage" },
     { id: "gravity", label: "Gravity" }, { id: "coverage", label: "Pick coverage" },
   ];
-  type Tab = string;   // "viewer", "coverage-model", "archetypes", "rebounding" or "x-<topic>"
+  // The EDA menu: Rebounding, then the exploration tabs.
+  const EDA = [{ id: "rebounding", label: "Rebounding" }, ...TOPICS.map((t) => ({ id: `x-${t.id}`, label: t.label }))];
+  type Tab = string;   // "viewer", "coverage-model", "archetypes", "court-control", "rebounding" or "x-<topic>"
   const tabOfHash = (h: string): Tab => {
     if (h === COVERAGE_MODEL) return "coverage-model";
+    if (h === COURT_CONTROL) return "court-control";
     if (h === ARCHETYPES) return "archetypes";
     if (h === REBOUNDING) return "rebounding";
     if (h.startsWith(EXPLORE) && TOPICS.some((t) => t.id === h.slice(EXPLORE.length))) return `x-${h.slice(EXPLORE.length)}`;
@@ -55,6 +61,8 @@
   let tab = $state<Tab>(first);
   // Each document tab is fetched the first time it is shown.
   let opened = $state<Record<string, boolean>>({ [first]: true });
+  let edaOpen = $state(false);
+  const edaTab = $derived(EDA.find((t) => t.id === tab) ?? null);
   viewer.hidden = first !== "viewer";
 
   // Width of the left column (filters and play list), in px. Remembered in this browser only.
@@ -71,7 +79,7 @@
   let leftEl: HTMLElement;
   function dragLeft(ev: PointerEvent): void {
     const handle = ev.currentTarget as HTMLElement;
-    if (handle.hasPointerCapture(ev.pointerId)) setLeft(ev.clientX - leftEl.getBoundingClientRect().left);
+    if (handle.hasPointerCapture(ev.pointerId)) setLeft(toPage(ev.clientX - leftEl.getBoundingClientRect().left));
   }
   function keyLeft(ev: KeyboardEvent): void {
     if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
@@ -91,8 +99,10 @@
   const courtShift = $derived(live.box && headW ? Math.round(live.box.left + live.box.w / 2 - headW / 2) : 0);
   // Each team box of the score bar is as wide as makes the clock box end level with the court's right sideline end
   // (the floor's right edge): from the centre line, one team box and the clock box (never under 166 px, what the names and scores need; a narrow window gives up the alignment).
+  // Capped at BUG_TEAM_MAX so the bar stays a scorebug on a wide screen (it then ends short of the sideline).
+  const BUG_TEAM_MAX = 240;
   let bugClockW = $state(96);
-  const bugTeamW = $derived(live.box ? Math.max(166, Math.round(live.box.floorRight - (live.box.left + live.box.w / 2) - bugClockW)) : null);
+  const bugTeamW = $derived(live.box ? Math.min(BUG_TEAM_MAX, Math.max(166, Math.round(live.box.floorRight - (live.box.left + live.box.w / 2) - bugClockW))) : null);
   // A team's three-letter name on the scorebug (its full name is the box's tooltip). Unlisted names fall back to the
   // first three letters of their last word.
   const ABBR: Record<string, string> = {
@@ -111,6 +121,7 @@
   // The address names the selected play, or the document tab while one is open.
   function address(): string {
     if (tab === "coverage-model") return COVERAGE_MODEL;
+    if (tab === "court-control") return COURT_CONTROL;
     if (tab === "archetypes") return ARCHETYPES;
     if (tab === "rebounding") return REBOUNDING;
     if (tab.startsWith("x-")) return EXPLORE + tab.slice(2);
@@ -202,10 +213,17 @@
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
   <button type="button" class:on={tab === "coverage-model"} onclick={() => show("coverage-model")}>Screen Coverage Model</button>
   <button type="button" class:on={tab === "archetypes"} onclick={() => show("archetypes")}>Archetypes</button>
-  <button type="button" class:on={tab === "rebounding"} onclick={() => show("rebounding")}>Rebounding</button>
-  {#each TOPICS as t (t.id)}
-    <button type="button" class:on={tab === `x-${t.id}`} onclick={() => show(`x-${t.id}`)}>{t.label}</button>
-  {/each}
+  <button type="button" class:on={tab === "court-control"} onclick={() => show("court-control")}>Court Control</button>
+  <!-- EDA: the descriptive tabs, in a menu that opens on hover (or keyboard focus, or a click on touch screens). -->
+  <div class="tab-menu" class:open={edaOpen} role="presentation" onmouseleave={() => { edaOpen = false; }}>
+    <button type="button" class="tab-menu-btn" class:on={edaTab != null} aria-haspopup="true" aria-expanded={edaOpen}
+            onclick={() => { edaOpen = !edaOpen; }}>EDA{#if edaTab} · {edaTab.label}{/if} <span class="tab-caret" aria-hidden="true">▾</span></button>
+    <div class="tab-menu-list" role="menu">
+      {#each EDA as t (t.id)}
+        <button type="button" role="menuitem" class:on={tab === t.id} onclick={(ev) => { show(t.id); edaOpen = false; (ev.currentTarget as HTMLElement).blur(); }}>{t.label}</button>
+      {/each}
+    </div>
+  </div>
   <span class="credit">Data: Liga Endesa ACB 2025/2026 via SkillCorner</span>
 </nav>
 
@@ -280,11 +298,15 @@
 </div>
 
 <main class="doc doc-framed" hidden={tab !== "coverage-model"}>
-  {#if opened["coverage-model"]}<ScreenCoverageModel />{/if}
+  {#if opened["coverage-model"]}<DocFrame src="docs/screen_coverage_model.html" title="Screen Coverage Model" />{/if}
 </main>
 
 <main class="doc" hidden={tab !== "archetypes"}>
   {#if opened.archetypes}<Archetypes />{/if}
+</main>
+
+<main class="doc doc-framed" hidden={tab !== "court-control"}>
+  {#if opened["court-control"]}<DocFrame src="docs/court_control.html" title="Court Control" />{/if}
 </main>
 
 <main class="doc" hidden={tab !== "rebounding"}>

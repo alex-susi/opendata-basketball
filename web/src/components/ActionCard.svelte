@@ -6,6 +6,7 @@
   // Driver, Defender…), then the action's details.
   //   x     the pointer's tick line, window px (the card centres on it, kept inside the window)
   //   y     the top of the timeline, window px
+  import { toPage } from "../lib/fit.svelte";
   import { closeoutLines, coverageText, cutLines, driveLines, nameOf, shotCard, titleCase, type Line } from "../lib/context";
   import { clamp } from "../lib/geometry";
   import { foulLines, turnoverLines } from "../lib/whistles";
@@ -115,7 +116,7 @@
 
 {#if cards.length}
   <div class="trace-card" class:up={rises} bind:clientWidth={w}
-       style:left="{clamp(x - w / 2, 4, Math.max(4, window.innerWidth - w - 4))}px" style:top="{y + 6}px">
+       style:left="{clamp(x - w / 2, 4, Math.max(4, toPage(window.innerWidth) - w - 4))}px" style:top="{y + 6}px">
     {#each cards as card, n (n)}
       <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{title(card.tick)}{#if card.tick.event.flag}<i class="event-flag">{card.tick.event.flag === "BLK" ? "Blocked" : "Steal"}</i>{/if}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
       {#each card.roles as line}<span class="card-line"><span>{line.k}</span><span>{line.v}</span></span>{/each}
