@@ -2643,3 +2643,62 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - Model Attention: no rings. Every player on the court gets a purple percentage above his dot (his share of the four screen players' attention, 0% when none).
 - Roll Lanes labels: light blue text (#8CC0FF) on the dark plate, gap to the lane and closing speed on two lines. `drawTag` in `web/src/lib/draw.ts` now stacks lines split on "\n".
 - Display only. 106 tests pass.
+
+## 2026-11-19 — Site: Screen Coverage menu
+
+- The two screen-coverage tabs are one hover menu, "Screen Coverage", with EDA (`#/explore/coverage`, page title "Screen Coverage EDA") and Model (`#/coverage-model`). Addresses unchanged, so the README badge link still works.
+- Tab bar: Play viewer, Screen Coverage ▾, EDA ▾, Font, Colors.
+
+## 2026-11-19 — Screen coverage: personnel experiment (positions + possession memory), not live
+
+Owner asked to add the EDA's switch signals to both models and report before deciding on the live site.
+
+- **Positions** (`screen_coverage/01_scripts/28_fold_positions.R`). Guard / wing / big probabilities from the offensive archetype, refitted for every held-out game without that game's tracked counts (owner's chosen 10-cluster EII solution, 4 PCs). The full refit reproduces `offense_membership.csv` 310/310. Clusters are named by a one-to-one assignment of the anchor players (lpSolve), because without one game two anchors can share a top cluster. About 1 in 10 of a held-out game's players change group against the all-games fit. Season aggregate files still include the graded game (about 1 of 33 per team) and cannot be split.
+- **Memory** (`29_build_personnel.R`). Earlier switch (off-ball screen, handoff or pick), earlier pick and cross-match in the possession, each counted only 1 s after its frame (matchups rows only once ended, before the pick frame). Scramble test: 0 of 300 rows changed.
+- **Transformer** (`03_train_transformer.R --personnel`, seeds 1-2 and 3-4, 4 starts). Positions as 3 player channels, memory as 3 context columns. Main curve joint 1.1214 vs live 1.1143 (gain −0.007, 95% −0.024 to +0.012, 5/10 games). Guard −0.001, big +0.001. Before the pick frame +0.001. At and after the pick frame −0.041 (−0.062 to −0.017, 1/10 games), on under + drop and under + show screens, growing after the pick frame. Switch: log loss +0.008 (−0.001 to +0.016, 6/10), recall 20.8% → 27.3%, AUC 0.762 → 0.766. Guard on the screener: switch probability 17% → 30% against a 32% rate, recall 17% → 45%. After an earlier switch recall 21% → 45%. Under + drop recall 34.9% → 32.5%.
+- **Logistic** (`30_logistic_personnel.R`, baseline reproduces live exactly). Memory alone +0.006 main curve (−0.000 to +0.011, 8/10). Positions −0.016. Positions + memory −0.011. Defenders' positions + memory −0.001 with switch recall 17% → 23%.
+- Comparison: `31_personnel_compare.R` → `screen_coverage/03_outputs/experiments/personnel/`. Reads page change log updated and republished. Live model, site export and primer unchanged.
+- Open: owner decides whether any of it goes live. Not yet tried: the transformer with memory only, or with the defenders' positions only.
+
+## 2026-11-19 (later) — Screen coverage: personnel experiment with hard position groups, not live
+
+- Owner asked for each player's most likely group (0/1 guard / wing / big) in place of the three probabilities. `29_build_personnel.R` now also saves `pos_hard`; `03_train_transformer.R --personnel --positions=hard` writes to `02_cache/experiments/personnel_hard/`; `30_logistic_personnel.R` has `_hard` versions and `--only=`.
+- Transformer, hard groups: main curve 1.1271 vs live 1.1143 (−0.013, −0.030 to +0.005, 5/10) and −0.006 vs the probability version (4/10). At and after the pick frame −0.045 (−0.064 to −0.024, 1/10), same as with probabilities, so the after-screen loss is not memorising players. Switch recall 20.8% → 26.1%, guard on the screener 17% → 44%.
+- Logistic, hard groups: positions −0.016, positions + memory −0.011, defenders' positions + memory −0.004 (soft −0.001). Memory alone stays the only all-round gain (+0.006, 8/10).
+- Reading: positions cost the non-switch coverages after the screen in both models, however they are coded. Not live. Suggested next: transformer with memory only.
+
+## 2026-11-19 (latest) — Screen coverage: memory-only transformer, not live yet
+
+- `03_train_transformer.R --personnel --positions=none`: the live model's inputs plus three memory context columns (earlier switch, earlier pick, cross-match), no position channels. Folds in `02_cache/experiments/personnel_memory/`.
+- Main curve joint 1.1131 vs live 1.1143 (+0.001, −0.006 to +0.009, 5/10). Guard +0.003, big +0.001, before the pick frame +0.003 (6/10), at and after +0.001, switch log loss +0.003. Nothing worse; all within seed noise (its seed halves score 1.1225 and 1.1143).
+- Switch recall 20.8% → 22.8%. After an earlier switch 21% → 42% (p_switch 18% → 26% vs 28% actual); cross-matched 28% → 41%. Under + drop recall 34.9% → 37.0%. Guard on the screener unchanged (p_switch 18% vs 32% actual).
+- Positions are what cost the after-screen score in the two personnel runs. Memory is safe to add. Owner decides whether it goes live (would need: promote folds, past-only test on the new nets, export, primer and README numbers).
+
+## 2026-11-19 (evening) — Positions-only runs, switch-timing timeline, viewer Player Groups
+
+- **Positions only** (`03_train_transformer.R --personnel --positions=hard --memory=no [--pos-players=defenders]`, folds in `personnel_hard_nomem/` and `personnel_hard_def_nomem/`). All ten players: main curve 1.1296 (−0.015, −0.032 to +0.003, 3/10), at and after the pick frame −0.041 (1/10). Defenders only: 1.1247 (−0.010, −0.026 to +0.007, 3/10), after −0.030 (−0.052 to −0.005, 3/10). Switch recall 27.5% / 26.4% (live 20.8%); guard on the screener 52% / 48% (live 17%), p_switch 31-32% vs 32% actual. After an earlier switch 32-33% (memory only 42%). Under + drop recall 31% (live 35%). Logistic defenders' hard positions alone −0.008. Positions cost the non-switch coverages after the screen in every form; they and memory overlap on switches. Not live.
+- **EDA** (`web/scripts/explore/coverage.R`, Reading switches): timeline of when a switch is tagged against the pick frame, two stand-ins because the picks table has no switch frame: matchups hand-over (median +0.9 s, 11% by the pick frame) and the tracking swap (screener's defender stays nearer the handler, median +0.6 s, 6% by the pick frame). Drawn as smoothed histograms (Gaussian kernel, 0.12 s, reflected at −1 s) on the share-per-0.2 s scale, with the pick frame and the closest approach (+0.20 s) marked.
+- **Viewer**: Shot Details toggle and the automatic shot card removed (the trace-panel hover card stays). New Player Groups toggle in its place: G / F / C pill at the top right of each player circle, from his offensive archetype in `playstyle.json` (published archetypes, display only).
+
+## 2026-11-19 (night) — Positions in the switch part only (design A), not live
+
+- Owner chose design A (one transformer, positions into the switch decision only), four screen players, no memory, to isolate positions. `R/seq_transformer.R` gains `n_sw`: with n_sw > 0 the final layer splits into a switch part (shared read + 12 G/F/C inputs) and a coverage part (under | not switch, show | not switch; shared read only). With n_sw = 0 the module is built as before; checked identical outputs against the committed file under the same seed. `03_train_transformer.R --personnel --positions=hard --pos-into=switch --memory=no`, folds in `personnel_hard_swhead_nomem/`.
+- New pre-agreed per-part scoring: `32_switch_head_compare.R` → `by_part.csv`, `by_part_gain.csv` (switch log loss and AUC before / after the pick frame; under-or-over and show-or-drop on non-switch screens, from the joint probabilities).
+- Results vs live: main curve 1.1172 vs 1.1143 (−0.003, −0.017 to +0.011, 4/10); after the pick frame −0.009 (n.s.; positions on the players were −0.041). Switch before the pick frame +0.0055 log loss (8/10), AUC 0.709 → 0.729; main-curve AUC 0.762 → 0.770 (best of all versions); recall 20.8% → 25.7%, guard on the screener 17% → 45% (p_switch 27% vs 32%). Under or over unchanged (−0.003 / −0.004, n.s.). Show or drop worse: −0.0065 before, −0.0101 after (both intervals below 0, 3/10 games); positions cannot reach that part, so the split head or noise is the likely cause.
+- Open: a control with the split head and no positions would separate the architecture's effect from the positions'. Owner to decide.
+
+## 2026-11-19 (late night) — Split-head control, not live
+
+- `R/seq_transformer.R` gains `split` (default `n_sw > 0`; older saved networks still load), `03_train_transformer.R --personnel --positions=none --pos-into=switch --memory=no` builds the split final layer with nothing added (folder `split_head_control/`). Live model rechecked identical.
+- Split alone vs live: show or drop unchanged (−0.0011 before, −0.0005 after), under or over unchanged; switch before the pick frame −0.0051 (−0.0080 to −0.0018, 2/10), AUC 0.709 → 0.700; main curve 1.1188 (−0.0045, 2/10).
+- Positions alone (switch-part run vs control): switch before the pick frame +0.0106 (+0.0021 to +0.0186, 8/10), main-curve switch +0.0091 (8/10); show or drop −0.0054 before, −0.0097 after (both below 0); under or over −0.003 (n.s.); main curve +0.0015.
+- Reading: the show-or-drop slip comes with the positions via shared training, not from the split. Game-resampled intervals ignore training randomness (two-start halves have differed by ~0.008), so sub-0.01 differences are partly noise.
+- Candidate next step (not run): keep the live model and correct only its switch probability with a small held-out logistic on positions, rescaling the four other coverages by (1 − new switch) / (1 − old switch). The conditional over/under and show/drop reads are then unchanged by construction.
+
+## 2026-11-19 (final) — Live model: position groups in the switch part
+
+- Owner chose to make the switch-part model (`personnel_hard_swhead_nomem/`) the live transformer. One network, two final parts. The switch part reads the shared summary plus hard guard / wing / big groups of the four screen players (12 inputs, per-fold archetype refit without the graded game). The under / show part reads the shared summary only. No memory flags.
+- `33_promote_switch_positions.R` snapshots the outgoing live model to `screen_coverage/02_cache/v2_main_2026-11-15/tf/` (`SEQ_MAIN_DIR`), copies the four nets into `02_cache/tf/` with `switch_part` metadata, and saves `02_cache/positions_live.rds` for the past-only test and the export. `R/predictions.R` `SEQ_MODEL` renamed, `04_evaluate.R` label updated.
+- `05_test_past_only.R` passed 180 of 180 on every check with the new nets.
+- Held-out numbers (main curve): joint 1.117 (previous live 1.114, baseline 1.192), better than the baseline by 0.075 (0.050 to 0.096). Before the screen 1.279 (0.057 better, 9/10 games), after 0.788 (0.112 better, 10/10). Switch recall 21% → 26%, AUC 0.762 → 0.770, guard on the screener 17% → 45%. Under + show recall 19% → 17%. Defender accuracy before the screen 66.9% (handler's defender) and 58.2% (screener's).
+- Reran 06 (site JSON), 14, 22, 23, 15, 04, 25, 26, 27. Model primer, reads page and README rewritten with the new numbers; both doc artifacts republished. Nothing committed.

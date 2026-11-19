@@ -1,0 +1,71 @@
+model,group,screens,switched,p_switch,switch_recall
+"Transformer, live",All screens,1463,0.144,0.141,0.208
+"Transformer, live",Screener's defender a guard,60,0.317,0.17,0.166
+"Transformer, live",Screener's defender a wing,274,0.193,0.163,0.202
+"Transformer, live",Screener's defender a big,1129,0.123,0.135,0.216
+"Transformer, live",Earlier switch in the possession,98,0.276,0.183,0.206
+"Transformer, live",Cross-matched,211,0.261,0.185,0.277
+"Transformer, live",Earlier pick in the possession,466,0.217,0.175,0.228
+"Transformer, split head control",All screens,1463,0.144,0.141,0.209
+"Transformer, split head control",Screener's defender a guard,60,0.317,0.169,0.173
+"Transformer, split head control",Screener's defender a wing,274,0.193,0.16,0.217
+"Transformer, split head control",Screener's defender a big,1129,0.123,0.135,0.21
+"Transformer, split head control",Earlier switch in the possession,98,0.276,0.184,0.209
+"Transformer, split head control",Cross-matched,211,0.261,0.191,0.302
+"Transformer, split head control",Earlier pick in the possession,466,0.217,0.176,0.226
+Transformer + positions in the switch part,All screens,1463,0.144,0.147,0.257
+Transformer + positions in the switch part,Screener's defender a guard,60,0.317,0.273,0.446
+Transformer + positions in the switch part,Screener's defender a wing,274,0.193,0.212,0.343
+Transformer + positions in the switch part,Screener's defender a big,1129,0.123,0.124,0.199
+Transformer + positions in the switch part,Earlier switch in the possession,98,0.276,0.202,0.278
+Transformer + positions in the switch part,Cross-matched,211,0.261,0.206,0.332
+Transformer + positions in the switch part,Earlier pick in the possession,466,0.217,0.18,0.255
+Transformer + hard positions only,All screens,1463,0.144,0.149,0.275
+Transformer + hard positions only,Screener's defender a guard,60,0.317,0.311,0.524
+Transformer + hard positions only,Screener's defender a wing,274,0.193,0.212,0.368
+Transformer + hard positions only,Screener's defender a big,1129,0.123,0.125,0.206
+Transformer + hard positions only,Earlier switch in the possession,98,0.276,0.201,0.317
+Transformer + hard positions only,Cross-matched,211,0.261,0.206,0.376
+Transformer + hard positions only,Earlier pick in the possession,466,0.217,0.183,0.273
+Transformer + defenders' hard positions only,All screens,1463,0.144,0.147,0.264
+Transformer + defenders' hard positions only,Screener's defender a guard,60,0.317,0.316,0.477
+Transformer + defenders' hard positions only,Screener's defender a wing,274,0.193,0.21,0.332
+Transformer + defenders' hard positions only,Screener's defender a big,1129,0.123,0.122,0.208
+Transformer + defenders' hard positions only,Earlier switch in the possession,98,0.276,0.204,0.333
+Transformer + defenders' hard positions only,Cross-matched,211,0.261,0.206,0.372
+Transformer + defenders' hard positions only,Earlier pick in the possession,466,0.217,0.181,0.276
+Transformer + memory only,All screens,1463,0.144,0.142,0.228
+Transformer + memory only,Screener's defender a guard,60,0.317,0.178,0.251
+Transformer + memory only,Screener's defender a wing,274,0.193,0.168,0.205
+Transformer + memory only,Screener's defender a big,1129,0.123,0.134,0.234
+Transformer + memory only,Earlier switch in the possession,98,0.276,0.263,0.415
+Transformer + memory only,Cross-matched,211,0.261,0.243,0.409
+Transformer + memory only,Earlier pick in the possession,466,0.217,0.205,0.3
+Transformer + personnel,All screens,1463,0.144,0.146,0.273
+Transformer + personnel,Screener's defender a guard,60,0.317,0.298,0.451
+Transformer + personnel,Screener's defender a wing,274,0.193,0.214,0.363
+Transformer + personnel,Screener's defender a big,1129,0.123,0.122,0.214
+Transformer + personnel,Earlier switch in the possession,98,0.276,0.262,0.447
+Transformer + personnel,Cross-matched,211,0.261,0.247,0.465
+Transformer + personnel,Earlier pick in the possession,466,0.217,0.207,0.329
+"Transformer + personnel, hard groups",All screens,1463,0.144,0.144,0.261
+"Transformer + personnel, hard groups",Screener's defender a guard,60,0.317,0.29,0.44
+"Transformer + personnel, hard groups",Screener's defender a wing,274,0.193,0.208,0.345
+"Transformer + personnel, hard groups",Screener's defender a big,1129,0.123,0.121,0.205
+"Transformer + personnel, hard groups",Earlier switch in the possession,98,0.276,0.258,0.426
+"Transformer + personnel, hard groups",Cross-matched,211,0.261,0.244,0.457
+"Transformer + personnel, hard groups",Earlier pick in the possession,466,0.217,0.202,0.327
+"Logistic, live",All screens,1463,0.144,0.144,0.17
+"Logistic, live",Screener's defender a guard,60,0.317,0.139,0.08
+"Logistic, live",Screener's defender a wing,274,0.193,0.153,0.145
+"Logistic, live",Screener's defender a big,1129,0.123,0.142,0.192
+"Logistic, live",Earlier switch in the possession,98,0.276,0.201,0.2
+"Logistic, live",Cross-matched,211,0.261,0.186,0.241
+"Logistic, live",Earlier pick in the possession,466,0.217,0.179,0.194
+Logistic + positions + memory,All screens,1463,0.144,0.151,0.234
+Logistic + positions + memory,Screener's defender a guard,60,0.317,0.282,0.254
+Logistic + positions + memory,Screener's defender a wing,274,0.193,0.216,0.355
+Logistic + positions + memory,Screener's defender a big,1129,0.123,0.128,0.185
+Logistic + positions + memory,Earlier switch in the possession,98,0.276,0.276,0.469
+Logistic + positions + memory,Cross-matched,211,0.261,0.254,0.403
+Logistic + positions + memory,Earlier pick in the possession,466,0.217,0.221,0.306

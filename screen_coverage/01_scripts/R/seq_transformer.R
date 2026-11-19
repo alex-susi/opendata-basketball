@@ -20,19 +20,31 @@ source(file.path(root, "kickout_transformer", "01_scripts", "R", "transformer.R"
 ROLE_OF_ROW <- c(1L, 2L, 3L, 4L, 5L, 5L, 5L, 6L, 6L, 6L)   # handler, screener, their defenders, other O, other D
 
 # initialize: embeddings for features, history step and role; attention along time and across players; the head.
+# n_sw > 0 (switch-head experiment, 2026-11-19): the head is split in two, a switch part that also reads n_sw extra
+# inputs (the screen players' positions) and a coverage part (under | not switch, show | not switch) that does not.
+# With n_sw = 0 the model is built exactly as before (one shared head), so the live model is unchanged.
+# split = TRUE with n_sw = 0 (the control, 2026-11-19): the same two parts with no extra inputs, so the split itself
+# can be judged apart from the positions.
 seq_heads_transformer <- nn_module(initialize = function(n_feat, n_ctx, n_steps = 9L, d_model = 32, n_heads = 4, n_time_layers = 1L,
-                                                         n_player_layers = 2L, d_ff = 64, dropout = 0.2) {
+                                                         n_player_layers = 2L, d_ff = 64, dropout = 0.2, n_sw = 0L, split = n_sw > 0) {
                                      self$embed <- nn_linear(n_feat, d_model)
                                      self$step_emb <- nn_embedding(n_steps, d_model)
                                      self$role_emb <- nn_embedding(6L, d_model)
                                      self$time_layers <- nn_module_list(lapply(seq_len(n_time_layers), function(i) attention_layer(d_model, n_heads, d_ff, dropout)))
                                      self$player_layers <- nn_module_list(lapply(seq_len(n_player_layers), function(i) attention_layer(d_model, n_heads, d_ff, dropout)))
                                      self$norm <- nn_layer_norm(d_model)
-                                     self$head <- nn_sequential(nn_linear(4 * d_model + n_ctx, 64), nn_relu(), nn_dropout(dropout), nn_linear(64, 3))
+                                     if (split) {
+                                       self$sw_head <- nn_sequential(nn_linear(4 * d_model + n_ctx + n_sw, 64), nn_relu(), nn_dropout(dropout), nn_linear(64, 1))
+                                       self$cov_head <- nn_sequential(nn_linear(4 * d_model + n_ctx, 64), nn_relu(), nn_dropout(dropout), nn_linear(64, 2))
+                                     } else {
+                                       self$head <- nn_sequential(nn_linear(4 * d_model + n_ctx, 64), nn_relu(), nn_dropout(dropout), nn_linear(64, 3))
+                                     }
+                                     self$n_sw <- n_sw
+                                     self$split <- split
                                      self$steps <- n_steps
                                    },
-                                   # x: [B, 10 players, 9 steps, n_feat] (step 1 = now); ctx: [B, n_ctx]
-                                   forward = function(x, ctx, return_attention = FALSE) {
+                                   # x: [B, 10 players, 9 steps, n_feat] (step 1 = now); ctx: [B, n_ctx]; sw: [B, n_sw] or NULL
+                                   forward = function(x, ctx, sw = NULL, return_attention = FALSE) {
                                      B <- x$size(1)
                                      Pn <- x$size(2)
                                      Tn <- x$size(3)
@@ -52,7 +64,14 @@ seq_heads_transformer <- nn_module(initialize = function(n_feat, n_ctx, n_steps 
                                        ws[[i]] <- o$w
                                      }
                                      rows <- self$norm(h)[, 1:4, ]$flatten(start_dim = 2)
-                                     logits <- self$head(torch_cat(list(rows, ctx), dim = 2))   # [B, 3]: switch, under, show
+                                     read <- torch_cat(list(rows, ctx), dim = 2)
+                                     # Split when built so (or, for networks saved before `split` existed, when n_sw > 0).
+                                     is_split <- isTRUE(self$split) || (!is.null(self$n_sw) && self$n_sw > 0)
+                                     logits <- if (!is_split) self$head(read) else {
+                                       # Switch from the shared read plus any positions; under and show from the shared read only.
+                                       sw_in <- if (!is.null(self$n_sw) && self$n_sw > 0) torch_cat(list(read, sw), dim = 2) else read
+                                       torch_cat(list(self$sw_head(sw_in), self$cov_head(read)), dim = 2)
+                                     }                                                          # [B, 3]: switch, under, show
                                      if (return_attention) list(logits = logits, attention = ws) else logits
                                    })
 

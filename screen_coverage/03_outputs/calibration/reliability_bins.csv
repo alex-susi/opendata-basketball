@@ -107,108 +107,107 @@ logistic,joint,under + show,40-50%,0.445,0.488,589,430.2
 logistic,joint,under + show,50-60%,0.544,0.633,309,197.9
 logistic,joint,under + show,60-70%,0.64,0.745,161,98.5
 logistic,joint,under + show,70-80%,0.738,0.496,54,20
-transformer,big,drop,0-10%,0.047,0.035,10812,8932.2
-transformer,big,drop,10-20%,0.15,0.16,8832,7081.9
-transformer,big,drop,20-30%,0.249,0.298,9450,6976.7
-transformer,big,drop,30-40%,0.349,0.371,9377,6549.5
-transformer,big,drop,40-50%,0.449,0.427,9151,6460.9
-transformer,big,drop,50-60%,0.551,0.519,8090,5802.1
-transformer,big,drop,60-70%,0.65,0.613,7920,5633.7
-transformer,big,drop,70-80%,0.75,0.706,7712,5862.5
-transformer,big,drop,80-90%,0.851,0.847,8122,6440.3
-transformer,big,drop,90-100%,0.931,0.951,3925,3189.2
-transformer,big,show,0-10%,0.055,0.047,10087,8205
-transformer,big,show,10-20%,0.149,0.183,10671,8215.3
-transformer,big,show,20-30%,0.25,0.287,11246,8120.4
-transformer,big,show,30-40%,0.35,0.365,11227,7986
-transformer,big,show,40-50%,0.449,0.44,10765,7692.7
-transformer,big,show,50-60%,0.548,0.494,8785,6341.4
-transformer,big,show,60-70%,0.649,0.597,6971,5363.4
-transformer,big,show,70-80%,0.748,0.777,6045,4768.3
-transformer,big,show,80-90%,0.849,0.864,5367,4432.3
-transformer,big,show,90-100%,0.931,0.929,2227,1804.3
-transformer,big,switch,0-10%,0.057,0.064,38780,29393.3
-transformer,big,switch,10-20%,0.143,0.147,26663,19444.6
-transformer,big,switch,20-30%,0.242,0.236,10375,7947.2
-transformer,big,switch,30-40%,0.344,0.344,4274,3448.3
-transformer,big,switch,40-50%,0.443,0.434,1912,1595.7
-transformer,big,switch,50-60%,0.543,0.519,891,732.5
-transformer,big,switch,60-70%,0.645,0.596,392,306.3
-transformer,big,switch,70-80%,0.734,0.48,98,58.5
-transformer,big,switch,80-90%,0.819,0,6,2.8
-transformer,guard,over,0-10%,0.07,0.077,1403,1059.6
-transformer,guard,over,10-20%,0.15,0.159,2819,2211.7
-transformer,guard,over,20-30%,0.252,0.231,3164,2554.3
-transformer,guard,over,30-40%,0.352,0.386,3626,2812.8
-transformer,guard,over,40-50%,0.453,0.464,5197,3930.5
-transformer,guard,over,50-60%,0.552,0.526,8415,6183.1
-transformer,guard,over,60-70%,0.653,0.638,12399,8990.1
-transformer,guard,over,70-80%,0.752,0.74,16208,11701.2
-transformer,guard,over,80-90%,0.851,0.842,18590,14355.7
-transformer,guard,over,90-100%,0.932,0.929,11570,9130
-transformer,guard,switch,0-10%,0.057,0.064,38780,29393.3
-transformer,guard,switch,10-20%,0.143,0.147,26663,19444.6
-transformer,guard,switch,20-30%,0.242,0.236,10375,7947.2
-transformer,guard,switch,30-40%,0.344,0.344,4274,3448.3
-transformer,guard,switch,40-50%,0.443,0.434,1912,1595.7
-transformer,guard,switch,50-60%,0.543,0.519,891,732.5
-transformer,guard,switch,60-70%,0.645,0.596,392,306.3
-transformer,guard,switch,70-80%,0.734,0.48,98,58.5
-transformer,guard,switch,80-90%,0.819,0,6,2.8
-transformer,guard,under,0-10%,0.043,0.047,39254,30383.3
-transformer,guard,under,10-20%,0.144,0.151,16308,12085.3
-transformer,guard,under,20-30%,0.246,0.257,9975,7209.9
-transformer,guard,under,30-40%,0.345,0.319,6420,4584.7
-transformer,guard,under,40-50%,0.447,0.458,4149,3014.8
-transformer,guard,under,50-60%,0.547,0.529,3112,2338.6
-transformer,guard,under,60-70%,0.649,0.7,2088,1682.6
-transformer,guard,under,70-80%,0.746,0.807,1515,1192.2
-transformer,guard,under,80-90%,0.838,0.851,528,402.7
-transformer,guard,under,90-100%,0.914,0.714,42,34.9
-transformer,joint,over + drop,0-10%,0.046,0.042,15207,12527.1
-transformer,joint,over + drop,10-20%,0.149,0.146,12881,9975.6
-transformer,joint,over + drop,20-30%,0.248,0.26,12909,9220.5
-transformer,joint,over + drop,30-40%,0.349,0.313,11479,7798.7
-transformer,joint,over + drop,40-50%,0.449,0.426,9574,6740.3
-transformer,joint,over + drop,50-60%,0.547,0.5,7100,5232.1
-transformer,joint,over + drop,60-70%,0.648,0.61,5504,4270.6
-transformer,joint,over + drop,70-80%,0.748,0.739,4265,3533.4
-transformer,joint,over + drop,80-90%,0.848,0.876,3449,2855.9
-transformer,joint,over + drop,90-100%,0.924,0.959,1023,774.7
-transformer,joint,over + show,0-10%,0.052,0.057,17435,13857.5
-transformer,joint,over + show,10-20%,0.148,0.182,14628,10827.8
-transformer,joint,over + show,20-30%,0.248,0.251,12324,8888.4
-transformer,joint,over + show,30-40%,0.348,0.355,9763,7024.5
-transformer,joint,over + show,40-50%,0.449,0.438,8085,5794
-transformer,joint,over + show,50-60%,0.549,0.5,6431,4754.2
-transformer,joint,over + show,60-70%,0.649,0.634,5077,3971.4
-transformer,joint,over + show,70-80%,0.75,0.782,4418,3553.1
-transformer,joint,over + show,80-90%,0.848,0.843,3876,3210.4
-transformer,joint,over + show,90-100%,0.931,0.931,1354,1047.7
-transformer,joint,switch,0-10%,0.057,0.064,38780,29393.3
-transformer,joint,switch,10-20%,0.143,0.147,26663,19444.6
-transformer,joint,switch,20-30%,0.242,0.236,10375,7947.2
-transformer,joint,switch,30-40%,0.344,0.344,4274,3448.3
-transformer,joint,switch,40-50%,0.443,0.434,1912,1595.7
-transformer,joint,switch,50-60%,0.543,0.519,891,732.5
-transformer,joint,switch,60-70%,0.645,0.596,392,306.3
-transformer,joint,switch,70-80%,0.734,0.48,98,58.5
-transformer,joint,switch,80-90%,0.819,0,6,2.8
-transformer,joint,under + drop,0-10%,0.03,0.035,55377,42423.7
-transformer,joint,under + drop,10-20%,0.143,0.153,13278,9672.7
-transformer,joint,under + drop,20-30%,0.245,0.223,6748,4816.8
-transformer,joint,under + drop,30-40%,0.345,0.348,3444,2452.7
-transformer,joint,under + drop,40-50%,0.446,0.467,2084,1604.3
-transformer,joint,under + drop,50-60%,0.545,0.635,1227,984.6
-transformer,joint,under + drop,60-70%,0.642,0.724,810,657.3
-transformer,joint,under + drop,70-80%,0.737,0.833,332,236.9
-transformer,joint,under + drop,80-90%,0.835,0.855,87,75.9
-transformer,joint,under + drop,90-100%,0.905,0,4,4
-transformer,joint,under + show,0-10%,0.033,0.035,62842,47526
-transformer,joint,under + show,10-20%,0.14,0.126,12796,9344.9
-transformer,joint,under + show,20-30%,0.242,0.239,4331,3338.7
-transformer,joint,under + show,30-40%,0.342,0.304,1983,1579.8
-transformer,joint,under + show,40-50%,0.445,0.406,880,698.4
-transformer,joint,under + show,50-60%,0.544,0.584,417,332.6
-transformer,joint,under + show,60-70%,0.638,0.873,121,93.9
-transformer,joint,under + show,70-80%,0.734,1,21,14.5
+transformer,big,drop,0-10%,0.049,0.046,11028,9137.4
+transformer,big,drop,10-20%,0.149,0.162,9192,7237.2
+transformer,big,drop,20-30%,0.249,0.292,9663,7134.4
+transformer,big,drop,30-40%,0.349,0.395,8815,6354.7
+transformer,big,drop,40-50%,0.45,0.433,8493,6030.8
+transformer,big,drop,50-60%,0.549,0.533,7898,5657.9
+transformer,big,drop,60-70%,0.651,0.593,8614,6104.2
+transformer,big,drop,70-80%,0.75,0.698,8756,6570
+transformer,big,drop,80-90%,0.85,0.872,8207,6492.1
+transformer,big,drop,90-100%,0.925,0.952,2725,2210.4
+transformer,big,show,0-10%,0.061,0.046,9525,7806.1
+transformer,big,show,10-20%,0.148,0.177,11306,8568.2
+transformer,big,show,20-30%,0.251,0.299,11754,8519.2
+transformer,big,show,30-40%,0.349,0.356,11279,8035.6
+transformer,big,show,40-50%,0.45,0.444,10070,7238.6
+transformer,big,show,50-60%,0.549,0.51,8946,6558.1
+transformer,big,show,60-70%,0.649,0.592,7181,5494.9
+transformer,big,show,70-80%,0.748,0.765,6009,4702.8
+transformer,big,show,80-90%,0.847,0.877,4950,4101.1
+transformer,big,show,90-100%,0.935,0.933,2371,1904.5
+transformer,big,switch,0-10%,0.053,0.061,40691,30410.4
+transformer,big,switch,10-20%,0.142,0.14,23381,17369
+transformer,big,switch,20-30%,0.245,0.25,9326,7217.4
+transformer,big,switch,30-40%,0.345,0.311,5082,3979.3
+transformer,big,switch,40-50%,0.444,0.386,2595,2111.5
+transformer,big,switch,50-60%,0.544,0.448,1435,1151.9
+transformer,big,switch,60-70%,0.642,0.584,636,504.5
+transformer,big,switch,70-80%,0.738,0.59,191,147.7
+transformer,big,switch,80-90%,0.828,0.825,54,37.4
+transformer,guard,over,0-10%,0.068,0.044,1505,1111.5
+transformer,guard,over,10-20%,0.151,0.147,2889,2285.5
+transformer,guard,over,20-30%,0.25,0.268,3182,2547.6
+transformer,guard,over,30-40%,0.353,0.404,4116,3226.4
+transformer,guard,over,40-50%,0.452,0.477,5881,4440
+transformer,guard,over,50-60%,0.552,0.528,8347,6188.1
+transformer,guard,over,60-70%,0.654,0.637,11723,8522.8
+transformer,guard,over,70-80%,0.752,0.75,15274,11169.8
+transformer,guard,over,80-90%,0.851,0.847,18752,14153.4
+transformer,guard,over,90-100%,0.933,0.927,11722,9284
+transformer,guard,switch,0-10%,0.053,0.061,40691,30410.4
+transformer,guard,switch,10-20%,0.142,0.14,23381,17369
+transformer,guard,switch,20-30%,0.245,0.25,9326,7217.4
+transformer,guard,switch,30-40%,0.345,0.311,5082,3979.3
+transformer,guard,switch,40-50%,0.444,0.386,2595,2111.5
+transformer,guard,switch,50-60%,0.544,0.448,1435,1151.9
+transformer,guard,switch,60-70%,0.642,0.584,636,504.5
+transformer,guard,switch,70-80%,0.738,0.59,191,147.7
+transformer,guard,switch,80-90%,0.828,0.825,54,37.4
+transformer,guard,under,0-10%,0.044,0.046,39040,30161.4
+transformer,guard,under,10-20%,0.145,0.156,15822,11857.5
+transformer,guard,under,20-30%,0.247,0.253,10427,7465.9
+transformer,guard,under,30-40%,0.348,0.322,6833,4907.1
+transformer,guard,under,40-50%,0.446,0.453,4298,3163.8
+transformer,guard,under,50-60%,0.548,0.534,3077,2329.8
+transformer,guard,under,60-70%,0.647,0.705,2164,1694.6
+transformer,guard,under,70-80%,0.741,0.822,1301,1028.6
+transformer,guard,under,80-90%,0.833,0.878,407,303.8
+transformer,guard,under,90-100%,0.913,1,22,16.5
+transformer,joint,over + drop,0-10%,0.048,0.048,15583,12790.6
+transformer,joint,over + drop,10-20%,0.148,0.151,13329,10313.4
+transformer,joint,over + drop,20-30%,0.248,0.258,12654,9074.1
+transformer,joint,over + drop,30-40%,0.348,0.331,10744,7368.2
+transformer,joint,over + drop,40-50%,0.449,0.426,9479,6658.7
+transformer,joint,over + drop,50-60%,0.547,0.497,7369,5388
+transformer,joint,over + drop,60-70%,0.649,0.607,5845,4475.5
+transformer,joint,over + drop,70-80%,0.747,0.75,4580,3780.8
+transformer,joint,over + drop,80-90%,0.846,0.889,3161,2588.5
+transformer,joint,over + drop,90-100%,0.92,0.94,647,491.2
+transformer,joint,over + show,0-10%,0.054,0.06,17326,13757
+transformer,joint,over + show,10-20%,0.147,0.179,14921,10906.7
+transformer,joint,over + show,20-30%,0.247,0.267,12564,9066.4
+transformer,joint,over + show,30-40%,0.35,0.342,9296,6839.2
+transformer,joint,over + show,40-50%,0.449,0.437,8160,5904.5
+transformer,joint,over + show,50-60%,0.547,0.499,6684,5010.1
+transformer,joint,over + show,60-70%,0.649,0.634,5253,4028.2
+transformer,joint,over + show,70-80%,0.75,0.783,4304,3438.3
+transformer,joint,over + show,80-90%,0.846,0.861,3453,2881.3
+transformer,joint,over + show,90-100%,0.933,0.939,1430,1097.4
+transformer,joint,switch,0-10%,0.053,0.061,40691,30410.4
+transformer,joint,switch,10-20%,0.142,0.14,23381,17369
+transformer,joint,switch,20-30%,0.245,0.25,9326,7217.4
+transformer,joint,switch,30-40%,0.345,0.311,5082,3979.3
+transformer,joint,switch,40-50%,0.444,0.386,2595,2111.5
+transformer,joint,switch,50-60%,0.544,0.448,1435,1151.9
+transformer,joint,switch,60-70%,0.642,0.584,636,504.5
+transformer,joint,switch,70-80%,0.738,0.59,191,147.7
+transformer,joint,switch,80-90%,0.828,0.825,54,37.4
+transformer,joint,under + drop,0-10%,0.03,0.035,54889,42141.6
+transformer,joint,under + drop,10-20%,0.144,0.151,13251,9668
+transformer,joint,under + drop,20-30%,0.244,0.227,7233,5070.9
+transformer,joint,under + drop,30-40%,0.346,0.324,3885,2825.4
+transformer,joint,under + drop,40-50%,0.445,0.513,2018,1563.5
+transformer,joint,under + drop,50-60%,0.547,0.693,1225,965.4
+transformer,joint,under + drop,60-70%,0.641,0.726,689,537.7
+transformer,joint,under + drop,70-80%,0.74,0.867,184,143.2
+transformer,joint,under + drop,80-90%,0.831,1,17,13.3
+transformer,joint,under + show,0-10%,0.034,0.035,62418,47174.3
+transformer,joint,under + show,10-20%,0.141,0.123,13191,9598.8
+transformer,joint,under + show,20-30%,0.242,0.221,4593,3597.6
+transformer,joint,under + show,30-40%,0.343,0.321,1958,1598.1
+transformer,joint,under + show,40-50%,0.441,0.448,697,532.7
+transformer,joint,under + show,50-60%,0.542,0.622,357,292.7
+transformer,joint,under + show,60-70%,0.632,0.699,125,97.4
+transformer,joint,under + show,70-80%,0.728,1,52,37.4

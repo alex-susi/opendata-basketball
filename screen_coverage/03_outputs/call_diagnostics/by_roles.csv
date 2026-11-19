@@ -1,31 +1,31 @@
 grouping,group,group_screens,call,share_of_group,actual_screens,read_screens,recall,precision
-screener_role,screener is a big (handler <20%),1340,over + show,0.347,465,531.9457,0.6935,0.6062
-screener_role,screener is a big (handler <20%),1340,over + drop,0.3343,448,569.9577,0.7187,0.5649
-screener_role,screener is a big (handler <20%),1340,under + drop,0.1134,152,103.9948,0.3511,0.5132
-screener_role,screener is a big (handler <20%),1340,under + show,0.0739,99,45.3558,0.205,0.4474
-screener_role,screener is a big (handler <20%),1340,switch,0.1313,176,88.746,0.2121,0.4206
-screener_role,mixed (20-60%),14,over + show,0.2857,4,4.6336,0.3025,0.2611
-screener_role,mixed (20-60%),14,over + drop,0.0714,1,5.852,0.5805,0.0992
-screener_role,mixed (20-60%),14,under + drop,0.0714,1,0.2375,0.0697,0.2937
+screener_role,screener is a big (handler <20%),1340,over + show,0.347,465,528.1461,0.6881,0.6058
+screener_role,screener is a big (handler <20%),1340,over + drop,0.3343,448,564.5169,0.7144,0.5669
+screener_role,screener is a big (handler <20%),1340,under + drop,0.1134,152,103.2095,0.3465,0.5104
+screener_role,screener is a big (handler <20%),1340,under + show,0.0739,99,41.7101,0.1854,0.4399
+screener_role,screener is a big (handler <20%),1340,switch,0.1313,176,102.4173,0.2388,0.4103
+screener_role,mixed (20-60%),14,over + show,0.2857,4,4.9603,0.231,0.1862
+screener_role,mixed (20-60%),14,over + drop,0.0714,1,5.0652,0.4592,0.0907
+screener_role,mixed (20-60%),14,under + drop,0.0714,1,0.2271,0.1162,0.5118
 screener_role,mixed (20-60%),14,under + show,0.0714,1,0,0,
-screener_role,mixed (20-60%),14,switch,0.5,7,3.2769,0.2588,0.5528
-screener_role,screener is a guard (handler >60%),109,over + show,0.2569,28,46.9897,0.6838,0.4075
-screener_role,screener is a guard (handler >60%),109,over + drop,0.3119,34,41.5938,0.6164,0.5038
-screener_role,screener is a guard (handler >60%),109,under + drop,0.0917,10,5.523,0.3375,0.6111
-screener_role,screener is a guard (handler >60%),109,under + show,0.0826,9,2.7146,0.0123,0.0408
-screener_role,screener is a guard (handler >60%),109,switch,0.2569,28,12.1789,0.1698,0.3904
-handler_shooting,handler 3PA rate <30%,223,over + show,0.2915,65,63.5052,0.605,0.6193
-handler_shooting,handler 3PA rate <30%,223,over + drop,0.3094,69,104.2916,0.7809,0.5167
-handler_shooting,handler 3PA rate <30%,223,under + drop,0.157,35,28.7945,0.4338,0.5273
-handler_shooting,handler 3PA rate <30%,223,under + show,0.1211,27,9.309,0.2664,0.7728
-handler_shooting,handler 3PA rate <30%,223,switch,0.1211,27,17.0997,0.2783,0.4394
-handler_shooting,30-50%,642,over + show,0.3396,218,258.2248,0.7023,0.5929
-handler_shooting,30-50%,642,over + drop,0.352,226,274.8655,0.7104,0.5841
-handler_shooting,30-50%,642,under + drop,0.0997,64,44.5465,0.3536,0.508
-handler_shooting,30-50%,642,under + show,0.067,43,19.7559,0.1276,0.2778
-handler_shooting,30-50%,642,switch,0.1417,91,44.6073,0.1939,0.3955
-handler_shooting,>50%,598,over + show,0.3579,214,261.839,0.7029,0.5745
-handler_shooting,>50%,598,over + drop,0.3144,188,238.2465,0.6867,0.5418
-handler_shooting,>50%,598,under + drop,0.107,64,36.4143,0.297,0.522
-handler_shooting,>50%,598,under + show,0.0652,39,19.0054,0.198,0.4063
-handler_shooting,>50%,598,switch,0.1555,93,42.4948,0.2015,0.441
+screener_role,mixed (20-60%),14,switch,0.5,7,3.7474,0.231,0.4315
+screener_role,screener is a guard (handler >60%),109,over + show,0.2569,28,37.9023,0.5406,0.3994
+screener_role,screener is a guard (handler >60%),109,over + drop,0.3119,34,36.1083,0.5523,0.52
+screener_role,screener is a guard (handler >60%),109,under + drop,0.0917,10,4.5315,0.2456,0.542
+screener_role,screener is a guard (handler >60%),109,under + show,0.0826,9,2.0692,0,0
+screener_role,screener is a guard (handler >60%),109,switch,0.2569,28,28.3887,0.3788,0.3736
+handler_shooting,handler 3PA rate <30%,223,over + show,0.2915,65,64.3569,0.5996,0.6056
+handler_shooting,handler 3PA rate <30%,223,over + drop,0.3094,69,107.3378,0.7887,0.507
+handler_shooting,handler 3PA rate <30%,223,under + drop,0.157,35,26.1857,0.3885,0.5192
+handler_shooting,handler 3PA rate <30%,223,under + show,0.1211,27,9.0198,0.2593,0.7762
+handler_shooting,handler 3PA rate <30%,223,switch,0.1211,27,16.0998,0.2486,0.4169
+handler_shooting,30-50%,642,over + show,0.3396,218,253.9924,0.6906,0.5927
+handler_shooting,30-50%,642,over + drop,0.352,226,266.3128,0.6902,0.5857
+handler_shooting,30-50%,642,under + drop,0.0997,64,44.7289,0.3393,0.4854
+handler_shooting,30-50%,642,under + show,0.067,43,18.9176,0.1313,0.2985
+handler_shooting,30-50%,642,switch,0.1417,91,58.0483,0.2397,0.3758
+handler_shooting,>50%,598,over + show,0.3579,214,252.6595,0.6846,0.5799
+handler_shooting,>50%,598,over + drop,0.3144,188,232.0398,0.6854,0.5553
+handler_shooting,>50%,598,under + drop,0.107,64,37.0535,0.3115,0.5381
+handler_shooting,>50%,598,under + show,0.0652,39,15.8419,0.1462,0.3599
+handler_shooting,>50%,598,switch,0.1555,93,60.4053,0.2766,0.4258

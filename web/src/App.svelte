@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The tab bar: Play viewer, Screen Coverage Model, Pick Coverage EDA (the "coverage" exploration tab), then an EDA
-  // menu (hover to open) holding Archetypes and Court Control at the top, then Rebounding and the other seven
+  // The tab bar: Play viewer, a Screen Coverage menu (EDA: the "coverage" exploration tab; Model: the live model's readme),
+  // then an EDA menu (hover to open) holding Archetypes and Court Control at the top, then Rebounding and the other seven
   // exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Screen Coverage Model
@@ -38,13 +38,15 @@
   const REBOUNDING = "#/rebounding";
   const EXPLORE = "#/explore/";
   // The exploration tabs, one per candidate topic (web/scripts/explore/<id>.R writes explore_<id>.json). Pick coverage
-  // has its own tab in the bar (PICK_TOPIC); the rest sit in the EDA menu.
+  // sits in the Screen Coverage menu (PICK_TOPIC); the rest sit in the EDA menu.
   const TOPICS = [
     { id: "paint", label: "Paint touches" }, { id: "chains", label: "Pre-shot actions" }, { id: "closeouts", label: "Closeouts" },
     { id: "crash", label: "Crashing" }, { id: "lanes", label: "Driving lanes" }, { id: "advantage", label: "Advantage" },
     { id: "gravity", label: "Gravity" }, { id: "coverage", label: "Pick coverage" },
   ];
   const PICK_TOPIC = "x-coverage";
+  // The Screen Coverage menu: the EDA tab and the model's readme.
+  const SCREEN = [{ id: PICK_TOPIC, label: "EDA" }, { id: "coverage-model", label: "Model" }];
   // The EDA menu: Archetypes and Court Control, Rebounding, then the exploration tabs other than pick coverage.
   const EDA = [{ id: "archetypes", label: "Archetypes" }, { id: "court-control", label: "Court Control" }, { id: "rebounding", label: "Rebounding" },
                ...TOPICS.filter((t) => `x-${t.id}` !== PICK_TOPIC).map((t) => ({ id: `x-${t.id}`, label: t.label }))];
@@ -70,6 +72,8 @@
   let opened = $state<Record<string, boolean>>({ [first]: true });
   let edaOpen = $state(false);
   const edaTab = $derived(EDA.find((t) => t.id === tab) ?? null);
+  let screenOpen = $state(false);
+  const screenTab = $derived(SCREEN.find((t) => t.id === tab) ?? null);
   viewer.hidden = first !== "viewer";
 
   // Width of the left column (filters and play list), in px. Remembered in this browser only.
@@ -214,8 +218,16 @@
     <span class="tabs-theme"><ThemeSwitch /></span>
   </span>
   <button type="button" class:on={tab === "viewer"} onclick={() => show("viewer")}>Play viewer</button>
-  <button type="button" class:on={tab === "coverage-model"} onclick={() => show("coverage-model")}>Screen Coverage Model</button>
-  <button type="button" class:on={tab === PICK_TOPIC} onclick={() => show(PICK_TOPIC)}>Pick Coverage EDA</button>
+  <!-- Screen Coverage: the EDA tab and the live model's readme, in a menu like EDA's. -->
+  <div class="tab-menu" class:open={screenOpen} role="presentation" onmouseleave={() => { screenOpen = false; }}>
+    <button type="button" class="tab-menu-btn" class:on={screenTab != null} aria-haspopup="true" aria-expanded={screenOpen}
+            onclick={() => { screenOpen = !screenOpen; }}>Screen Coverage{#if screenTab} · {screenTab.label}{/if} <span class="tab-caret" aria-hidden="true">▾</span></button>
+    <div class="tab-menu-list" role="menu">
+      {#each SCREEN as t (t.id)}
+        <button type="button" role="menuitem" class:on={tab === t.id} onclick={(ev) => { show(t.id); screenOpen = false; (ev.currentTarget as HTMLElement).blur(); }}>{t.label}</button>
+      {/each}
+    </div>
+  </div>
   <!-- EDA: the descriptive tabs, in a menu that opens on hover (or keyboard focus, or a click on touch screens). -->
   <div class="tab-menu" class:open={edaOpen} role="presentation" onmouseleave={() => { edaOpen = false; }}>
     <button type="button" class="tab-menu-btn" class:on={edaTab != null} aria-haspopup="true" aria-expanded={edaOpen}

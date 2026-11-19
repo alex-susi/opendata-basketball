@@ -1,0 +1,231 @@
+model,game_id,joint,sw_ll
+"Transformer, split head control",114086,1.0956,0.3507
+"Transformer, split head control",114099,1.105,0.3898
+"Transformer, split head control",114169,1.161,0.5019
+"Transformer, split head control",114234,1.0979,0.2706
+"Transformer, split head control",114243,1.0742,0.344
+"Transformer, split head control",178442,1.126,0.3747
+"Transformer, split head control",179612,1.0442,0.2771
+"Transformer, split head control",184439,1.0696,0.2962
+"Transformer, split head control",188630,1.2965,0.4974
+"Transformer, split head control",191313,1.1241,0.4669
+Transformer + positions in the switch part,114086,1.0949,0.3449
+Transformer + positions in the switch part,114099,1.0863,0.3743
+Transformer + positions in the switch part,114169,1.1452,0.4904
+Transformer + positions in the switch part,114234,1.1021,0.2607
+Transformer + positions in the switch part,114243,1.0505,0.3186
+Transformer + positions in the switch part,178442,1.152,0.3816
+Transformer + positions in the switch part,179612,1.0722,0.2949
+Transformer + positions in the switch part,184439,1.0845,0.2921
+Transformer + positions in the switch part,188630,1.272,0.4714
+Transformer + positions in the switch part,191313,1.1097,0.4431
+Transformer + hard positions only,114086,1.1171,0.3489
+Transformer + hard positions only,114099,1.0905,0.38
+Transformer + hard positions only,114169,1.1582,0.4806
+Transformer + hard positions only,114234,1.1035,0.2602
+Transformer + hard positions only,114243,1.045,0.3118
+Transformer + hard positions only,178442,1.171,0.3778
+Transformer + hard positions only,179612,1.0868,0.3055
+Transformer + hard positions only,184439,1.1081,0.2983
+Transformer + hard positions only,188630,1.2928,0.4716
+Transformer + hard positions only,191313,1.1153,0.4459
+Transformer + defenders' hard positions only,114086,1.1158,0.3498
+Transformer + defenders' hard positions only,114099,1.0904,0.3823
+Transformer + defenders' hard positions only,114169,1.1536,0.4755
+Transformer + defenders' hard positions only,114234,1.0971,0.2557
+Transformer + defenders' hard positions only,114243,1.0448,0.323
+Transformer + defenders' hard positions only,178442,1.1442,0.3831
+Transformer + defenders' hard positions only,179612,1.0878,0.3016
+Transformer + defenders' hard positions only,184439,1.11,0.3008
+Transformer + defenders' hard positions only,188630,1.2703,0.4751
+Transformer + defenders' hard positions only,191313,1.1266,0.4501
+Transformer + memory only,114086,1.1077,0.3553
+Transformer + memory only,114099,1.107,0.3892
+Transformer + memory only,114169,1.124,0.4696
+Transformer + memory only,114234,1.0859,0.257
+Transformer + memory only,114243,1.0505,0.3215
+Transformer + memory only,178442,1.1121,0.3655
+Transformer + memory only,179612,1.0528,0.2756
+Transformer + memory only,184439,1.0779,0.2976
+Transformer + memory only,188630,1.295,0.4885
+Transformer + memory only,191313,1.1261,0.4751
+Transformer + memory only (seeds 1-2 only),114086,1.1177,0.36
+Transformer + memory only (seeds 1-2 only),114099,1.1199,0.3891
+Transformer + memory only (seeds 1-2 only),114169,1.1337,0.4744
+Transformer + memory only (seeds 1-2 only),114234,1.0969,0.2547
+Transformer + memory only (seeds 1-2 only),114243,1.0499,0.3225
+Transformer + memory only (seeds 1-2 only),178442,1.1379,0.3696
+Transformer + memory only (seeds 1-2 only),179612,1.0686,0.274
+Transformer + memory only (seeds 1-2 only),184439,1.0719,0.2987
+Transformer + memory only (seeds 1-2 only),188630,1.2948,0.4868
+Transformer + memory only (seeds 1-2 only),191313,1.1422,0.4767
+Transformer + memory only (seeds 3-4 only),114086,1.105,0.3524
+Transformer + memory only (seeds 3-4 only),114099,1.1011,0.3908
+Transformer + memory only (seeds 3-4 only),114169,1.1248,0.4678
+Transformer + memory only (seeds 3-4 only),114234,1.0934,0.2608
+Transformer + memory only (seeds 3-4 only),114243,1.0611,0.3224
+Transformer + memory only (seeds 3-4 only),178442,1.1012,0.3643
+Transformer + memory only (seeds 3-4 only),179612,1.0491,0.2794
+Transformer + memory only (seeds 3-4 only),184439,1.0922,0.2979
+Transformer + memory only (seeds 3-4 only),188630,1.3041,0.4922
+Transformer + memory only (seeds 3-4 only),191313,1.1195,0.4758
+"Transformer, live",114086,1.0933,0.3507
+"Transformer, live",114099,1.1176,0.3897
+"Transformer, live",114169,1.1427,0.4934
+"Transformer, live",114234,1.0963,0.2647
+"Transformer, live",114243,1.0732,0.3313
+"Transformer, live",178442,1.1031,0.366
+"Transformer, live",179612,1.054,0.2855
+"Transformer, live",184439,1.0645,0.2921
+"Transformer, live",188630,1.2926,0.4868
+"Transformer, live",191313,1.117,0.4613
+Transformer + personnel,114086,1.0951,0.3527
+Transformer + personnel,114099,1.0841,0.3718
+Transformer + personnel,114169,1.1582,0.4694
+Transformer + personnel,114234,1.0809,0.247
+Transformer + personnel,114243,1.0527,0.3077
+Transformer + personnel,178442,1.1413,0.3681
+Transformer + personnel,179612,1.0813,0.3
+Transformer + personnel,184439,1.1236,0.301
+Transformer + personnel,188630,1.2869,0.4734
+Transformer + personnel,191313,1.0987,0.4496
+Transformer + personnel (seeds 1-2 only),114086,1.083,0.3489
+Transformer + personnel (seeds 1-2 only),114099,1.0911,0.3812
+Transformer + personnel (seeds 1-2 only),114169,1.1724,0.4729
+Transformer + personnel (seeds 1-2 only),114234,1.0911,0.2451
+Transformer + personnel (seeds 1-2 only),114243,1.0638,0.3093
+Transformer + personnel (seeds 1-2 only),178442,1.1514,0.3728
+Transformer + personnel (seeds 1-2 only),179612,1.0883,0.3063
+Transformer + personnel (seeds 1-2 only),184439,1.1242,0.2996
+Transformer + personnel (seeds 1-2 only),188630,1.298,0.4789
+Transformer + personnel (seeds 1-2 only),191313,1.1066,0.4453
+Transformer + personnel (seeds 3-4 only),114086,1.1195,0.36
+Transformer + personnel (seeds 3-4 only),114099,1.0868,0.3659
+Transformer + personnel (seeds 3-4 only),114169,1.1539,0.468
+Transformer + personnel (seeds 3-4 only),114234,1.0823,0.2505
+Transformer + personnel (seeds 3-4 only),114243,1.0548,0.3082
+Transformer + personnel (seeds 3-4 only),178442,1.1418,0.3655
+Transformer + personnel (seeds 3-4 only),179612,1.0827,0.2953
+Transformer + personnel (seeds 3-4 only),184439,1.1312,0.3039
+Transformer + personnel (seeds 3-4 only),188630,1.2854,0.4698
+Transformer + personnel (seeds 3-4 only),191313,1.1004,0.4579
+"Transformer + personnel, hard groups",114086,1.1148,0.3571
+"Transformer + personnel, hard groups",114099,1.0976,0.385
+"Transformer + personnel, hard groups",114169,1.1419,0.4634
+"Transformer + personnel, hard groups",114234,1.0902,0.2501
+"Transformer + personnel, hard groups",114243,1.0487,0.3067
+"Transformer + personnel, hard groups",178442,1.164,0.3755
+"Transformer + personnel, hard groups",179612,1.0791,0.2957
+"Transformer + personnel, hard groups",184439,1.1201,0.3004
+"Transformer + personnel, hard groups",188630,1.3006,0.4619
+"Transformer + personnel, hard groups",191313,1.1066,0.4503
+"Transformer + personnel, hard groups (seeds 1-2 only)",114086,1.1132,0.3581
+"Transformer + personnel, hard groups (seeds 1-2 only)",114099,1.0975,0.3855
+"Transformer + personnel, hard groups (seeds 1-2 only)",114169,1.1539,0.47
+"Transformer + personnel, hard groups (seeds 1-2 only)",114234,1.094,0.2474
+"Transformer + personnel, hard groups (seeds 1-2 only)",114243,1.0624,0.3088
+"Transformer + personnel, hard groups (seeds 1-2 only)",178442,1.1782,0.3762
+"Transformer + personnel, hard groups (seeds 1-2 only)",179612,1.0869,0.3027
+"Transformer + personnel, hard groups (seeds 1-2 only)",184439,1.1199,0.299
+"Transformer + personnel, hard groups (seeds 1-2 only)",188630,1.314,0.4692
+"Transformer + personnel, hard groups (seeds 1-2 only)",191313,1.1088,0.4457
+"Transformer + personnel, hard groups (seeds 3-4 only)",114086,1.1281,0.3587
+"Transformer + personnel, hard groups (seeds 3-4 only)",114099,1.1068,0.3869
+"Transformer + personnel, hard groups (seeds 3-4 only)",114169,1.1426,0.4595
+"Transformer + personnel, hard groups (seeds 3-4 only)",114234,1.1005,0.2538
+"Transformer + personnel, hard groups (seeds 3-4 only)",114243,1.0483,0.3068
+"Transformer + personnel, hard groups (seeds 3-4 only)",178442,1.1599,0.377
+"Transformer + personnel, hard groups (seeds 3-4 only)",179612,1.08,0.2904
+"Transformer + personnel, hard groups (seeds 3-4 only)",184439,1.1278,0.3034
+"Transformer + personnel, hard groups (seeds 3-4 only)",188630,1.3036,0.4608
+"Transformer + personnel, hard groups (seeds 3-4 only)",191313,1.1114,0.4583
+"Logistic, live",114086,1.1688,0.3378
+"Logistic, live",114099,1.1235,0.3603
+"Logistic, live",114169,1.2576,0.5188
+"Logistic, live",114234,1.1992,0.2728
+"Logistic, live",114243,1.1311,0.3502
+"Logistic, live",178442,1.181,0.3871
+"Logistic, live",179612,1.1831,0.3079
+"Logistic, live",184439,1.1744,0.3124
+"Logistic, live",188630,1.2678,0.4705
+"Logistic, live",191313,1.2262,0.4873
+Logistic + positions,114086,1.1731,0.3353
+Logistic + positions,114099,1.104,0.3481
+Logistic + positions,114169,1.2889,0.5312
+Logistic + positions,114234,1.2004,0.2638
+Logistic + positions,114243,1.1259,0.3154
+Logistic + positions,178442,1.2093,0.3918
+Logistic + positions,179612,1.2119,0.3146
+Logistic + positions,184439,1.2307,0.3214
+Logistic + positions,188630,1.314,0.4606
+Logistic + positions,191313,1.2007,0.4611
+Logistic + memory,114086,1.1595,0.3371
+Logistic + memory,114099,1.133,0.3664
+Logistic + memory,114169,1.2413,0.4997
+Logistic + memory,114234,1.1804,0.2658
+Logistic + memory,114243,1.1296,0.3473
+Logistic + memory,178442,1.169,0.3806
+Logistic + memory,179612,1.1795,0.3025
+Logistic + memory,184439,1.1691,0.3102
+Logistic + memory,188630,1.2632,0.4688
+Logistic + memory,191313,1.2353,0.4979
+Logistic + positions + memory,114086,1.1616,0.3343
+Logistic + positions + memory,114099,1.1137,0.3548
+Logistic + positions + memory,114169,1.2728,0.5155
+Logistic + positions + memory,114234,1.1814,0.2578
+Logistic + positions + memory,114243,1.1231,0.3164
+Logistic + positions + memory,178442,1.2,0.3852
+Logistic + positions + memory,179612,1.2122,0.3089
+Logistic + positions + memory,184439,1.2296,0.3216
+Logistic + positions + memory,188630,1.3041,0.457
+Logistic + positions + memory,191313,1.2064,0.4677
+Logistic + defenders' positions + memory,114086,1.1512,0.3332
+Logistic + defenders' positions + memory,114099,1.1261,0.3631
+Logistic + defenders' positions + memory,114169,1.2591,0.516
+Logistic + defenders' positions + memory,114234,1.1777,0.2546
+Logistic + defenders' positions + memory,114243,1.1038,0.3233
+Logistic + defenders' positions + memory,178442,1.1986,0.3856
+Logistic + defenders' positions + memory,179612,1.1987,0.3024
+Logistic + defenders' positions + memory,184439,1.2127,0.3244
+Logistic + defenders' positions + memory,188630,1.2749,0.461
+Logistic + defenders' positions + memory,191313,1.2082,0.4657
+Logistic + hard positions,114086,1.184,0.3375
+Logistic + hard positions,114099,1.1065,0.3507
+Logistic + hard positions,114169,1.264,0.5231
+Logistic + hard positions,114234,1.1953,0.2636
+Logistic + hard positions,114243,1.1188,0.313
+Logistic + hard positions,178442,1.2228,0.4043
+Logistic + hard positions,179612,1.2162,0.3104
+Logistic + hard positions,184439,1.2216,0.3204
+Logistic + hard positions,188630,1.3265,0.4678
+Logistic + hard positions,191313,1.2016,0.461
+Logistic + hard positions + memory,114086,1.172,0.3365
+Logistic + hard positions + memory,114099,1.1156,0.357
+Logistic + hard positions + memory,114169,1.2511,0.5089
+Logistic + hard positions + memory,114234,1.1755,0.2572
+Logistic + hard positions + memory,114243,1.1164,0.3144
+Logistic + hard positions + memory,178442,1.2143,0.3983
+Logistic + hard positions + memory,179612,1.2168,0.3052
+Logistic + hard positions + memory,184439,1.2214,0.3213
+Logistic + hard positions + memory,188630,1.3172,0.4641
+Logistic + hard positions + memory,191313,1.2094,0.4692
+Logistic + defenders' hard positions + memory,114086,1.1582,0.3375
+Logistic + defenders' hard positions + memory,114099,1.1324,0.3669
+Logistic + defenders' hard positions + memory,114169,1.2491,0.5095
+Logistic + defenders' hard positions + memory,114234,1.1761,0.2547
+Logistic + defenders' hard positions + memory,114243,1.1015,0.3267
+Logistic + defenders' hard positions + memory,178442,1.2152,0.3973
+Logistic + defenders' hard positions + memory,179612,1.2024,0.3006
+Logistic + defenders' hard positions + memory,184439,1.2086,0.3224
+Logistic + defenders' hard positions + memory,188630,1.2837,0.4638
+Logistic + defenders' hard positions + memory,191313,1.2121,0.4676
+Logistic + defenders' hard positions,114086,1.1676,0.3374
+Logistic + defenders' hard positions,114099,1.1247,0.3626
+Logistic + defenders' hard positions,114169,1.2605,0.5232
+Logistic + defenders' hard positions,114234,1.1948,0.2617
+Logistic + defenders' hard positions,114243,1.1004,0.3257
+Logistic + defenders' hard positions,178442,1.2247,0.4031
+Logistic + defenders' hard positions,179612,1.2039,0.3049
+Logistic + defenders' hard positions,184439,1.2114,0.3223
+Logistic + defenders' hard positions,188630,1.2912,0.4657
+Logistic + defenders' hard positions,191313,1.2007,0.4554

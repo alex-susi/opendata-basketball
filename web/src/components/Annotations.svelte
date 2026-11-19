@@ -1,9 +1,7 @@
 <script lang="ts">
   // Cards over the backcourt (the half the offense is not attacking, so they rarely cover a player), from the
-  // Display panel's Annotations toggles:
-  //   Shot Details        the last shot so far: distance, SkillCorner's shot quality, contest and closest defender,
-  //                       how it was created, type, shot clock, passer, free throws; with Tracking Readouts the
-  //                       ball's peak, with Season Context the shooter's season from that zone.
+  // Display panel's Annotations toggles. (The shot card no longer opens by itself when a shot goes up; hovering a
+  // shot in the trace panel shows it at any time, ActionCard.svelte.)
   //   Possession Context  how the possession began, chances and offensive rebounds, passes, dribbles and touches so
   //                       far, who has had the ball, the game state, free throws.
   //   Data Quality        the chance's tracking quality index and how many players are extrapolated now.
@@ -12,16 +10,14 @@
   //                       call at this frame (lib/coverage.ts), the screener and ballhandler, and a table of the
   //                       expected call per defender and combined against the tagged call (TBD until the screen).
   // The court's drawing is in lib/annotate.ts; the text in lib/context.ts.
-  import { chanceAt, lastShot, possessionCard, shotCard, type Card } from "../lib/context";
+  import { chanceAt, possessionCard, type Card } from "../lib/context";
   import { coverageAt, defenderParts, loadCoverage, partOf, PART_COLORS, type CoverageFile, type PartRow } from "../lib/coverage";
   import type { Play } from "../lib/types";
-  import { live, season, viewer } from "../lib/viewer.svelte";
+  import { live, viewer } from "../lib/viewer.svelte";
 
   let { play }: { play: Play | null } = $props();
 
   const frame = $derived(play ? play.frames[Math.min(live.i0, play.frames.length - 1)] : 0);
-  const shot = $derived(play && viewer.ann.shot ? lastShot(play, frame) : null);
-  const shotInfo = $derived(play && shot ? shotCard(play, shot, { peak: viewer.ann.tracking, season: season.data, xpts: season.sample?.league.xpts }) : null);
   const poss = $derived(play && play.ann && viewer.ann.possession ? possessionCard(play, frame, play.gc[live.i0] ?? 0) : null);
   const quality = $derived.by((): Card | null => {
     if (!play || !viewer.ann.quality) return null;
@@ -48,9 +44,9 @@
   const fmtT = (t: number) => `${t >= 0 ? "+" : "−"}${Math.abs(t).toFixed(2)} s`;
 
   const box = $derived(live.box);
-  // The cards never resize the court. The shot card sits in the top corner on the backcourt side, the possession and
-  // tracking cards in the bottom corner. When the two would overlap (a tall shot card on a short court), the bottom
-  // stack slides toward center court, beside the shot card, instead of the court growing.
+  // The cards never resize the court. The coverage card sits in the top corner on the backcourt side, the possession and
+  // tracking cards in the bottom corner. When the two would overlap (a tall top card on a short court), the bottom
+  // stack slides toward center court, beside the top card, instead of the court growing.
   const PAD = 10, GAP = 8;
   let topH = $state(0), topW = $state(0), botH = $state(0);
   const shift = $derived(box && topH && botH && topH + botH + GAP + 2 * PAD > box.h ? topW + GAP : 0);
@@ -58,13 +54,12 @@
   $effect(() => { if (live.annNeed) live.annNeed = 0; });
 </script>
 
-{#if play && box && box.w >= 480 && (shotInfo || poss || quality || covRead)}
+{#if play && box && box.w >= 480 && (poss || quality || covRead)}
   <!-- Cards sit against the backcourt's sideline end; each is as wide as its longest line. -->
   <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
        style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
     <div class="ann-stack top" class:low={shift > 0} bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
       {#if covRead && cov}{@render coverage(covRead, cov.calls)}{/if}
-      {#if shotInfo}{@render card(shotInfo)}{/if}
     </div>
     <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">
       {#if poss}{@render card(poss)}{/if}

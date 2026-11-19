@@ -37,6 +37,14 @@
 # 10-90% spread); none adds nothing (the current model's settings under the new stopping rule). Writes to
 # screen_coverage/02_cache/experiments/timing/<timing>/tf_s<seeds>/. With --extra=hoop_speed (2026-11-15) each player
 # also gets his speed toward or away from the hoop as a movement channel; files go to <timing>+hoop_speed/.
+#
+# Personnel experiment (2026-11-19): --personnel [--seeds=1,2] trains the live model's settings plus the inputs of
+# 29_build_personnel.R: each player's guard / wing / big probability as three movement channels (from this fold's
+# positions, 28_fold_positions.R, which never saw the test game; 0 when the player is absent; not mirrored) and the
+# possession's memory (earlier switch, earlier pick, cross-match) as three context columns. Writes to
+# screen_coverage/02_cache/experiments/personnel/tf_s<seeds>/. With --positions=hard (owner, 2026-11-19) each player's
+# channels are his most likely group as 0/1 indicators instead of the three probabilities; files go to personnel_hard/.
+# With --positions=none (owner, 2026-11-19) there are no position channels, only the memory; files go to personnel_memory/.
 ## ═════════════════════════════════════════════════════════════════════════════
 
 source_root <- function() {
@@ -57,6 +65,25 @@ FOLD <- as.integer(arg("fold"))
 VARIANT <- arg("variant", NA_character_)
 TIMING <- arg("timing", NA_character_)
 EXTRA <- arg("extra", NA_character_)
+PERSONNEL <- "--personnel" %in% commandArgs(TRUE)
+POS_FORM <- arg("positions", "soft")
+if (!POS_FORM %in% c("soft", "hard", "none")) stop("Unknown --positions: ", POS_FORM)
+# --memory=no leaves the possession's memory out (positions only); --pos-players=defenders gives position channels to
+# the two screen defenders only (roster slots 3 and 4), the other eight players get zeros.
+USE_MEMORY <- arg("memory", "yes") != "no"
+POS_PLAYERS <- arg("pos-players", "all")
+if (!POS_PLAYERS %in% c("all", "defenders")) stop("Unknown --pos-players: ", POS_PLAYERS)
+# --pos-into=switch (owner, 2026-11-19): the four screen players' groups (handler, screener and their defenders, 3 each)
+# go into the switch part of the head only, never into the players' movement rows or the coverage part
+# (R/seq_transformer.R, n_sw). Default "players": position channels on the players' rows, as in the earlier runs.
+POS_INTO <- arg("pos-into", "players")
+if (!POS_INTO %in% c("players", "switch")) stop("Unknown --pos-into: ", POS_INTO)
+# The split-head control (owner, 2026-11-19): --positions=none --pos-into=switch --memory=no builds the same split
+# final layer with nothing added, so the split itself can be judged apart from the positions.
+CONTROL <- PERSONNEL && POS_FORM == "none" && POS_INTO == "switch" && !USE_MEMORY
+if (PERSONNEL && POS_FORM == "none" && !USE_MEMORY && !CONTROL) stop("--positions=none with --memory=no adds nothing")
+if (POS_INTO == "switch" && POS_PLAYERS != "all") stop("--pos-into=switch uses the four screen players")
+if (POS_INTO == "switch" && POS_FORM == "none" && !CONTROL) stop("--pos-into=switch with --positions=none is the control: add --memory=no")
 # Live and timing runs stop on the main time curve and average four starts; the closed lane experiment keeps the
 # flat stopping score and two starts it was run with.
 WEIGHTED <- is.na(VARIANT)
@@ -66,7 +93,14 @@ cache_dir <- file.path(root, "screen_coverage", "02_cache")
 seq_path <- file.path(cache_dir, "sequences.rds")
 tf_dir <- file.path(cache_dir, "tf")
 if (!is.na(VARIANT) && !is.na(TIMING)) stop("--variant and --timing are separate experiments")
-if (!is.na(VARIANT)) {
+if (PERSONNEL && (!is.na(VARIANT) || !is.na(TIMING))) stop("--personnel is a separate experiment from --variant and --timing")
+if (PERSONNEL) {
+  version_dir <- paste0(c(soft = "personnel", hard = "personnel_hard", none = "personnel_memory")[[POS_FORM]],
+                        if (POS_PLAYERS == "defenders") "_def" else "", if (POS_INTO == "switch") "_swhead" else "",
+                        if (USE_MEMORY) "" else "_nomem")
+  if (CONTROL) version_dir <- "split_head_control"
+  tf_dir <- file.path(cache_dir, "experiments", version_dir, paste0("tf_s", paste(range(SEEDS), collapse = "-")))
+} else if (!is.na(VARIANT)) {
   source(file.path(root, "screen_coverage", "01_scripts", "R", "lane_variants.R"))
   if (!VARIANT %in% names(LANE_VARIANTS)) stop("Unknown --variant: ", VARIANT)
   seq_path <- file.path(lane_dir(root, VARIANT), "sequences.rds")
@@ -77,7 +111,7 @@ if (!is.na(VARIANT)) {
   if (!is.na(EXTRA) && EXTRA != "hoop_speed") stop("Unknown --extra: ", EXTRA)
   version_dir <- if (is.na(EXTRA)) TIMING else paste(TIMING, EXTRA, sep = "+")
   tf_dir <- file.path(cache_dir, "experiments", "timing", version_dir, paste0("tf_s", paste(range(SEEDS), collapse = "-")))
-} else if (!identical(SEEDS, 1:4)) stop("--seeds is for the lane and timing experiments only (with --variant or --timing)")
+} else if (!identical(SEEDS, 1:4) && !PERSONNEL) stop("--seeds is for the lane, timing and personnel experiments only")
 if (!is.na(EXTRA) && is.na(TIMING)) stop("--extra is for the timing experiment only (with --timing)")
 dir.create(tf_dir, recursive = TRUE, showWarnings = FALSE)
 out_path <- file.path(tf_dir, sprintf("seqheads_%d.rds", FOLD))
@@ -138,6 +172,28 @@ if (identical(EXTRA, "hoop_speed")) {
   SQ$feats <- nm
   rm(fx, fy, hv)
 }
+# --personnel: this fold's guard / wing / big probabilities as three channels per player (the same at every frame, 0
+# when he is absent), then the possession's memory as context (below).
+if (PERSONNEL) {
+  PI <- readRDS(file.path(cache_dir, "experiments", "personnel", "inputs.rds"))
+  if (!identical(PI$rules, PAST_ONLY_RULES) || !identical(PI$screen_ids, L$P$id)) stop("inputs.rds is stale: rerun 29_build_personnel.R")
+}
+# --positions=none leaves the position channels out (memory only).
+if (PERSONNEL && POS_FORM != "none" && POS_INTO == "players") {
+  pa <- (if (POS_FORM == "hard") PI$pos_hard else PI$pos)[[as.character(FOLD)]]
+  if (POS_PLAYERS == "defenders") pa[, -(3:4), ] <- 0
+  pres <- base[, , , "present"] == 1
+  add <- lapply(seq_along(PI$pos_cols), function(k) {
+    # [screens, players, frames] recycles the fold's [screens, players] matrix over frames, then [screens, frames, players].
+    v <- aperm(array(pa[, , k], c(dim(base)[1], dim(base)[3], dim(base)[2])), c(1, 3, 2))
+    v[!pres] <- 0
+    v
+  })
+  nm <- c(dimnames(base)[[4]], PI$pos_cols)
+  base <- array(c(base, unlist(add)), c(dim(base)[1:3], length(nm)), dimnames = list(NULL, NULL, NULL, nm))
+  SQ$feats <- nm
+  rm(add, pres)
+}
 NS <- dim(base)[1]
 NB <- dim(base)[2]
 NF <- dim(base)[4]
@@ -151,6 +207,15 @@ if (!is.na(TIMING) && TIMING != "none") {
   if (!identical(S1$rules, PAST_ONLY_RULES) || !identical(S1$screen_ids, L$P$id)) stop("step1.rds is stale: rerun 17_time_to_screen.R")
   step1_cols <- if (TIMING == "physics") TTS_PHYSICS else TTS_LEARNED
   ctx_all <- cbind(ctx_all, S1$folds[[as.character(FOLD)]]$m[, step1_cols, drop = FALSE])
+}
+if (PERSONNEL && USE_MEMORY) ctx_all <- cbind(ctx_all, PI$mem)
+# --pos-into=switch: per prediction row, the four screen players' groups from this fold's positions (12 columns, 0/1
+# for hard groups), fed to the switch part only. NULL otherwise, and the head is the live one.
+sw_all <- NULL
+if (PERSONNEL && POS_INTO == "switch" && !CONTROL) {
+  pa <-(if (POS_FORM == "hard") PI$pos_hard else PI$pos)[[as.character(FOLD)]]
+  sw_all <- do.call(cbind, lapply(1:4, function(s) pa[X$idx, s, , drop = TRUE]))
+  colnames(sw_all) <- as.vector(t(outer(c("h", "s", "bd", "sd"), PI$pos_cols, paste, sep = "_")))
 }
 
 # Leave one game out: the fold's game is the test set, the next game in order validates, the other eight train.
@@ -221,8 +286,11 @@ cmu <- colMeans(ctx_all[tr, ])
 csd <- apply(ctx_all[tr, ], 2, sd)
 csd[csd < 1e-6] <- 1
 as_c <- function(r) torch_tensor(scale(ctx_all[r, , drop = FALSE], cmu, csd))
+# The switch part's position inputs (0/1, not standardised), or NULL for the live head.
+as_s <- function(r) if (is.null(sw_all)) NULL else torch_tensor(sw_all[r, , drop = FALSE])
 Xva <- as_x(va)
 Cva <- as_c(va)
+Sva <- as_s(va)
 Yva <- torch_tensor(y_all[va], dtype = torch_long())
 Wva <- torch_tensor(w_va / sum(w_va))
 
@@ -245,7 +313,8 @@ t0 <- Sys.time()
 fit_seed <- function(seed) {
   torch_manual_seed(seed)
   set.seed(seed)
-  net <- seq_heads_transformer(n_feat = NF, n_ctx = ncol(ctx_all), n_steps = K_STEPS)
+  net <- seq_heads_transformer(n_feat = NF, n_ctx = ncol(ctx_all), n_steps = K_STEPS, n_sw = if (is.null(sw_all)) 0L else ncol(sw_all),
+                               split = PERSONNEL && POS_INTO == "switch")
   opt <- optim_adamw(net$parameters, lr = LR, weight_decay = WD)
   best <- Inf
   best_state <- NULL
@@ -265,7 +334,7 @@ fit_seed <- function(seed) {
     }
     tot <- 0
     for (b in batches) {
-      loss <- nll(net(as_x(b), as_c(b)), torch_tensor(y_all[b], dtype = torch_long()))
+      loss <- nll(net(as_x(b), as_c(b), as_s(b)), torch_tensor(y_all[b], dtype = torch_long()))
       opt$zero_grad()
       loss$backward()
       opt$step()
@@ -273,7 +342,7 @@ fit_seed <- function(seed) {
     }
     # Validation loss: keep the best epoch's weights and stop after PATIENCE epochs without improvement.
     net$eval()
-    vl <- with_no_grad(nll_va(net(Xva, Cva))$item())
+    vl <- with_no_grad(nll_va(net(Xva, Cva, Sva))$item())
     curve[[ep]] <- data.table(seed = seed, epoch = ep, train = tot / length(draw), val = vl)
     if (vl < best - 1e-4) {
       best <- vl
@@ -287,7 +356,7 @@ fit_seed <- function(seed) {
   torch_save(net, net_path(seed))
   chunks <- split(te, ceiling(seq_along(te) / 2000))
   parts <- lapply(chunks, function(r) {
-    o <- with_no_grad(net(as_x(r), as_c(r), return_attention = TRUE))
+    o <- with_no_grad(net(as_x(r), as_c(r), as_s(r), return_attention = TRUE))
     w <- as_array(o$attention[[length(o$attention)]])
     list(prob = as_array(joint_logp(o$logits)$exp()), heads = as_array(torch_sigmoid(o$logits)),
          att = apply(w[, , 1:4, , drop = FALSE], c(1, 4), mean))
@@ -296,7 +365,7 @@ fit_seed <- function(seed) {
   val_prob <- NULL
   if (WEIGHTED) {
     vchunks <- split(va_all, ceiling(seq_along(va_all) / 2000))
-    val_prob <- do.call(rbind, lapply(vchunks, function(r) as_array(with_no_grad(joint_logp(net(as_x(r), as_c(r)))$exp()))))
+    val_prob <- do.call(rbind, lapply(vchunks, function(r) as_array(with_no_grad(joint_logp(net(as_x(r), as_c(r), as_s(r)))$exp()))))
   }
   list(prob = do.call(rbind, lapply(parts, `[[`, "prob")), heads = do.call(rbind, lapply(parts, `[[`, "heads")),
        att = do.call(rbind, lapply(parts, `[[`, "att")), curve = rbindlist(curve), best_ep = best_ep, best_val = best,
@@ -339,6 +408,11 @@ if (WEIGHTED) {
 if (!is.na(TIMING)) {
   saved$timing <- list(version = TIMING, extra = EXTRA, feats = SQ$feats, seeds = SEEDS, step1_cols = step1_cols,
                        curve = "main", ctx_cols = colnames(ctx_all), settings = saved$stopping$settings)
+}
+if (PERSONNEL) {
+  saved$personnel <- list(positions = POS_FORM, pos_players = POS_PLAYERS, pos_into = POS_INTO, sw_cols = colnames(sw_all), memory = USE_MEMORY, feats = SQ$feats, ctx_cols = colnames(ctx_all), seeds = SEEDS, curve = "main",
+                          positions_made = readRDS(file.path(cache_dir, "experiments", "personnel", "positions_by_fold.rds"))$made,
+                          settings = saved$stopping$settings)
 }
 saveRDS(saved, out_path)
 message(sprintf("seqheads fold %d: best epochs %s, val log loss %s, %.0f s", FOLD,

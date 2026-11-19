@@ -8,10 +8,13 @@
 
 suppressPackageStartupMessages(library(data.table))
 
-SEQ_MODEL <- "time-aware transformer, two heads (main-curve stopping, 4 starts)"
+SEQ_MODEL <- "time-aware transformer, two heads, position groups in the switch part (main-curve stopping, 4 starts)"
 # The live model until 2026-11-15 (stopped on the flat score, 2 random starts), kept for the comparisons that
 # reported against it (16_screen_timing_check.R, 18_timing_compare.R, 20_hoop_speed_compare.R).
 SEQ_FLAT_DIR <- c("screen_coverage", "02_cache", "v2_flat_2026-11-12", "tf")
+# The live model from 2026-11-15 to 2026-11-19 (one shared final layer, no position groups), kept for the personnel
+# experiment's comparisons (31_personnel_compare.R, 32_switch_head_compare.R), which report against it as "live".
+SEQ_MAIN_DIR <- c("screen_coverage", "02_cache", "v2_main_2026-11-15", "tf")
 
 #' The baseline step's screens, frame rows, logistic predictions and baselines (01_logistic_baseline.R).
 load_logistic <- function(root) readRDS(file.path(root, "screen_coverage", "02_cache", "logistic_per_frame.rds"))

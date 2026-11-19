@@ -1,11 +1,11 @@
 rule,call,actual_screens,read_screens,recall,precision,accuracy
-largest probability,over + show,497,583.569,0.6898,0.5875,0.5519
-largest probability,over + drop,483,617.4036,0.7112,0.5564,0.5519
-largest probability,under + drop,163,109.7553,0.3486,0.5177,0.5519
-largest probability,under + show,109,48.0703,0.1872,0.4245,0.5519
-largest probability,switch,211,104.2018,0.208,0.4213,0.5519
-largest probability / call share,over + show,497,389.4552,0.5236,0.6681,0.4988
-largest probability / call share,over + drop,483,413.2173,0.5399,0.6311,0.4988
-largest probability / call share,under + drop,163,220.1751,0.5147,0.3811,0.4988
-largest probability / call share,under + show,109,215.2932,0.456,0.2308,0.4988
-largest probability / call share,switch,211,224.8592,0.3561,0.3342,0.4988
+largest probability,over + show,497,571.0087,0.6761,0.5885,0.549
+largest probability,over + drop,483,605.6904,0.7024,0.5601,0.549
+largest probability,under + drop,163,107.9681,0.3389,0.5117,0.549
+largest probability,under + show,109,43.7793,0.1683,0.4192,0.549
+largest probability,switch,211,134.5534,0.2571,0.4032,0.549
+largest probability / call share,over + show,497,371.2003,0.5007,0.6704,0.4939
+largest probability / call share,over + drop,483,407.0891,0.5348,0.6345,0.4939
+largest probability / call share,under + drop,163,220.0242,0.5024,0.3722,0.4939
+largest probability / call share,under + show,109,217.7124,0.4375,0.219,0.4939
+largest probability / call share,switch,211,246.974,0.4071,0.3478,0.4939

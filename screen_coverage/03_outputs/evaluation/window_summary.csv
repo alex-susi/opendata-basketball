@@ -1,6 +1,6 @@
 model,window,logloss,logloss_at_minus_0.4s
 "live transformer, v1 (until 2026-11-12)",at and after the screen (0 to +1.0 s),0.7614,1.1264
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",at and after the screen (0 to +1.0 s),0.779,1.1228
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",at and after the screen (0 to +1.0 s),0.788,1.1229
 "logistic baseline, v2",at and after the screen (0 to +1.0 s),0.9003,1.2187
 "logistic baseline, v1",at and after the screen (0 to +1.0 s),0.9033,1.224
 "logistic baseline without so far, v2",at and after the screen (0 to +1.0 s),0.9075,1.249
@@ -9,7 +9,7 @@ model,window,logloss,logloss_at_minus_0.4s
 baseline: league mix,at and after the screen (0 to +1.0 s),1.4598,1.4598
 baseline: even split,at and after the screen (0 to +1.0 s),1.6094,1.6094
 "live transformer, v1 (until 2026-11-12)",before the screen (-2.0 to -0.04 s),1.2761,1.1264
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",before the screen (-2.0 to -0.04 s),1.2766,1.1228
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",before the screen (-2.0 to -0.04 s),1.2789,1.1229
 "logistic baseline, v2",before the screen (-2.0 to -0.04 s),1.336,1.2187
 "logistic baseline, v1",before the screen (-2.0 to -0.04 s),1.3412,1.224
 "logistic baseline without so far, v2",before the screen (-2.0 to -0.04 s),1.3737,1.249

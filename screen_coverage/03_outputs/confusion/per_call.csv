@@ -1,37 +1,37 @@
 model,part,moment,call,actual_screens,read_screens,recall,precision,f1
-live transformer,big,-0.4 s,switch,211,65,0.1185,0.3846,0.1812
-live transformer,big,-0.4 s,show,606,684,0.7178,0.636,0.6744
-live transformer,big,-0.4 s,drop,646,714,0.7554,0.6835,0.7176
-live transformer,big,0.0 s,switch,211,86,0.2322,0.5698,0.33
-live transformer,big,0.0 s,show,606,644,0.7739,0.7283,0.7504
-live transformer,big,0.0 s,drop,646,733,0.8529,0.7517,0.7991
-live transformer,big,main curve,switch,211,59,0.1309,0.4685,0.2046
-live transformer,big,main curve,show,606,661.8,0.6922,0.6338,0.6617
-live transformer,big,main curve,drop,646,742.2,0.7644,0.6653,0.7114
-live transformer,guard,-0.4 s,switch,211,54,0.0995,0.3889,0.1585
-live transformer,guard,-0.4 s,over,980,1248,0.9337,0.7332,0.8214
-live transformer,guard,-0.4 s,under,272,161,0.3493,0.5901,0.4388
-live transformer,guard,0.0 s,switch,211,86,0.2275,0.5581,0.3232
-live transformer,guard,0.0 s,over,980,1148,0.9643,0.8232,0.8882
-live transformer,guard,0.0 s,under,272,229,0.6397,0.7598,0.6946
-live transformer,guard,main curve,switch,211,52.2,0.1189,0.481,0.1907
-live transformer,guard,main curve,over,980,1238.5,0.9388,0.7429,0.8294
-live transformer,guard,main curve,under,272,172.3,0.3851,0.6079,0.4715
-live transformer,joint,-0.4 s,over + show,497,603,0.7022,0.5788,0.6345
-live transformer,joint,-0.4 s,over + drop,483,599,0.7039,0.5676,0.6285
-live transformer,joint,-0.4 s,under + drop,163,97,0.2883,0.4845,0.3615
-live transformer,joint,-0.4 s,under + show,109,46,0.156,0.3696,0.2194
-live transformer,joint,-0.4 s,switch,211,118,0.218,0.3898,0.2796
-live transformer,joint,0.0 s,over + show,497,537,0.7847,0.7263,0.7544
-live transformer,joint,0.0 s,over + drop,483,586,0.8302,0.6843,0.7502
-live transformer,joint,0.0 s,under + drop,163,137,0.5767,0.6861,0.6267
-live transformer,joint,0.0 s,under + show,109,77,0.367,0.5195,0.4301
-live transformer,joint,0.0 s,switch,211,126,0.3128,0.5238,0.3917
-live transformer,joint,main curve,over + show,497,583.6,0.6898,0.5875,0.6346
-live transformer,joint,main curve,over + drop,483,617.4,0.7112,0.5564,0.6244
-live transformer,joint,main curve,under + drop,163,109.8,0.3486,0.5177,0.4166
-live transformer,joint,main curve,under + show,109,48.1,0.1872,0.4245,0.2598
-live transformer,joint,main curve,switch,211,104.2,0.208,0.4213,0.2785
+live transformer,big,-0.4 s,switch,211,80,0.1469,0.3875,0.2131
+live transformer,big,-0.4 s,show,606,693,0.7261,0.6349,0.6774
+live transformer,big,-0.4 s,drop,646,690,0.7368,0.6899,0.7126
+live transformer,big,0.0 s,switch,211,118,0.2891,0.5169,0.3708
+live transformer,big,0.0 s,show,606,622,0.7508,0.7315,0.741
+live transformer,big,0.0 s,drop,646,723,0.8483,0.758,0.8006
+live transformer,big,main curve,switch,211,85.9,0.1813,0.4451,0.2576
+live transformer,big,main curve,show,606,645.9,0.6788,0.6368,0.6571
+live transformer,big,main curve,drop,646,731.2,0.7529,0.6652,0.7063
+live transformer,guard,-0.4 s,switch,211,73,0.1327,0.3836,0.1972
+live transformer,guard,-0.4 s,over,980,1235,0.9306,0.7385,0.8235
+live transformer,guard,-0.4 s,under,272,155,0.3456,0.6065,0.4403
+live transformer,guard,0.0 s,switch,211,111,0.2559,0.4865,0.3354
+live transformer,guard,0.0 s,over,980,1132,0.95,0.8224,0.8816
+live transformer,guard,0.0 s,under,272,220,0.6066,0.75,0.6707
+live transformer,guard,main curve,switch,211,76,0.163,0.4523,0.2396
+live transformer,guard,main curve,over,980,1218.5,0.9283,0.7466,0.8276
+live transformer,guard,main curve,under,272,168.4,0.3754,0.6063,0.4637
+live transformer,joint,-0.4 s,over + show,497,611,0.6982,0.5679,0.6264
+live transformer,joint,-0.4 s,over + drop,483,579,0.6998,0.5838,0.6365
+live transformer,joint,-0.4 s,under + drop,163,96,0.2822,0.4792,0.3552
+live transformer,joint,-0.4 s,under + show,109,39,0.1468,0.4103,0.2162
+live transformer,joint,-0.4 s,switch,211,138,0.2322,0.3551,0.2808
+live transformer,joint,0.0 s,over + show,497,510,0.7445,0.7255,0.7349
+live transformer,joint,0.0 s,over + drop,483,583,0.8344,0.6913,0.7561
+live transformer,joint,0.0 s,under + drop,163,130,0.546,0.6846,0.6075
+live transformer,joint,0.0 s,under + show,109,64,0.3119,0.5312,0.3931
+live transformer,joint,0.0 s,switch,211,176,0.4028,0.483,0.4393
+live transformer,joint,main curve,over + show,497,571,0.6761,0.5885,0.6293
+live transformer,joint,main curve,over + drop,483,605.7,0.7024,0.5601,0.6233
+live transformer,joint,main curve,under + drop,163,108,0.3389,0.5117,0.4078
+live transformer,joint,main curve,under + show,109,43.8,0.1683,0.4192,0.2402
+live transformer,joint,main curve,switch,211,134.6,0.2571,0.4032,0.314
 logistic baseline,big,-0.4 s,switch,211,49,0.0995,0.4286,0.1615
 logistic baseline,big,-0.4 s,show,606,711,0.7162,0.6104,0.6591
 logistic baseline,big,-0.4 s,drop,646,703,0.7105,0.6529,0.6805

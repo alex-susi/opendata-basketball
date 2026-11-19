@@ -199,7 +199,9 @@ fit_fold <- function(g) {
   function(v) predict(fit, newdata = data.frame(scale(matrix(v[FEATS], 1, dimnames = list(NULL, FEATS)), mu, sdv)),
                       type = "probs")[CALLS]
 }
-# The live transformer's saved networks for one held-out game, averaged over random starts.
+# The live transformer's saved networks for one held-out game, averaged over random starts. Since 2026-11-19 the
+# switch part also reads the four screen players' position groups (02_cache/positions_live.rds, this game's fold):
+# fixed per screen, built from the archetypes without this game, never from its tracking, so they cannot look ahead.
 seq_predictor <- function(g) {
   o <- readRDS(file.path(tf_dir, sprintf("seqheads_%d.rds", g)))
   # The fold file records each network's full path when it was trained; look them up by name in this cache folder so
@@ -207,10 +209,12 @@ seq_predictor <- function(g) {
   nets <- lapply(file.path(tf_dir, basename(o$nets)), torch_load)
   for (n in nets) n$eval()
   nm <- o$norm
-  function(inp) {
+  pos <- if (is.null(o$switch_part)) NULL else readRDS(file.path(cache_dir, "positions_live.rds"))$pos[[as.character(g)]]
+  function(inp, k) {
     xt <- standardise_history(inp$hist, nm)
     ct <- torch_tensor(matrix((inp$ctx[colnames(SQ$ctx)] - nm$cmu) / nm$csd, 1))
-    Reduce(`+`, lapply(nets, function(n) as_array(with_no_grad(joint_logp(n(xt, ct))$exp())))) / length(nets)
+    st <- if (is.null(pos)) NULL else torch_tensor(matrix(as.vector(t(pos[k, , ])), 1))
+    Reduce(`+`, lapply(nets, function(n) as_array(with_no_grad(joint_logp(n(xt, ct, st))$exp())))) / length(nets)
   }
 }
 seq_cached <- function(g) readRDS(file.path(tf_dir, sprintf("seqheads_%d.rds", g)))
@@ -254,8 +258,8 @@ for (g in unique(pick$game_id)) {
       # Check 3: predictions identical, and equal to the cached held-out ones.
       pr1 <- predict_log(li)
       pr2 <- predict_log(li2)
-      ps1 <- predict_seq(si)
-      ps2 <- predict_seq(si2)
+      ps1 <- predict_seq(si, k)
+      ps2 <- predict_seq(si2, k)
       c3_log <- identical(pr1, pr2) && same(pr1, L$prob[[BASELINE]][r, ])
       c3_seq <- identical(ps1, ps2) && isTRUE(all.equal(as.vector(ps1), sc$prob[match(r, sc$rows), ], tolerance = 1e-4))
       # Negative controls: scrambling the prediction frame itself must change the inputs; the old rules must be

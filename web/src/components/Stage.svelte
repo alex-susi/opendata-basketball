@@ -4,7 +4,7 @@
   import { toPage } from "../lib/fit.svelte";
   import { onMount } from "svelte";
   import { attentionAt, lanesAt, loadCoverageAttention, loadCoverageLanes, type AttentionFile, type LanesFile } from "../lib/coverage";
-  import { drawScene } from "../lib/draw";
+  import { drawScene, GROUP_OF_ARCHETYPE, type PlayerGroup } from "../lib/draw";
   import Annotations from "./Annotations.svelte";
   import { FPS } from "../lib/sequence";
   import type { Play } from "../lib/types";
@@ -28,6 +28,18 @@
   // The roll-lane experiment's inputs, fetched the first time the Roll Lanes toggle is on.
   let lanes: LanesFile | null = null;
   $effect(() => { if (viewer.ann.lanes && !lanes) loadCoverageLanes().then((f) => { lanes = f; }); });
+  // Player Groups: each player's G / F / C from his offensive archetype (playstyle.json, by canonical id).
+  const groups = $derived.by((): Map<number, PlayerGroup> | null => {
+    const style = season.style;
+    if (!viewer.ann.groups || !play || !style) return null;
+    const out = new Map<number, PlayerGroup>();
+    for (const p of play.players) {
+      const top = style.players[String(p.canon ?? p.id)]?.off?.top;
+      const g = top ? GROUP_OF_ARCHETYPE[top] : undefined;
+      if (g) out.set(p.id, g);
+    }
+    return out;
+  });
 
   function advance(ts: number): void {
     const dt = Math.min(0.1, (ts - lastTs) / 1000);
@@ -58,7 +70,7 @@
     const attention = viewer.ann.attention && att && play && seq.length ? attentionAt(att, play.id, play.frames[seq[k]]) : null;
     const laneFrame = viewer.ann.lanes && lanes && play && seq.length ? lanesAt(lanes, play.id, play.frames[seq[k]]) : null;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos,
-                           { ...viewer, focusPid, sample: season.sample, attention, lanes: laneFrame }, framed);
+                           { ...viewer, focusPid, sample: season.sample, attention, lanes: laneFrame, groups }, framed);
     if (!info) return;
     if (info.gameClock !== live.gameClock) live.gameClock = info.gameClock;
     if (info.shotClock !== live.shotClock) live.shotClock = info.shotClock;

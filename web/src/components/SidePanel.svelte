@@ -22,7 +22,7 @@
   const SECTIONS: { key: keyof typeof viewer.ann; label: string; title: string }[] = [
     { key: "events", label: "Event Markers", title: "Where each action happened: shot spots (filled made, ringed missed, coloured by contest), passes, dribbles, drives, screens, closeouts, fouls, rebounds, turnovers, and every player at the last shot's release (dashed)" },
     { key: "defense", label: "Defensive Context", title: "Coverage on screens, matchup lines with switches (SW), the shot's closest defender, and help defenders" },
-    { key: "shot", label: "Shot Details", title: "A card over the court for the last shot (hovering a shot in the trace panel always shows it): distance, SkillCorner shot quality, contest, how it was created, shot clock, passer, free throws" },
+    { key: "groups", label: "Player Groups", title: "Each player's position group on his circle: G guard, F forward (a wing) or C center (a big), from his offensive archetype (Primary or Secondary Ball Handler and Slasher are guards; Off Screen, Movement and Stationary Shooter and Athletic Finisher are wings; Post Scorer, Roll & Cut Big and Versatile Big are bigs)" },
     { key: "tracking", label: "Tracking Readouts", title: "Openness of each offensive player (feet to the nearest defender), the followed player's speed, the ball's path and the shot's ball peak" },
     { key: "possession", label: "Possession Context", title: "How the possession began, chances, touches, passes and dribbles so far, who has had the ball, game state, free throws" },
     { key: "glass", label: "Rebounding Roles", title: "While a shot is in the air: which attackers crash the glass, retreat, stay back as the safety or hold their spot, and which defenders box out (? = mostly off camera)" },

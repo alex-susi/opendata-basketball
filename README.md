@@ -14,21 +14,21 @@ Every input is built from what has already happened, the model is never told whe
 
 The **[Play Viewer](https://alex-susi.github.io/opendata-basketball/#/coverage-model)** shows the live read on every screen, with the full write-up on its Screen Coverage Model tab.
 
-> SkillCorner open data, 10 Liga ACB 2025-26 games. Coverage labels are SkillCorner's (`bhrDefType`, `scrDefType`). Live model trained 2026-11-15.
+> SkillCorner open data, 10 Liga ACB 2025-26 games. Coverage labels are SkillCorner's (`bhrDefType`, `scrDefType`). Live model trained 2026-11-19.
 
 <br>
 
 ## 02 - Key Findings
 
-1. Movement history beats a position-only logistic baseline throughout. The gain is largest after the screen (0.121 lower log loss, better in all 10 games) and still clear before it (0.059, better in 8 of 10).
+1. Movement history beats a position-only logistic baseline throughout. The gain is largest after the screen (0.112 lower log loss, better in all 10 games) and still clear before it (0.057, better in 9 of 10).
 
-2. The screener's defender reads early. Before the screen the model names show, drop or switch correctly 58.5% of the time, against 51.5% for the defense's habit that night.
+2. The screener's defender reads early. Before the screen the model names show, drop or switch correctly 58.2% of the time, against 51.5% for the defense's habit that night.
 
-3. The ball handler's defender does not. "Expect over" is right 67.0% of the time, the model 67.4%.
+3. The ball handler's defender does not. "Expect over" is right 67.0% of the time, the model 66.9%.
 
 4. Each defender's **level** (distance from the hoop minus the screener's) carries the read. Above the screen means over or show, below means under or drop.
 
-5. Switches (21% recall) and under + show (19%) are mostly missed. A switch looks like over until the screen arrives.
+5. Switches (26% recall) and under + show (17%) are mostly missed. A switch looks like over until the screen arrives. Who is in the screen helps. With a guard guarding the screener, 45% of switches are caught (17% without position groups).
 
 <br>
 
@@ -44,13 +44,14 @@ The **[Play Viewer](https://alex-susi.github.io/opendata-basketball/#/coverage-m
 
    * Every player at 9 moments, now back to 1.6 s ago. 16 measures each, including role, position relative to the screener and handler, level, level change, speed and turning.
    * Nine screen numbers. Time to act, the defense's earlier coverages that night, and handler-to-screener closeness.
+   * For the switch question only, whether each screen player is a guard, wing or big, from archetypes refitted without the graded game.
    * No names, no ball, no screen timing, nothing after the prediction moment.
 
 3. **Transformer**
 
    * Each player looks back over his own 1.6 s, then the ten players attend to each other.
-   * The four screen players answer three yes/no questions. Switch? If not, under? Show? These give the five coverages.
-   * About 35,700 weights, held in check by dropout, weight decay, early stopping and four averaged random starts.
+   * The four screen players answer three yes/no questions. Switch? If not, under? Show? These give the five coverages. Only the switch question sees the position groups.
+   * About 45,300 weights, held in check by dropout, weight decay, early stopping and four averaged random starts.
 
 4. **Baseline**
 
@@ -65,7 +66,7 @@ The **[Play Viewer](https://alex-susi.github.io/opendata-basketball/#/coverage-m
 
 ### Example Play
 
-Jefferson climbs above the level before the screen, so over + drop leads (46% at −0.4 s). He slides under from the pick frame and under + drop takes over (50% at +0.4 s), the recorded coverage.
+Jefferson climbs above the level before the screen, so over + drop leads (50% at −0.4 s). He slides under from the pick frame and under + drop takes over (64% at +0.4 s), the recorded coverage.
 
 ![Example play](screen_coverage/03_outputs/readme/example_play.png)
 
@@ -77,13 +78,13 @@ Held-out log loss on the 1,463 screens. Lower is better.
 
 | Model | Main curve | Before screen | After screen | Ball handler's defender | Screener's defender |
 | --- | --- | --- | --- | --- | --- |
-| **Live transformer** | **1.114** | **1.277** | **0.779** | **0.696** | **0.790** |
+| **Live transformer** | **1.117** | **1.279** | **0.788** | **0.693** | **0.792** |
 | Logistic baseline | 1.192 | 1.336 | 0.900 | 0.735 | 0.838 |
 | League mix of the other games | 1.460 | 1.460 | 1.460 | 0.864 | 1.013 |
 | Even split (20% each) | 1.609 | 1.609 | 1.609 | – | – |
 
-* **Main curve.** 0.078 better than the baseline, 95% interval 0.047 to 0.104 from resampling whole games.
-* **Each defender.** 0.039 better for the ball handler's defender and 0.048 for the screener's.
+* **Main curve.** 0.075 better than the baseline, 95% interval 0.050 to 0.096 from resampling whole games.
+* **Each defender.** 0.042 better for the ball handler's defender and 0.046 for the screener's.
 * **Top coverage.** Correct on 55% of main-curve frames. Over + show and over + drop are caught about 70% of the time.
 
 <br>
@@ -91,7 +92,7 @@ Held-out log loss on the 1,463 screens. Lower is better.
 ## 05 - Validation
 
 * **Past-only test.** Scrambling everything after the prediction moment left all 180 sampled inputs and predictions unchanged. Scrambling the moment itself changed all 180.
-* **Calibration.** Honest from about −0.5 s. Earlier, the leading coverage runs 5 to 8 points high.
+* **Calibration.** Honest from about −0.5 s. Earlier, the leading coverage runs 7 to 9 points high.
 * **Left out.** 33 of 1,496 screens lose a screen player's tracking and are not graded.
 
 <br>

@@ -42,7 +42,19 @@ export interface DrawOptions {
   attention?: Map<number, number> | null;
   /** The roll-lane experiment's screener and off-ball defenders with their lane values at this frame, or null. */
   lanes?: LaneFrame | null;
+  /** Player Groups: each player's position group by player id (G guard, F forward, C center), or null. */
+  groups?: Map<number, PlayerGroup> | null;
 }
+
+export type PlayerGroup = "G" | "F" | "C";
+// Player Groups tags: a light colour per group that reads on the dark plate (and on either team's dot).
+const GROUP_COLORS: Record<PlayerGroup, string> = { G: "#8CC0FF", F: "#8FD694", C: "#F5B02E" };
+// The offensive archetypes grouped into positions, as in the Screen Coverage EDA (web/scripts/explore/coverage.R).
+export const GROUP_OF_ARCHETYPE: Record<string, PlayerGroup> = {
+  "Primary Ball Handler": "G", "Secondary Ball Handler": "G", "Slasher": "G",
+  "Off Screen Shooter": "F", "Movement Shooter": "F", "Stationary Shooter": "F", "Athletic Finisher": "F",
+  "Post Scorer": "C", "Roll & Cut Big": "C", "Versatile Big": "C",
+};
 
 const LANE_COLOR = "#c98500";
 const LANE_HELP = "#1f5fd1";
@@ -511,6 +523,13 @@ export function drawScene(ctx: CanvasRenderingContext2D, W: number, H: number, d
   if (o.lanes) drawLanesOver(ctx, L, all, r, o.lanes);
   if (pair) {
     for (const [d, width] of [[pair.a, 3], [pair.b, 2]] as const) if (d) drawRing(ctx, px(L, d.x), py(L, d.y), r, play.colors[d.p.role].edge, width);
+  }
+  // Player Groups: G / F / C as a small outlined pill at the top right of each dot (the archetype tag sits below).
+  if (o.groups) {
+    for (const d of all) {
+      const g = o.groups.get(d.p.id);
+      if (g) drawScript(ctx, L, d, r, true, g, COLORS.panel, GROUP_COLORS[g], GROUP_COLORS[g]);
+    }
   }
   if (o.showArch) {
     for (const d of dots.def.concat(dots.off)) {

@@ -66,7 +66,7 @@ for (g in sort(unique(L1$X$game_id))) {
 }
 SQ2 <- load_seqheads(root)
 TF1 <- "live transformer, v1 (until 2026-11-12)"
-TF2 <- "live transformer, v2 (past-only; main-curve stopping since 2026-11-15)"
+TF2 <- "live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)"
 LB1 <- "logistic baseline, v1"
 LB2 <- "logistic baseline, v2"
 LB0 <- "logistic baseline without so far, v2"

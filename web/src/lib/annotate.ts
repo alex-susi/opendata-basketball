@@ -26,7 +26,8 @@ const LOST = "#E04848";
 export interface AnnSections {
   events: boolean;
   defense: boolean;
-  shot: boolean;
+  /** Each player's position group on his dot: G (guard), F (forward, a wing) or C (center, a big). Drawn in draw.ts. */
+  groups: boolean;
   tracking: boolean;
   possession: boolean;
   quality: boolean;

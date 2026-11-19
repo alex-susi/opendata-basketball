@@ -1,133 +1,133 @@
 model,part,moment,actual,read,screens
-live transformer,joint,main curve,over + show,over + show,342.84
-live transformer,joint,main curve,over + show,over + drop,111.46
-live transformer,joint,main curve,over + show,under + drop,10.72
-live transformer,joint,main curve,over + show,under + show,7.41
-live transformer,joint,main curve,over + show,switch,24.57
-live transformer,joint,main curve,over + drop,over + show,104.95
-live transformer,joint,main curve,over + drop,over + drop,343.53
-live transformer,joint,main curve,over + drop,under + drop,20.27
-live transformer,joint,main curve,over + drop,under + show,3.87
-live transformer,joint,main curve,over + drop,switch,10.39
-live transformer,joint,main curve,under + drop,over + show,22
-live transformer,joint,main curve,under + drop,over + drop,67.3
-live transformer,joint,main curve,under + drop,under + drop,56.82
-live transformer,joint,main curve,under + drop,under + show,6.97
-live transformer,joint,main curve,under + drop,switch,9.91
-live transformer,joint,main curve,under + show,over + show,35.73
-live transformer,joint,main curve,under + show,over + drop,24.06
-live transformer,joint,main curve,under + show,under + drop,13.37
-live transformer,joint,main curve,under + show,under + show,20.4
-live transformer,joint,main curve,under + show,switch,15.44
-live transformer,joint,main curve,switch,over + show,78.05
-live transformer,joint,main curve,switch,over + drop,71.06
-live transformer,joint,main curve,switch,under + drop,8.58
-live transformer,joint,main curve,switch,under + show,9.42
-live transformer,joint,main curve,switch,switch,43.9
-live transformer,joint,-0.4 s,over + show,over + show,349
-live transformer,joint,-0.4 s,over + show,over + drop,99
-live transformer,joint,-0.4 s,over + show,under + drop,6
-live transformer,joint,-0.4 s,over + show,under + show,13
-live transformer,joint,-0.4 s,over + show,switch,30
-live transformer,joint,-0.4 s,over + drop,over + show,107
-live transformer,joint,-0.4 s,over + drop,over + drop,340
-live transformer,joint,-0.4 s,over + drop,under + drop,22
+live transformer,joint,main curve,over + show,over + show,336.04
+live transformer,joint,main curve,over + show,over + drop,109.33
+live transformer,joint,main curve,over + show,under + drop,10.93
+live transformer,joint,main curve,over + show,under + show,6.74
+live transformer,joint,main curve,over + show,switch,33.96
+live transformer,joint,main curve,over + drop,over + show,104.51
+live transformer,joint,main curve,over + drop,over + drop,339.27
+live transformer,joint,main curve,over + drop,under + drop,18.65
+live transformer,joint,main curve,over + drop,under + show,3.52
+live transformer,joint,main curve,over + drop,switch,17.05
+live transformer,joint,main curve,under + drop,over + show,21.97
+live transformer,joint,main curve,under + drop,over + drop,67.04
+live transformer,joint,main curve,under + drop,under + drop,55.25
+live transformer,joint,main curve,under + drop,under + show,7.38
+live transformer,joint,main curve,under + drop,switch,11.37
+live transformer,joint,main curve,under + show,over + show,35.2
+live transformer,joint,main curve,under + show,over + drop,23.64
+live transformer,joint,main curve,under + show,under + drop,13.89
+live transformer,joint,main curve,under + show,under + show,18.35
+live transformer,joint,main curve,under + show,switch,17.92
+live transformer,joint,main curve,switch,over + show,73.3
+live transformer,joint,main curve,switch,over + drop,66.41
+live transformer,joint,main curve,switch,under + drop,9.25
+live transformer,joint,main curve,switch,under + show,7.79
+live transformer,joint,main curve,switch,switch,54.25
+live transformer,joint,-0.4 s,over + show,over + show,347
+live transformer,joint,-0.4 s,over + show,over + drop,96
+live transformer,joint,-0.4 s,over + show,under + drop,9
+live transformer,joint,-0.4 s,over + show,under + show,7
+live transformer,joint,-0.4 s,over + show,switch,38
+live transformer,joint,-0.4 s,over + drop,over + show,108
+live transformer,joint,-0.4 s,over + drop,over + drop,338
+live transformer,joint,-0.4 s,over + drop,under + drop,18
 live transformer,joint,-0.4 s,over + drop,under + show,0
-live transformer,joint,-0.4 s,over + drop,switch,14
-live transformer,joint,-0.4 s,under + drop,over + show,21
-live transformer,joint,-0.4 s,under + drop,over + drop,73
-live transformer,joint,-0.4 s,under + drop,under + drop,47
+live transformer,joint,-0.4 s,over + drop,switch,19
+live transformer,joint,-0.4 s,under + drop,over + show,27
+live transformer,joint,-0.4 s,under + drop,over + drop,70
+live transformer,joint,-0.4 s,under + drop,under + drop,46
 live transformer,joint,-0.4 s,under + drop,under + show,9
-live transformer,joint,-0.4 s,under + drop,switch,13
-live transformer,joint,-0.4 s,under + show,over + show,46
-live transformer,joint,-0.4 s,under + show,over + drop,17
-live transformer,joint,-0.4 s,under + show,under + drop,14
-live transformer,joint,-0.4 s,under + show,under + show,17
-live transformer,joint,-0.4 s,under + show,switch,15
-live transformer,joint,-0.4 s,switch,over + show,80
-live transformer,joint,-0.4 s,switch,over + drop,70
-live transformer,joint,-0.4 s,switch,under + drop,8
+live transformer,joint,-0.4 s,under + drop,switch,11
+live transformer,joint,-0.4 s,under + show,over + show,47
+live transformer,joint,-0.4 s,under + show,over + drop,13
+live transformer,joint,-0.4 s,under + show,under + drop,12
+live transformer,joint,-0.4 s,under + show,under + show,16
+live transformer,joint,-0.4 s,under + show,switch,21
+live transformer,joint,-0.4 s,switch,over + show,82
+live transformer,joint,-0.4 s,switch,over + drop,62
+live transformer,joint,-0.4 s,switch,under + drop,11
 live transformer,joint,-0.4 s,switch,under + show,7
-live transformer,joint,-0.4 s,switch,switch,46
-live transformer,joint,0.0 s,over + show,over + show,390
-live transformer,joint,0.0 s,over + show,over + drop,77
+live transformer,joint,-0.4 s,switch,switch,49
+live transformer,joint,0.0 s,over + show,over + show,370
+live transformer,joint,0.0 s,over + show,over + drop,81
 live transformer,joint,0.0 s,over + show,under + drop,2
 live transformer,joint,0.0 s,over + show,under + show,7
-live transformer,joint,0.0 s,over + show,switch,21
-live transformer,joint,0.0 s,over + drop,over + show,66
-live transformer,joint,0.0 s,over + drop,over + drop,401
-live transformer,joint,0.0 s,over + drop,under + drop,9
+live transformer,joint,0.0 s,over + show,switch,37
+live transformer,joint,0.0 s,over + drop,over + show,60
+live transformer,joint,0.0 s,over + drop,over + drop,403
+live transformer,joint,0.0 s,over + drop,under + drop,8
 live transformer,joint,0.0 s,over + drop,under + show,0
-live transformer,joint,0.0 s,over + drop,switch,7
-live transformer,joint,0.0 s,under + drop,over + show,4
-live transformer,joint,0.0 s,under + drop,over + drop,44
-live transformer,joint,0.0 s,under + drop,under + drop,94
-live transformer,joint,0.0 s,under + drop,under + show,13
-live transformer,joint,0.0 s,under + drop,switch,8
-live transformer,joint,0.0 s,under + show,over + show,15
+live transformer,joint,0.0 s,over + drop,switch,12
+live transformer,joint,0.0 s,under + drop,over + show,5
+live transformer,joint,0.0 s,under + drop,over + drop,42
+live transformer,joint,0.0 s,under + drop,under + drop,89
+live transformer,joint,0.0 s,under + drop,under + show,12
+live transformer,joint,0.0 s,under + drop,switch,15
+live transformer,joint,0.0 s,under + show,over + show,18
 live transformer,joint,0.0 s,under + show,over + drop,12
 live transformer,joint,0.0 s,under + show,under + drop,18
-live transformer,joint,0.0 s,under + show,under + show,40
-live transformer,joint,0.0 s,under + show,switch,24
-live transformer,joint,0.0 s,switch,over + show,62
-live transformer,joint,0.0 s,switch,over + drop,52
-live transformer,joint,0.0 s,switch,under + drop,14
-live transformer,joint,0.0 s,switch,under + show,17
-live transformer,joint,0.0 s,switch,switch,66
-live transformer,guard,main curve,over,over,920.07
-live transformer,guard,main curve,over,under,45.02
-live transformer,guard,main curve,over,switch,14.92
-live transformer,guard,main curve,under,over,155.1
-live transformer,guard,main curve,under,under,104.74
-live transformer,guard,main curve,under,switch,12.16
-live transformer,guard,main curve,switch,over,163.36
-live transformer,guard,main curve,switch,under,22.55
-live transformer,guard,main curve,switch,switch,25.09
-live transformer,guard,-0.4 s,over,over,915
-live transformer,guard,-0.4 s,over,under,46
-live transformer,guard,-0.4 s,over,switch,19
+live transformer,joint,0.0 s,under + show,under + show,34
+live transformer,joint,0.0 s,under + show,switch,27
+live transformer,joint,0.0 s,switch,over + show,57
+live transformer,joint,0.0 s,switch,over + drop,45
+live transformer,joint,0.0 s,switch,under + drop,13
+live transformer,joint,0.0 s,switch,under + show,11
+live transformer,joint,0.0 s,switch,switch,85
+live transformer,guard,main curve,over,over,909.74
+live transformer,guard,main curve,over,under,44.02
+live transformer,guard,main curve,over,switch,26.24
+live transformer,guard,main curve,under,over,154.48
+live transformer,guard,main curve,under,under,102.11
+live transformer,guard,main curve,under,switch,15.4
+live transformer,guard,main curve,switch,over,154.33
+live transformer,guard,main curve,switch,under,22.28
+live transformer,guard,main curve,switch,switch,34.39
+live transformer,guard,-0.4 s,over,over,912
+live transformer,guard,-0.4 s,over,under,38
+live transformer,guard,-0.4 s,over,switch,30
 live transformer,guard,-0.4 s,under,over,163
-live transformer,guard,-0.4 s,under,under,95
-live transformer,guard,-0.4 s,under,switch,14
-live transformer,guard,-0.4 s,switch,over,170
-live transformer,guard,-0.4 s,switch,under,20
-live transformer,guard,-0.4 s,switch,switch,21
-live transformer,guard,0.0 s,over,over,945
-live transformer,guard,0.0 s,over,under,18
-live transformer,guard,0.0 s,over,switch,17
-live transformer,guard,0.0 s,under,over,77
-live transformer,guard,0.0 s,under,under,174
-live transformer,guard,0.0 s,under,switch,21
-live transformer,guard,0.0 s,switch,over,126
-live transformer,guard,0.0 s,switch,under,37
-live transformer,guard,0.0 s,switch,switch,48
-live transformer,big,main curve,show,show,419.45
-live transformer,big,main curve,show,drop,163.84
-live transformer,big,main curve,show,switch,22.7
-live transformer,big,main curve,drop,show,143.59
-live transformer,big,main curve,drop,drop,493.78
-live transformer,big,main curve,drop,switch,8.63
-live transformer,big,main curve,switch,show,98.81
-live transformer,big,main curve,switch,drop,84.57
-live transformer,big,main curve,switch,switch,27.62
-live transformer,big,-0.4 s,show,show,435
-live transformer,big,-0.4 s,show,drop,140
+live transformer,guard,-0.4 s,under,under,94
+live transformer,guard,-0.4 s,under,switch,15
+live transformer,guard,-0.4 s,switch,over,160
+live transformer,guard,-0.4 s,switch,under,23
+live transformer,guard,-0.4 s,switch,switch,28
+live transformer,guard,0.0 s,over,over,931
+live transformer,guard,0.0 s,over,under,19
+live transformer,guard,0.0 s,over,switch,30
+live transformer,guard,0.0 s,under,over,80
+live transformer,guard,0.0 s,under,under,165
+live transformer,guard,0.0 s,under,switch,27
+live transformer,guard,0.0 s,switch,over,121
+live transformer,guard,0.0 s,switch,under,36
+live transformer,guard,0.0 s,switch,switch,54
+live transformer,big,main curve,show,show,411.34
+live transformer,big,main curve,show,drop,164
+live transformer,big,main curve,show,switch,30.66
+live transformer,big,main curve,drop,show,142.61
+live transformer,big,main curve,drop,drop,486.37
+live transformer,big,main curve,drop,switch,17.02
+live transformer,big,main curve,switch,show,91.95
+live transformer,big,main curve,switch,drop,80.8
+live transformer,big,main curve,switch,switch,38.25
+live transformer,big,-0.4 s,show,show,440
+live transformer,big,-0.4 s,show,drop,135
 live transformer,big,-0.4 s,show,switch,31
-live transformer,big,-0.4 s,drop,show,149
-live transformer,big,-0.4 s,drop,drop,488
-live transformer,big,-0.4 s,drop,switch,9
-live transformer,big,-0.4 s,switch,show,100
-live transformer,big,-0.4 s,switch,drop,86
-live transformer,big,-0.4 s,switch,switch,25
-live transformer,big,0.0 s,show,show,469
-live transformer,big,0.0 s,show,drop,110
-live transformer,big,0.0 s,show,switch,27
-live transformer,big,0.0 s,drop,show,85
-live transformer,big,0.0 s,drop,drop,551
-live transformer,big,0.0 s,drop,switch,10
-live transformer,big,0.0 s,switch,show,90
-live transformer,big,0.0 s,switch,drop,72
-live transformer,big,0.0 s,switch,switch,49
+live transformer,big,-0.4 s,drop,show,152
+live transformer,big,-0.4 s,drop,drop,476
+live transformer,big,-0.4 s,drop,switch,18
+live transformer,big,-0.4 s,switch,show,101
+live transformer,big,-0.4 s,switch,drop,79
+live transformer,big,-0.4 s,switch,switch,31
+live transformer,big,0.0 s,show,show,455
+live transformer,big,0.0 s,show,drop,113
+live transformer,big,0.0 s,show,switch,38
+live transformer,big,0.0 s,drop,show,79
+live transformer,big,0.0 s,drop,drop,548
+live transformer,big,0.0 s,drop,switch,19
+live transformer,big,0.0 s,switch,show,88
+live transformer,big,0.0 s,switch,drop,62
+live transformer,big,0.0 s,switch,switch,61
 logistic baseline,joint,main curve,over + show,over + show,336.46
 logistic baseline,joint,main curve,over + show,over + drop,130.81
 logistic baseline,joint,main curve,over + show,under + drop,8.11

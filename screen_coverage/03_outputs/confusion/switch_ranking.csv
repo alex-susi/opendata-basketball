@@ -1,7 +1,7 @@
 model,moment,switches,others,mean_p_switch_on_switches,mean_p_switch_on_others,share_of_switches,auc,switches_above_0.30,others_above_0.30
-live transformer,main curve,211,1252,0.2274,0.1268,0.1442,0.7617,0.2749,0.0535
-live transformer,-0.4 s,211,1252,0.2208,0.1316,0.1442,0.7167,0.2654,0.0775
-live transformer,0.0 s,211,1252,0.2759,0.1236,0.1442,0.7774,0.4123,0.0839
+live transformer,main curve,211,1252,0.2508,0.1293,0.1442,0.7695,0.3318,0.0847
+live transformer,-0.4 s,211,1252,0.2428,0.1332,0.1442,0.735,0.2986,0.1014
+live transformer,0.0 s,211,1252,0.3023,0.1323,0.1442,0.7829,0.4976,0.1158
 logistic baseline,main curve,211,1252,0.2188,0.1317,0.1442,0.733,0.2133,0.0463
 logistic baseline,-0.4 s,211,1252,0.2053,0.1333,0.1442,0.6822,0.1706,0.0487
 logistic baseline,0.0 s,211,1252,0.2675,0.1465,0.1442,0.7478,0.3649,0.095

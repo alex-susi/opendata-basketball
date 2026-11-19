@@ -850,19 +850,62 @@ sec_before <- function(E) in_E(E, {
 
 sec_switch <- function(E) in_E(E, {
   # When the hand-over happens, what the live model reads, and a quick held-out check of extra signals.
-  hb <- c("before −0.5 s", "−0.5 to 0 s", "0 to 0.5 s", "0.5 to 1 s", "1 to 2 s", "2 to 3 s", "none by +3 s")
   SWI <- L5[joint7 == "switch"]
-  SWI[, hband := fifelse(is.na(t_hand), hb[7], as.character(cut(t_hand, c(-Inf, -0.5, 0, 0.5, 1, 2, Inf), labels = hb[1:6])))]
   OUh <- L5[joint7 != "switch"]
+  # The tracking's own switch moment: from -1 s on, the first frame from which the screener's defender stays nearer
+  # the handler than the handler's own defender through +2 s (the end of the tracking window). NA when it never does.
+  swap_of <- function(ids) {
+    r <- W[id %in% ids & t >= -1, {
+      s <- d_sd < d_bd
+      ok <- !is.na(s)
+      tt <- t[ok]
+      s <- s[ok]
+      .(t_swap = if (!length(s) || !s[length(s)]) NA_real_ else tt[max(c(0L, which(!s))) + 1L])
+    }, by = id]
+    r$t_swap[match(ids, r$id)]
+  }
+  SWI[, t_swap := swap_of(id)]
+  sw_other <- mean(!is.na(swap_of(OUh$id)))
+  # Smoothed histograms: a Gaussian kernel density (bandwidth 0.12 s, reflected at -1 s, where earlier hand-overs are
+  # held) of the tagged switches, scaled to the share of ALL switches per 0.2 s so the curves read like the bars of a
+  # 0.2 s histogram and untagged switches stay out of the area.
+  KDE_BW <- 0.12
+  grid <- seq(-1, 3, by = 0.02)
+  steps <- function(v, name, color) {
+    x <- v[!is.na(v)]
+    d <- vapply(grid, function(g) sum(dnorm(g, x, KDE_BW) + dnorm(g, -2 - x, KDE_BW)), 0) / length(x)
+    l <- LINE(grid, d * 0.2 * length(x) / length(v), color = color)
+    l$name <- name
+    l
+  }
+  closest_t <- median(W[!is.na(d_hs), .SD[which.min(d_hs)], by = id]$t)
+  h1 <- steps(SWI$t_hand, "matchups table: handler handed to the screener's defender", PAL[5])
+  h2 <- steps(SWI$t_swap, "tracking: the screener's defender stays nearer the handler", PAL[1])
+  ymax <- max(vapply(list(h1, h2), function(l) max(vapply(l$points, `[`, 0, 2)), 0)) * 1.15
+  mark <- function(x, name, color) {
+    l <- LINE(c(x, x), c(0, ymax), color = color, dashed = TRUE)
+    l$name <- name
+    l
+  }
+  timeline <- SCAT(sprintf("When a switch is tagged, against the pick frame (smoothed share of the %d switches per 0.2 s)", nrow(SWI)),
+                   lines = list(h1, h2, mark(0, "pick frame (dashed)", "var(--ink)"),
+                                mark(closest_t, sprintf("closest approach, +%.2f s (dashed)", closest_t), "var(--muted)")),
+                   xlabel = "seconds from the pick frame (picks.frame)", ylabel = "share of switches", yfmt = "pct1",
+                   xdomain = c(-1, 3), ydomain = c(0, ymax),
+                   note = sprintf("Curves are smoothed histograms (kernel density, 0.12 s bandwidth). −1 s also holds hand-overs that began earlier. Not tagged by +3 s (matchups) %s, by +2 s (tracking) %s. Closest approach is the median moment the handler comes off the screener (+%.2f s)",
+                                  pct(mean(is.na(SWI$t_hand))), pct(mean(is.na(SWI$t_swap))), closest_t))
   blocks <- list(P("Why switches are hard to read, what the live model gets, and which inputs could help."),
                  H("When the switch happens"),
+                 BUL("**No switch frame in the data.** SkillCorner's picks table labels a switch but gives no moment for it, so two stand-ins are used",
+                     "**Matchups table.** The first moment SkillCorner's assignment model has the handler guarded by the screener's defender (read from 1 s before the pick frame)",
+                     "**Tracking.** The first moment the screener's defender is nearer the handler than his own defender and stays nearer to the end of the window (+2 s)"),
                  KPIS(KPI("Switch hand-over", sprintf("+%.1f s", median(SWI$t_hand, na.rm = TRUE)), "median, after the pick frame (matchups table)"),
-                      KPI("By the pick frame", pct(mean(SWI$t_hand <= 0, na.rm = TRUE) * mean(!is.na(SWI$t_hand))), "of switches already handed over"),
-                      KPI("No hand-over by +3 s", pct(mean(is.na(SWI$t_hand))), sprintf("%d of %d switches", sum(is.na(SWI$t_hand)), nrow(SWI))),
-                      KPI("Other picks handed over", pct(mean(!is.na(OUh$t_hand))), "over and under picks, −1 s to +3 s")),
-                 COLS("When the matchups table hands the handler to the screener's defender (switches)", hb, labels = TRUE,
-                      list(SERIES1("share of switches", sapply(hb, function(b) mean(SWI$hband == b)), PAL[5])), xlabel = "seconds from the pick frame"),
-                 BUL(sprintf("**The switch lands after the screen.** The handler is handed to the screener's defender a median %.1f s after the pick frame", median(SWI$t_hand, na.rm = TRUE)),
+                      KPI("Tracking swap", sprintf("+%.1f s", median(SWI$t_swap, na.rm = TRUE)), "median, after the pick frame"),
+                      KPI("By the pick frame", pct(mean(SWI$t_hand <= 0 & !is.na(SWI$t_hand))), sprintf("of switches handed over (tracking %s)", pct(mean(SWI$t_swap <= 0 & !is.na(SWI$t_swap))))),
+                      KPI("Other picks handed over", pct(mean(!is.na(OUh$t_hand))), sprintf("over and under picks (tracking swap %s)", pct(sw_other)))),
+                 timeline,
+                 BUL(sprintf("**The switch lands after the screen.** The handler is handed to the screener's defender a median %.1f s after the pick frame, and the tracking shows the swap a median %.1f s after it", median(SWI$t_hand, na.rm = TRUE), median(SWI$t_swap, na.rm = TRUE)),
+                     sprintf("**Both come after the closest approach.** The handler comes off the screener's shoulder at +%.2f s, before most switches are visible", closest_t),
                      "**Until then a switch looks like over.** The handler's defender stays above the screen and the screener's defender stays near his man (the level charts in What each coverage looks like)",
                      sprintf("**Some switches never show in the matchups.** %s of switches have no hand-over by +3 s. They may be late switches or label noise worth a film check", pct(mean(is.na(SWI$t_hand))))))
   if (!is.null(MR)) {
@@ -1269,7 +1312,7 @@ topic_coverage <- function(BL) {
   rg <- sec_rare_geo(E)
   sections <- list(sec_label(E), sec_motion(E), sec_timing(E), sec_context(E), sec_people(E), sec_before(E), sec_switch(E),
                    rg$rare, rg$geo, sec_who(E), sec_outcomes(E), sec_ready(E), sec_plan(E))
-  DOC("coverage", "Pick coverage",
+  DOC("coverage", "Screen coverage EDA",
       "How defenses guard on-ball screens in the ten tracked games. What each coverage looks like, when it shows, who is in the screen, what comes before it, and why switches are hard to read.",
       Filter(Negate(is.null), sections),
       meta = "Descriptive, plus the live screen coverage model's held-out reads and one small held-out check (Reading switches).")

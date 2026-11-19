@@ -1,0 +1,61 @@
+against,model,window,part,gain,lo,hi,games_better
+Live,"Split head, no positions (control)",before the pick frame,Switch · log loss,-0.0051,-0.008,-0.0018,2
+Live,"Split head, no positions (control)",before the pick frame,Under or over · log loss (non-switch screens),-1e-04,-0.0054,0.0071,2
+Live,"Split head, no positions (control)",before the pick frame,Under or over · accuracy (non-switch screens),0.0013,-0.0035,0.005,7
+Live,"Split head, no positions (control)",before the pick frame,Show or drop · log loss (non-switch screens),-0.0011,-0.005,0.0026,4
+Live,"Split head, no positions (control)",before the pick frame,Show or drop · accuracy (non-switch screens),0.0028,-6e-04,0.0061,8
+Live,"Split head, no positions (control)",at and after the pick frame,Switch · log loss,-2e-04,-0.0074,0.0071,5
+Live,"Split head, no positions (control)",at and after the pick frame,Under or over · log loss (non-switch screens),-0.0016,-0.0097,0.0078,3
+Live,"Split head, no positions (control)",at and after the pick frame,Under or over · accuracy (non-switch screens),-6e-04,-0.0054,0.0049,4
+Live,"Split head, no positions (control)",at and after the pick frame,Show or drop · log loss (non-switch screens),-5e-04,-0.0077,0.0061,6
+Live,"Split head, no positions (control)",at and after the pick frame,Show or drop · accuracy (non-switch screens),0.001,-0.0033,0.0051,5
+Live,Positions in the switch part (four screen players),before the pick frame,Switch · log loss,0.0055,-0.001,0.0119,8
+Live,Positions in the switch part (four screen players),before the pick frame,Under or over · log loss (non-switch screens),-0.0025,-0.0096,0.0055,4
+Live,Positions in the switch part (four screen players),before the pick frame,Under or over · accuracy (non-switch screens),-5e-04,-0.0038,0.0028,5
+Live,Positions in the switch part (four screen players),before the pick frame,Show or drop · log loss (non-switch screens),-0.0065,-0.0111,-0.0011,3
+Live,Positions in the switch part (four screen players),before the pick frame,Show or drop · accuracy (non-switch screens),-0.0015,-0.0071,0.004,5
+Live,Positions in the switch part (four screen players),at and after the pick frame,Switch · log loss,0.0032,-0.0063,0.0133,5
+Live,Positions in the switch part (four screen players),at and after the pick frame,Under or over · log loss (non-switch screens),-0.0044,-0.014,0.0058,3
+Live,Positions in the switch part (four screen players),at and after the pick frame,Under or over · accuracy (non-switch screens),-7e-04,-0.0055,0.005,3
+Live,Positions in the switch part (four screen players),at and after the pick frame,Show or drop · log loss (non-switch screens),-0.0101,-0.0183,-0.0023,3
+Live,Positions in the switch part (four screen players),at and after the pick frame,Show or drop · accuracy (non-switch screens),-0.0043,-0.0082,-6e-04,3
+Live,Positions on all ten players,before the pick frame,Switch · log loss,0.0069,-4e-04,0.0143,6
+Live,Positions on all ten players,before the pick frame,Under or over · log loss (non-switch screens),-0.0106,-0.0213,0.0025,3
+Live,Positions on all ten players,before the pick frame,Under or over · accuracy (non-switch screens),-0.0042,-0.0114,0.0022,4
+Live,Positions on all ten players,before the pick frame,Show or drop · log loss (non-switch screens),-0.0078,-0.0175,3e-04,4
+Live,Positions on all ten players,before the pick frame,Show or drop · accuracy (non-switch screens),-0.0017,-0.0099,0.0043,7
+Live,Positions on all ten players,at and after the pick frame,Switch · log loss,-0.0042,-0.0125,0.0049,5
+Live,Positions on all ten players,at and after the pick frame,Under or over · log loss (non-switch screens),-0.0253,-0.0351,-0.0151,0
+Live,Positions on all ten players,at and after the pick frame,Under or over · accuracy (non-switch screens),-0.009,-0.0149,-0.0036,2
+Live,Positions on all ten players,at and after the pick frame,Show or drop · log loss (non-switch screens),-0.0174,-0.0322,-0.0061,2
+Live,Positions on all ten players,at and after the pick frame,Show or drop · accuracy (non-switch screens),-0.0049,-0.0137,0.0031,5
+Live,Positions on the two defenders,before the pick frame,Switch · log loss,0.0044,-0.0026,0.0116,6
+Live,Positions on the two defenders,before the pick frame,Under or over · log loss (non-switch screens),-0.0084,-0.0194,0.0054,3
+Live,Positions on the two defenders,before the pick frame,Under or over · accuracy (non-switch screens),-0.0044,-0.0136,0.0051,4
+Live,Positions on the two defenders,before the pick frame,Show or drop · log loss (non-switch screens),-0.0039,-0.0085,6e-04,2
+Live,Positions on the two defenders,before the pick frame,Show or drop · accuracy (non-switch screens),0,-0.0051,0.0056,5
+Live,Positions on the two defenders,at and after the pick frame,Switch · log loss,-0.0032,-0.0124,0.0077,4
+Live,Positions on the two defenders,at and after the pick frame,Under or over · log loss (non-switch screens),-0.0227,-0.0346,-0.0101,3
+Live,Positions on the two defenders,at and after the pick frame,Under or over · accuracy (non-switch screens),-0.0074,-0.0152,-5e-04,2
+Live,Positions on the two defenders,at and after the pick frame,Show or drop · log loss (non-switch screens),-0.009,-0.0188,0.0014,4
+Live,Positions on the two defenders,at and after the pick frame,Show or drop · accuracy (non-switch screens),-0.0026,-0.0089,0.0029,5
+Live,Memory only,before the pick frame,Switch · log loss,0.0027,-0.0043,0.0106,5
+Live,Memory only,before the pick frame,Under or over · log loss (non-switch screens),0.0012,-0.0057,0.0081,6
+Live,Memory only,before the pick frame,Under or over · accuracy (non-switch screens),0.0017,-0.0012,0.0045,7
+Live,Memory only,before the pick frame,Show or drop · log loss (non-switch screens),-9e-04,-0.0052,0.0035,5
+Live,Memory only,before the pick frame,Show or drop · accuracy (non-switch screens),2e-04,-0.0059,0.0067,6
+Live,Memory only,at and after the pick frame,Switch · log loss,0.0044,-0.0019,0.0114,6
+Live,Memory only,at and after the pick frame,Under or over · log loss (non-switch screens),-0.0011,-0.0082,0.006,6
+Live,Memory only,at and after the pick frame,Under or over · accuracy (non-switch screens),-0.0027,-0.0066,0.0014,3
+Live,Memory only,at and after the pick frame,Show or drop · log loss (non-switch screens),-0.0029,-0.008,0.002,5
+Live,Memory only,at and after the pick frame,Show or drop · accuracy (non-switch screens),-0.003,-0.0063,-3e-04,3
+"Split head, no positions (control)",Positions in the switch part (four screen players),before the pick frame,Switch · log loss,0.0106,0.0021,0.0186,8
+"Split head, no positions (control)",Positions in the switch part (four screen players),before the pick frame,Under or over · log loss (non-switch screens),-0.0025,-0.0064,0.0012,3
+"Split head, no positions (control)",Positions in the switch part (four screen players),before the pick frame,Under or over · accuracy (non-switch screens),-0.0018,-0.005,0.0014,5
+"Split head, no positions (control)",Positions in the switch part (four screen players),before the pick frame,Show or drop · log loss (non-switch screens),-0.0054,-0.0099,-0.0012,3
+"Split head, no positions (control)",Positions in the switch part (four screen players),before the pick frame,Show or drop · accuracy (non-switch screens),-0.0043,-0.0085,-2e-04,4
+"Split head, no positions (control)",Positions in the switch part (four screen players),at and after the pick frame,Switch · log loss,0.0034,-0.0045,0.0125,6
+"Split head, no positions (control)",Positions in the switch part (four screen players),at and after the pick frame,Under or over · log loss (non-switch screens),-0.0028,-0.0079,0.0025,3
+"Split head, no positions (control)",Positions in the switch part (four screen players),at and after the pick frame,Under or over · accuracy (non-switch screens),-1e-04,-0.0036,0.0032,5
+"Split head, no positions (control)",Positions in the switch part (four screen players),at and after the pick frame,Show or drop · log loss (non-switch screens),-0.0097,-0.0181,-0.0012,4
+"Split head, no positions (control)",Positions in the switch part (four screen players),at and after the pick frame,Show or drop · accuracy (non-switch screens),-0.0053,-0.0108,3e-04,2

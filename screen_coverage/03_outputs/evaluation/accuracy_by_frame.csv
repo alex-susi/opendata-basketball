@@ -75,82 +75,82 @@ model,off,t,accuracy
 "live transformer, v1 (until 2026-11-12)",23,0.92,0.6842
 "live transformer, v1 (until 2026-11-12)",24,0.96,0.6828
 "live transformer, v1 (until 2026-11-12)",25,1,0.6828
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-50,-2,0.3958
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-49,-1.96,0.3923
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-48,-1.92,0.3985
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-47,-1.88,0.3971
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-46,-1.84,0.3944
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-45,-1.8,0.3958
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-44,-1.76,0.4012
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-43,-1.72,0.4019
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-42,-1.68,0.4026
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-41,-1.64,0.4094
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-40,-1.6,0.4108
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-39,-1.56,0.4115
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-38,-1.52,0.4142
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-37,-1.48,0.4204
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-36,-1.44,0.4183
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-35,-1.4,0.4231
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-34,-1.36,0.417
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-33,-1.32,0.4197
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-32,-1.28,0.4211
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-31,-1.24,0.4272
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-30,-1.2,0.434
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-29,-1.16,0.4416
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-28,-1.12,0.4484
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-27,-1.08,0.4463
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-26,-1.04,0.4545
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-25,-1,0.4532
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-24,-0.96,0.4532
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-23,-0.92,0.4545
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-22,-0.88,0.458
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-21,-0.84,0.4668
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-20,-0.8,0.4689
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-19,-0.76,0.4682
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-18,-0.72,0.4751
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-17,-0.68,0.4785
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-16,-0.64,0.4887
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-15,-0.6,0.4962
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-14,-0.56,0.5085
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-13,-0.52,0.514
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-12,-0.48,0.5222
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-11,-0.44,0.5366
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-10,-0.4,0.5461
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-9,-0.36,0.5578
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-8,-0.32,0.5735
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-7,-0.28,0.5803
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-6,-0.24,0.6001
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-5,-0.2,0.6138
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-4,-0.16,0.6316
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-3,-0.12,0.6452
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-2,-0.08,0.6562
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",-1,-0.04,0.6705
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",0,0,0.6774
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",1,0.04,0.6856
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",2,0.08,0.691
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",3,0.12,0.6972
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",4,0.16,0.7102
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",5,0.2,0.7122
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",6,0.24,0.7184
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",7,0.28,0.7184
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",8,0.32,0.7218
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",9,0.36,0.7129
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",10,0.4,0.7163
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",11,0.44,0.7157
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",12,0.48,0.7163
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",13,0.52,0.7102
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",14,0.56,0.715
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",15,0.6,0.7102
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",16,0.64,0.7068
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",17,0.68,0.704
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",18,0.72,0.6992
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",19,0.76,0.6965
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",20,0.8,0.691
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",21,0.84,0.6883
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",22,0.88,0.6822
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",23,0.92,0.6726
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",24,0.96,0.6664
-"live transformer, v2 (past-only; main-curve stopping since 2026-11-15)",25,1,0.6658
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-50,-2,0.393
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-49,-1.96,0.3958
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-48,-1.92,0.4026
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-47,-1.88,0.4005
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-46,-1.84,0.3951
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-45,-1.8,0.4026
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-44,-1.76,0.4046
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-43,-1.72,0.4053
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-42,-1.68,0.406
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-41,-1.64,0.406
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-40,-1.6,0.4067
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-39,-1.56,0.4053
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-38,-1.52,0.4129
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-37,-1.48,0.4122
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-36,-1.44,0.417
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-35,-1.4,0.419
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-34,-1.36,0.4163
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-33,-1.32,0.417
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-32,-1.28,0.4122
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-31,-1.24,0.4245
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-30,-1.2,0.4293
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-29,-1.16,0.4347
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-28,-1.12,0.4361
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-27,-1.08,0.4395
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-26,-1.04,0.4484
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-25,-1,0.4477
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-24,-0.96,0.4518
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-23,-0.92,0.4539
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-22,-0.88,0.4539
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-21,-0.84,0.4607
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-20,-0.8,0.4614
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-19,-0.76,0.4627
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-18,-0.72,0.4675
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-17,-0.68,0.486
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-16,-0.64,0.4928
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-15,-0.6,0.5058
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-14,-0.56,0.5092
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-13,-0.52,0.5167
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-12,-0.48,0.5256
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-11,-0.44,0.5359
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-10,-0.4,0.5441
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-9,-0.36,0.5578
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-8,-0.32,0.5632
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-7,-0.28,0.5817
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-6,-0.24,0.5995
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-5,-0.2,0.6029
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-4,-0.16,0.62
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-3,-0.12,0.6336
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-2,-0.08,0.6466
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",-1,-0.04,0.6617
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",0,0,0.6705
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",1,0.04,0.6787
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",2,0.08,0.6924
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",3,0.12,0.7006
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",4,0.16,0.7075
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",5,0.2,0.7109
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",6,0.24,0.7157
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",7,0.28,0.717
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",8,0.32,0.7204
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",9,0.36,0.7218
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",10,0.4,0.7239
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",11,0.44,0.7218
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",12,0.48,0.7204
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",13,0.52,0.7163
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",14,0.56,0.7116
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",15,0.6,0.7102
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",16,0.64,0.702
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",17,0.68,0.7006
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",18,0.72,0.6986
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",19,0.76,0.6951
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",20,0.8,0.6924
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",21,0.84,0.6938
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",22,0.88,0.6842
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",23,0.92,0.6774
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",24,0.96,0.6658
+"live transformer, v2 inputs + position groups in the switch part (since 2026-11-19)",25,1,0.6569
 "logistic baseline, v2",-50,-2,0.3766
 "logistic baseline, v2",-49,-1.96,0.3821
 "logistic baseline, v2",-48,-1.92,0.3848

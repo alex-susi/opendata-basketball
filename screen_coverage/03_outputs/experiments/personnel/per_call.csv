@@ -1,0 +1,116 @@
+model,coverage,screens,recall,precision
+"Transformer, split head control",over + show,497,0.697,0.585
+"Transformer, split head control",over + drop,483,0.705,0.56
+"Transformer, split head control",under + drop,163,0.356,0.525
+"Transformer, split head control",under + show,109,0.19,0.437
+"Transformer, split head control",switch,211,0.209,0.423
+Transformer + positions in the switch part,over + show,497,0.676,0.588
+Transformer + positions in the switch part,over + drop,483,0.702,0.56
+Transformer + positions in the switch part,under + drop,163,0.339,0.512
+Transformer + positions in the switch part,under + show,109,0.168,0.419
+Transformer + positions in the switch part,switch,211,0.257,0.403
+Transformer + hard positions only,over + show,497,0.674,0.593
+Transformer + hard positions only,over + drop,483,0.706,0.558
+Transformer + hard positions only,under + drop,163,0.309,0.504
+Transformer + hard positions only,under + show,109,0.171,0.425
+Transformer + hard positions only,switch,211,0.275,0.406
+Transformer + defenders' hard positions only,over + show,497,0.683,0.583
+Transformer + defenders' hard positions only,over + drop,483,0.699,0.568
+Transformer + defenders' hard positions only,under + drop,163,0.313,0.495
+Transformer + defenders' hard positions only,under + show,109,0.176,0.416
+Transformer + defenders' hard positions only,switch,211,0.264,0.404
+Transformer + memory only,over + show,497,0.697,0.582
+Transformer + memory only,over + drop,483,0.694,0.565
+Transformer + memory only,under + drop,163,0.37,0.523
+Transformer + memory only,under + show,109,0.186,0.429
+Transformer + memory only,switch,211,0.228,0.428
+Transformer + memory only (seeds 1-2 only),over + show,497,0.702,0.576
+Transformer + memory only (seeds 1-2 only),over + drop,483,0.682,0.568
+Transformer + memory only (seeds 1-2 only),under + drop,163,0.368,0.517
+Transformer + memory only (seeds 1-2 only),under + show,109,0.188,0.412
+Transformer + memory only (seeds 1-2 only),switch,211,0.216,0.409
+Transformer + memory only (seeds 3-4 only),over + show,497,0.689,0.588
+Transformer + memory only (seeds 3-4 only),over + drop,483,0.703,0.559
+Transformer + memory only (seeds 3-4 only),under + drop,163,0.359,0.514
+Transformer + memory only (seeds 3-4 only),under + show,109,0.184,0.426
+Transformer + memory only (seeds 3-4 only),switch,211,0.232,0.435
+"Transformer, live",over + show,497,0.69,0.587
+"Transformer, live",over + drop,483,0.711,0.556
+"Transformer, live",under + drop,163,0.349,0.518
+"Transformer, live",under + show,109,0.187,0.424
+"Transformer, live",switch,211,0.208,0.421
+Transformer + personnel,over + show,497,0.68,0.592
+Transformer + personnel,over + drop,483,0.699,0.559
+Transformer + personnel,under + drop,163,0.325,0.498
+Transformer + personnel,under + show,109,0.174,0.428
+Transformer + personnel,switch,211,0.273,0.418
+Transformer + personnel (seeds 1-2 only),over + show,497,0.675,0.593
+Transformer + personnel (seeds 1-2 only),over + drop,483,0.701,0.562
+Transformer + personnel (seeds 1-2 only),under + drop,163,0.315,0.492
+Transformer + personnel (seeds 1-2 only),under + show,109,0.172,0.393
+Transformer + personnel (seeds 1-2 only),switch,211,0.28,0.409
+Transformer + personnel (seeds 3-4 only),over + show,497,0.682,0.59
+Transformer + personnel (seeds 3-4 only),over + drop,483,0.692,0.555
+Transformer + personnel (seeds 3-4 only),under + drop,163,0.328,0.488
+Transformer + personnel (seeds 3-4 only),under + show,109,0.168,0.42
+Transformer + personnel (seeds 3-4 only),switch,211,0.268,0.425
+"Transformer + personnel, hard groups",over + show,497,0.676,0.591
+"Transformer + personnel, hard groups",over + drop,483,0.705,0.559
+"Transformer + personnel, hard groups",under + drop,163,0.323,0.502
+"Transformer + personnel, hard groups",under + show,109,0.174,0.404
+"Transformer + personnel, hard groups",switch,211,0.261,0.411
+"Transformer + personnel, hard groups (seeds 1-2 only)",over + show,497,0.671,0.586
+"Transformer + personnel, hard groups (seeds 1-2 only)",over + drop,483,0.701,0.56
+"Transformer + personnel, hard groups (seeds 1-2 only)",under + drop,163,0.308,0.489
+"Transformer + personnel, hard groups (seeds 1-2 only)",under + show,109,0.177,0.403
+"Transformer + personnel, hard groups (seeds 1-2 only)",switch,211,0.266,0.402
+"Transformer + personnel, hard groups (seeds 3-4 only)",over + show,497,0.675,0.589
+"Transformer + personnel, hard groups (seeds 3-4 only)",over + drop,483,0.702,0.555
+"Transformer + personnel, hard groups (seeds 3-4 only)",under + drop,163,0.331,0.502
+"Transformer + personnel, hard groups (seeds 3-4 only)",under + show,109,0.163,0.374
+"Transformer + personnel, hard groups (seeds 3-4 only)",switch,211,0.254,0.414
+"Logistic, live",over + show,497,0.677,0.535
+"Logistic, live",over + drop,483,0.694,0.523
+"Logistic, live",under + drop,163,0.206,0.502
+"Logistic, live",under + show,109,0.14,0.438
+"Logistic, live",switch,211,0.17,0.39
+Logistic + positions,over + show,497,0.66,0.532
+Logistic + positions,over + drop,483,0.664,0.534
+Logistic + positions,under + drop,163,0.196,0.439
+Logistic + positions,under + show,109,0.143,0.352
+Logistic + positions,switch,211,0.231,0.38
+Logistic + memory,over + show,497,0.672,0.537
+Logistic + memory,over + drop,483,0.687,0.522
+Logistic + memory,under + drop,163,0.226,0.495
+Logistic + memory,under + show,109,0.135,0.452
+Logistic + memory,switch,211,0.188,0.4
+Logistic + positions + memory,over + show,497,0.654,0.534
+Logistic + positions + memory,over + drop,483,0.662,0.533
+Logistic + positions + memory,under + drop,163,0.212,0.439
+Logistic + positions + memory,under + show,109,0.127,0.313
+Logistic + positions + memory,switch,211,0.234,0.378
+Logistic + defenders' positions + memory,over + show,497,0.65,0.538
+Logistic + defenders' positions + memory,over + drop,483,0.676,0.528
+Logistic + defenders' positions + memory,under + drop,163,0.237,0.476
+Logistic + defenders' positions + memory,under + show,109,0.13,0.362
+Logistic + defenders' positions + memory,switch,211,0.233,0.396
+Logistic + hard positions,over + show,497,0.657,0.533
+Logistic + hard positions,over + drop,483,0.669,0.536
+Logistic + hard positions,under + drop,163,0.201,0.442
+Logistic + hard positions,under + show,109,0.148,0.373
+Logistic + hard positions,switch,211,0.228,0.371
+Logistic + hard positions + memory,over + show,497,0.65,0.534
+Logistic + hard positions + memory,over + drop,483,0.667,0.533
+Logistic + hard positions + memory,under + drop,163,0.216,0.435
+Logistic + hard positions + memory,under + show,109,0.134,0.34
+Logistic + hard positions + memory,switch,211,0.231,0.373
+Logistic + defenders' hard positions + memory,over + show,497,0.647,0.535
+Logistic + defenders' hard positions + memory,over + drop,483,0.672,0.527
+Logistic + defenders' hard positions + memory,under + drop,163,0.231,0.46
+Logistic + defenders' hard positions + memory,under + show,109,0.132,0.374
+Logistic + defenders' hard positions + memory,switch,211,0.231,0.388
+Logistic + defenders' hard positions,over + show,497,0.654,0.534
+Logistic + defenders' hard positions,over + drop,483,0.679,0.529
+Logistic + defenders' hard positions,under + drop,163,0.213,0.469
+Logistic + defenders' hard positions,under + show,109,0.141,0.384
+Logistic + defenders' hard positions,switch,211,0.219,0.385
