@@ -58,10 +58,14 @@ The EPV, court control and rebounding models, their panels and their data files 
 ### Exploration tabs
 
 Eight tabs (Paint touches, Pre-shot actions, Closeouts, Crashing, Driving lanes, Advantage, Gravity, Pick coverage), one per
-candidate competition topic, address `#/explore/<topic>`. Each reads `public/data/explore_<topic>.json`, written by
+candidate competition topic, address `#/explore/<topic>`. Pick coverage has its own tab in the bar ("Pick Coverage EDA", right of
+Screen Coverage Model); the rest sit in the EDA menu under Archetypes and Court Control. Tables with a `views` list get a switch
+above them (Pick coverage uses it for full coverage, handler's defender and screener's defender). Each reads `public/data/explore_<topic>.json`, written by
 `web/scripts/explore/<topic>.R`; text, charts and tables all come from that script, and
 `src/components/explore/` only lays them out (`Explore.svelte`, `Block.svelte`, `DataTable.svelte`). Descriptive
-only: counts, means, 90% intervals and simple tracking geometry, no fitted model.
+only: counts, means, 90% intervals and simple tracking geometry, no fitted model. The one exception is Pick coverage's
+"Reading switches" section, which reads the live screen coverage model's held-out predictions (`screen_coverage/02_cache/`)
+and runs one small held-out logistic check; it is left out when those caches are missing.
 
 ```bash
 Rscript web/scripts/explore/build.R                # every topic, about a minute

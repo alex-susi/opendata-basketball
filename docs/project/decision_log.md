@@ -2624,3 +2624,22 @@ Added `06_film_study.R` and a shared play-card drawing (`R/draw_play.R`, also us
 - "Off-Ball" is now "Off-ball" everywhere on the site (drive "Created From", cut type, player card rows, the cut filter options). The two cut labels were also fixed in `web/scripts/export_data.R` and in the already-exported `public/data/meta.json`, so no re-export is needed.
 - Movement rows in the hover cards: "Max Accel (ft/s²)", "Max Decel (ft/s²)", "Dist Covered (ft)".
 - 106 tests pass.
+
+## 2026-11-18 — Site: Pick Coverage EDA tab, positions, pre-screen actions and switch reads
+
+- Tab bar: Play viewer, Screen Coverage Model, **Pick Coverage EDA** (the `coverage` exploration tab, still `#/explore/coverage`), then the EDA menu with Archetypes and Court Control at the top, then Rebounding and the other seven exploration tabs.
+- Coverage tables on the tab have a switch: Full coverage, Handler's defender (over, under, switch) or Screener's defender (drop, show, switch). The one-defender views use the five main coverages only (ice and blitz left out) so they sum to 100%. Generic `views` support in `TABLE()` / `DataTable.svelte`.
+- Motion charts about one defender now split by that defender's coverage (over/under/switch or drop/show/switch). Ice left out of every trace chart (the model leaves it out).
+- "Call" is "coverage" in the tab's text and in the viewer's coverage card and side-panel tooltips. The tab's text was rewritten in the README's cadence.
+- New sections in `web/scripts/explore/coverage.R`:
+  - **Who is in the screen.** Archetypes grouped into guard, wing or big (offensive archetype first, archetypes not refitted). Switch rate 12% with a big as the screener's defender, 21% wing, 30% guard. Same-size defenders 26%, guard and big 9%.
+  - **Archetypes and leakage.** No coverage share enters the clusters (9 coverage-share features left out, split-half r −0.03 to 0.24). Side door: 9 defensive clustering features use matchups assignments, which change after switches. Archetypes were fitted on all ten games, so a held-out-game model would use groups shaped partly by that game. Safest input is the offensive-archetype position group, refitted per fold for zero leakage.
+  - **What comes before the screen.** Earlier switch in the possession 28% vs 14%. Cross-matched coming in 28% vs 13%. Earlier pick 21% vs 11%. Cuts, drives and off-ball screens do not move the switch rate.
+  - **Reading switches.** Matchups hand the handler over a median +0.9 s after the pick frame (11% by the pick frame, 25% never by +3 s). The live model's average switch probability barely moves with personnel (guard screener's defender 28% actual, 17% model). Held-out logistic check (model read + five signals): switch log loss 0.359 → 0.353, AUC 0.76 → 0.77, 6 of 10 games better. Before the pick frame 0.377 → 0.369. Signals were chosen after looking, so this is an upper bound. No model was changed.
+- Open: the owner has not chosen a switch fix. Candidates on the tab: position inputs from data outside the graded game, possession memory (cross-match, earlier switch, earlier pick), current matchups assignment, a lower switch bar, film check of the 55 switches with no hand-over.
+
+## 2026-11-18 (later) — Site: attention labels and roll-lane text
+
+- Model Attention: no rings. Every player on the court gets a purple percentage above his dot (his share of the four screen players' attention, 0% when none).
+- Roll Lanes labels: light blue text (#8CC0FF) on the dark plate, gap to the lane and closing speed on two lines. `drawTag` in `web/src/lib/draw.ts` now stacks lines split on "\n".
+- Display only. 106 tests pass.

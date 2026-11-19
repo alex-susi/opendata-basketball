@@ -1,11 +1,22 @@
 <script lang="ts">
   // A sortable table for the exploration tabs. Columns with a reference value tint each cell: blue above the
   // reference, red below, stronger the further away (full strength at `scale`); the tooltip gives the reference and
-  // says when lower is the better side. The first `limit` rows show until "Show all" is pressed.
+  // says when lower is the better side. The first `limit` rows show until "Show all" is pressed. A table with `views`
+  // gets a switch beside its title (e.g. handler's defender, screener's defender, full coverage) that shows only
+  // that view's columns; sorting and the row limit carry over between views.
   import { fitWide } from "../../lib/fitwide";
-  import { format, type Col, type Row } from "./types";
+  import { format, type Col, type Row, type View } from "./types";
 
-  let { title = "", cols, rows, limit = 15, note = null }: { title?: string; cols: Col[]; rows: Row[]; limit?: number; note?: string | null } = $props();
+  let { title = "", cols: allCols, rows, limit = 15, note = null, views = null }:
+    { title?: string; cols: Col[]; rows: Row[]; limit?: number; note?: string | null; views?: View[] | null } = $props();
+
+  // The view shown: the first by default. Its keys pick and order the columns.
+  let view = $state(0);
+  const cols = $derived.by(() => {
+    const v = views?.[view];
+    if (!v) return allCols;
+    return v.keys.map((k) => allCols.find((c) => c.key === k)).filter((c): c is Col => !!c);
+  });
 
   let sortKey = $state<string | null>(null);
   let desc = $state(true);
@@ -52,7 +63,18 @@
 </script>
 
 <div class="dt">
-  {#if title}<h4>{title}</h4>{/if}
+  {#if title || views?.length}
+    <div class="dt-head">
+      {#if title}<h4>{title}</h4>{/if}
+      {#if views?.length}
+        <div class="seg dt-views" role="radiogroup" aria-label="Coverage shown">
+          {#each views as v, i (v.label)}
+            <button type="button" role="radio" aria-checked={view === i} class:on={view === i} onclick={() => (view = i)}>{v.label}</button>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
   <div class="table-wrap" use:fitWide>
     <table class="scores dt-table">
       <thead>
@@ -92,7 +114,9 @@
 
 <style>
   .dt { margin: 24px 0; min-width: 0; }
-  .dt h4 { margin: 0 0 8px; }
+  .dt-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 0 8px; }
+  .dt h4 { margin: 0; }
+  .dt-views button { font-size: 12.5px; padding: 3px 11px; }
   .dt-table { width: max-content; min-width: 100%; font-size: 14.5px; }
   .dt-table th, .dt-table td { padding: 6px 8px; font-size: 14.5px; white-space: nowrap; }
   /* Numeric headers may take two lines, so long labels do not widen their columns. */

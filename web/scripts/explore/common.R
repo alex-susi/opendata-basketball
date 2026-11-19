@@ -236,12 +236,16 @@ col <- function(key, label, fmt = "text", ref = NULL, scale = NULL, low = FALSE,
   if (is.null(title)) warning("No description for table column '", label, "'", call. = FALSE)
   list(key = key, label = label, fmt = fmt, ref = ref, scale = scale, low = low, title = title, group = group)
 }
-TABLE <- function(title, cols, rows, limit = 15, note = NULL) {
-  list(type = "table", title = title, cols = cols, rows = rows, limit = limit, note = note)
+#' A sortable table. `views` (optional) is a list of list(label, keys): the site shows one switch button per view
+#' and only that view's columns (keys in the order shown); the first view is shown first.
+TABLE <- function(title, cols, rows, limit = 15, note = NULL, views = NULL) {
+  list(type = "table", title = title, cols = cols, rows = rows, limit = limit, note = note, views = views)
 }
 SECTION <- function(id, title, ...) list(id = id, title = title, blocks = Filter(Negate(is.null), list(...)))
-DOC <- function(id, title, lead, sections) {
-  list(id = id, title = title, lead = lead, built = format(Sys.time(), "%Y-%m-%d %H:%M"), sections = sections)
+#' `meta` replaces the site's standard line under the lead ("Descriptive only: no model is fitted") when a tab needs
+#' to say more.
+DOC <- function(id, title, lead, sections, meta = NULL) {
+  list(id = id, title = title, lead = lead, built = format(Sys.time(), "%Y-%m-%d %H:%M"), sections = sections, meta = meta)
 }
 save_doc <- function(doc) {
   path <- file.path(EX_OUT, paste0("explore_", doc$id, ".json"))
@@ -570,14 +574,16 @@ aligned_geom <- function(B, f, grp, offsets = seq(-2, 2, by = 0.2)) {
 # The site's dark categorical order (dataviz reference palette, dark steps), in fixed order; lines may use all
 # eight, scatter groups only the first three.
 PAL <- c("#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767")
-#' Lines from a long table (x, y, grp) with legend names, coloured in the order of `levels`.
-LINES_BY <- function(d, xcol, ycol, gcol, levels = unique(d[[gcol]])) {
+#' Lines from a long table (x, y, grp) with legend names, coloured in the order of `levels`, or by name from
+#' `colors` (a named vector) when given.
+LINES_BY <- function(d, xcol, ycol, gcol, levels = unique(d[[gcol]]), colors = NULL) {
   gv <- d[[gcol]]
   levels <- levels[levels %in% gv]
   lapply(seq_along(levels), function(j) {
     s <- as.data.frame(d)[gv == levels[j], , drop = FALSE]
     s <- s[order(s[[xcol]]), , drop = FALSE]
-    l <- LINE(s[[xcol]], s[[ycol]], color = PAL[(j - 1) %% length(PAL) + 1])
+    clr <- if (!is.null(colors) && levels[j] %in% names(colors)) colors[[levels[j]]] else PAL[(j - 1) %% length(PAL) + 1]
+    l <- LINE(s[[xcol]], s[[ycol]], color = clr)
     l$name <- levels[j]
     l
   })

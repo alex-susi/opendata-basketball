@@ -8,6 +8,8 @@ export type Fmt = "text" | "int" | "num1" | "num2" | "pct" | "pct1";
 
 export interface RateRow { label: string; rate: number; lo: number | null; hi: number | null; n: number }
 export interface Line { points: [number, number][]; label?: string | null; name?: string; color?: string | null; dashed?: boolean }
+/** One switchable view of a table: its button label and the column keys it shows, in order. */
+export interface View { label: string; keys: string[] }
 export interface Col { key: string; label: string; fmt: Fmt; ref?: number | null; scale?: number | null; low?: boolean; title?: string | null; group?: string | null }
 
 export type Block =
@@ -25,10 +27,10 @@ export type Block =
       xlabel: string; ylabel: string; xfmt: Fmt; yfmt: Fmt; xdomain: [number, number] | null; ydomain: [number, number] | null;
       note?: string | null; radius: number; opacity: number }
   | { type: "court"; title: string; points: { x: number; y: number; w?: number }[]; caption: string | null; bw: number }
-  | { type: "table"; title: string; cols: Col[]; rows: Row[]; limit: number; note?: string | null };
+  | { type: "table"; title: string; cols: Col[]; rows: Row[]; limit: number; note?: string | null; views?: View[] | null };
 
 export interface Section { id: string; title: string; blocks: Block[] }
-export interface ExploreDoc { id: string; title: string; lead: string; built: string; sections: Section[] }
+export interface ExploreDoc { id: string; title: string; lead: string; built: string; sections: Section[]; meta?: string | null }
 
 const finite = (v: Cell): v is number => typeof v === "number" && Number.isFinite(v);
 

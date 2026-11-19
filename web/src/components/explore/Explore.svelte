@@ -23,7 +23,7 @@
   <div class="doc-inner x-doc">
     <h1>{doc.title}</h1>
     <p class="lead">{doc.lead}</p>
-    <p class="meta">Exploratory data analysis of the ten tracked Liga ACB games (season aggregates where labelled). Built {doc.built}. Descriptive only: no model is fitted.</p>
+    <p class="meta">Exploratory data analysis of the ten tracked Liga ACB games (season aggregates where labelled). Built {doc.built}. {doc.meta ?? "Descriptive only: no model is fitted."}</p>
     <nav class="x-toc" aria-label="On this page">
       {#each doc.sections as s, i (s.id)}<button type="button" class="link" onclick={() => go(`${doc?.id}-${s.id}`)}>{i + 1}. {s.title}</button>{/each}
     </nav>

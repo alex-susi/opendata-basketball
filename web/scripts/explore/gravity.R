@@ -172,7 +172,7 @@ topic_gravity <- function(BL) {
              by = canon][runs >= 10][order(-pulled)]
   P_ <- R[kind == "pop"]
   RL <- R[kind == "roll"]
-  P_[, covl := fifelse(is.na(cov) | cov == "none", "none called", cov)]
+  P_[, covl := fifelse(is.na(cov) | cov == "none", "no coverage", cov)]
   cov_lv <- P_[, .N, by = covl][N >= 8][order(-N)]$covl
 
   # ---- four situations, after the NBA's split: on or off the ball, perimeter (over 20 ft from the hoop) or interior.

@@ -46,6 +46,7 @@ export interface DrawOptions {
 
 const LANE_COLOR = "#c98500";
 const LANE_HELP = "#1f5fd1";
+const LANE_TEXT = "#8CC0FF";   // the lane labels' text: a light blue that reads on the dark label plate
 const LANE_STEP = 5;   // frames: the closing speed's 0.2 s
 // The roll-lane experiment: the lane from the screener to the rim, each off-ball defender's nearest point on it and
 // an arrow for his last 0.2 s, drawn under the dots. The geometry comes from the positions on screen; the gap and
@@ -115,23 +116,19 @@ function drawLanesOver(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r:
   for (const h of lf.helpers) {
     const d = dots.find((q) => q.p.id === h.pid);
     if (!d) continue;
-    const text = h.d == null ? "lane n/a" : `${h.d.toFixed(1)} ft · ${h.c != null && h.c >= 0 ? "+" : ""}${h.c?.toFixed(1) ?? "?"} ft/s`;
-    drawTag(ctx, px(L, d.x), py(L, d.y) + r + 12, text, LANE_HELP, 10);
+    // Gap to the lane on the first line, closing speed on the second.
+    const text = h.d == null ? "lane n/a" : `${h.d.toFixed(1)} ft\n${h.c != null && h.c >= 0 ? "+" : ""}${h.c?.toFixed(1) ?? "?"} ft/s`;
+    const lines = text.split("\n").length;
+    drawTag(ctx, px(L, d.x), py(L, d.y) + r + 12 + (lines - 1) * 6.5, text, LANE_TEXT, 10);
   }
 }
 
 const ATT_COLOR = "#9b5de5";
-// The coverage model's attention: a purple ring on each player, thicker the more of the four screen players'
-// attention he gets, and the top three shares labelled above their dots.
+// The coverage model's attention: the share of the four screen players' attention each player gets, labelled above
+// every player on the court (0% when he gets none).
 function drawAttention(ctx: CanvasRenderingContext2D, L: Layout, dots: Dot[], r: number, att: Map<number, number>): void {
-  const shares = dots.map((d) => ({ d, s: att.get(d.p.id) ?? 0 })).filter((x) => x.s > 0);
-  const top = Math.max(...shares.map((x) => x.s), 0.01);
-  for (const { d, s } of shares) {
-    if (s < 0.03) continue;
-    drawRing(ctx, px(L, d.x), py(L, d.y), r + 2, ATT_COLOR, 1 + 6 * (s / top));
-  }
-  for (const { d, s } of [...shares].sort((a, b) => b.s - a.s).slice(0, 3)) {
-    drawTag(ctx, px(L, d.x), py(L, d.y) - r - 14, `${Math.round(100 * s)}%`, ATT_COLOR, 10);
+  for (const d of dots) {
+    drawTag(ctx, px(L, d.x), py(L, d.y) - r - 14, `${Math.round(100 * (att.get(d.p.id) ?? 0))}%`, ATT_COLOR, 10);
   }
 }
 
@@ -275,10 +272,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, L: Layout, d: Dot, r: number,
   if (o.hoverPid === d.p.id) drawRing(ctx, x, y, r, kit.edge, 2.5);
 }
 
-// A small dark label centred on x.
+// A small dark label centred on (x, cy). "\n" in the text stacks lines on one plate.
 function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: string, color: string, size: number): void {
   ctx.font = `700 ${size}px ${font()}`;
-  const w = ctx.measureText(text).width + 10, h = size + 7, left = x - w / 2;
+  const lines = text.split("\n"), lh = size + 3;
+  const w = Math.max(...lines.map((t) => ctx.measureText(t).width)) + 10, h = size + 7 + (lines.length - 1) * lh, left = x - w / 2;
   ctx.fillStyle = COLORS.panel;
   ctx.globalAlpha = 0.92;
   ctx.beginPath();
@@ -288,7 +286,7 @@ function drawTag(ctx: CanvasRenderingContext2D, x: number, cy: number, text: str
   ctx.fillStyle = color;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, left + w / 2, cy + 0.5);
+  lines.forEach((t, i) => ctx.fillText(t, left + w / 2, cy + 0.5 + (i - (lines.length - 1) / 2) * lh));
 }
 
 // A small pill attached to the right of a dot, like an exponent (above) or a subscript (below). Used for the

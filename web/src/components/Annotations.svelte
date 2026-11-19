@@ -113,7 +113,7 @@
         <span></span>
         <span class="cov-act" class:tbd={!shown} class:combined={i === 2}>{#if shown}{@render call(row.act)}{:else}TBD{/if}</span>
         <span class="cov-mark" class:right={shown && row.exp === row.act} class:wrong={shown && row.exp !== row.act} class:combined={i === 2}
-              title={shown ? (row.exp === row.act ? "The model's expected call is the tagged call" : "The model's expected call is not the tagged call") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
+              title={shown ? (row.exp === row.act ? "The model's expected coverage is the tagged coverage" : "The model's expected coverage is not the tagged coverage") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
       {/each}
     </span>
   </div>

@@ -91,7 +91,7 @@
     <CourtMap points={block.points} title={block.title} caption={block.caption} bw={block.bw} noun="spots" />
   </figure>
 {:else if block.type === "table"}
-  <DataTable title={block.title} cols={block.cols} rows={block.rows} limit={block.limit} note={block.note} />
+  <DataTable title={block.title} cols={block.cols} rows={block.rows} limit={block.limit} note={block.note} views={block.views ?? null} />
 {/if}
 
 <style>
