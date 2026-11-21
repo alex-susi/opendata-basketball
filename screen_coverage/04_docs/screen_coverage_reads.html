@@ -255,7 +255,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
 
 <main class="page">
   <header>
-    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-19</span>
+    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-21</span>
     <h1>Screen Coverage Reads</h1>
     <p class="lede">Can tracking data tell a ball handler how an on-ball screen will be defended, and how early?</p>
     <ul class="tight">
@@ -354,9 +354,10 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <section id="status">
     <div class="head">
       <h2>Status</h2>
-      <p class="sub">Where the project stands as of 2026-11-19</p>
+      <p class="sub">Where the project stands as of 2026-11-21</p>
     </div>
     <ul class="tight">
+      <li>Work now follows the coverage product plan (owner, 2026-11-21) · Phase 2 done, the live model is frozen as a release and reproduces exactly. Phase 3 built (pause-and-reveal Screen Coverage Read, review panel, 50-play sample) and waiting on the owner's play review</li>
       <li>Live model · time-aware transformer with v2 past-only inputs, and since 2026-11-19 the four screen players' guard, wing or big in its switch decision only. On the play viewer's Coverage Read card</li>
       <li>Weak spot · switch and under + show are mostly missed (26% and 17% caught). With a guard on the screener 45% of switches are caught (was 17%)</li>
       <li>Past-only rule confirmed by a test</li>
@@ -375,6 +376,13 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
             <li>All 10 held-out games exported to the Coverage Read card (<span class="file">06_export_live.R</span>)</li>
             <li>Main-curve score 1.117 for the full coverage (0.693 ball handler's defender, 0.792 screener's defender)</li>
             <li>1.114 for the model it replaced (no position groups, kept in <span class="file">02_cache/v2_main_2026-11-15/</span>). Switch AUC 0.770 vs 0.762</li>
+          </ul></td></tr>
+          <tr><td class="lead">Frozen release</td><td><ul>
+            <li>Release <span class="file">live_2026-11-19_switch_positions</span>, frozen 2026-11-21 (<span class="file">34_freeze_release.R</span>)</li>
+            <li>Read-only copies of the 50 fold files and networks, their inputs, the position groups and the site's coverage files in <span class="file">02_cache/releases/</span></li>
+            <li>Manifest with commit, R and package versions, folds, starts, best epochs, standardisation and a hash of every file in <span class="file">03_outputs/releases/</span></li>
+            <li>Rerunning the saved networks gives the saved probabilities exactly, on all 10 held-out games</li>
+            <li>Retraining one start of one game (184439) gives the same network weight for weight</li>
           </ul></td></tr>
           <tr><td class="lead">Main curve</td><td><ul>
             <li>Set 2026-11-15 from tracking and event timing, never from model results (<span class="file">R/window_weights.R</span>, <span class="file">13_window_anchors.R</span>)</li>
@@ -1144,6 +1152,14 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">Priority order first, then ideas grouped by area</p>
     </div>
     <ol class="steps plain">
+      <li><div><b>Follow the coverage product plan</b><ul class="tight">
+        <li>Owner's plan of 2026-11-21 (<span class="file">docs/project/Screen_Coverage_Product_Model_Dashboard_Plan_20261120.html</span>), all of it part of the competition entry. It comes before the steps below</li>
+        <li>Phase 2 · freeze the live model and reproduce it · done 2026-11-21</li>
+        <li>Phase 3 · built 2026-11-21 (pinned screens, Predict / Full review, phone layout, review panel, 50-play sample). Next · the owner reviews the 50 plays, then repeats 12 blind</li>
+        <li>Phases 4–5 · timing, eligibility and a new evaluation report. The main curve and an even −1 to 0 s score are reported side by side until the owner picks the primary score after the review</li>
+        <li>Phase 6 · three model changes tested one at a time against a matched baseline, after the owner signs off the evaluation rules</li>
+        <li>Phase 7 · replay and scouting dashboard</li>
+      </ul></div></li>
       <li><div><b>Decide how to lift switch and under + show</b><ul class="tight">
         <li>Done 2026-11-19 · the four screen players' guard, wing or big now feed the live model's switch decision (see Change log). The possession's memory was tested and not adopted</li>
         <li>Other candidates ranked by expected gain in Ideas by area (Rare coverages)</li>
@@ -1290,10 +1306,10 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
           </ul></div></li>
           <li><div><h3>Export to the play viewer</h3><ul class="tight">
             <li><span class="file">06_export_live.R</span></li>
-            <li>Coverage Read card shows each defender's coverage (on the ball over, under or switch, on the screener show, drop or switch) and the most likely combination</li>
-            <li>Ticks the recorded coverage once the screen is set</li>
-            <li>Model Attention toggle rings the players the model mixes in</li>
-            <li>Display-panel switch · each frame's raw percentages (default) or the average of the last two frames (0.08 s)</li>
+            <li>Screen Coverage Read · the selected screen's forecast (five coverages, each defender's part) and a time trace up to the current moment</li>
+            <li>Predict mode (default) hides the recorded coverage until Reveal. Full review shows it throughout. No automatic right or wrong marks</li>
+            <li>‹ › pins a screen so scrubbing keeps it. Pause points from −2 s to −0.5 s before the pick marker. Under the court on narrow screens</li>
+            <li>Model Attention toggle rings the players the model mixes in, for the same screen</li>
           </ul></div></li>
         </ol>
 
@@ -1319,6 +1335,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
               <tr><td><span class="file">21_promote_main_curve.R</span></td><td>Made the main-curve model live from the timing experiment's "none" runs. Replaced model kept in <span class="file">02_cache/v2_flat_2026-11-12/</span></td></tr>
               <tr><td><span class="file">22_confusion_matrices.R</span></td><td>Recall and precision matrices of the top coverage for each coverage and each defender, and how well switch probabilities rank switches</td></tr>
               <tr><td><span class="file">23_call_diagnostics.R</span></td><td>Why switch and under + show are missed · recall over time, a share-adjusted top-coverage rule, team habits and player roles</td></tr>
+              <tr><td><span class="file">34_freeze_release.R</span></td><td>Freezes the live model as a read-only release with a manifest, and checks that saved networks and a one-start retrain reproduce it</td></tr>
+              <tr><td><span class="file">35_review_sample.R</span></td><td>Draws the 50-play review sample by coverage and hard-case flags without reading any prediction, and writes the viewer's review queue</td></tr>
             </tbody>
           </table>
         </div>
@@ -1326,6 +1344,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         <ul class="tight">
           <li><span class="file">--variant=A|B|C</span> on 02, 03 and 05 builds, trains and tests a lane variant in <span class="file">02_cache/experiments/lanes/</span></li>
           <li><span class="file">--seeds=…</span> on 03 sets the random starts</li>
+          <li><span class="file">--out-dir=…</span> on 03 writes the fold file and networks to a chosen folder (since 2026-11-21), so reruns never land in the live or older experiment folders</li>
           <li><span class="file">--timing=none|physics|learned [--extra=hoop_speed]</span> on 03 runs the timing experiments in <span class="file">02_cache/experiments/timing/</span></li>
           <li>Without options every script behaves exactly as before. Lane and timing variants were never exported as the live model</li>
         </ul>
@@ -1697,6 +1716,37 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">Every change to the models or this page, newest first</p>
     </div>
     <div class="log">
+      <div class="entry">
+        <time datetime="2026-11-21">2026-11-21 (later)</time>
+        <div>
+          <h3>Coverage product plan · Phase 3, pause-and-reveal read and play review</h3>
+          <ul class="tight">
+            <li>Screen Coverage Read rebuilt (<span class="file">web/src/components/CoveragePanel.svelte</span>). ‹ › pins a screen so scrubbing keeps it. Without a pin it follows the earliest screen whose window holds the frame and names a re-screen, where it used to jump to the nearest pick frame</li>
+            <li>Predict mode is the default. The recorded coverage stays hidden until Reveal, hidden at its source so the court tags, hover cards and season lines follow. Full review shows it throughout. The automatic right and wrong marks are gone</li>
+            <li>Five coverages with a "No clear favorite" state (lead under 45% or under 10 points, a provisional display rule), each defender's part, a time trace up to the current moment, and pause points from −2 s to −0.5 s</li>
+            <li>Courts under 480 px wide get the read under the court. Phone pages now grow and scroll, where the trace panel used to run over the Display panel</li>
+            <li>Model Attention and Roll Lanes follow the same screen as the read</li>
+            <li><span class="file">35_review_sample.R</span> draws 50 screens without reading predictions · 15 switches split by hand-over timing, 27 other coverages with 11 hand-over controls, 5 ice or blitz, 3 left out for tracking. 14 re-screens, 7 search-edge closest approaches. 12 marked for a blind repeat</li>
+            <li>Review panel in the viewer (address with <span class="file">?review</span>) · blind stage with stamped moments and choices, then the forecast and label, saved in the browser and exported as <span class="file">review_cases.csv</span>. Instructions in <span class="file">docs/project/coverage_product_task.md</span></li>
+            <li>Site checks · type check clean, 115 tests pass (9 new), build succeeds. Live model and its numbers unchanged</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-21">2026-11-21</time>
+        <div>
+          <h3>Coverage product plan · Phase 2, live model frozen</h3>
+          <ul class="tight">
+            <li>Owner adopted the coverage product plan as the rest of the entry. Its sources, the coaching video transcript and the curve and window audit, are in <span class="file">docs/project/</span></li>
+            <li><span class="file">34_freeze_release.R</span> copies the live model, its inputs, position groups and site files into <span class="file">02_cache/releases/live_2026-11-19_switch_positions/</span> (59 files, read-only) and writes a manifest with hashes, versions, folds, starts and standardisation</li>
+            <li>Saved networks rerun on every held-out row · largest difference from the saved probabilities 0 on all 10 games</li>
+            <li>One start of game 184439 retrained with <span class="file">--out-dir</span> · best epoch 40 and validation score 1.267376 as before, every weight and probability identical</li>
+            <li>Past-only test rerun · 180 of 180 rows pass. Weighted scores rerun · every output file unchanged (main curve 1.117 vs baseline 1.192)</li>
+            <li>Site checks · type check clean, 106 tests pass, build succeeds</li>
+            <li>Live model, site export and model page unchanged</li>
+          </ul>
+        </div>
+      </div>
       <div class="entry">
         <time datetime="2026-11-19">2026-11-19 (latest)</time>
         <div>

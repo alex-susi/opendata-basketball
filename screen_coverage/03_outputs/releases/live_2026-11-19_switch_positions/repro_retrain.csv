@@ -1,0 +1,2 @@
+fold,seed,release_best_epoch,rerun_best_epoch,release_val,rerun_val,max_weight_diff,max_prob_diff,same_norm,rerun_seconds
+184439,1,40,40,1.26737570762634,1.26737570762634,0,0,TRUE,306

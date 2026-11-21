@@ -661,6 +661,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 /* ---- phones: one column, court first ---- */
 @media (max-width: 760px) {
   .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "ctrl" "viewer" "side" "left"; padding: 8px; gap: 8px; }
+  /* The page grows with its content and scrolls (2026-11-21): held to the window's height, the viewer row was squeezed
+     and the trace panel and Screen Coverage Read ran over the Display panel. */
+  .app { height: auto; grid-template-rows: auto; }
   .viewer { min-height: 0; }
   .side { flex-direction: column; }
   .left { position: static; max-height: none; }

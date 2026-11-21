@@ -46,32 +46,44 @@ export interface CoverageRead {
   screen: CoverageScreen;
   /** Seconds relative to the tag (negative = before the screen). */
   t: number;
-  /** Smoothed whole-percent probability per call, in the file's call order. */
+  /** Whole-percent probability per call at the frame, in the file's call order. */
   pct: number[];
 }
 
-/** The read at a frame: the screen whose window holds the frame (the nearest tag when windows overlap), and its
- * probabilities averaged over the last `smooth` frames up to this one (1 = the frame's raw value, which the card
- * always uses). Null outside every window. */
-export function coverageAt(cov: CoverageFile, possession: string, frame: number, smooth: number): CoverageRead | null {
-  const list = cov.possessions[possession];
-  if (!list?.length) return null;
+/** The scored screen with this pick frame in a possession, or null (not scored: tracking incomplete, or a coverage
+ * outside the five). */
+export function screenAt(cov: CoverageFile, possession: string, f0: number): CoverageScreen | null {
+  return cov.possessions[possession]?.find((s) => s.f0 === f0) ?? null;
+}
+
+/** A scored screen's whole-percent probabilities at a frame, or null outside its −2 s to +1 s window. */
+export function readAt(cov: CoverageFile, screen: CoverageScreen, frame: number): CoverageRead | null {
   const [lo, hi] = cov.offsets;
-  let best: CoverageScreen | null = null;
-  for (const s of list) {
-    const o = frame - s.f0;
-    if (o < lo || o > hi) continue;
-    if (!best || Math.abs(o) < Math.abs(frame - best.f0)) best = s;
-  }
-  if (!best) return null;
-  const k = Math.round(frame - best.f0) - lo;
-  const from = Math.max(0, k - Math.max(1, smooth) + 1);
-  const pct = best.p.map((series) => {
-    let sum = 0;
-    for (let i = from; i <= k; i++) sum += series[i];
-    return sum / (k - from + 1);
-  });
-  return { screen: best, t: (frame - best.f0) / 25, pct };
+  const o = Math.round(frame - screen.f0);
+  if (o < lo || o > hi) return null;
+  return { screen, t: o / 25, pct: screen.p.map((series) => series[o - lo]) };
+}
+
+/** A scored screen's probabilities from the start of its window up to a frame (all of it when `upTo` is null): the
+ * time trace. Each point is [seconds from the pick frame, the five whole percents]. */
+export function traceOf(cov: CoverageFile, screen: CoverageScreen, upTo: number | null): [number, number[]][] {
+  const [lo, hi] = cov.offsets;
+  const last = upTo == null ? hi : Math.min(hi, Math.round(upTo - screen.f0));
+  const out: [number, number[]][] = [];
+  for (let o = lo; o <= last; o++) out.push([o / 25, screen.p.map((series) => series[o - lo])]);
+  return out;
+}
+
+// "No clear favorite" (provisional display rule, Phase 3): the leading coverage is called favored only when it has
+// at least FAVORED_MIN percent AND leads the second by at least FAVORED_GAP points. Both are display choices to be set
+// on validation games in Phase 5, never on the held-out games.
+export const FAVORED_MIN = 45;
+export const FAVORED_GAP = 10;
+/** The leading coverage, the runner-up, and whether the lead is clear enough to call it favored. */
+export function favorite(calls: string[], pct: number[]): { top: number; second: number; clear: boolean } {
+  const order = pct.map((v, j) => [v, j] as const).sort((a, b) => b[0] - a[0]);
+  const [top, second] = [order[0][1], order[1][1]];
+  return { top, second, clear: pct[top] >= FAVORED_MIN && pct[top] - pct[second] >= FAVORED_GAP };
 }
 
 // ---- the live model's attention (the Display panel's Model Attention toggle) -----------------------------------
@@ -92,18 +104,13 @@ export function loadCoverageAttention(): Promise<AttentionFile | null> {
   return attFile;
 }
 
-/** Attention share (0-1) per player id at a frame, from the screen whose window holds it; null outside every window. */
-export function attentionAt(att: AttentionFile, possession: string, frame: number): Map<number, number> | null {
-  const list = att.possessions[possession];
-  if (!list?.length) return null;
-  const [lo, hi] = att.offsets;
-  let best: AttentionScreen | null = null;
-  for (const s of list) {
-    const o = frame - s.f0;
-    if (o < lo || o > hi) continue;
-    if (!best || Math.abs(o) < Math.abs(frame - best.f0)) best = s;
-  }
+/** Attention share (0-1) per player id at a frame, for the screen with pick frame f0 (the one the coverage read
+ * follows, lib/coverageView.svelte.ts); null outside its window or without a screen. */
+export function attentionAt(att: AttentionFile, possession: string, frame: number, f0: number | null): Map<number, number> | null {
+  const best = f0 == null ? null : att.possessions[possession]?.find((s) => s.f0 === f0);
   if (!best) return null;
+  const [lo, hi] = att.offsets;
+  if (frame - best.f0 < lo || frame - best.f0 > hi) return null;
   const i = Math.round(frame - best.f0) - lo;
   const w = best.w[i], k = best.k[i];
   if (!w || !k) return null;
@@ -133,18 +140,13 @@ export function loadCoverageLanes(): Promise<LanesFile | null> {
   return lanesFile;
 }
 
-/** The screener and each off-ball defender's lane values at a frame, from the screen whose window holds it. */
-export function lanesAt(file: LanesFile, possession: string, frame: number): LaneFrame | null {
-  const list = file.possessions[possession];
-  if (!list?.length) return null;
-  const [lo, hi] = file.offsets;
-  let best: LaneScreen | null = null;
-  for (const s of list) {
-    const o = frame - s.f0;
-    if (o < lo || o > hi) continue;
-    if (!best || Math.abs(o) < Math.abs(frame - best.f0)) best = s;
-  }
+/** The screener and each off-ball defender's lane values at a frame, for the screen with pick frame f0 (the one the
+ * coverage read follows); null outside its window or without a screen. */
+export function lanesAt(file: LanesFile, possession: string, frame: number, f0: number | null): LaneFrame | null {
+  const best = f0 == null ? null : file.possessions[possession]?.find((s) => s.f0 === f0);
   if (!best) return null;
+  const [lo, hi] = file.offsets;
+  if (frame - best.f0 < lo || frame - best.f0 > hi) return null;
   const i = Math.round(frame - best.f0) - lo;
   const tenth = (v: number | null | undefined) => (v == null ? null : v / 10);
   return { screener: best.s, helpers: best.r.map((pid, h) => ({ pid, d: tenth(best!.d[h]?.[i]), c: tenth(best!.c[h]?.[i]) })) };

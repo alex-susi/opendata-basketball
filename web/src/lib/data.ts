@@ -5,6 +5,7 @@
 import type { Season } from "./context";
 import type { Playstyle, Sample } from "./types";
 import { decodePlay } from "./decode";
+import { guardRecordedCoverage } from "./coverageView.svelte";
 import type { Meta, PeriodIndex, Play, PlayRow } from "./types";
 
 declare const __DATA_STAMP__: string;
@@ -85,12 +86,13 @@ function loadPeriod(file: string): Promise<Period> {
   return period;
 }
 
-/** One possession's tracking, decoded from its game period's file. */
+/** One possession's tracking, decoded from its game period's file. Each pick's recorded coverage answers only while
+ * it may be shown (Predict mode hides it until revealed, lib/coverageView.svelte.ts). */
 export async function loadPlay(row: PlayRow): Promise<Play> {
   const { index, buffer } = await loadPeriod(row.file);
   const header = index.plays[row.id];
   if (!header) throw new Error(`${row.id} is missing from ${row.file}.json`);
-  return decodePlay(buffer, header);
+  return guardRecordedCoverage(decodePlay(buffer, header));
 }
 
 let reboundEda: Promise<unknown> | null = null;

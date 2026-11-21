@@ -5,17 +5,17 @@
   //   Possession Context  how the possession began, chances and offensive rebounds, passes, dribbles and touches so
   //                       far, who has had the ball, the game state, free throws.
   //   Data Quality        the chance's tracking quality index and how many players are extrapolated now.
-  //   Coverage Read       from 2 s before an on-ball screen to 1 s after it: the live screen-coverage model's probability for
-  //                       each defender (ball: over/under/switch; screener: show/drop/switch) and the most likely joint
-  //                       call at this frame (lib/coverage.ts), the screener and ballhandler, and a table of the
-  //                       expected call per defender and combined against the tagged call (TBD until the screen).
+  //   Coverage Read       CoveragePanel.svelte, drawn here as a card while the court is at least 480 px wide (below the
+  //                       court in App.svelte otherwise): the selected screen, the live model's forecast, its time trace
+  //                       up to this moment, and the recorded coverage only once revealed.
   // The court's drawing is in lib/annotate.ts; the text in lib/context.ts.
   import { chanceAt, possessionCard, type Card } from "../lib/context";
-  import { coverageAt, defenderParts, loadCoverage, partOf, PART_COLORS, type CoverageFile, type PartRow } from "../lib/coverage";
+  import { selectedScreen } from "../lib/coverageView.svelte";
   import type { Play } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
+  import CoveragePanel from "./CoveragePanel.svelte";
 
-  let { play }: { play: Play | null } = $props();
+  let { play, seq }: { play: Play | null; seq: number[] } = $props();
 
   const frame = $derived(play ? play.frames[Math.min(live.i0, play.frames.length - 1)] : 0);
   const poss = $derived(play && play.ann && viewer.ann.possession ? possessionCard(play, frame, play.gc[live.i0] ?? 0) : null);
@@ -34,14 +34,8 @@
     return { title: "Tracking", lines };
   });
 
-  let cov = $state<CoverageFile | null>(null);
-  $effect(() => { if (viewer.ann.coverage && !cov) loadCoverage().then((c) => { cov = c; }); });
-  const covRead = $derived(play && cov && viewer.ann.coverage ? coverageAt(cov, play.id, frame, 1) : null);
-  // A player as the card names him: jersey number, then last name ("#12 Steinbergs").
-  const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
-  // A call as the card writes it: each word capitalised ("over + show" → "Over + Show").
-  const cap = (call: string) => call.replace(/\b[a-z]/g, (c) => c.toUpperCase());
-  const fmtT = (t: number) => `${t >= 0 ? "+" : "−"}${Math.abs(t).toFixed(2)} s`;
+  // The coverage card shows while a screen is selected (pinned, or a window holds this frame).
+  const covOn = $derived(!!(play && viewer.ann.coverage && selectedScreen(play, frame)));
 
   const box = $derived(live.box);
   // The cards never resize the court. The coverage card sits in the top corner on the backcourt side, the possession and
@@ -54,12 +48,12 @@
   $effect(() => { if (live.annNeed) live.annNeed = 0; });
 </script>
 
-{#if play && box && box.w >= 480 && (poss || quality || covRead)}
+{#if play && box && box.w >= 480 && (poss || quality || covOn)}
   <!-- Cards sit against the backcourt's sideline end; each is as wide as its longest line. -->
   <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
        style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
     <div class="ann-stack top" class:low={shift > 0} bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
-      {#if covRead && cov}{@render coverage(covRead, cov.calls)}{/if}
+      {#if covOn}<CoveragePanel {play} {seq} layout="card" />{/if}
     </div>
     <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">
       {#if poss}{@render card(poss)}{/if}
@@ -76,57 +70,5 @@
       {#if line.head}<span class="card-head">{line.k}</span>{:else}<span class="card-line" class:wrap={line.wrap}><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>{/if}
     {/each}
   </div>
-{/snippet}
-
-{#snippet coverage(r: NonNullable<typeof covRead>, calls: string[])}
-  {@const top = r.pct.indexOf(Math.max(...r.pct))}
-  {@const dp = defenderParts(calls, r.pct)}
-  {@const shown = r.t >= 0}
-  {@const lead = (rows: PartRow[]) => rows.find((row) => row.top) ?? rows[0]}
-  <div class="ann-card cov-card">
-    <span class="cov-title"><b>Screen Coverage Read</b><i class="event-flag cov-flag" class:set={shown}
-      title={shown ? "Seconds since the screen was set" : "Seconds until the screen is set"}>{fmtT(r.t)}</i></span>
-    <span class="card-line"><span>Screener</span><span>{who(r.screen.s)}</span></span>
-    <span class="card-line"><span>Ballhandler</span><span>{who(r.screen.h)}</span></span>
-    {@render bars(`On the Ball · ${who(r.screen.bd)}`, dp.ball)}
-    {@render bars(`On the Screener · ${who(r.screen.sd)}`, dp.big)}
-    <!-- The model's expected call for each defender and for both together, its probability, the tagged call once the
-         screen is set (TBD before), right-aligned, and whether the two agree (green tick or red cross; before the screen a
-         no-break space, so the empty cell keeps a text baseline and its rule lines up with TBD's). Each
-         defender is judged on his own part of the call, so the model can be right about one and wrong about the other. -->
-    <!-- Columns: name | gap | expected call, its % | gap | actual call, mark. The headers centre over their two columns;
-         the rule above Combined runs unbroken across each pair. -->
-    <span class="cov-table">
-      <span></span><span></span><span class="cov-th">Expected</span><span></span><span class="cov-th">Actual</span>
-      {#each [{ label: who(r.screen.bd), exp: lead(dp.ball).label, pct: lead(dp.ball).pct, act: partOf(r.screen.call, "ball") },
-              { label: who(r.screen.sd), exp: lead(dp.big).label, pct: lead(dp.big).pct, act: partOf(r.screen.call, "big") },
-              { label: "Combined", exp: calls[top], pct: r.pct[top], act: r.screen.call }] as row, i (i)}
-        <span class="cov-k" class:combined={i === 2}>{row.label}</span>
-        <span></span>
-        <span class="cov-exp" class:combined={i === 2}>{@render call(row.exp)}</span>
-        <span class="cov-pct" class:combined={i === 2}>{Math.round(row.pct)}%</span>
-        <span></span>
-        <span class="cov-act" class:tbd={!shown} class:combined={i === 2}>{#if shown}{@render call(row.act)}{:else}TBD{/if}</span>
-        <span class="cov-mark" class:right={shown && row.exp === row.act} class:wrong={shown && row.exp !== row.act} class:combined={i === 2}
-              title={shown ? (row.exp === row.act ? "The model's expected coverage is the tagged coverage" : "The model's expected coverage is not the tagged coverage") : null}>{shown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
-      {/each}
-    </span>
-  </div>
-{/snippet}
-
-<!-- A call with each defender's part in its own colour (as in the bars above) and the "+" in grey. -->
-{#snippet call(c: string)}
-  {#each c.split(" + ") as part, j (j)}{#if j}<span class="cov-plus">{" + "}</span>{/if}<span style:color={PART_COLORS[part]}>{cap(part)}</span>{/each}
-{/snippet}
-
-{#snippet bars(title: string, rows: PartRow[])}
-  <span class="card-head">{title}</span>
-  {#each rows as row}
-    <span class="cov-row" class:top={row.top}>
-      <span class="cov-label">{cap(row.label)}</span>
-      <span class="cov-bar"><span style:width="{row.pct}%" style:background={PART_COLORS[row.label]}></span></span>
-      <span class="cov-pct">{Math.round(row.pct)}%</span>
-    </span>
-  {/each}
 {/snippet}
 

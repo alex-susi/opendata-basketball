@@ -13,7 +13,10 @@
   import type { Play, PlayerTrack, Role } from "../lib/types";
   import { live, viewer } from "../lib/viewer.svelte";
 
-  let { play, onskip }: { play: Play | null; onskip: (skip: boolean) => void } = $props();
+  import type { Snippet } from "svelte";
+
+  // `top`: anything shown above the Display panel (the play-review panel, App.svelte).
+  let { play, onskip, top }: { play: Play | null; onskip: (skip: boolean) => void; top?: Snippet } = $props();
 
   const sides: { role: Role; title: string }[] = [{ role: "off", title: "Offense" }, { role: "def", title: "Defense" }];
   const area = (role: Role) => (role === "off" ? live.areaOff : live.areaDef);
@@ -26,7 +29,7 @@
     { key: "tracking", label: "Tracking Readouts", title: "Openness of each offensive player (feet to the nearest defender), the followed player's speed, the ball's path and the shot's ball peak" },
     { key: "possession", label: "Possession Context", title: "How the possession began, chances, touches, passes and dribbles so far, who has had the ball, game state, free throws" },
     { key: "glass", label: "Rebounding Roles", title: "While a shot is in the air: which attackers crash the glass, retreat, stay back as the safety or hold their spot, and which defenders box out (? = mostly off camera)" },
-    { key: "coverage", label: "Screen Coverage Read", title: "Around each on-ball screen (2 s before to 1 s after): the live model's probability for each defender's coverage (on the ball: over, under, switch; on the screener: show, drop, switch) and the most likely joint coverage. The model is a transformer that reads all ten players' last 1.6 s and is never told when the screen comes, held out from this game. The tagged coverage is ticked once the screen is set" },
+    { key: "coverage", label: "Screen Coverage Read", title: "Around each on-ball screen (2 s before to 1 s after): the live model's forecast of the screen's coverage (five probabilities, each defender's part, a time trace up to this moment). The model is a transformer that reads all ten players' last 1.6 s and is never told when the screen comes, held out from this game. In Predict mode the recorded coverage stays hidden until you press Reveal. Full review shows it throughout. ‹ › pins a screen so scrubbing never changes it" },
     { key: "attention", label: "Model Attention", title: "Around each on-ball screen, a purple percentage above every player on the court shows his share of the live coverage model's attention from the four players of the screen (last layer, heads averaged). Attention shows which players' information the model mixes in, not what caused the coverage" },
     { key: "lanes", label: "Roll Lanes", title: "Around each on-ball screen (2 s before to 1 s after): the straight lane from the screener to the rim (gold dashes), each off-ball defender's nearest point on it (dotted), an arrow for his last 0.2 s, and the experiment's inputs: his gap to the lane and how fast it closed (+ = moving toward it). These are inputs of an experimental model variant, not the live Coverage Read; a still-approaching screener or a pop makes the lane a poor guide" },
     { key: "quality", label: "Data Quality", title: "Extrapolated players drawn faint, tracking's expected error round each player, the chance's quality index" },
@@ -50,6 +53,7 @@
 </script>
 
 <aside class="side">
+  {@render top?.()}
   <div class="panel display">
     <div class="panel-head">
       <h2>Display</h2>

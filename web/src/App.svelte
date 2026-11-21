@@ -22,6 +22,10 @@
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
   import TimelineStrip from "./components/TimelineStrip.svelte";
+  import CoveragePanel from "./components/CoveragePanel.svelte";
+  import CoverageReview from "./components/CoverageReview.svelte";
+  import { covView } from "./lib/coverageView.svelte";
+  import type { ReviewCase } from "./lib/review.svelte";
   import { loadMeta, loadPlay, loadPlays, loadPlaystyle, loadSample, loadSeason } from "./lib/data";
   import { loadLogos, logoUrl } from "./lib/logos.svelte";
   import { teamAbbr } from "./lib/teams";
@@ -158,7 +162,29 @@
       viewer.playing = !viewer.hidden;
       viewer.recording = false;
       problem = "";
+      // A review case or a pinned screen asked to start paused at a frame of this possession.
+      const jump = covView.pendingJump;
+      if (jump?.poss === id) {
+        viewer.pos = seqIndexOfFrame(loaded, buildSeq(loaded, viewer.skipDead), jump.frame);
+        viewer.playing = false;
+        covView.pendingJump = null;
+      }
     }).catch((err: Error) => { problem = err.message; });
+  }
+
+  // The play-review panel (?review in the address): open a case's possession paused 2 s before its pick marker,
+  // with the Screen Coverage Read on so its blind and reveal stages show.
+  const reviewOn = new URLSearchParams(location.search).has("review");
+  function openCase(c: ReviewCase): void {
+    viewer.ann.coverage = true;
+    if (play?.id === c.poss) {
+      viewer.playing = false;
+      viewer.pos = seqIndexOfFrame(play, seq, c.f0 - 50);
+      return;
+    }
+    covView.pendingJump = { poss: c.poss, frame: c.f0 - 50 };
+    if (!rows.some((r) => r.id === c.poss)) filters = emptyFilters();
+    select(c.poss);
   }
 
   // Autoplay Next: at the end of a play, the next one in the filtered list (it starts playing when it loads); after
@@ -300,6 +326,10 @@
     <div class="stage-row" style:min-height={live.annNeed ? `${Math.max(260, live.annNeed + 36)}px` : null}>
       <Stage {play} {seq} {note} onend={playNext} />
     </div>
+    <!-- A court narrower than 480 px (phones): the Screen Coverage Read sits under the court instead of over it. -->
+    {#if viewer.ann.coverage && live.box && live.box.w < 480}
+      <CoveragePanel {play} {seq} layout="panel" />
+    {/if}
     {#if viewer.showTrace}
       <TracePanel {play} {seq} />
     {:else}
@@ -312,7 +342,11 @@
     <Controls {play} {seq} />
   </div>
 
-  <SidePanel {play} onskip={setSkip} />
+  <SidePanel {play} onskip={setSkip}>
+    {#snippet top()}
+      {#if reviewOn}<CoverageReview {play} onopen={openCase} />{/if}
+    {/snippet}
+  </SidePanel>
 </div>
 
 <main class="doc doc-framed" hidden={tab !== "coverage-model"}>

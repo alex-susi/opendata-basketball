@@ -6,6 +6,7 @@
   import { attentionAt, lanesAt, loadCoverageAttention, loadCoverageLanes, type AttentionFile, type LanesFile } from "../lib/coverage";
   import { drawScene, GROUP_OF_ARCHETYPE, type PlayerGroup } from "../lib/draw";
   import Annotations from "./Annotations.svelte";
+  import { selectedPickFrame } from "../lib/coverageView.svelte";
   import { FPS } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live, season, viewer } from "../lib/viewer.svelte";
@@ -67,8 +68,10 @@
   function render(ctx: CanvasRenderingContext2D): void {
     const focusPid = viewer.showTrace && viewer.trace === "player" ? viewer.focusPid : null;
     const k = Math.min(Math.max(Math.floor(viewer.pos), 0), seq.length - 1);
-    const attention = viewer.ann.attention && att && play && seq.length ? attentionAt(att, play.id, play.frames[seq[k]]) : null;
-    const laneFrame = viewer.ann.lanes && lanes && play && seq.length ? lanesAt(lanes, play.id, play.frames[seq[k]]) : null;
+    // Both overlays follow the screen the coverage read follows (pinned, or the earliest window: coverageView.svelte.ts).
+    const f0 = (viewer.ann.attention || viewer.ann.lanes) && play && seq.length ? selectedPickFrame(play, play.frames[seq[k]]) : null;
+    const attention = viewer.ann.attention && att && play && seq.length ? attentionAt(att, play.id, play.frames[seq[k]], f0) : null;
+    const laneFrame = viewer.ann.lanes && lanes && play && seq.length ? lanesAt(lanes, play.id, play.frames[seq[k]], f0) : null;
     const info = drawScene(ctx, stage.clientWidth, stage.clientHeight, window.devicePixelRatio || 1, play, seq, viewer.pos,
                            { ...viewer, focusPid, sample: season.sample, attention, lanes: laneFrame, groups }, framed);
     if (!info) return;
@@ -184,7 +187,7 @@
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
   <canvas bind:this={canvas} aria-label="Animated court view of the selected possession. Click a player to follow his nearest opponent."
           class:pointer={pointer} onclick={onClick} onmousemove={(ev) => (pointer = playerAt(ev) != null)} onmouseleave={() => (pointer = false)}></canvas>
-  <Annotations {play} />
+  <Annotations {play} {seq} />
   {#if note}
     <div class="stage-note">{note}</div>
   {/if}

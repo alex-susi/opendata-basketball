@@ -103,7 +103,8 @@
       return r ? { lines: reboundLines(play, r) } : none;
     }
     const screen = ann.screens.find((r) => r.f === ev.f && r.kind === ev.kind);
-    // Coverage always shows here, whether or not Defensive Context (the court drawing's toggle) is on.
+    // Coverage shows here whether or not Defensive Context (the court drawing's toggle) is on, once the screen's recorded
+    // coverage may be seen (Predict mode hides a pick's until it is revealed, lib/coverageView.svelte.ts).
     return screen ? { lines: screenLines(play, screen, true) } : none;
   }
   const cards = $derived(ticks.map((tick) => {

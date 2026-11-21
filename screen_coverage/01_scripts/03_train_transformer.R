@@ -45,6 +45,10 @@
 # screen_coverage/02_cache/experiments/personnel/tf_s<seeds>/. With --positions=hard (owner, 2026-11-19) each player's
 # channels are his most likely group as 0/1 indicators instead of the three probabilities; files go to personnel_hard/.
 # With --positions=none (owner, 2026-11-19) there are no position channels, only the memory; files go to personnel_memory/.
+#
+# --out-dir=<folder> (2026-11-21, coverage product plan): write the fold file and networks to that folder instead
+# (relative to the repository root unless absolute), so reruns never land in the live or older experiment folders.
+# Everything else is unchanged; the fold file also records the folder and the arguments it was run with.
 ## ═════════════════════════════════════════════════════════════════════════════
 
 source_root <- function() {
@@ -113,6 +117,14 @@ if (PERSONNEL) {
   tf_dir <- file.path(cache_dir, "experiments", "timing", version_dir, paste0("tf_s", paste(range(SEEDS), collapse = "-")))
 } else if (!identical(SEEDS, 1:4) && !PERSONNEL) stop("--seeds is for the lane, timing and personnel experiments only")
 if (!is.na(EXTRA) && is.na(TIMING)) stop("--extra is for the timing experiment only (with --timing)")
+OUT_DIR <- arg("out-dir", NA_character_)
+if (!is.na(OUT_DIR)) {
+  tf_dir <- if (grepl("^([A-Za-z]:)?[/\\\\]", OUT_DIR)) OUT_DIR else file.path(root, OUT_DIR)
+  if (normalizePath(tf_dir, winslash = "/", mustWork = FALSE) == normalizePath(file.path(cache_dir, "tf"), winslash = "/", mustWork = FALSE)) {
+    stop("--out-dir must not be the live folder 02_cache/tf")
+  }
+}
+cat("Writing to", tf_dir, "\n")
 dir.create(tf_dir, recursive = TRUE, showWarnings = FALSE)
 out_path <- file.path(tf_dir, sprintf("seqheads_%d.rds", FOLD))
 if (file.exists(out_path) && !"--force" %in% commandArgs(TRUE)) quit(save = "no")
@@ -414,6 +426,7 @@ if (PERSONNEL) {
                           positions_made = readRDS(file.path(cache_dir, "experiments", "personnel", "positions_by_fold.rds"))$made,
                           settings = saved$stopping$settings)
 }
+if (!is.na(OUT_DIR)) saved$run <- list(out_dir = tf_dir, args = commandArgs(TRUE))
 saveRDS(saved, out_path)
 message(sprintf("seqheads fold %d: best epochs %s, val log loss %s, %.0f s", FOLD,
                 paste(vapply(fits, `[[`, 0L, "best_ep"), collapse = "/"),
