@@ -74,6 +74,39 @@ export function traceOf(cov: CoverageFile, screen: CoverageScreen, upTo: number 
   return out;
 }
 
+// ---- probability strips (as in screen_coverage/03_outputs/evaluation/figures/strips, R/strips.R) -----------------
+// A strip stacks the series bottom to top, each point scaled to 100% (the exported whole percents can sum to 99-101).
+
+/** The strips' colours (R/strips.R STRIP_COLS and PART_COLS). */
+export const STRIP_COLORS: Record<string, string> = {
+  "over + show": "#2a78d6", "over + drop": "#eb6834", "under + drop": "#1baf7a", "under + show": "#eda100", switch: "#e87ba4",
+  over: "#2a78d6", under: "#1baf7a", show: "#eda100", drop: "#eb6834",
+};
+export const BALL_PARTS = ["over", "under", "switch"];
+export const BIG_PARTS = ["show", "drop", "switch"];
+
+/** One defender's options summed from the joint percentages, in `labels` order (over = over + show + over + drop). */
+export function partSeries(calls: string[], pct: number[], labels: string[]): number[] {
+  return labels.map((label) => calls.reduce((s, c, j) => s + (c.split(" + ").includes(label) ? pct[j] : 0), 0));
+}
+
+/** SVG polygon points for each series of a stacked strip, bottom series first. `points` are [seconds from the pick
+ * frame, values]; the x axis runs from −2 s to +1 s across `width`, 0-100% up `height`. */
+export function stripPolygons(points: [number, number[]][], width: number, height: number): string[] {
+  if (points.length < 2) return [];
+  const x = (t: number) => (((t + 2) / 3) * width).toFixed(1);
+  const cums = points.map(([, v]) => {
+    const total = v.reduce((a, b) => a + b, 0) || 1;
+    let c = 0;
+    return [0, ...v.map((u) => (c += u / total))];
+  });
+  return points[0][1].map((_, k) => {
+    const up = points.map(([t], i) => `${x(t)},${(height * (1 - cums[i][k + 1])).toFixed(1)}`);
+    const down = points.map(([t], i) => `${x(t)},${(height * (1 - cums[i][k])).toFixed(1)}`).reverse();
+    return [...up, ...down].join(" ");
+  });
+}
+
 // "No clear favorite" (provisional display rule, Phase 3): the leading coverage is called favored only when it has
 // at least FAVORED_MIN percent AND leads the second by at least FAVORED_GAP points. Both are display choices to be set
 // on validation games in Phase 5, never on the held-out games.

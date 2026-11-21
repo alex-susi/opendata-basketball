@@ -1306,7 +1306,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
           </ul></div></li>
           <li><div><h3>Export to the play viewer</h3><ul class="tight">
             <li><span class="file">06_export_live.R</span></li>
-            <li>Screen Coverage Read · the selected screen's forecast (five coverages, each defender's part) and a time trace up to the current moment</li>
+            <li>Screen Coverage Read · the selected screen's forecast (five coverages, each defender's part) and a probability strip up to the current moment, drawn like the film-check strips. Combined shows the five coverages, By defender shows over / under / switch and show / drop / switch side by side</li>
+            <li>Classic look · the card used until 2026-11-21 (each defender's bars, Expected / Actual table with marks)</li>
             <li>Predict mode (default) hides the recorded coverage until Reveal. Full review shows it throughout. No automatic right or wrong marks</li>
             <li>‹ › pins a screen so scrubbing keeps it. Pause points from −2 s to −0.5 s before the pick marker. Under the court on narrow screens</li>
             <li>Model Attention toggle rings the players the model mixes in, for the same screen</li>
@@ -1716,6 +1717,19 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">Every change to the models or this page, newest first</p>
     </div>
     <div class="log">
+      <div class="entry">
+        <time datetime="2026-11-21">2026-11-21 (latest)</time>
+        <div>
+          <h3>Screen Coverage Read · probability strips and Classic look</h3>
+          <ul class="tight">
+            <li>The card's line trace is now a stacked probability strip in the colours of the film-check strips (<span class="file">03_outputs/evaluation/figures/strips/</span>), with the pick marker dashed and the current moment as a line</li>
+            <li>Combined shows the five coverages in one strip. By defender shows two strips side by side, over / under / switch and show / drop / switch. Raw frame values, where the film-check defender strips average the last 0.2 s</li>
+            <li>In Predict the strip stops at the current moment until Reveal. The bars list the top two coverages with All five to open the rest, so the card fits the court</li>
+            <li>Classic look brings back the card used until 2026-11-21. In Full review its Actual column shows once the pick frame passes, as before. In Predict it waits for Reveal</li>
+            <li>Owner's request. Live model unchanged</li>
+          </ul>
+        </div>
+      </div>
       <div class="entry">
         <time datetime="2026-11-21">2026-11-21 (later)</time>
         <div>

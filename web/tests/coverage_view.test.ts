@@ -1,7 +1,7 @@
 // Screen selection, recorded-coverage hiding and the forecast helpers of the Screen Coverage Read
 // (lib/coverageView.svelte.ts, lib/coverage.ts; coverage product plan Phase 3).
 import { beforeEach, describe, expect, it } from "vitest";
-import { favorite, readAt, traceOf, type CoverageFile } from "../src/lib/coverage";
+import { BALL_PARTS, BIG_PARTS, favorite, partSeries, readAt, stripPolygons, traceOf, type CoverageFile } from "../src/lib/coverage";
 import { covView, guardRecordedCoverage, rawCoverage, recordedVisible, selectedScreen, setMode } from "../src/lib/coverageView.svelte";
 import type { AnnScreen, Play } from "../src/lib/types";
 
@@ -86,6 +86,18 @@ describe("forecast helpers", () => {
     expect(traceOf(file, screen, 960)).toHaveLength(11);
     expect(traceOf(file, screen, null)).toHaveLength(76);
     expect(traceOf(file, screen, 940)).toHaveLength(0);
+  });
+
+  it("sums each defender's options and stacks a strip to 100%", () => {
+    const pct = [30, 25, 20, 15, 10];
+    expect(partSeries(calls, pct, BALL_PARTS)).toEqual([55, 35, 10]);   // over, under, switch
+    expect(partSeries(calls, pct, BIG_PARTS)).toEqual([45, 45, 10]);    // show, drop, switch
+    // Two points summing to 99 and 101 still fill the strip: the top series ends at y = 0.
+    const polys = stripPolygons([[-2, [50, 49]], [1, [51, 50]]], 300, 100);
+    expect(polys).toHaveLength(2);
+    expect(polys[0].split(" ")[0]).toBe("0.0,49.5");                    // bottom series' top edge at −2 s
+    expect(polys[1].split(" ").slice(0, 2)).toEqual(["0.0,0.0", "300.0,0.0"]);
+    expect(stripPolygons([[0, [1, 2]]], 300, 100)).toEqual([]);
   });
 
   it("calls a favorite only with a clear lead", () => {

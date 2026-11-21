@@ -2727,3 +2727,11 @@ Owner asked to add the EDA's switch signals to both models and report before dec
 - Checks: `npm run check` clean, 115 tests pass (9 new: `tests/coverage_view.test.ts`, `tests/review_csv.test.ts`), `npm run build` succeeds. Browser: desktop card, blind and reveal stages, Predict / Full review, phone panel at 375 px, no console errors.
 - Script numbers now follow creation order: the plan's timing audit becomes 36, horizon evaluator 37, experiment runner 38, product export 39.
 - Phase 3 is done only once the owner has reviewed the 50 plays (and the 12 repeats): that review sets the decision moments, ambiguous cases and episode-boundary rules. Nothing committed.
+
+## 2026-11-21 (latest) — Screen Coverage Read: probability strips and Classic look
+
+- Owner's request. The card's line trace became a stacked probability strip in the film-check strips' colours (`R/strips.R` STRIP_COLS / PART_COLS, `lib/coverage.ts` `STRIP_COLORS`, `stripPolygons`, `partSeries`), pick marker dashed, current moment as a line. Each point is scaled to 100% because the exported whole percents sum to 99-101. Raw frame values (the film-check defender strips average the last 0.2 s).
+- Toggle Combined (five coverages) / By defender (over / under / switch and show / drop / switch side by side), remembered in the browser.
+- Bars now list the top two coverages with All five on every court, so the card fits a desktop court without scrolling.
+- Look toggle Panel / Classic. Classic is the card used until 2026-11-21 (defender bars, Expected / Actual table with marks). In Full review its Actual column appears once the pick frame passes (its old rule); in Predict it waits for Reveal.
+- 116 tests pass (1 new), type check clean, build succeeds. Reads page, model page and its site copy updated. Live model unchanged. Nothing committed.

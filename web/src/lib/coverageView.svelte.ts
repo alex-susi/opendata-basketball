@@ -21,17 +21,28 @@ const MODE_KEY = "acb-coverage-mode";
 /** Prediction window around each pick frame, in frames (matches coverage_frames.json offsets: −2 s to +1 s). */
 export const WINDOW: [number, number] = [-50, 25];
 
-function savedMode(): CoverageMode {
+function saved<T extends string>(key: string, values: readonly T[], fallback: T): T {
   try {
-    return localStorage.getItem(MODE_KEY) === "full" ? "full" : "predict";
+    const v = localStorage.getItem(key) as T | null;
+    return v && values.includes(v) ? v : fallback;
   } catch {
-    return "predict";
+    return fallback;
   }
 }
+const savedMode = (): CoverageMode => saved(MODE_KEY, ["predict", "full"] as const, "predict");
+
+/** The card's look: the current panel, or the Classic card used until 2026-11-21 (two defender bar groups and an
+ * Expected / Actual table). */
+export type CoverageLook = "panel" | "classic";
+/** The probability strip: one stacked strip of the five coverages, or one per defender side by side. */
+export type CoverageStrip = "combined" | "defenders";
+const LOOK_KEY = "acb-coverage-look", STRIP_KEY = "acb-coverage-strip";
 
 export const covView = $state({
   /** Predict: recorded coverages hidden until revealed. Full review: shown throughout. */
   mode: savedMode(),
+  look: saved<CoverageLook>(LOOK_KEY, ["panel", "classic"], "panel"),
+  strip: saved<CoverageStrip>(STRIP_KEY, ["combined", "defenders"], "combined"),
   /** The pinned screen of each possession: its pick frame. */
   pinned: {} as Record<string, number>,
   /** Screens whose recorded coverage the user has revealed ("<possession>:<pick frame>"). */
@@ -49,7 +60,16 @@ export function setMode(mode: CoverageMode): void {
   try { localStorage.setItem(MODE_KEY, mode); } catch { /* not remembered */ }
 }
 
-export const screenKey = (poss: string, f: number): string => `${poss}:${f}`;
+export function setLook(look: CoverageLook): void {
+  covView.look = look;
+  try { localStorage.setItem(LOOK_KEY, look); } catch { /* not remembered */ }
+}
+export function setStrip(strip: CoverageStrip): void {
+  covView.strip = strip;
+  try { localStorage.setItem(STRIP_KEY, strip); } catch { /* not remembered */ }
+}
+
+export const screenKey =(poss: string, f: number): string => `${poss}:${f}`;
 
 /** Whether a screen's recorded coverage may be shown now. */
 export function recordedVisible(poss: string, f: number): boolean {
