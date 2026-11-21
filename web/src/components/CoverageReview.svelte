@@ -7,12 +7,13 @@
   //   After reveal   the Screen Coverage Read shows the forecast trace and the recorded coverage. Judge the forecast
   //                  and the label
   // Answers are saved in this browser after every change; Export CSV writes review_cases.csv.
-  import { covView, rawCoverage, screenKey } from "../lib/coverageView.svelte";
+  import { covView, picksOf, rawCoverage, screenKey } from "../lib/coverageView.svelte";
   import { CHOICES, entryFor, entryKey, loadReviewSample, MOMENTS, queueOf, review, reviewCsv, saveReview, type ReviewCase } from "../lib/review.svelte";
+  import { seqIndexOfFrame } from "../lib/sequence";
   import type { Play } from "../lib/types";
   import { live } from "../lib/viewer.svelte";
 
-  let { play, onopen }: { play: Play | null; onopen: (c: ReviewCase) => void } = $props();
+  let { play, seq, onopen }: { play: Play | null; seq: number[]; onopen: (c: ReviewCase) => void } = $props();
 
   $effect(() => { if (!review.sample) loadReviewSample().then((s) => { review.sample = s; }); });
   const queue = $derived(queueOf(review.sample, review.pass));
@@ -24,6 +25,16 @@
   const here = $derived(!!(c && play && play.id === c.poss));
   const frame = $derived(play ? play.frames[Math.min(live.i0, play.frames.length - 1)] : 0);
   const done = $derived(queue.filter((q) => review.entries[entryKey(q.id, review.pass)]?.stage === "done").length);
+  // The case's screen, named so it is never confused with another screen in the same possession. The card's
+  // screen picker can move the pin, so the panel warns when the card is reading a different screen.
+  const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
+  const caseScreen = $derived.by(() => {
+    if (!c || !here) return null;
+    const list = picksOf(play);
+    const i = list.findIndex((x) => x.f === c.f0);
+    return { n: i + 1, count: list.length, at: play && seq.length ? seqIndexOfFrame(play, seq, c.f0) / 25 : 0 };
+  });
+  const offPin = $derived(here && c ? covView.pinned[c.poss] !== c.f0 : false);
   // The recorded coverage, for the after-reveal stage only.
   const recorded = $derived.by(() => {
     if (!c || !here || entry?.stage === "blind") return null;
@@ -114,6 +125,13 @@
 
     {#if !here}
       <p class="rv-muted">Open the case to stamp moments from the court.</p>
+    {:else if caseScreen}
+      <p class="rv-screen" title="The screen this case is about. Other screens in the possession are context only">
+        Review <b>screen {caseScreen.n} of {caseScreen.count}</b> · {who(c.h)} with {who(c.s)} screening · pick marker at {caseScreen.at.toFixed(1)} s
+      </p>
+      {#if offPin}
+        <p class="rv-warn">The card is reading a different screen. <button type="button" class="rv-btn" onclick={() => { covView.pinned[c!.poss] = c!.f0; }}>Pin the case's screen</button></p>
+      {/if}
     {/if}
 
     {#snippet moment(m: (typeof MOMENTS)[number])}
@@ -193,5 +211,7 @@
   .rv-stage { padding: 0 6px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
   .rv-stage.blind { color: #F5B02E; border-color: #F5B02E; }
   .rv-recorded { margin: 0; }
+  .rv-screen { margin: 0; }
+  .rv-warn { margin: 0; color: #D9534F; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .rv-foot { display: flex; gap: 6px; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); }
 </style>

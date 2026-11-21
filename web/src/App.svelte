@@ -344,7 +344,7 @@
 
   <SidePanel {play} onskip={setSkip}>
     {#snippet top()}
-      {#if reviewOn}<CoverageReview {play} onopen={openCase} />{/if}
+      {#if reviewOn}<CoverageReview {play} {seq} onopen={openCase} />{/if}
     {/snippet}
   </SidePanel>
 </div>

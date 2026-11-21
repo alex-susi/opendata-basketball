@@ -69,6 +69,8 @@ Not covered by the hiding, because they show the present or the past only:
 - **Open the panel** · the play viewer with `?review` in the address, for example `http://localhost:5173/?review`
 - **Per case**
   1. Open case · loads the possession, pins the screen, pauses 2 s before the pick marker
+     - The panel names the case's screen (screen N of M, handler, screener, pick marker time). Other screens in the possession are context only
+     - If the card's ‹ › moves to another screen, the panel warns and offers to pin the case's screen again
   2. Blind stage · the forecast and the recorded coverage stay hidden. Click a moment's name to stamp the frame on the court. None means it did not happen in the clip, ? marks an unsure stamp, a blank stays not recorded
   3. Pick what the defenders and the handler did, add notes, then Finish blind stage
   4. After reveal · the forecast trace and the recorded coverage show. Stamp when the forecast would have helped and judge it
@@ -82,12 +84,12 @@ Not covered by the hiding, because they show the present or the past only:
 | --- | --- |
 | Approach starts | Handler and screener start coming together |
 | Screen engaged | The screen is plausibly being used |
-| First readable sign | The first moment the guard's route or an exchange could be read |
+| First readable sign | The first moment you could tell how the defense is playing the screen · the screener's defender dropping low, holding at the level or showing high, the ball handler's defender starting over or under, or the two defenders starting to swap. About the defense only. The handler's movement counts only where it shows you the defense's choice |
 | Coverage clear | The coverage is clear and stays clear |
 | Pressure starts / ends | The screener's defender steps toward the handler, then stops |
 | Return to screener | The screener's defender moves back toward the screener |
 | Exchange done | Both defenders have taken the other's man |
-| Decision open until | The last moment the user's decision was still available |
+| Decision open until | The last moment the handler could still make the choice picked under User decision and have it work (examples under User decision below). A forecast helps only if it arrives before this. If the choice is gone before the defense is readable, say so in the notes |
 | Handler's touch ends | Pass, shot or turnover by the handler |
 | New action | A new screen, dead ball or possession change |
 | Forecast helpful from | After reveal · the first moment the forecast would have helped |
@@ -97,10 +99,73 @@ Not covered by the hiding, because they show the present or the past only:
 - Screener's defender depth · low, at level, high, unclear
 - Ball defender's route · over, under, not engaged, unclear
 - Each side of an exchange · yes, no, unclear
-- Pattern (a review tag, never a model class) · pressure and return, containment and return, pressure and exchange, at-level emergency exchange, denial countered, other, unclear
-- Defensive denial, the handler's answer, the user decision, whether the coverage still matters after a pass
 - Tracking, roles, review confidence
 - After reveal · whether the recorded coverage matches, whether the forecast misled, how useful it was
+- The four below have an explanation for each option
+
+#### Pattern
+
+What the two screen defenders did, in order. A review tag for finding and grouping plays. It never becomes a model class.
+
+| Option | Meaning |
+| --- | --- |
+| pressure return | The screener's defender steps up toward the handler (a show or hedge) to slow him, then goes back to the screener once the ball handler's defender recovers. No exchange |
+| containment return | The screener's defender stays back or at the screen's level and contains the handler without stepping up (drop or flat), then goes back to the screener |
+| pressure exchange | The screener's defender steps up to the handler and stays with him, and the ball handler's defender takes the screener. A switch that starts with pressure |
+| at level emergency exchange | The screener's defender holds at the level as if to contain, then late in the play the two defenders swap (the video's emergency switch, 9:17–9:42) |
+| denial countered | The defense tries to keep the handler off the screen (sideline or middle denial, below) and the handler gets round it anyway |
+| other | A sequence none of these fit. Describe it in the notes. A plain switch at the screen with no pressure or hold first goes here for now |
+| unclear | The tracking does not show it well enough |
+
+#### Defensive denial
+
+Did the defense try to keep the handler from using the screen?
+
+| Option | Meaning |
+| --- | --- |
+| none | The defense lets the handler come off the screen |
+| sideline (ice-like) | The ball handler's defender jumps to the screen side and pushes the handler toward the sideline, away from the screen, with the screener's defender waiting below. Usually on the wing |
+| middle (weak-like) | The same push in the middle of the floor. The data has no handedness, so this records the direction forced, never weak-hand intent |
+| trap | Both defenders go to the ball (a blitz or double team) |
+| unclear | Cannot tell |
+
+#### Handler's answer
+
+What the handler did, recorded apart from what the defense tried. A handler beating a denial does not change what the defense attempted.
+
+| Option | Meaning |
+| --- | --- |
+| used screen | Comes off the screen the way it was set |
+| rejected | Goes away from the screen before reaching it |
+| snaked | Comes off the screen, then cuts back across the screener's defender |
+| split | Dribbles between the two screen defenders |
+| reached middle | Gets to the middle of the floor despite a denial |
+| passed early | Gives the ball up before using the screen |
+| other | Anything else. Describe it in the notes |
+| unclear | Cannot tell |
+
+#### User decision
+
+The main choice the handler faces on this screen. The Decision open until stamp is its deadline.
+
+| Option | Meaning | Decision open until is |
+| --- | --- | --- |
+| use or reject the screen | Go off the screen or away from it | The last moment he could still go away, before he is committed to coming off it |
+| attack the screener's defender | Go at the big when he is caught high, switched onto the handler or out of position (drive, pull-up, isolation) | The last moment the big is still exposed, before he recovers or help arrives |
+| find the roller or popper | Pass to the screener rolling or popping while his defender is pulled away | The last moment the pass is still open, before help or the screener's defender gets back |
+| reset | Pull the ball out and start again | The last moment a reset is still the better play |
+| other | Anything else. Describe it in the notes | As described in the notes |
+
+#### Coverage still matters after a pass
+
+When the handler gives the ball up, is the defense still dealing with this screen's coverage? This decides where the read for this screen should stop (a Phase 4 rule). Right now it runs to +1 s after the pick marker whatever happens.
+
+| Option | Meaning |
+| --- | --- |
+| yes | The pass plays off the coverage. A pass to the roller, a pass to the popper the show left open, or a switch mismatch still being attacked after the ball moves |
+| no | The pass starts a new action and this screen's coverage no longer matters |
+| no pass | The handler kept the ball through the play (shot, turnover, still dribbling) |
+| unclear | Cannot tell |
 
 ### Not observable in this tracking
 

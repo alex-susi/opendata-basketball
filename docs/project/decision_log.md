@@ -2735,3 +2735,17 @@ Owner asked to add the EDA's switch signals to both models and report before dec
 - Bars now list the top two coverages with All five on every court, so the card fits a desktop court without scrolling.
 - Look toggle Panel / Classic. Classic is the card used until 2026-11-21 (defender bars, Expected / Actual table with marks). In Full review its Actual column appears once the pick frame passes (its old rule); in Predict it waits for Reveal.
 - 116 tests pass (1 new), type check clean, build succeeds. Reads page, model page and its site copy updated. Live model unchanged. Nothing committed.
+
+## 2026-11-21 — Review panel wording (owner's questions)
+
+- "First readable sign" now names the defense explicitly: the screener's defender dropping low, holding at the level or showing high, the ball handler's defender starting over or under, or the two defenders starting to swap. The old tooltip said "the guard's route" (coined shorthand) and left out the screener's defender's depth.
+- "Decision open until" now reads "the last moment the handler could still make the choice picked under User decision and have it work", with examples. "Coverage still matters after a pass" and "User decision" tooltips rewritten the same way (`web/src/lib/review.svelte.ts`).
+- `docs/project/coverage_product_task.md` gains a table of meanings for every option of Pattern, Defensive denial, Handler's answer, User decision (with what its deadline means) and Coverage still matters after a pass. A plain switch with no pressure or hold first is filed under Pattern "other" for now.
+- No review answers existed yet, so no recorded data changes meaning. 116 tests pass, type check clean.
+
+## 2026-11-21 — Review panel names the case's screen (owner's question)
+
+- On a possession with several screens the panel did not say which one the case is about. It only pinned it on the card, and the card's ‹ › could move the pin without warning.
+- The panel now reads "Review screen N of M · handler with screener screening · pick marker at X s" (X on the viewer's clock). If the card is reading another screen, a warning shows with a button that pins the case's screen again (`web/src/components/CoverageReview.svelte`).
+- Other screens in the possession are context only. Stamps and choices are about the case's screen.
+- No answers change meaning. 116 tests pass, type check clean.
