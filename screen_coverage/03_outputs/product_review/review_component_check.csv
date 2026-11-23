@@ -1,0 +1,51 @@
+case,stratum,group,cov,scov,depth,route,sd_takes_h,bd_takes_s,denial,label_agrees,repeat_pass,exchange_part,route_part,depth_part,verdict
+47,outside_five,outside five,ice,ice,at level,over,no,no,none,unsure,FALSE,,,conflicts,conflicts
+1,over_show,show,over,show,low,under,unclear,no,none,yes,FALSE,fits,conflicts,conflicts,conflicts
+21,left_out_tracking,show,under,show,unclear,under,no,no,none,unsure,FALSE,fits,fits,open,open
+41,switch_late,switch,switch,switch,high,over,yes,yes,none,yes,FALSE,fits,,,fits
+34,over_drop,drop,over,drop,unclear,over,no,no,none,yes,FALSE,fits,fits,open,open
+29,outside_five,outside five,ice,ice,low,over,unclear,unclear,sideline (ice-like),no,FALSE,,,fits,fits
+36,outside_five,outside five,ice,ice,at level,over,yes,no,sideline (ice-like),unsure,TRUE,,,fits,fits
+48,switch_early,switch,switch,switch,high,over,yes,yes,middle (weak-like),no,FALSE,fits,,,fits
+20,under_drop,drop,under,drop,at level,unclear,no,no,none,no,FALSE,fits,open,open,open
+28,switch_early,switch,switch,switch,at level,under,yes,yes,none,unsure,TRUE,fits,,,fits
+3,left_out_tracking,drop,over,drop,low,over,no,no,none,yes,FALSE,fits,fits,fits,fits
+24,switch_none,switch,switch,switch,at level,over,yes,yes,sideline (ice-like),no,TRUE,fits,,,fits
+4,switch_early,switch,switch,switch,high,over,yes,yes,none,yes,TRUE,fits,,,fits
+27,over_show,show,over,show,at level,over,yes,no,none,yes,FALSE,fits,fits,open,open
+25,under_drop,drop,under,drop,low,under,no,no,none,no,FALSE,fits,fits,fits,fits
+33,over_drop,drop,over,drop,at level,over,no,no,none,unsure,TRUE,fits,fits,open,open
+17,under_show,show,under,show,at level,under,no,no,none,no,FALSE,fits,fits,open,open
+7,switch_none,switch,switch,switch,at level,over,no,no,none,yes,FALSE,conflicts,,,conflicts
+26,switch_none,switch,switch,switch,high,over,yes,yes,none,no,FALSE,fits,,,fits
+2,over_drop,drop,over,drop,at level,over,no,no,sideline (ice-like),yes,FALSE,fits,fits,open,open
+19,over_drop,drop,over,drop,low,over,yes,no,none,yes,FALSE,fits,fits,fits,fits
+13,over_show,show,over,show,high,over,no,no,none,yes,FALSE,fits,fits,fits,fits
+16,switch_none,switch,switch,switch,high,over,yes,no,none,no,TRUE,open,,,open
+35,switch_late,switch,switch,switch,low,under,yes,yes,none,no,FALSE,fits,,,fits
+11,outside_five,outside five,ice,ice,at level,over,no,no,none,no,FALSE,,,conflicts,conflicts
+6,over_show,show,over,show,at level,over,no,no,none,no,FALSE,fits,fits,open,open
+32,over_show,show,over,show,high,under,yes,yes,middle (weak-like),yes,FALSE,conflicts,conflicts,fits,conflicts
+5,switch_late,switch,switch,switch,at level,under,yes,yes,none,yes,FALSE,fits,,,fits
+50,over_drop,drop,over,drop,at level,under,no,no,none,yes,FALSE,fits,conflicts,open,conflicts
+10,over_show,show,over,show,at level,over,yes,no,none,no,TRUE,fits,fits,open,open
+9,under_show,show,under,show,at level,under,yes,no,trap,unsure,FALSE,fits,fits,open,open
+42,under_drop,drop,under,drop,low,under,no,no,none,unsure,TRUE,fits,fits,fits,fits
+43,switch_late,switch,switch,switch,high,under,yes,unclear,none,no,FALSE,open,,,open
+22,under_show,show,under,show,high,under,yes,yes,middle (weak-like),no,FALSE,conflicts,fits,fits,conflicts
+31,under_show,show,under,show,high,under,yes,no,unclear,unsure,TRUE,fits,fits,fits,fits
+18,under_drop,drop,under,drop,low,under,no,no,none,yes,FALSE,fits,fits,fits,fits
+8,over_show,show,over,show,high,over,yes,no,none,yes,TRUE,fits,fits,fits,fits
+40,over_drop,drop,over,drop,low,over,yes,yes,none,yes,FALSE,conflicts,fits,fits,conflicts
+38,switch_none,switch,switch,switch,at level,unclear,yes,yes,none,yes,FALSE,fits,,,fits
+37,under_show,show,under,show,high,under,yes,yes,sideline (ice-like),no,FALSE,conflicts,fits,fits,conflicts
+46,under_drop,drop,under,drop,low,under,no,no,none,"",FALSE,fits,fits,fits,fits
+23,left_out_tracking,switch,switch,switch,high,over,yes,yes,sideline (ice-like),no,TRUE,fits,,,fits
+15,switch_late,switch,switch,switch,at level,over,yes,yes,sideline (ice-like),unsure,FALSE,fits,,,fits
+14,over_show,show,over,show,high,over,unclear,unclear,sideline (ice-like),yes,FALSE,fits,fits,fits,fits
+45,under_drop,drop,under,drop,at level,under,no,no,none,yes,FALSE,fits,fits,open,open
+39,switch_early,switch,switch,switch,at level,under,yes,yes,none,no,FALSE,fits,,,fits
+30,switch_early,switch,switch,switch,high,over,yes,yes,sideline (ice-like),yes,FALSE,fits,,,fits
+49,outside_five,outside five,blitz,blitz,high,over,yes,no,trap,no,FALSE,,,fits,fits
+44,over_drop,drop,over,drop,low,over,no,no,none,yes,TRUE,fits,fits,fits,fits
+12,under_show,show,under,show,at level,under,no,no,none,no,FALSE,fits,fits,open,open

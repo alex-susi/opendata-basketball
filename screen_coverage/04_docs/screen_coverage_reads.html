@@ -255,7 +255,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
 
 <main class="page">
   <header>
-    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-21</span>
+    <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · tracking study · updated 2026-11-23</span>
     <h1>Screen Coverage Reads</h1>
     <p class="lede">Can tracking data tell a ball handler how an on-ball screen will be defended, and how early?</p>
     <ul class="tight">
@@ -354,10 +354,10 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <section id="status">
     <div class="head">
       <h2>Status</h2>
-      <p class="sub">Where the project stands as of 2026-11-21</p>
+      <p class="sub">Where the project stands as of 2026-11-23</p>
     </div>
     <ul class="tight">
-      <li>Work now follows the coverage product plan (owner, 2026-11-21) · Phase 2 done, the live model is frozen as a release and reproduces exactly. Phase 3 built (pause-and-reveal Screen Coverage Read, review panel, 50-play sample) and waiting on the owner's play review</li>
+      <li>Work now follows the coverage product plan (owner, 2026-11-21) · Phase 2 done, the live model is frozen as a release and reproduces exactly. Phase 3's play review Pass 1 done (50 of 50) and summarised in <span class="file">docs/project/coverage_review_findings.md</span>. The blind repeat of 12 plays is due about 2026-11-26</li>
       <li>Live model · time-aware transformer with v2 past-only inputs, and since 2026-11-19 the four screen players' guard, wing or big in its switch decision only. On the play viewer's Coverage Read card</li>
       <li>Weak spot · switch and under + show are mostly missed (26% and 17% caught). With a guard on the screener 45% of switches are caught (was 17%)</li>
       <li>Past-only rule confirmed by a test</li>
@@ -1155,7 +1155,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <li><div><b>Follow the coverage product plan</b><ul class="tight">
         <li>Owner's plan of 2026-11-21 (<span class="file">docs/project/Screen_Coverage_Product_Model_Dashboard_Plan_20261120.html</span>), all of it part of the competition entry. It comes before the steps below</li>
         <li>Phase 2 · freeze the live model and reproduce it · done 2026-11-21</li>
-        <li>Phase 3 · built 2026-11-21 (pinned screens, Predict / Full review, phone layout, review panel, 50-play sample). Next · the owner reviews the 50 plays, then repeats 12 blind</li>
+        <li>Phase 3 · built 2026-11-21 (pinned screens, Predict / Full review, phone layout, review panel, 50-play sample). Pass 1 of the play review done 2026-11-23. Next · the blind repeat of 12 plays and its agreement</li>
         <li>Phases 4–5 · timing, eligibility and a new evaluation report. The main curve and an even −1 to 0 s score are reported side by side until the owner picks the primary score after the review</li>
         <li>Phase 6 · three model changes tested one at a time against a matched baseline, after the owner signs off the evaluation rules</li>
         <li>Phase 7 · replay and scouting dashboard</li>
@@ -1338,6 +1338,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
               <tr><td><span class="file">23_call_diagnostics.R</span></td><td>Why switch and under + show are missed · recall over time, a share-adjusted top-coverage rule, team habits and player roles</td></tr>
               <tr><td><span class="file">34_freeze_release.R</span></td><td>Freezes the live model as a read-only release with a manifest, and checks that saved networks and a one-start retrain reproduce it</td></tr>
               <tr><td><span class="file">35_review_sample.R</span></td><td>Draws the 50-play review sample by coverage and hard-case flags without reading any prediction, and writes the viewer's review queue</td></tr>
+              <tr><td><span class="file">36_review_summary.R</span></td><td>Summarises the owner's play review · moment timing, choices by sample group, each label against the blind answers, and agreement between passes</td></tr>
             </tbody>
           </table>
         </div>
@@ -1717,6 +1718,22 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">Every change to the models or this page, newest first</p>
     </div>
     <div class="log">
+      <div class="entry">
+        <time datetime="2026-11-23">2026-11-23</time>
+        <div>
+          <h3>Coverage product plan · Phase 3, play review Pass 1</h3>
+          <ul class="tight">
+            <li>The owner reviewed all 50 sampled screens. <span class="file">36_review_summary.R</span> summarises them into <span class="file">03_outputs/product_review/</span>, write-up and gallery in <span class="file">docs/project/coverage_review_findings.md</span></li>
+            <li>Timing · screen engaged at a median +0.20 s after the pick marker, first readable sign +0.04 s, coverage clear +0.44 s (by +1 s in 48 of 50)</li>
+            <li>The handler's decision closes at a median +0.54 s, before the coverage is clear in 19 of 48 plays and after +1 s in 13 of 48. When the forecast helped, it helped before the decision closed (24 of 26)</li>
+            <li>Switch exchanges finish at a median +1.02 s, after +1 s in 7 of 14. No new action came before +1 s in any play</li>
+            <li>Labels against the blind answers · switch fits 13 of 16, show only 4 of 15 (3 swap and go back, 2 go under). The matchups table missed exchanges the film shows</li>
+            <li>Forecast · useful in 6 of 7 over + drops, misleading in 7 of 15 switches and 3 of 6 under + shows</li>
+            <li>Viewer · after Reveal, a screen with no forecast now says why (outside the five coverages, or left out for incomplete tracking). The review panel's label question now reads "Recorded coverage matches the play"</li>
+            <li>Live model and its numbers unchanged. 116 tests pass, type check clean</li>
+          </ul>
+        </div>
+      </div>
       <div class="entry">
         <time datetime="2026-11-21">2026-11-21 (latest)</time>
         <div>

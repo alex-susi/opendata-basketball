@@ -1,0 +1,17 @@
+check,n,count
+approach starts before −2 s,50,7
+first readable sign before the pick marker,49,19
+coverage clear after +1 s,50,2
+exchange done after +1 s (all cases with an exchange),22,9
+exchange done after +1 s (recorded switches),14,7
+decision open after +1 s,48,13
+decision gone before the first readable sign,47,2
+decision gone before the coverage is clear,48,19
+forecast helpful at all (stamped),50,28
+forecast helpful before the decision closed,26,24
+forecast helpful by the first readable sign,28,19
+handler's touch ends before +1 s,50,6
+handler's touch ends before +2 s,50,26
+new action before +1 s,50,0
+new action before +2 s,50,4
+new action before +2 s (re-screen cases),14,0

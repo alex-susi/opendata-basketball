@@ -55,7 +55,7 @@ export const CHOICES: { key: string; label: string; options: string[]; title: st
   { key: "tracking", label: "Tracking", options: ["fine", "some estimated positions", "poor"], title: "How much the positions look estimated or jumpy" },
   { key: "roles", label: "Roles", options: ["clear", "ambiguous"], title: "Are the handler, screener and their defenders the right four" },
   { key: "confidence", label: "Review confidence", options: ["high", "medium", "low"], title: "How sure the review is" },
-  { key: "label_agrees", label: "Recorded coverage matches", options: ["yes", "no", "unsure"], title: "After reveal: does SkillCorner's label match what you saw", after: true },
+  { key: "label_agrees", label: "Recorded coverage matches the play", options: ["yes", "no", "unsure"], title: "After reveal: does SkillCorner's recorded coverage match what the defenders did on the court? Judge the label only. The forecast has its own questions below", after: true },
   { key: "misleading", label: "Forecast misleading", options: ["no", "yes", "unsure"], title: "After reveal: did the forecast point confidently the wrong way at a moment that mattered", after: true },
   { key: "usefulness", label: "Forecast usefulness", options: ["useful", "partly", "not useful"], title: "After reveal: could a handler or coach act on or learn from it", after: true },
 ];

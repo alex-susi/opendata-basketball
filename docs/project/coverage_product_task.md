@@ -77,6 +77,8 @@ Not covered by the hiding, because they show the present or the past only:
   5. Done
 - **Save** · answers stay in the browser. Export CSV and save it as `screen_coverage/03_outputs/product_review/review_cases.csv`
 - **Pass 2** · a few days later, switch to Pass 2 and review the 12 marked cases again without looking at Pass 1
+- **Pass 1 findings** · `docs/project/coverage_review_findings.md` (2026-11-23). The measured intervals there replace the provisional timing criteria above once Phase 4 adopts them
+- **Label question** · reworded 2026-11-23 to "Recorded coverage matches the play", judging SkillCorner's label against the court only. Pass 1 answers were often about the forecast, so its findings use the blind answers instead
 
 ### Moments stamped
 

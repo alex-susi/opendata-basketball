@@ -1,0 +1,302 @@
+field,group,stratum,option,N
+after_pass,drop,left_out_tracking,no pass,1
+after_pass,drop,over_drop,no,1
+after_pass,drop,over_drop,no pass,5
+after_pass,drop,over_drop,unclear,1
+after_pass,drop,under_drop,no,2
+after_pass,drop,under_drop,no pass,2
+after_pass,drop,under_drop,unclear,1
+after_pass,drop,under_drop,yes,1
+after_pass,outside five,outside_five,no,1
+after_pass,outside five,outside_five,unclear,1
+after_pass,outside five,outside_five,yes,3
+after_pass,show,left_out_tracking,unclear,1
+after_pass,show,over_show,no,6
+after_pass,show,over_show,no pass,1
+after_pass,show,over_show,yes,1
+after_pass,show,under_show,no,3
+after_pass,show,under_show,no pass,2
+after_pass,show,under_show,unclear,1
+after_pass,switch,left_out_tracking,no pass,1
+after_pass,switch,switch_early,no pass,2
+after_pass,switch,switch_early,unclear,1
+after_pass,switch,switch_early,yes,2
+after_pass,switch,switch_late,no,1
+after_pass,switch,switch_late,no pass,2
+after_pass,switch,switch_late,yes,2
+after_pass,switch,switch_none,no,2
+after_pass,switch,switch_none,unclear,2
+after_pass,switch,switch_none,yes,1
+bd_takes_s,drop,left_out_tracking,no,1
+bd_takes_s,drop,over_drop,no,6
+bd_takes_s,drop,over_drop,yes,1
+bd_takes_s,drop,under_drop,no,6
+bd_takes_s,outside five,outside_five,no,4
+bd_takes_s,outside five,outside_five,unclear,1
+bd_takes_s,show,left_out_tracking,no,1
+bd_takes_s,show,over_show,no,6
+bd_takes_s,show,over_show,unclear,1
+bd_takes_s,show,over_show,yes,1
+bd_takes_s,show,under_show,no,4
+bd_takes_s,show,under_show,yes,2
+bd_takes_s,switch,left_out_tracking,yes,1
+bd_takes_s,switch,switch_early,yes,5
+bd_takes_s,switch,switch_late,unclear,1
+bd_takes_s,switch,switch_late,yes,4
+bd_takes_s,switch,switch_none,no,2
+bd_takes_s,switch,switch_none,yes,3
+confidence,drop,left_out_tracking,high,1
+confidence,drop,over_drop,high,6
+confidence,drop,over_drop,low,1
+confidence,drop,under_drop,high,6
+confidence,outside five,outside_five,high,4
+confidence,outside five,outside_five,medium,1
+confidence,show,left_out_tracking,medium,1
+confidence,show,over_show,high,5
+confidence,show,over_show,medium,3
+confidence,show,under_show,high,3
+confidence,show,under_show,medium,3
+confidence,switch,left_out_tracking,high,1
+confidence,switch,switch_early,high,5
+confidence,switch,switch_late,(blank),1
+confidence,switch,switch_late,high,4
+confidence,switch,switch_none,high,2
+confidence,switch,switch_none,medium,3
+decision,drop,left_out_tracking,use or reject the screen,1
+decision,drop,over_drop,use or reject the screen,7
+decision,drop,under_drop,other,1
+decision,drop,under_drop,reset,1
+decision,drop,under_drop,use or reject the screen,4
+decision,outside five,outside_five,find the roller or popper,2
+decision,outside five,outside_five,use or reject the screen,3
+decision,show,left_out_tracking,use or reject the screen,1
+decision,show,over_show,attack the screener's defender,1
+decision,show,over_show,find the roller or popper,1
+decision,show,over_show,reset,2
+decision,show,over_show,use or reject the screen,4
+decision,show,under_show,other,1
+decision,show,under_show,reset,2
+decision,show,under_show,use or reject the screen,3
+decision,switch,left_out_tracking,use or reject the screen,1
+decision,switch,switch_early,find the roller or popper,2
+decision,switch,switch_early,use or reject the screen,3
+decision,switch,switch_late,use or reject the screen,5
+decision,switch,switch_none,find the roller or popper,1
+decision,switch,switch_none,use or reject the screen,4
+denial,drop,left_out_tracking,none,1
+denial,drop,over_drop,none,6
+denial,drop,over_drop,sideline (ice-like),1
+denial,drop,under_drop,none,6
+denial,outside five,outside_five,none,2
+denial,outside five,outside_five,sideline (ice-like),2
+denial,outside five,outside_five,trap,1
+denial,show,left_out_tracking,none,1
+denial,show,over_show,middle (weak-like),1
+denial,show,over_show,none,6
+denial,show,over_show,sideline (ice-like),1
+denial,show,under_show,middle (weak-like),1
+denial,show,under_show,none,2
+denial,show,under_show,sideline (ice-like),1
+denial,show,under_show,trap,1
+denial,show,under_show,unclear,1
+denial,switch,left_out_tracking,sideline (ice-like),1
+denial,switch,switch_early,middle (weak-like),1
+denial,switch,switch_early,none,3
+denial,switch,switch_early,sideline (ice-like),1
+denial,switch,switch_late,none,4
+denial,switch,switch_late,sideline (ice-like),1
+denial,switch,switch_none,none,4
+denial,switch,switch_none,sideline (ice-like),1
+depth,drop,left_out_tracking,low,1
+depth,drop,over_drop,at level,3
+depth,drop,over_drop,low,3
+depth,drop,over_drop,unclear,1
+depth,drop,under_drop,at level,2
+depth,drop,under_drop,low,4
+depth,outside five,outside_five,at level,3
+depth,outside five,outside_five,high,1
+depth,outside five,outside_five,low,1
+depth,show,left_out_tracking,unclear,1
+depth,show,over_show,at level,3
+depth,show,over_show,high,4
+depth,show,over_show,low,1
+depth,show,under_show,at level,3
+depth,show,under_show,high,3
+depth,switch,left_out_tracking,high,1
+depth,switch,switch_early,at level,2
+depth,switch,switch_early,high,3
+depth,switch,switch_late,at level,2
+depth,switch,switch_late,high,2
+depth,switch,switch_late,low,1
+depth,switch,switch_none,at level,3
+depth,switch,switch_none,high,2
+label_agrees,drop,left_out_tracking,yes,1
+label_agrees,drop,over_drop,unsure,1
+label_agrees,drop,over_drop,yes,6
+label_agrees,drop,under_drop,(blank),1
+label_agrees,drop,under_drop,no,2
+label_agrees,drop,under_drop,unsure,1
+label_agrees,drop,under_drop,yes,2
+label_agrees,outside five,outside_five,no,3
+label_agrees,outside five,outside_five,unsure,2
+label_agrees,show,left_out_tracking,unsure,1
+label_agrees,show,over_show,no,2
+label_agrees,show,over_show,yes,6
+label_agrees,show,under_show,no,4
+label_agrees,show,under_show,unsure,2
+label_agrees,switch,left_out_tracking,no,1
+label_agrees,switch,switch_early,no,2
+label_agrees,switch,switch_early,unsure,1
+label_agrees,switch,switch_early,yes,2
+label_agrees,switch,switch_late,no,2
+label_agrees,switch,switch_late,unsure,1
+label_agrees,switch,switch_late,yes,2
+label_agrees,switch,switch_none,no,3
+label_agrees,switch,switch_none,yes,2
+misleading,drop,left_out_tracking,no,1
+misleading,drop,over_drop,no,6
+misleading,drop,over_drop,unsure,1
+misleading,drop,under_drop,no,2
+misleading,drop,under_drop,unsure,1
+misleading,drop,under_drop,yes,3
+misleading,outside five,outside_five,no,2
+misleading,outside five,outside_five,unsure,3
+misleading,show,left_out_tracking,no,1
+misleading,show,over_show,no,3
+misleading,show,over_show,unsure,4
+misleading,show,over_show,yes,1
+misleading,show,under_show,unsure,3
+misleading,show,under_show,yes,3
+misleading,switch,left_out_tracking,no,1
+misleading,switch,switch_early,no,1
+misleading,switch,switch_early,unsure,1
+misleading,switch,switch_early,yes,3
+misleading,switch,switch_late,no,1
+misleading,switch,switch_late,unsure,2
+misleading,switch,switch_late,yes,2
+misleading,switch,switch_none,no,2
+misleading,switch,switch_none,unsure,1
+misleading,switch,switch_none,yes,2
+offense,drop,left_out_tracking,used screen,1
+offense,drop,over_drop,rejected,1
+offense,drop,over_drop,used screen,6
+offense,drop,under_drop,passed early,2
+offense,drop,under_drop,used screen,4
+offense,outside five,outside_five,rejected,1
+offense,outside five,outside_five,used screen,4
+offense,show,left_out_tracking,used screen,1
+offense,show,over_show,passed early,3
+offense,show,over_show,used screen,5
+offense,show,under_show,passed early,2
+offense,show,under_show,rejected,1
+offense,show,under_show,unclear,1
+offense,show,under_show,used screen,2
+offense,switch,left_out_tracking,used screen,1
+offense,switch,switch_early,passed early,1
+offense,switch,switch_early,rejected,1
+offense,switch,switch_early,used screen,3
+offense,switch,switch_late,used screen,5
+offense,switch,switch_none,passed early,2
+offense,switch,switch_none,used screen,3
+pattern,drop,left_out_tracking,other,1
+pattern,drop,over_drop,pressure_return,3
+pattern,drop,over_drop,unclear,4
+pattern,drop,under_drop,containment_return,1
+pattern,drop,under_drop,other,3
+pattern,drop,under_drop,pressure_return,1
+pattern,drop,under_drop,unclear,1
+pattern,outside five,outside_five,other,1
+pattern,outside five,outside_five,pressure_exchange,1
+pattern,outside five,outside_five,pressure_return,3
+pattern,show,left_out_tracking,unclear,1
+pattern,show,over_show,containment_return,1
+pattern,show,over_show,other,1
+pattern,show,over_show,pressure_exchange,2
+pattern,show,over_show,pressure_return,4
+pattern,show,under_show,pressure_exchange,3
+pattern,show,under_show,pressure_return,1
+pattern,show,under_show,unclear,2
+pattern,switch,left_out_tracking,pressure_exchange,1
+pattern,switch,switch_early,pressure_exchange,4
+pattern,switch,switch_early,pressure_return,1
+pattern,switch,switch_late,pressure_exchange,5
+pattern,switch,switch_none,other,1
+pattern,switch,switch_none,pressure_exchange,4
+roles,drop,left_out_tracking,clear,1
+roles,drop,over_drop,clear,7
+roles,drop,under_drop,clear,6
+roles,outside five,outside_five,clear,5
+roles,show,left_out_tracking,ambiguous,1
+roles,show,over_show,clear,8
+roles,show,under_show,clear,6
+roles,switch,left_out_tracking,clear,1
+roles,switch,switch_early,clear,5
+roles,switch,switch_late,clear,5
+roles,switch,switch_none,clear,5
+route,drop,left_out_tracking,over,1
+route,drop,over_drop,over,6
+route,drop,over_drop,under,1
+route,drop,under_drop,unclear,1
+route,drop,under_drop,under,5
+route,outside five,outside_five,over,5
+route,show,left_out_tracking,under,1
+route,show,over_show,over,6
+route,show,over_show,under,2
+route,show,under_show,under,6
+route,switch,left_out_tracking,over,1
+route,switch,switch_early,over,3
+route,switch,switch_early,under,2
+route,switch,switch_late,over,2
+route,switch,switch_late,under,3
+route,switch,switch_none,over,4
+route,switch,switch_none,unclear,1
+sd_takes_h,drop,left_out_tracking,no,1
+sd_takes_h,drop,over_drop,no,5
+sd_takes_h,drop,over_drop,yes,2
+sd_takes_h,drop,under_drop,no,6
+sd_takes_h,outside five,outside_five,no,2
+sd_takes_h,outside five,outside_five,unclear,1
+sd_takes_h,outside five,outside_five,yes,2
+sd_takes_h,show,left_out_tracking,no,1
+sd_takes_h,show,over_show,no,2
+sd_takes_h,show,over_show,unclear,2
+sd_takes_h,show,over_show,yes,4
+sd_takes_h,show,under_show,no,2
+sd_takes_h,show,under_show,yes,4
+sd_takes_h,switch,left_out_tracking,yes,1
+sd_takes_h,switch,switch_early,yes,5
+sd_takes_h,switch,switch_late,yes,5
+sd_takes_h,switch,switch_none,no,1
+sd_takes_h,switch,switch_none,yes,4
+tracking,drop,left_out_tracking,fine,1
+tracking,drop,over_drop,fine,7
+tracking,drop,under_drop,fine,6
+tracking,outside five,outside_five,fine,5
+tracking,show,left_out_tracking,some estimated positions,1
+tracking,show,over_show,fine,8
+tracking,show,under_show,fine,6
+tracking,switch,left_out_tracking,fine,1
+tracking,switch,switch_early,fine,5
+tracking,switch,switch_late,fine,5
+tracking,switch,switch_none,fine,5
+usefulness,drop,left_out_tracking,useful,1
+usefulness,drop,over_drop,partly,1
+usefulness,drop,over_drop,useful,6
+usefulness,drop,under_drop,not useful,1
+usefulness,drop,under_drop,partly,3
+usefulness,drop,under_drop,useful,2
+usefulness,outside five,outside_five,not useful,5
+usefulness,show,left_out_tracking,not useful,1
+usefulness,show,over_show,not useful,1
+usefulness,show,over_show,partly,5
+usefulness,show,over_show,useful,2
+usefulness,show,under_show,not useful,1
+usefulness,show,under_show,partly,5
+usefulness,switch,left_out_tracking,not useful,1
+usefulness,switch,switch_early,not useful,1
+usefulness,switch,switch_early,partly,3
+usefulness,switch,switch_early,useful,1
+usefulness,switch,switch_late,not useful,1
+usefulness,switch,switch_late,partly,3
+usefulness,switch,switch_late,useful,1
+usefulness,switch,switch_none,partly,5

@@ -60,6 +60,12 @@
     const use = r.use ?? "?", scr = COVERAGE_WORD[r.scr ?? ""] ?? r.scr ?? "?";
     return use === "switch" || scr === "switch" ? "switch" : `${use} + ${scr}`;
   });
+  // Why a screen has no forecast. Before Reveal the reason stays general, since naming ice or blitz would give the
+  // coverage away (owner's review, 2026-11-23).
+  const FIVE = new Set(["over + show", "over + drop", "under + show", "under + drop", "switch"]);
+  const noForecastWhy = $derived(!recorded ? "Tracking incomplete or a coverage outside the five the model reads"
+    : FIVE.has(recorded) ? "Left out of the model for incomplete tracking around the screen"
+    : `${cap([...new Set(recorded.split(" + "))].join(" + "))} is outside the five coverages the model reads`);
 
   // Move playback to a frame and pause there.
   function jump(f: number): void {
@@ -277,7 +283,7 @@
       {#if !showForecast}
         <i>Forecast hidden while you review this play</i>
       {:else if !scored}
-        <i>No forecast for this screen</i><small>Tracking incomplete or a coverage outside the five the model reads</small>
+        <i>No forecast for this screen</i><small>{noForecastWhy}</small>
       {:else if !read}
         <i>Outside prediction range</i><small>The forecast runs from 2 s before to 1 s after the pick marker ({fmtT(sel.t)})</small>
       {:else}

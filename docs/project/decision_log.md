@@ -2770,3 +2770,15 @@ At the owner's request, the Reading Switches section now shows the 2026-11-19 li
 - Switches read as switch rose from 21% to 26%. Flagging screens with P(Switch) > 20% now catches 60% of switches (was 52%) with 35% of flags right.
 - The five-signal check now adds almost nothing (log loss 0.358 → 0.356). At the same model read a cross-match and an earlier ball screen each multiply the odds of a switch by 1.5, while a guard or wing on the screener adds only 1.3.
 - I rewrote the sentences that described the old model ("barely reacts to who is in the screen", "size matters most", "give the model the players' size") and the matching bullet in What This Means for the Model. The possession's history is now the largest signal the model misses.
+
+## 2026-11-23 (evening) — Play review Pass 1 summarised (coverage product plan, Phase 3)
+
+The owner finished Pass 1 of the play review (50 of 50) and saved it as `screen_coverage/03_outputs/product_review/review_cases.csv`. Write-up and gallery in `docs/project/coverage_review_findings.md`.
+
+- **Summary script.** `screen_coverage/01_scripts/36_review_summary.R` writes `review_moments.csv`, `review_timing_checks.csv`, `review_choices.csv` and `review_component_check.csv`, and adds `review_pass_agreement.csv` once Pass 2 exists. The timing audit, horizons, experiments and export scripts move to 37–40.
+- **Timing.** Screen engaged at a median +0.20 s after the pick marker, first readable sign +0.04 s, coverage clear +0.44 s (by +1 s in 48 of 50). The handler's decision closes at a median +0.54 s, before the coverage is clear in 19 of 48 and after +1 s in 13 of 48. Switch exchanges finish after +1 s in 7 of 14.
+- **Episode boundaries.** No new action before +1 s in any play, 4 of 50 before +2 s. Candidates for Phase 4 · keep the earliest-window owner through +1 s, test an end near +1.5 s with a stop at a new action. A stop at the handler's touch end would cut switches most.
+- **Labels.** The after-reveal question "Recorded coverage matches" was often answered about the forecast (9 "no" answers where the label fits the blind answers). A component check from the blind answers replaces it for Pass 1 · switch fits 13 of 16, show 4 of 15. The matchups table missed exchanges the film shows, so it should not anchor exchange timing.
+- **Viewer changes.** After Reveal, a screen with no forecast names the reason (outside the five coverages, or left out for incomplete tracking). Before Reveal the reason stays general so it gives nothing away (`web/src/components/CoveragePanel.svelte`). The review question now reads "Recorded coverage matches the play" with a tooltip to judge the label only (`web/src/lib/review.svelte.ts`). The CSV column keeps its name.
+- **Pass 2 stays blind.** The findings name no Pass 2 case and the gallery uses none. `review_component_check.csv` lists each case's coverage and stays closed until Pass 2 is done.
+- Live model unchanged. 116 tests pass, type check clean.
