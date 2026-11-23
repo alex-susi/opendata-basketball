@@ -78,8 +78,8 @@
         <input type="checkbox" bind:checked={viewer.showTrails} />Player trails
       </label>
       <label class="toggle"><input type="checkbox" checked={viewer.skipDead} onchange={(ev) => onskip(ev.currentTarget.checked)} />Skip dead ball</label>
-      <label class="toggle" title="Court control: at every spot, which team would get to the ball first if it were passed there now, allowing for the ball's travel time and each player's speed and direction. Pale is a toss-up.">
-        <input type="checkbox" bind:checked={viewer.showControl} />Court control
+      <label class="toggle" title="Floor control: at every spot, which team would get to the ball first if it were passed there now, allowing for the ball's travel time and each player's speed and direction. Pale is a toss-up.">
+        <input type="checkbox" bind:checked={viewer.showControl} />Floor control
       </label>
     </div>
     {#if viewer.showControl && play}
@@ -95,9 +95,9 @@
             {/each}
           </div>
         {:else}
-          <span class="control-note">Court control needs five players a side and the ball in view.</span>
+          <span class="control-note">Floor control needs five players a side and the ball in view.</span>
         {/if}
-        <div class="seg control-scope" role="radiogroup" aria-label="Court control over">
+        <div class="seg control-scope" role="radiogroup" aria-label="Floor control over">
           <button type="button" role="radio" aria-checked={viewer.controlScope === "court"} class:on={viewer.controlScope === "court"}
                   title="Shares of the whole court" onclick={() => (viewer.controlScope = "court")}>Full</button>
           <button type="button" role="radio" aria-checked={viewer.controlScope === "half"} class:on={viewer.controlScope === "half"}

@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.5 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Court Control</title>
+<title>Floor Control</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Court control: how the time-to-ball model in web/src/lib/control.ts scores the floor. Shown in the site's Court
+/* Floor control: how the time-to-ball model in web/src/lib/control.ts scores the floor. Shown in the site's Court
    Control tab. Update it when control.ts or its fit (web/scripts/fit_control.R) changes.
    Writing rules: bullets over paragraphs, no semicolons, colons only right before a list. */
 :root {
@@ -200,28 +200,29 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
 <div class="shell">
   <nav class="toc" id="toc" aria-label="Contents">
     <ul>
-      <li class="toc-sec"><a href="#question">The question</a>
-        <ul class="toc-sub"><li><a href="#terms">Key terms</a></li></ul></li>
-      <li class="toc-sec"><a href="#steps">One spot, five steps</a></li>
-      <li class="toc-sec"><a href="#race">Try one spot</a></li>
-      <li class="toc-sec"><a href="#limits-player">Each player's limits</a></li>
-      <li class="toc-sec"><a href="#fit">Fitting and checks</a>
+      <li class="toc-sec"><a href="#question">The Question</a>
+        <ul class="toc-sub"><li><a href="#terms">Key Terms</a></li></ul></li>
+      <li class="toc-sec"><a href="#steps">One Spot, Five Steps</a></li>
+      <li class="toc-sec"><a href="#race">Try One Spot</a></li>
+      <li class="toc-sec"><a href="#limits-player">Each Player's Limits</a></li>
+      <li class="toc-sec"><a href="#fit">Fitting and Checks</a>
         <ul class="toc-sub"><li><a href="#constants">Constants</a></li></ul></li>
-      <li class="toc-sec"><a href="#viewer">In the play viewer</a></li>
-      <li class="toc-sec"><a href="#caveats">Limits</a></li>
-      <li class="toc-sec"><a href="#hood">Under the hood</a></li>
+      <li class="toc-sec"><a href="#viewer">In the Play Viewer</a></li>
+      <li class="toc-sec"><a href="#caveats">What to Keep in Mind</a></li>
+      <li class="toc-sec"><a href="#hood">Under the Hood</a></li>
     </ul>
   </nav>
 
 <main class="page">
   <header>
     <span class="eyebrow">Spacing and passing lanes · ACB 2025-26 · tracking model, refitted 2026-11-08</span>
-    <h1>Court Control</h1>
-    <p class="lede">For every 2 ft spot on the floor, which team would get to the ball first if it were passed there right now.</p>
+    <h1>Floor Control</h1>
+    <p class="lede">If the ball were passed to any spot on the floor right now, which team would get there first?</p>
     <ul class="tight">
-      <li>A basketball version of soccer's pitch control (Spearman 2016, 2017, Fernandez and Bornn 2018)</li>
-      <li>Built from the ten players' positions and velocities, the ball's position and each player's own speed limits</li>
-      <li>Fitted on 3,728 live passes and checked one game at a time</li>
+      <li>I scored every 2 ft spot of the court, every frame of live play</li>
+      <li>It is a basketball version of soccer's pitch control (Spearman 2016, 2017, Fernandez and Bornn 2018)</li>
+      <li>It runs on the ten players' positions and velocities, the ball's position and each player's own speed limits</li>
+      <li>I fitted it on 3,728 live passes and checked it one game at a time</li>
     </ul>
     <div class="meta">
       <span class="chip">10 tracked games</span>
@@ -235,30 +236,30 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 1. The question ═══ -->
   <section id="question">
     <div class="head">
-      <h2>The question</h2>
+      <h2>The Question</h2>
       <p class="sub">Who owns each part of the floor at this moment</p>
     </div>
     <ul class="tight">
-      <li>A ball passed to a spot gets there after a flight time. The first player to reach it takes it</li>
-      <li>Do this for every spot and the floor splits into ground the offense would win and ground the defense would win</li>
-      <li>Pale cells are toss-ups, deep colours are safe for one team</li>
-      <li>Use · open passing lanes, how well the offense spaces, how much floor a rotation gives up, and the offense's share of its half</li>
-      <li>Descriptive only. It says who could reach a pass, nothing about where the ball should go</li>
+      <li>A pass to a spot takes time to get there. The first player to reach it takes the ball</li>
+      <li>Do that for every spot and the floor splits into ground the offense would win and ground the defense would win</li>
+      <li>Pale cells are toss-ups. Deep colours are safe for one team</li>
+      <li>A coach can read open passing lanes off it, along with how well the offense is spaced, how much floor a rotation gives up and the offense's share of its half</li>
+      <li>It describes who could reach a pass. Where the ball should go is a separate question</li>
     </ul>
 
     <div class="block" id="terms">
-      <h3>Key terms</h3>
+      <h3>Key Terms</h3>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
           <tbody>
             <tr><td class="lead">Cell</td><td>A 2 ft by 2 ft square of the floor, scored at its centre</td></tr>
-            <tr><td class="lead">Control</td><td>The offense's share of a cell, from 0 (defense certain to get there first) to 1 (offense certain)</td></tr>
+            <tr><td class="lead">Control</td><td>The offense's share of a cell, from 0 (the defense is certain to get there first) to 1 (the offense is certain)</td></tr>
             <tr><td class="lead">Ball time</td><td>Seconds for a pass to reach the cell from where the ball is now</td></tr>
-            <tr><td class="lead">Arrival time</td><td>Seconds for a player to reach the cell, allowing for how he is already moving</td></tr>
+            <tr><td class="lead">Arrival time</td><td>Seconds for a player to reach the cell, allowing for the way he is already moving</td></tr>
             <tr><td class="lead">Motion limits</td><td>A player's own sprint speed, acceleration and braking, measured in the ten games</td></tr>
             <tr><td class="lead">Court share</td><td>Average control over all cells, or over the half the offense attacks</td></tr>
-            <tr><td class="lead">Log loss</td><td>How surprised a model is by what happened. Lower is better</td></tr>
+            <tr><td class="lead">Log loss</td><td>How surprised a model is by what actually happened. Lower is better</td></tr>
           </tbody>
         </table>
       </div>
@@ -268,32 +269,32 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 2. Steps ═══ -->
   <section id="steps">
     <div class="head">
-      <h2>One spot, five steps</h2>
+      <h2>One Spot, Five Steps</h2>
       <p class="sub">How the model scores a single cell. Every cell on the court is scored the same way, every frame</p>
     </div>
     <ol class="steps">
-      <li><div><h3>Ball time</h3><ul class="tight">
+      <li><div><h3>Ball Time</h3><ul class="tight">
         <li>t<sub>ball</sub> = 0.016 s + 0.0201 s per ft × distance from the ball to the cell</li>
         <li>About 50 ft per s, measured from the ten games' passes</li>
       </ul></div></li>
-      <li><div><h3>Each player's arrival time</h3><ul class="tight">
+      <li><div><h3>Each Player's Arrival Time</h3><ul class="tight">
         <li>He keeps his current velocity for a reaction time of 0.05 s</li>
-        <li>Then heads straight for the cell. His speed toward it changes no faster than his own acceleration, up to his own sprint speed</li>
-        <li>Moving away, he first has to stop, at his own braking rate, which carries him further away</li>
+        <li>Then he heads straight for the cell. His speed toward it changes no faster than his own acceleration, up to his own sprint speed</li>
+        <li>If he is moving away, he first has to stop at his own braking rate, which carries him further away</li>
         <li>Sideways velocity is ignored</li>
       </ul></div></li>
-      <li><div><h3>Uncertain arrival</h3><ul class="tight">
-        <li>By time t, he has arrived with probability 1 / (1 + exp(−(t − arrival) · π / (√3 · 0.45 s)))</li>
+      <li><div><h3>Uncertain Arrival</h3><ul class="tight">
+        <li>P(Arrived by t) = 1 / (1 + exp(−(t − arrival) · π / (√3 · 0.45 s)))</li>
         <li>A logistic with a spread of 0.45 s, so a player a few tenths behind still has a chance</li>
       </ul></div></li>
-      <li><div><h3>The race for the ball</h3><ul class="tight">
-        <li>From the moment the ball arrives, while nobody has it, every player who has arrived takes it at 50 per s</li>
-        <li>Stepped every 0.04 s until someone holds it with 99% certainty (at most 6 s)</li>
+      <li><div><h3>The Race for the Ball</h3><ul class="tight">
+        <li>Once the ball arrives and while nobody has it, every player who has arrived takes it at 50 per s</li>
+        <li>I step it every 0.04 s until someone holds it with 99% certainty (at most 6 s)</li>
         <li>So the first to arrive nearly always wins, and a near tie splits</li>
       </ul></div></li>
-      <li><div><h3>The cell's control</h3><ul class="tight">
+      <li><div><h3>The Cell's Control</h3><ul class="tight">
         <li>The offense's five players' summed chances of taking it, out of all ten</li>
-        <li>Coloured in the offense's colour above 0.5, the defense's below, paler near 0.5</li>
+        <li>Coloured in the offense's colour above 0.5 and the defense's below, paler near 0.5</li>
       </ul></div></li>
     </ol>
   </section>
@@ -301,7 +302,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 3. Race ═══ -->
   <section id="race">
     <div class="head">
-      <h2>Try one spot</h2>
+      <h2>Try One Spot</h2>
       <p class="sub">One attacker and one defender racing a pass to the same spot, run through the same formulas the site uses</p>
     </div>
     <div class="race-grid">
@@ -323,21 +324,21 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       </figure>
     </div>
     <ul class="tight">
-      <li>A defender closing at speed beats a standing attacker who is nearer, because the attacker still has to get going</li>
-      <li>Moving away costs more than standing still. He has to stop before he can come back</li>
-      <li>A long pass gives both players time, so the spot goes to whoever arrives first by a clear margin</li>
+      <li>A defender closing out at speed beats a nearer attacker who is standing still, because the attacker still has to get going</li>
+      <li>Drifting away costs more than standing still. He has to stop before he can come back to the ball</li>
+      <li>A long skip pass gives both players time, so the spot goes to whoever arrives first by a clear margin</li>
     </ul>
   </section>
 
   <!-- ═══ 4. Player limits ═══ -->
   <section id="limits-player">
     <div class="head">
-      <h2>Each player's limits</h2>
+      <h2>Each Player's Limits</h2>
       <p class="sub">Every player runs at his own measured speed, acceleration and braking</p>
     </div>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Limit</th><th>How it is measured</th></tr></thead>
+        <thead><tr><th>Limit</th><th>How I measured it</th></tr></thead>
         <tbody>
           <tr><td class="fname">Sprint speed</td><td>His 99th percentile of live-play speed (velocity over 6 frames, capped at 30 ft per s). Scaled so the average player runs at 18.1 ft per s, the speed the model was first fitted with. Range 16.4 to 20.0 ft per s</td></tr>
           <tr><td class="fname">Acceleration</td><td>His 99th percentile of speed gained between velocities 0.24 s apart. League 12.4 ft per s²</td></tr>
@@ -347,8 +348,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       </table>
     </div>
     <ul class="tight">
-      <li>Centres come out slowest, off-ball wings fastest</li>
-      <li>It is observed speed, so it mixes ability with role</li>
+      <li>Centres come out slowest and off-ball wings fastest</li>
+      <li>These are observed speeds, so they mix ability with role. A rim-running center rarely needs his top gear in the half court</li>
       <li>Figures from <span class="file">web/scripts/sample_stats.R</span> ("Motion limits"), stored in <span class="file">sample.json</span></li>
     </ul>
   </section>
@@ -356,19 +357,19 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 5. Fit ═══ -->
   <section id="fit">
     <div class="head">
-      <h2>Fitting and checks</h2>
-      <p class="sub">The reaction time, spread and claim rate are chosen by how well control at the catch spot separates completed passes from interceptions</p>
+      <h2>Fitting and Checks</h2>
+      <p class="sub">I chose the reaction time, spread and claim rate by how well control at the catch spot separates completed passes from interceptions</p>
     </div>
     <ul class="tight">
-      <li>3,728 live passes in the ten games, 66 intercepted (1.8%)
+      <li>3,728 live passes in the ten games, 66 of them intercepted (1.8%)
         <ul>
-          <li>No inbounds, caught within 2 s, five tracked players a side and the ball in view</li>
-          <li>All ten players' positions and velocities at release, and the spot where the pass was taken</li>
+          <li>No inbounds passes, caught within 2 s, five tracked players a side and the ball in view</li>
+          <li>All ten players' positions and velocities at release, and the spot where the pass was caught</li>
         </ul>
       </li>
-      <li>Control at that spot, recalibrated by a two-parameter logistic, scored by log loss</li>
-      <li>The logistic absorbs passer choice. Passers pick safe passes, so raw control overstates the risk</li>
-      <li>Grid search over reaction time, spread and claim rate, one game held out at a time</li>
+      <li>Control at that spot, recalibrated by a two-parameter logistic and scored by log loss</li>
+      <li>The logistic absorbs passer choice. Passers make safe passes far more often than risky ones, so raw control overstates the risk</li>
+      <li>A grid search over reaction time, spread and claim rate, holding out one game at a time</li>
     </ul>
     <div class="tablewrap">
       <table>
@@ -385,8 +386,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       </table>
     </div>
     <ul class="tight">
-      <li>Speed alone does not help. How fast a player can get going and stop is what matters</li>
-      <li>The ×1.5 version scores a little better but adds a tuned factor for a gain within noise, so the live model uses the limits as measured</li>
+      <li><b>First step beats top speed.</b> Sprint speed alone makes the model slightly worse. How fast a player gets going and stops is what wins the race to a pass</li>
+      <li>The ×1.5 version scores a little better, but it adds a tuned factor for a gain within noise. I kept the limits as measured for the live model</li>
       <li>File <span class="file">web/outputs/court_control/fit_control_summary.csv</span></li>
     </ul>
 
@@ -412,36 +413,36 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 6. Viewer ═══ -->
   <section id="viewer">
     <div class="head">
-      <h2>In the play viewer</h2>
+      <h2>In the Play Viewer</h2>
       <p class="sub">Computed live in the browser for the frame on screen</p>
     </div>
     <ul class="tight">
-      <li>Display › <b>Court control</b> shades every cell in the two teams' colours</li>
+      <li>Display › <b>Floor control</b> shades every cell in the two teams' colours</li>
       <li>The readout gives the offense's share of the whole court or of the half it attacks</li>
-      <li>Needs five players a side and the ball in view. Otherwise the layer is left off for that frame</li>
+      <li>The layer needs five players a side and the ball in view, and stays off for any frame without them</li>
     </ul>
   </section>
 
-  <!-- ═══ 7. Limits ═══ -->
+  <!-- ═══ 7. Keep in mind ═══ -->
   <section id="caveats">
     <div class="head">
-      <h2>Limits</h2>
+      <h2>What to Keep in Mind</h2>
       <p class="sub">What the model leaves out</p>
     </div>
     <ul class="tight">
-      <li><b>Straight lines.</b> Players run straight at each spot. No cutting around a body, no screens in the way</li>
-      <li><b>No hands or bodies.</b> A deflection, a lob over a defender or a bounce pass is the same as a chest pass</li>
+      <li><b>Straight lines.</b> Players run straight at each spot. The model has no cutting around bodies and no screens in the way</li>
+      <li><b>No hands or bodies.</b> A deflection, a lob over a defender and a bounce pass all count the same as a chest pass</li>
       <li><b>Few interceptions.</b> 66 in ten games, so the fit is coarse</li>
       <li><b>Limits use all ten games.</b> Each player's motion limits include the held-out game's tracking (movement only, never pass outcomes)</li>
       <li><b>Tracking error.</b> About 1 in 5 positions are vendor estimates for players off camera</li>
-      <li><b>Not where to pass.</b> Owning a spot says nothing about whether a pass there would lead to a good shot</li>
+      <li><b>Owning a spot is only half the read.</b> Whether a pass there leads to a good shot is a separate question</li>
     </ul>
   </section>
 
   <!-- ═══ 8. Hood ═══ -->
   <section id="hood">
     <div class="head">
-      <h2>Under the hood</h2>
+      <h2>Under the Hood</h2>
       <p class="sub">Where each part lives</p>
     </div>
     <div class="tablewrap">

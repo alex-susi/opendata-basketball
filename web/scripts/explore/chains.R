@@ -11,14 +11,14 @@
 # defenders in the key, and the mean distance from each attacker without the ball to his nearest defender, averaged
 # over a chance's half-court frames (every 5th frame from the frontcourt frame to the shot).
 
-ACT_LV <- c("Pick", "Pop", "Handoff", "Off-ball screen", "Drive", "Iso", "Post-up", "Closeout", "Cut", "Paint touch")
+ACT_LV <- c("Ball screen", "Pop", "Handoff", "Off-ball screen", "Drive", "Iso", "Post-up", "Closeout", "Cut", "Paint touch")
 # The shape charts draw at most eight lines (the palette's eight colours), so two action types are left to the table.
 SHAPE_LV <- setdiff(ACT_LV, c("Iso", "Paint touch"))
 
 # A chance's actions in frame order, from 1 s before it starts to its last shot's release (or its end).
 chance_actions <- function(B) {
   ch <- B$ch[in_pop == TRUE]
-  ev <- rbind(B$picks[, .(chance, f = f0, act = "Pick", actor)], B$handoffs[, .(chance, f = f0, act = "Handoff", actor)],
+  ev <- rbind(B$picks[, .(chance, f = f0, act = "Ball screen", actor)], B$handoffs[, .(chance, f = f0, act = "Handoff", actor)],
               B$obs[, .(chance, f = f0, act = "Off-ball screen", actor)], B$drives[, .(chance, f = f0, act = "Drive", actor)],
               B$isos[, .(chance, f = f0, act = "Iso", actor)], B$posts[, .(chance, f = f0, act = "Post-up", actor)],
               B$co[, .(chance, f = f0, act = "Closeout", actor)], fill = TRUE)
@@ -84,9 +84,9 @@ topic_chains <- function(BL) {
   }
   chains <- ev[, .(chain = coll(act), n_act = .N, last = act[.N],
                    tail2 = coll(tail(act, 2)), tail3 = coll(tail(act, 3)),
-                   n_scr = sum(act %in% c("Pick", "Handoff", "Off-ball screen")),
+                   n_scr = sum(act %in% c("Ball screen", "Handoff", "Off-ball screen")),
                    run_scr = {
-                     s <- f[act %in% c("Pick", "Handoff", "Off-ball screen")]
+                     s <- f[act %in% c("Ball screen", "Handoff", "Off-ball screen")]
                      if (length(s) < 2) as.numeric(length(s)) else {
                        r <- rle(diff(s) <= 75)
                        as.numeric(max(1, r$lengths[r$values] + 1))
@@ -144,7 +144,7 @@ topic_chains <- function(BL) {
                                                     col("ppc", "Pts/chance", "num2", ref = ref$ppc, scale = 0.3), col("xpts", "xPts/FGA", "num2", ref = ref$xpts, scale = 0.15),
                                                     col("tov", "TOV%", "pct", ref = ref$tov, scale = 0.08, low = TRUE), col("ftrip", "FT trip%", "pct", ref = ref$ftrip, scale = 0.08),
                                                     col("oreb", "OREB%", "pct", ref = ref$oreb, scale = 0.12), col("live", "Live misses", "int")),
-          note = "Half-court chances; tints compare with all half-court chances (blue above, red below). Small groups swing widely.")
+          note = "Half-court chances. Tints compare with all half-court chances (blue above, red below). Small groups swing widely.")
   }
 
   # Consecutive action pairs anywhere in the chain.
@@ -153,18 +153,19 @@ topic_chains <- function(BL) {
   pt <- pair[, .(n = .N, ppc = mean(pts), tov = mean(tov), ftrip = mean(ftrip), xpts = mean(xpts, na.rm = TRUE)), by = pairs][n >= 25][order(-n)]
 
   # The tab's document.
-  sections <- list(SECTION("ch-question", "The question and the data",
-                           P("Which actions, and which orders of actions, come before the best chances?"),
-                           BUL("Each half-court chance becomes the list of its actions, in the order they happened, up to the shot",
-                               "Actions are SkillCorner's picks, handoffs, off-ball screens, drives, isolations, post-ups and closeouts, plus the site's basket cuts, pick-and-pops and paint touches",
+  sections <- list(SECTION("ch-question", "The Question",
+                           P("Which half-court actions, and which orders of actions, come before the best chances?"),
+                           BUL("I turned each half-court chance into the list of its actions, in the order they happened, up to the shot",
+                               "Actions are SkillCorner's ball screens, dribble handoffs, off-ball screens, drives, isolations, post-ups and closeouts, plus the site's basket cuts, pops and paint touches",
+                               "**Pop** = the screener flares to the perimeter after a ball screen (a pick-and-pop). It shows in chains as \"Ball screen → Pop\"",
                                "Outcomes are the chance's points, shot quality (xPts per FGA), turnovers, free-throw trips and offensive rebounds on live misses"),
                            KPIS(KPI("Half-court chances", int(nrow(hc)), sprintf("of %s chances", int(nrow(ch)))),
                                 KPI("Actions per chance", sprintf("%.1f", mean(hc$n_act)), "median " %+% median(hc$n_act)),
                                 KPI("With a screen", pct(mean(hc$n_scr > 0)), sprintf("%.1f screens per chance", mean(hc$n_scr))),
                                 KPI("Distinct chains", int(uniqueN(hc$chain)), "after collapsing repeats")),
-                           CAVEAT("Actions are SkillCorner's detections plus the site's cuts and pops. Both miss some actions and mislabel others",
-                                  "A long chain is also a long chance, and the shot clock forces shots late in long chains, so counts and orders are confounded with time")),
-                   SECTION("ch-presence", "Chances with and without each action",
+                           CAVEAT("The actions are SkillCorner's detections plus the site's cuts and pops. Both miss some actions and mislabel others",
+                                  "A long chain is also a long chance, and late in the shot clock the offense has to force a shot. Action counts and orders are tangled up with time")),
+                   SECTION("ch-presence", "With and Without Each Action",
                            TABLE("Half-court chances: with each action vs without it", limit = 12, rows = pres, cols = list(col("grp", "Action"), col("n", "Chances with it", "int"), col("share", "Share", "pct"),
                                                                                                                             col("ppc", "Pts/ch with", "num2", ref = mean(hc$pts), scale = 0.25), col("ppc_wo", "Pts/ch without", "num2"),
                                                                                                                             col("gap", "Pts/ch gap", "num2", ref = 0, scale = 0.3),
@@ -175,56 +176,57 @@ topic_chains <- function(BL) {
                                  note = "A chance with two kinds of action counts in both rows."),
                            outcome_panel(rbindlist(lapply(ACT_LV, function(a_) hc[get(paste0("has_", a_)) == TRUE][, grp := a_])), order = ACT_LV, base = hc, total = nrow(hc),
                                          title = "Half court, with the action")),
-                   SECTION("ch-count", "How many actions, and screens in a row",
+                   SECTION("ch-count", "Action Counts and Screens in a Row",
                            outcome_panel(copy(hc)[, grp := nact_bin], order = c(as.character(0:5), "6+"), base = hc, title = "Actions in the chance"),
                            GRID(outcome_table(copy(hc), "nscr_bin", base = hc, label = "Screens in the chance", title = "By number of screens"),
                                 outcome_table(copy(hc), "run_bin", base = hc, label = "Longest run of screens", title = "Consecutive screens (each within 3 s of the last)"))),
-                   SECTION("ch-chains", "Chains: the order of actions",
-                           BUL(sprintf("Full chains are too varied to compare (%s distinct ones)", int(uniqueN(hc$chain))),
-                               "So the tables use the last action, the last two and the last three before the shot",
-                               "A pick-and-pop shows as \"Pick → Pop\""),
+                   SECTION("ch-chains", "Order of Actions",
+                           BUL(sprintf("Full chains are too varied to compare. The ten games hold %s distinct ones", int(uniqueN(hc$chain))),
+                               "I kept the last action, the last two and the last three before the shot",
+                               "A pick-and-pop shows as \"Ball screen → Pop\""),
                            outcome_table(copy(hc), "last", base = hc, label = "Last action before the shot", title = "By the last action", min_n = 15),
                            top_chain("tail2", 20, 25, "The last two actions (20+ chances)"),
                            top_chain("tail3", 15, 25, "The last three actions (15+ chances)"),
                            TABLE("Pairs anywhere in the chain (one action straight after another, 25+ chances)", limit = 25, rows = pt, cols = list(col("pairs", "Pair"), col("n", "Chances", "int"), col("ppc", "Pts/chance", "num2", ref = mean(hc$pts), scale = 0.3),
                                                                                                                                                     col("xpts", "xPts/FGA", "num2", ref = mean(hc$xpts, na.rm = TRUE), scale = 0.15),
                                                                                                                                                     col("tov", "TOV%", "pct", ref = mean(hc$tov), scale = 0.08, low = TRUE), col("ftrip", "FT trip%", "pct", ref = mean(hc$ftrip), scale = 0.08)))),
-                   SECTION("ch-shape", "What each action does to the defense's shape",
+                   SECTION("ch-shape", "How Each Action Moves the Defense",
                            BUL("Team shape averaged over every action of each kind, from 2 s before it to 2 s after",
-                               "0 is SkillCorner's frame for the action. That is the screen, the start of a drive, post-up or closeout, the start of a cut, or the screen of a pick-and-pop",
-                               "The charts show eight action types (isolations and paint touches are in the table and on the Paint touches tab), so every line keeps its own colour"),
-                           GRID(SCAT("Area of the defense's convex hull (sq ft)", lines = LINES_BY(Am, "t", "def_hull", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "sq ft", yfmt = "int"),
-                                SCAT("Defenders inside the key", lines = LINES_BY(Am, "t", "def_paint", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "defenders"),
+                               "0 is SkillCorner's frame for the action. That is the screen itself, the start of a drive, post-up, closeout or cut, or the ball screen before a pop",
+                               "**Hull** = the area inside the five defenders (their convex hull). A shrinking hull means the help is sinking into the paint",
+                               "The charts show eight action types so every line keeps its own colour. Isolations and paint touches are in the table and on the Paint Touches tab"),
+                           GRID(SCAT("Defense's hull (sq ft)", lines = LINES_BY(Am, "t", "def_hull", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "sq ft", yfmt = "int"),
+                                SCAT("Defenders inside the paint", lines = LINES_BY(Am, "t", "def_paint", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "defenders"),
                                 SCAT("Off-ball attackers: nearest defender (ft)", lines = LINES_BY(Am, "t", "open_mean", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "ft"),
-                                SCAT("Ball holder: nearest defender (ft)", lines = LINES_BY(Am, "t", "holder_open", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "ft")),
+                                SCAT("Ball handler: nearest defender (ft)", lines = LINES_BY(Am, "t", "holder_open", "grp", SHAPE_LV), xlabel = "seconds from the action", ylabel = "ft")),
                            TABLE("One second before vs one second after", limit = 12, rows = delta[, .(grp, n, pre, post, dh = post - pre, pp0, pp1, o0, o1, do = o1 - o0)], cols = list(col("grp", "Action"), col("n", "Actions", "int"), col("pre", "Def. hull −1 s", "int"), col("post", "Def. hull +1 s", "int"),
-                                                                                                                                                                                         col("dh", "Hull change", "int", ref = 0, scale = 60), col("pp0", "Def. in key −1 s", "num1"), col("pp1", "Def. in key +1 s", "num1"),
+                                                                                                                                                                                         col("dh", "Hull change", "int", ref = 0, scale = 60), col("pp0", "Def. in paint −1 s", "num1"), col("pp1", "Def. in paint +1 s", "num1"),
                                                                                                                                                                                          col("o0", "Off-ball room −1 s (ft)", "num1"), col("o1", "Off-ball room +1 s (ft)", "num1"), col("do", "Room change", "num2", ref = 0, scale = 0.8)))),
-                   SECTION("ch-spacing", "Spacing and outcomes",
-                           BUL("Each half-court chance's spacing is averaged over its frames from the frontcourt to the shot",
+                   SECTION("ch-spacing", "Spacing and Outcomes",
+                           BUL("I averaged each half-court chance's spacing over its frames from crossing half court to the shot",
                                "Every 5th frame with all ten players tracked counts, and a chance needs at least five such frames",
                                "Bins are quintiles of the chances"),
                            outcome_panel(copy(hs)[, grp := as.character(ohb)], order = levels(hs$ohb), base = hc, title = "Offense hull (sq ft)"),
                            outcome_panel(copy(hs)[, grp := as.character(dhb)], order = levels(hs$dhb), base = hc, title = "Defense hull (sq ft)"),
                            GRID(outcome_table(copy(hs)[, g := as.character(arcb)], "g", base = hc, label = "Attackers beyond the arc (mean)", title = "Shooters spotted up"),
-                                outcome_table(copy(hs)[, g := as.character(dpb)], "g", base = hc, label = "Defenders in the key (mean)", title = "Defenders packing the key")),
+                                outcome_table(copy(hs)[, g := as.character(dpb)], "g", base = hc, label = "Defenders in the paint (mean)", title = "Defenders packing the paint")),
                            SCAT("Offense hull against defense hull (one point per chance, coloured by whether it scored)",
                                 points = hs[, .(x = r2(off_hull, 0), y = r2(def_hull, 0), g = as.integer(pts == 0), tip = sprintf("%s\n%d points\noffense hull %.0f sq ft\ndefense hull %.0f sq ft", chance, pts, off_hull, def_hull))],
                                 groups = c("scored", "did not score"), xlabel = "offense hull (sq ft)", ylabel = "defense hull (sq ft)", xfmt = "int", yfmt = "int", radius = 2.5, opacity = 0.4),
-                           P("At the release of the shot (FGA chances), how many attackers were beyond the arc and how many defenders were in the key, against the shot's quality."),
+                           P("At the release of each field-goal attempt, how many attackers were spotted up beyond the arc and how many defenders were in the paint, against the shot's quality."),
                            GRID(RATES("xPts per FGA by attackers beyond the arc at release", lapply(levels(R$arcb), function(l) mrow(l, R[arcb == l]$xpts)), fmt = "num2",
                                       unit = "xPts", ref = mean(R$xpts, na.rm = TRUE)),
-                                RATES("xPts per FGA by defenders in the key at release", lapply(levels(R$dpb), function(l) mrow(l, R[dpb == l]$xpts)), fmt = "num2",
+                                RATES("xPts per FGA by defenders in the paint at release", lapply(levels(R$dpb), function(l) mrow(l, R[dpb == l]$xpts)), fmt = "num2",
                                       unit = "xPts", ref = mean(R$xpts, na.rm = TRUE))),
-                           CAVEAT("Spacing at release is tied to where the shot is. A layup puts the shooter and his defender in the key",
-                                  "The chance-average view is less tied to the shot spot but still reflects the opponent and the lineup")),
-                   SECTION("ch-limits", "What this shows and does not",
-                           BUL("It shows which actions and short sequences come before better and worse chances, and how each action moves the defense in the next two seconds",
-                               "It does not separate the action from who runs it, against whom, or how much time was left"),
-                           H("If this becomes the topic"),
+                           CAVEAT("Spacing at release follows the shot spot. A layup puts the shooter and his defender in the paint",
+                                  "The chance-average view depends less on the shot spot but still reflects the opponent and the lineup")),
+                   SECTION("ch-limits", "What to Keep in Mind",
+                           BUL("This tab shows which actions and short sequences come before better and worse chances, and how each action moves the defense over the next two seconds",
+                               "Who runs the action, who guards it and how much shot clock was left all ride along with the action itself. The gaps above mix all of them"),
+                           H("Next Steps"),
                            BUL("Model the chance outcome on the last action, with team and opponent terms",
-                               "Use the shape changes (hull, key, room off the ball) as the mechanism",
+                               "Use the shape changes (hull, defenders in the paint, room off the ball) as the mechanism",
                                "Test whether an action that shrinks the defense more leads to a better next shot")))
-  DOC("chains", "Pre-shot actions", "Which actions and chains of actions precede better chances, how they change the defense's shape, and how spacing relates to outcomes.", sections)
+  DOC("chains", "Half-Court Actions", "Which half-court actions and sequences come before better chances, how each one moves the defense, and how spacing relates to outcomes.", sections)
 }
 `%+%` <- function(a, b) paste0(a, b)

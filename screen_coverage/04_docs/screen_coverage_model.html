@@ -187,27 +187,27 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
 <div class="shell">
   <nav class="toc" id="toc" aria-label="Contents">
     <ul>
-      <li class="toc-sec"><a href="#question">The question</a>
-        <ul class="toc-sub"><li><a href="#terms">Key terms</a></li></ul></li>
-      <li class="toc-sec"><a href="#inputs">Model inputs</a>
+      <li class="toc-sec"><a href="#question">The Question</a>
+        <ul class="toc-sub"><li><a href="#terms">Key Terms</a></li></ul></li>
+      <li class="toc-sec"><a href="#inputs">Model Inputs</a>
         <ul class="toc-sub">
-          <li><a href="#clock">Past-only on the clock</a></li>
-          <li><a href="#flow">Movement to a coverage</a></li>
-          <li><a href="#features">Full feature list</a></li>
+          <li><a href="#clock">Past-Only on the Clock</a></li>
+          <li><a href="#flow">Movement to a Coverage</a></li>
+          <li><a href="#features">Full Feature List</a></li>
         </ul></li>
       <li class="toc-sec"><a href="#grading">Grading</a>
-        <ul class="toc-sub"><li><a href="#curve">The main curve</a></li></ul></li>
+        <ul class="toc-sub"><li><a href="#curve">The Main Curve</a></li></ul></li>
       <li class="toc-sec"><a href="#results">Results</a>
         <ul class="toc-sub">
-          <li><a href="#logloss">Probability scores</a></li>
-          <li><a href="#accuracy">Top-coverage accuracy</a></li>
-          <li><a href="#per-defender">Each defender</a></li>
-          <li><a href="#per-coverage">Each coverage</a></li>
+          <li><a href="#logloss">Probability Scores</a></li>
+          <li><a href="#accuracy">Top-Coverage Accuracy</a></li>
+          <li><a href="#per-defender">Each Defender</a></li>
+          <li><a href="#per-coverage">Each Coverage</a></li>
         </ul></li>
       <li class="toc-sec"><a href="#example">Example Play</a></li>
       <li class="toc-sec"><a href="#checks">Checks</a></li>
-      <li class="toc-sec"><a href="#limits">Limits</a></li>
-      <li class="toc-sec"><a href="#hood">Under the hood</a></li>
+      <li class="toc-sec"><a href="#limits">What to Keep in Mind</a></li>
+      <li class="toc-sec"><a href="#hood">Under the Hood</a></li>
     </ul>
   </nav>
 
@@ -215,11 +215,11 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <header>
     <span class="eyebrow">Pick-and-roll defense · ACB 2025-26 · live model since 2026-11-19</span>
     <h1>Screen Coverage Model</h1>
-    <p class="lede">A transformer model that uses player tracking data to predict how the defense will guard on-ball screens.</p>
+    <p class="lede">Can the tracking tell a ball handler how the defense will guard a ball screen before it is set? I built a transformer that reads the last 1.6 s of all ten players' movement and gives the odds of each coverage.</p>
     <ul class="tight">
       <li>A probability for each of five coverages every 0.04 s, from 2 s before the screen to 1 s after</li>
       <li>Built only from what has already happened at each moment</li>
-      <li>Compared throughout with a multinomial logistic baseline</li>
+      <li>I compare it throughout with a multinomial logistic baseline</li>
     </ul>
     <div class="meta">
       <span class="chip">10 tracked games</span>
@@ -234,11 +234,11 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 1. The question ═══ -->
   <section id="question">
     <div class="head">
-      <h2>The question</h2>
-      <p class="sub">Can we predict how the defense will react to an on-ball screen in the moments leading up to it?</p>
+      <h2>The Question</h2>
+      <p class="sub">Can I predict how the defense will guard a ball screen in the moments before it is set?</p>
     </div>
     <ul class="tight">
-      <li>SkillCorner's picks table labels both screen defenders on every on-ball screen
+      <li>SkillCorner's picks table labels both screen defenders on every ball screen
         <ul>
           <li>Ball handler's defender (<code>bhrDefType</code>)
             <ul>
@@ -257,8 +257,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         </ul>
       </li>
       <li>Together they form one of five coverages</li>
-      <li>Ice (14 screens) and blitz (4) are too rare to learn and are left out for now</li>
-      <li>A useful model could help tell a ball handler, scout or film room how the screen will be defended, and how early that is readable</li>
+      <li>Ice (14 screens) and blitz (4) are too rare to learn, so I left them out for now</li>
+      <li>A useful read tells a ball handler or scout how the screen will be defended, and how early the defense gives it away</li>
     </ul>
     <div class="split">
       <div class="tablewrap">
@@ -300,7 +300,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="terms">
-      <h3>Key terms</h3>
+      <h3>Key Terms</h3>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
@@ -323,7 +323,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 3. Model inputs ═══ -->
   <section id="inputs">
     <div class="head">
-      <h2>Model inputs</h2>
+      <h2>Model Inputs</h2>
     </div>
     <ul class="tight">
       <li>All ten players' movement over the last 1.6 s</li>
@@ -333,7 +333,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </ul>
 
     <div class="block" id="clock">
-      <h3>Past-only on the clock</h3>
+      <h3>Past-Only on the Clock</h3>
       <p class="sub">What a prediction at −0.4 s may and may not use</p>
       <figure class="figure">
         <svg viewBox="0 0 640 232" role="img" aria-label="Timeline for a prediction 0.4 seconds before the screen. The model reads the last 1.6 seconds of movement and 2 seconds of closest-approach memory. A re-screen marked 1.2 seconds before is not counted until 1 second after its pick frame. Everything after the prediction moment is never used">
@@ -384,7 +384,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="flow">
-      <h3>Movement to a coverage</h3>
+      <h3>Movement to a Coverage</h3>
       <p class="sub">Five stages inside the transformer, from player histories to five probabilities</p>
       <div class="flow" role="img" aria-label="Model flow. Ten players' recent movement, each player looks back over his own 1.6 seconds, the players look at each other, the four screen players are read with the screen-level numbers, three questions give the five coverages">
         <div class="box"><span class="n">1 · in</span><b>10 players × 9 moments</b><span>16 measures per player at now, 0.2 s ago … 1.6 s ago</span></div>
@@ -396,7 +396,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="features">
-      <h3>Full feature list</h3>
+      <h3>Full Feature List</h3>
       <p class="sub">1,440 numbers about the players (10 players × 9 moments × 16 measures), 9 about the screen, and 12 position inputs read by the switch decision only</p>
       <div class="tablewrap">
         <table>
@@ -450,7 +450,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <li>Every frame from −2 s to +1 s is predicted. The main curve decides how much each frame counts</li>
     </ul>
     <div class="block" id="curve">
-      <h3>The main curve</h3>
+      <h3>The Main Curve</h3>
       <p class="sub">How much each frame counts toward a score, by time from the pick frame</p>
       <figure class="figure">
         <svg viewBox="0 0 660 268" role="img" aria-label="The main curve. Weight 0 before 1.8 seconds before the pick frame, rising to 1 at 0.9 seconds before, 1 until 0.24 seconds after, falling to 0 at 0.5 seconds after">
@@ -516,7 +516,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="logloss">
-      <h3>Probability scores</h3>
+      <h3>Probability Scores</h3>
       <p class="sub">Held-out log loss, lower is better. Neither model is told when the screen comes</p>
       <div class="tablewrap">
         <table>
@@ -531,16 +531,16 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         </table>
       </div>
       <ul class="tight">
-        <li>Main curve · live better than the baseline by 0.075 (95% interval 0.050 to 0.096, resampling games)
+        <li>Main curve · the live model beats the baseline by 0.075, 95% CI [0.050, 0.096] (resampling games)
           <ul>
-            <li>Ball handler's defender 0.042 (0.028 to 0.054), screener's defender 0.046 (0.023 to 0.067)</li>
+            <li>Ball handler's defender 0.042, 95% CI [0.028, 0.054]. Screener's defender 0.046, 95% CI [0.023, 0.067]</li>
           </ul>
         </li>
-        <li>Before the screen (−2.0 to −0.04 s) · better by 0.057 (0.030 to 0.082), in 9 of 10 games</li>
-        <li>After the screen (0 to +1.0 s) · better by 0.112 (0.092 to 0.133), in all 10</li>
+        <li>Before the screen (−2.0 to −0.04 s) · better by 0.057, 95% CI [0.030, 0.082], in 9 of 10 games</li>
+        <li>After the screen (0 to +1.0 s) · better by 0.112, 95% CI [0.092, 0.133], in all 10</li>
         <li>Against the previous live model, which had no position groups
           <ul>
-            <li>Main curve 0.003 worse (−0.017 to +0.011), within noise</li>
+            <li>Main curve 0.003 worse, 95% CI [−0.017, +0.011], within noise</li>
             <li>Switch read sharper · a real switch outranks a random other screen 77% of the time (was 76%), 73% before the pick frame (was 71%)</li>
             <li>With a guard on the screener, 45% of switches caught (was 17%)</li>
             <li>Show or drop on non-switch screens slightly less sure (log loss 0.007 to 0.010 higher)</li>
@@ -551,7 +551,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="accuracy">
-      <h3>Top-coverage accuracy</h3>
+      <h3>Top-Coverage Accuracy</h3>
       <p class="sub">Share of screens where the most likely of the five coverages was the real one</p>
       <figure class="figure">
         <div class="legend">
@@ -600,7 +600,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="per-defender">
-      <h3>Each defender before the screen</h3>
+      <h3>Each Defender Before the Screen</h3>
       <p class="sub">The big is readable early. The guard's choice is no better than "expect over"</p>
       <div class="tablewrap">
         <table>
@@ -618,7 +618,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
     </div>
 
     <div class="block" id="per-coverage">
-      <h3>Each coverage</h3>
+      <h3>Each Coverage</h3>
       <p class="sub">Recall and precision of the top coverage. The over coverages are read well, switch and under + show mostly missed</p>
       <ul class="tight">
         <li>Accuracy hides the rare coverages. Over coverages are 67% of screens, switch 14%, under + show 7%</li>
@@ -626,9 +626,9 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         <li>Precision · of the screens read as a coverage, the share that really were each. Columns sum to 100%</li>
         <li>Brackets count screens. Drag a slider to see any single frame from −2 s to +1 s, or press Main curve for every frame weighted by the main curve</li>
       </ul>
-      <h4>Full coverage</h4>
+      <h4>Full Coverage</h4>
       <div class="cm-player" data-parts="joint" data-stack="1"></div>
-      <h4>Each defender on his own</h4>
+      <h4>Each Defender on His Own</h4>
       <ul class="tight">
         <li>A defender's top coverage is the largest of his three summed options, e.g. over = over + show + over + drop</li>
         <li>On the main curve, switch is caught less often here (16% and 18%) than for the full coverage (26%). Over + show and over + drop add up to over, which usually beats a switch</li>
@@ -653,7 +653,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         <li>Recall, precision and baseline recall on the main curve. Accuracy 55%, average recall over the five coverages 43%</li>
         <li>Files in <span class="file">03_outputs/confusion/</span> (<span class="file">22_confusion_matrices.R</span>) and <span class="file">03_outputs/call_diagnostics/</span> (<span class="file">23_call_diagnostics.R</span>)</li>
       </ul>
-      <h4>Why the rare coverages are missed</h4>
+      <h4>Why the Rare Coverages Are Missed</h4>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Reason</th><th>Evidence</th></tr></thead>
@@ -670,7 +670,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
               <li>So part of the miss is the rule, and the rest is a weak signal</li>
             </ul></td></tr>
             <tr><td class="lead">The signal is there,<br>just weak</td><td><ul>
-              <li>Average switch probability 0.25 on real switches, 0.13 on the rest</li>
+              <li>Average P(Switch) = 0.25 on real switches and 0.13 on the rest</li>
               <li>A real switch outranks a random other screen 77% of the time (AUC 0.77)</li>
             </ul></td></tr>
             <tr><td class="lead">Game plans vary</td><td><ul>
@@ -724,7 +724,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
           <figcaption class="caption">Real tracking, hoop at the top. Dots trail each screen player's last 1.6 s, one every 0.2 s. Recorded coverage under + drop</figcaption>
         </figure>
         <div>
-          <h4>Model's probabilities</h4>
+          <h4>Model's Probabilities</h4>
           <div id="play-probs"></div>
           <div class="legend"><span><i class="key" style="border-color:var(--accent)"></i>live transformer</span><span><i style="display:inline-block;width:2px;height:12px;background:var(--fg)"></i>logistic baseline</span></div>
           <div class="parts" id="play-parts"></div>
@@ -762,7 +762,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         <li>Jefferson (on the ball) climbs from 2.2 ft below the level to 1 ft above by −0.6 s, so over leads before the screen (over + drop 50% at −0.4 s)</li>
         <li>He slides under from the pick frame (1.9 ft below at +0.4 s) and under + drop climbs to the top (52% at the pick frame, 64% at +0.4 s). The baseline lands on the same read (45% at +0.4 s)</li>
         <li>Switch stays low (8% to 14% around the screen) with a big, Tobey, on the screener</li>
-        <li>After about +0.7 s the read drifts back to over + drop, the drift listed in Limits</li>
+        <li>After about +0.7 s the read drifts back to over + drop, the drift listed in What to Keep in Mind</li>
         <li>Data <span class="file">03_outputs/example_play/example_play.json</span> (<span class="file">25_example_play.R</span>)</li>
       </ul>
     </div>
@@ -775,7 +775,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">The past-only test and the screens left out of grading</p>
     </div>
     <div class="block">
-      <h3>Past-only test</h3>
+      <h3>Past-Only Test</h3>
       <p class="sub">Scramble the future, and the inputs and predictions must not change</p>
       <ul class="tight">
         <li>30 screens (20 re-screens, the hardest case) at six moments from −2 s to +1 s</li>
@@ -785,7 +785,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
             <li>Coverages of every not-yet-readable screen replaced at random</li>
           </ul>
         </li>
-        <li>Then the live model's saved networks rerun and the baseline refit (<span class="file">05_test_past_only.R</span>)</li>
+        <li>Then I reran the live model's saved networks and refit the baseline (<span class="file">05_test_past_only.R</span>)</li>
         <li>The position groups are fixed for each screen and built from the archetypes without the graded game, so no later frame can reach them</li>
       </ul>
       <div class="tablewrap">
@@ -802,7 +802,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       </div>
       <ul class="tight">
         <li>Positions are filled only from the two frames before (0.08 s). Longer gaps are marked missing</li>
-        <li>Two things are known on purpose
+        <li>The model knows two things on purpose
           <ul>
             <li>Which four players make up the coming screen, from the picks table. Every result reads "given that this screen is coming"</li>
             <li>SkillCorner's own positions. About 1 in 5 are vendor estimates for players off camera, and their method may use later frames</li>
@@ -812,11 +812,11 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       </ul>
     </div>
     <div class="block">
-      <h3>Screens left out</h3>
+      <h3>Screens Left Out</h3>
       <p class="sub">33 of the 1,496 five-coverage screens are not graded</p>
       <ul class="tight">
         <li>30 have a screen player untracked early in the window (from −2 s for 1 to 44 frames), tracked from then on</li>
-        <li>3 lose tracking after +0.8 s because the possession ends within a second of the screen. Dropping these uses what happens later</li>
+        <li>3 lose tracking after +0.8 s because the possession ends within a second of the screen. Dropping them leans on what happens later, so the count is small on purpose</li>
         <li>All 33 are tracked at the pick frame. File <span class="file">03_outputs/evaluation/left_out_screens.csv</span></li>
       </ul>
     </div>
@@ -825,53 +825,53 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
   <!-- ═══ 7. Limits ═══ -->
   <section id="limits">
     <div class="head">
-      <h2>Limits</h2>
-      <p class="sub">What to keep in mind before trusting a read</p>
+      <h2>What to Keep in Mind</h2>
+      <p class="sub">Before trusting a read</p>
     </div>
     <ul class="tight">
       <li><b>Small sample.</b> Ten games, about 1,170 training screens per held-out game</li>
-      <li><b>Vendor labels and positions.</b> The coverages come from SkillCorner, and a staff might label some differently</li>
+      <li><b>Vendor labels and positions.</b> The coverages come from SkillCorner, and a coaching staff might label some screens differently</li>
       <li><b>The screen is known.</b> The model is told which four players are in the screen. A live system would also need to detect the screen coming</li>
-      <li><b>When a coverage becomes readable.</b> Tonight's tendencies assume 1 s after its pick frame, a judgment call</li>
+      <li><b>When a coverage becomes readable.</b> Tonight's tendencies count a coverage 1 s after its pick frame. That is my judgment call</li>
       <li><b>Drift after the screen.</b> The read slips back after about +0.5 s (log loss 0.74 at +0.4 s, 0.88 at +1 s). Training stops on moments up to +0.5 s</li>
       <li><b>Percentages honest from about −0.5 s on.</b> Checked in <span class="file">15_calibration.R</span>
         <ul>
           <li>Earlier, the leading coverage is stated too high (9 points at −2 s, 7 at −1 s)</li>
           <li>After the pick frame, about 5 points too low</li>
-          <li>A confident switch read (60%+) before the pick frame comes true about half the time</li>
+          <li>A confident switch read, P(Switch) ≥ 60%, before the pick frame comes true about half the time</li>
         </ul>
       </li>
-      <li><b>Rare coverages mostly missed.</b> Switch 26% and under + show 17% caught by the top coverage</li>
+      <li><b>Rare coverages mostly missed.</b> The top coverage catches 26% of switches and 17% of under + show</li>
       <li><b>Position groups overlap the graded game slightly.</b> They are refitted without its tracking, but the season files behind the archetypes include it (about 1 of 33 games per team)</li>
-      <li><b>Attention explains little.</b> Attention is spread almost evenly across the ten players</li>
+      <li><b>Attention explains little.</b> The model spreads its attention almost evenly across the ten players, so it shows little about which player drives a read</li>
     </ul>
   </section>
 
   <!-- ═══ 8. Under the hood ═══ -->
   <section id="hood">
     <div class="head">
-      <h2>Under the hood</h2>
+      <h2>Under the Hood</h2>
       <p class="sub">Scripts, the baseline's formula and the transformer's math</p>
     </div>
     <details class="fold">
       <summary><span>Pipeline and scripts<small>The six scripts that build, train, test and export the live model</small></span></summary>
       <div class="fold-body">
         <ol class="steps">
-          <li><div><h3>Screens, frame rows and the logistic baseline</h3><ul class="tight">
+          <li><div><h3>Screens, Frame Rows and the Logistic Baseline</h3><ul class="tight">
             <li><span class="file">01_logistic_baseline.R</span></li>
             <li>The 1,463 screens with all four players tracked from −2 s to +1 s</li>
             <li>One row per screen and frame, with the four-player measures and tonight's tendencies</li>
             <li>The baseline, never told when the screen comes, with and without the tendencies</li>
           </ul></div></li>
-          <li><div><h3>Movement histories</h3><ul class="tight">
+          <li><div><h3>Movement Histories</h3><ul class="tight">
             <li><span class="file">02_build_sequences.R</span></li>
             <li>The ten players' measures at every frame from −3.6 s to +1 s, past-only</li>
           </ul></div></li>
-          <li><div><h3>Position groups</h3><ul class="tight">
+          <li><div><h3>Position Groups</h3><ul class="tight">
             <li><span class="file">28_fold_positions.R</span> · the offensive archetypes refitted once per held-out game without that game's tracking, grouped into guard, wing or big</li>
             <li><span class="file">29_build_personnel.R</span> · each screen player's group for every fold</li>
           </ul></div></li>
-          <li><div><h3>Train the live model</h3><ul class="tight">
+          <li><div><h3>Train the Live Model</h3><ul class="tight">
             <li><span class="file">03_train_transformer.R --personnel --positions=hard --pos-into=switch --memory=no</span>, once per held-out game</li>
             <li>The next game validates, eight train</li>
             <li>Stops on the validation game's main-curve score, four random starts averaged</li>
@@ -882,10 +882,10 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
             <li>Scores against the baseline, each defender's read, each coverage, the left-out screens</li>
             <li>Probability strips for the film-check screens (<span class="file">03_outputs/evaluation/</span>)</li>
           </ul></div></li>
-          <li><div><h3>Past-only test</h3><ul class="tight">
+          <li><div><h3>Past-Only Test</h3><ul class="tight">
             <li><span class="file">05_test_past_only.R</span>, details in Checks</li>
           </ul></div></li>
-          <li><div><h3>Export to the play viewer</h3><ul class="tight">
+          <li><div><h3>Export to the Play Viewer</h3><ul class="tight">
             <li><span class="file">06_export_live.R</span></li>
             <li>Screen Coverage Read · the selected screen's forecast (five coverages, each defender's part) and a probability strip up to the current moment, drawn like the film-check strips. Combined shows the five coverages, By defender shows over / under / switch and show / drop / switch side by side</li>
             <li>Classic look · the card used until 2026-11-21 (each defender's bars, Expected / Actual table with marks)</li>
@@ -920,7 +920,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
               <math display="block"><mi>P</mi><mo>(</mo><mi>y</mi><mo>=</mo><mi>k</mi><mo>∣</mo><mi mathvariant="bold">x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>exp</mi><mo>(</mo><msub><mi>β</mi><mrow><mi>k</mi><mn>0</mn></mrow></msub><mo>+</mo><msubsup><mi mathvariant="bold">β</mi><mi>k</mi><mo>⊤</mo></msubsup><mover><mi mathvariant="bold">x</mi><mo>~</mo></mover><mo>)</mo></mrow><mrow><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mn>5</mn></munderover><mi>exp</mi><mo>(</mo><msub><mi>β</mi><mrow><mi>j</mi><mn>0</mn></mrow></msub><mo>+</mo><msubsup><mi mathvariant="bold">β</mi><mi>j</mi><mo>⊤</mo></msubsup><mover><mi mathvariant="bold">x</mi><mo>~</mo></mover><mo>)</mo></mrow></mfrac><mo>,</mo><mspace width="1em"></mspace><msub><mi mathvariant="bold">β</mi><mtext>over + show</mtext></msub><mo>=</mo><mn mathvariant="bold">0</mn></math>
               <math display="block"><msub><mover><mi>x</mi><mo>~</mo></mover><mi>f</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>f</mi></msub><mo>−</mo><msub><mi>μ</mi><mi>f</mi></msub></mrow><msub><mi>σ</mi><mi>f</mi></msub></mfrac><mo>,</mo><mspace width="1em"></mspace><mi mathvariant="bold">x</mi><mo>∈</mo><msup><mi>ℝ</mi><mn>26</mn></msup></math>
             </div>
-            <h4>The 26 inputs</h4>
+            <h4>The 26 Inputs</h4>
             <ul class="tight">
               <li>11 four-player measures (distances, levels, how fast the levels change, the screener's distance from the hoop, time to act)</li>
               <li>Logs of the defense's five readable coverage shares so far</li>
@@ -977,7 +977,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
               </li>
               <li>Every group raises the loss in at least 8 of the 10 games</li>
             </ul>
-            <h4>Reading it carefully</h4>
+            <h4>Reading It Carefully</h4>
             <ul class="tight">
               <li><b>Reliance only.</b> Shows what this model uses. Says nothing about why a defense picks a coverage</li>
               <li><b>Correlated inputs share credit.</b> Handler-to-screener distance looks unimportant partly because closeness and the "× closeness" terms carry the same information. Shuffling one leaves the others in place</li>

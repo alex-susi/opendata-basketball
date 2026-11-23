@@ -5,7 +5,7 @@
   // gets a switch beside its title (e.g. handler's defender, screener's defender, full coverage) that shows only
   // that view's columns; sorting and the row limit carry over between views.
   import { fitWide } from "../../lib/fitwide";
-  import { format, type Col, type Row, type View } from "./types";
+  import { format, titleCase, type Col, type Row, type View } from "./types";
 
   let { title = "", cols: allCols, rows, limit = 15, note = null, views = null }:
     { title?: string; cols: Col[]; rows: Row[]; limit?: number; note?: string | null; views?: View[] | null } = $props();
@@ -65,7 +65,7 @@
 <div class="dt">
   {#if title || views?.length}
     <div class="dt-head">
-      {#if title}<h4>{title}</h4>{/if}
+      {#if title}<h4>{titleCase(title)}</h4>{/if}
       {#if views?.length}
         <div class="seg dt-views" role="radiogroup" aria-label="Coverage shown">
           {#each views as v, i (v.label)}
@@ -80,14 +80,14 @@
       <thead>
         {#if groups.some((g) => g.name)}
           <tr class="dt-groups">
-            {#each groups as g, i (i)}<th colspan={g.span} class:named={!!g.name}>{g.name}</th>{/each}
+            {#each groups as g, i (i)}<th colspan={g.span} class:named={!!g.name}>{titleCase(g.name)}</th>{/each}
           </tr>
         {/if}
         <tr>
           {#each cols as c (c.key)}
             <th class:count={c.fmt !== "text"} class:group-start={startsGroup(c)} title={c.title ?? c.label}>
               <button type="button" class="sort" onclick={() => sortBy(c.key)}>
-                {c.label}{#if sortKey === c.key}<span class="arrow">{desc ? "▾" : "▴"}</span>{/if}
+                {titleCase(c.label)}{#if sortKey === c.key}<span class="arrow">{desc ? "▾" : "▴"}</span>{/if}
               </button>
             </th>
           {/each}

@@ -52,6 +52,9 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 .tabs, .tabs button, h1, h2, h3, .filters summary, .plays-head, .game-head, .toggle, .switch, .seg button, .text-btn, .scores th {
   text-transform: capitalize; letter-spacing: .01em;
 }
+/* The reading tabs (EDA documents, Rebounding, Archetypes) write their headings in true title case, with short words
+   in lowercase, so they opt out of the blanket capitalisation. */
+.doc-inner h1, .doc-inner h2, .doc-inner h3, .doc-inner .scores th { text-transform: none; }
 
 /* ---- tab bar ---- */
 .tabs {

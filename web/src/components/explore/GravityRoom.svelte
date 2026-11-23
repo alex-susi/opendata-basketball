@@ -185,7 +185,7 @@
         </svg>
         <figcaption>
           <span class="gr-scale"><span>{LO} ft</span><i style:background={`linear-gradient(90deg, ${color(LO)}, ${color((LO + HI) / 2)}, ${color(HI)})`}></i><span>{HI}+ ft of room</span></span>
-          <span class="gr-note">Shaded where at least {MIN_N} similar moments exist. Darker means more room.</span>
+          <span class="gr-note">Shaded where at least {MIN_N} similar moments exist. Darker shading means more room.</span>
         </figcaption>
       </figure>
       <div class="gr-read">
@@ -210,7 +210,7 @@
             {/each}
           </tbody>
         </table>
-        <p class="gr-hint">Less room than "Any player" means defenders stay closer to that kind of player in that spot, which is gravity.</p>
+        <p class="gr-hint">When a shooter type gets less room than "Any player", defenders stay closer to him in that spot. That gap is his gravity.</p>
       </div>
     </div>
   {/if}

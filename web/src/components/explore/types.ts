@@ -49,6 +49,22 @@ export function format(v: Cell, fmt: Fmt): string {
 export const formatter = (fmt: Fmt) => (v: number, d?: number) =>
   d != null && (fmt === "pct" || fmt === "pct1") ? `${(100 * v).toFixed(d)}%` : format(v, fmt);
 
+// Title case for chart, table and axis titles: every word capitalised except short articles, conjunctions and
+// prepositions (unless first), units, and words that already carry a capital or digit (xPts, eFG%, 3PA, PnR).
+const SMALL = new Set(["a", "an", "the", "and", "or", "but", "nor", "of", "on", "in", "at", "to", "by", "for", "vs", "per", "from", "with", "as", "into"]);
+const KEEP = new Set(["ft", "s", "sq", "ft/s", "m", "xpts"]);
+export function titleCase(s: string | null | undefined): string {
+  if (!s) return s ?? "";
+  let first = true;
+  return s.replace(/[A-Za-z][\w'%/.+]*/g, (w: string) => {
+    const lead = first;
+    first = false;
+    if (/[A-Z0-9]/.test(w) || KEEP.has(w)) return w;
+    if (!lead && SMALL.has(w)) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  });
+}
+
 /** **bold** in the documents' prose. Text is escaped first, so the documents cannot inject markup. */
 export function inline(text: string): string {
   const esc = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

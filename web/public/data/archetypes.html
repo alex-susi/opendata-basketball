@@ -1,54 +1,54 @@
 <div class="doc-inner">
-  <h1>Playstyle archetypes</h1>
+  <h1>Archetypes</h1>
   <p class="lead">
-    Every player is described by how he plays, not by how well: where his shots come from, how he uses the ball and screens, where he stands, whom he guards. 
-    Players with similar habits are grouped into offensive and defensive archetypes, and each player gets a probability of belonging to each one.
+    What role does each player fill on offense and on defense? I described every player by his habits (where his shots come from, how he uses the ball and screens, where he stands, whom he guards) and left his efficiency out. 
+    Players with similar habits form offensive and defensive archetypes, and each player gets a probability of belonging to each one.
   </p>
   <section>
-    <h2>How the archetypes are built</h2>
+    <h2>How I Built the Archetypes</h2>
     <ol class="steps">
       <li>
-        <h3>Measure tendencies, not results</h3>
+        <h3>Measure Tendencies</h3>
         <p>
-          130 features describe what a player does and where he is on the floor: 93 on offense and 37 on defense. 
-          Season features come from the shot, drive and pick aggregates (293 games); tracked features come from the events and tracking of the ten sample games. 
-          Makes, points, percentages, assists, turnovers, fouls drawn, blocks, steals and rebounds collected are all left out.
+          I described what each player does and where he is on the floor with 130 features, 93 on offense and 37 on defense. 
+          Season features come from the shot, drive and ball-screen aggregates (293 games). Tracked features come from the events and tracking of the ten sample games. 
+          I left out every result (makes, points, percentages, assists, turnovers, fouls drawn, blocks, steals and rebounds collected), so the groups describe how a player plays and say nothing about how well.
         </p>
       </li>
       <li>
-        <h3>Keep only what repeats</h3>
+        <h3>Keep Only What Repeats</h3>
         <p>
-          Each feature's noise is estimated (from odd against even chances for tracked features) and every player's value is pulled toward the league average in proportion to how little he was observed. 
-          A feature enters the clustering only if its median reliability among well-sampled players is at least 0.7: 45 offensive and 20 defensive features pass.
+          I estimated each feature's noise (from odd against even chances for tracked features) and pulled every player's value toward the league average in proportion to how little he was observed. 
+          A feature enters the clustering only if its median reliability among well-sampled players is at least 0.7. 45 offensive and 20 defensive features pass.
         </p>
       </li>
       <li>
-        <h3>Reduce to principal components</h3>
+        <h3>Reduce to Principal Components</h3>
         <p>
-          The surviving features are heavily correlated, so they are combined into principal components. A component is kept only if it carries more variance than the same component of shuffled data. 
+          The surviving features are heavily correlated, so I combined them into principal components. A component stays only if it carries more variance than the same component of shuffled data. 
           That keeps 4 components on offense (72% of the variance) and 2 on defense (77%).
         </p>
       </li>
       <li>
-        <h3>Fit a mixture model on the well-sampled players</h3>
+        <h3>Fit a Mixture Model on the Well-Sampled Players</h3>
         <p>
-          Clusters are defined by the players seen enough to trust: 169 on offense (25+ tracked chances and 30+ season attempts) and 139 on defense (40+ tracked chances). 
-          Fourteen Gaussian mixture types were compared at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, on cluster size and, on offense, on how closely the clusters resemble BBall Index's offensive roles. 
-          The solution in use was chosen from that comparison. Offense: 10 clusters as round clusters of equal size (mclust model EII). Defense: 4 clusters as equal-sized clusters sharing one axis-aligned shape (mclust model EEI).
+          The clusters are defined by the players seen enough to trust, 169 on offense (25+ tracked chances and 30+ season attempts) and 139 on defense (40+ tracked chances). 
+          I compared fourteen Gaussian mixture types at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, on cluster size and, on offense, on how closely the clusters resemble BBall Index's offensive roles. 
+          I chose the solution in use from that comparison. Offense: 10 clusters as round clusters of equal size (mclust model EII). Defense: 4 clusters as equal-sized clusters sharing one axis-aligned shape (mclust model EEI).
         </p>
       </li>
       <li>
-        <h3>Give every player a probability of every archetype</h3>
+        <h3>Give Every Player a Probability of Every Archetype</h3>
         <p>
           All 310 players in the season aggregates get offensive probabilities and the 205 tracked players get defensive ones. 
-          Each player is compared with every cluster using his raw values and his own sampling noise, and features he has no data for are left out, so thinly observed players get flatter probabilities instead of confident labels.
+          Each player is compared with every cluster using his raw values and his own sampling noise, leaving out features he has no data for. A thinly observed player gets flatter probabilities, which honestly reflects how little I know about him.
         </p>
       </li>
     </ol>
   </section>
   <section>
-    <h2>Offensive archetypes</h2>
-    <p class="lead">The numbers under "What sets it apart" are how far the archetype sits from the league average on that feature, in standard deviations.</p>
+    <h2>Offensive Archetypes</h2>
+    <p class="lead">The numbers under "What Sets It Apart" are how far the archetype sits from the league average on that feature, in standard deviations.</p>
     <div class="arch-grid">
       <div class="panel arch-card">
         <h3>
@@ -56,15 +56,15 @@
           Off Screen Shooter
         </h3>
         <p class="meta">20 players · 15 well-sampled · mean probability 0.76</p>
-        <p>A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes; he rarely scores in the paint. He does less off the dribble than a secondary ball handler.</p>
+        <p>A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes. He rarely scores in the paint and does less off the dribble than a secondary ball handler.</p>
         <p class="meta">
           <b>Most typical: </b>
           Matt Thomas, Mark Hughes, Erik Stevenson, Kyle Kuric, Alfonso Plummer
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.6</span>
@@ -85,7 +85,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.9</span>
@@ -113,15 +113,15 @@
           Movement Shooter
         </h3>
         <p class="meta">52 players · 26 well-sampled · mean probability 0.78</p>
-        <p>A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group; it includes most of the shooting forwards that BBall Index would call stretch bigs.</p>
+        <p>A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group. It includes most of the shooting forwards that BBall Index would call stretch bigs.</p>
         <p class="meta">
           <b>Most typical: </b>
           Aaron Doornekamp, Yves Pons, Mihajlo Andric, Mindaugas Susinskas, Toni Nakic
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.3</span>
@@ -142,7 +142,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.9</span>
@@ -175,10 +175,10 @@
           <b>Most typical: </b>
           Bakary Dibba, Jaime Fernandez Manzanares, Sergi Martinez Costa, Thomas Scrubb, Henri Drell
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.2</span>
@@ -199,7 +199,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.9</span>
@@ -215,7 +215,7 @@
               </li>
               <li>
                 <span class="num neg">-0.7</span>
-                direct picks as ball handler per 100 possessions on court
+                direct ball screens as ball handler per 100 possessions on court
               </li>
             </ul>
           </div>
@@ -227,15 +227,15 @@
           Athletic Finisher
         </h3>
         <p class="meta">36 players · 22 well-sampled · mean probability 0.76</p>
-        <p>A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype: it sits near the middle of the two main components.</p>
+        <p>A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype, sitting near the middle of the two main components.</p>
         <p class="meta">
           <b>Most typical: </b>
           Leonardo Simoes Meindl, Howard Sant-Roos, Nihad Djedovic, Agustin Ubal, Santiago Yusta
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+0.6</span>
@@ -256,7 +256,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.5</span>
@@ -272,7 +272,7 @@
               </li>
               <li>
                 <span class="num neg">-0.4</span>
-                direct picks as ball handler per 100 possessions on court
+                direct ball screens as ball handler per 100 possessions on court
               </li>
             </ul>
           </div>
@@ -284,19 +284,19 @@
           Primary Ball Handler
         </h3>
         <p class="meta">45 players · 26 well-sampled · mean probability 0.88</p>
-        <p>Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or goes to the offensive glass.</p>
+        <p>Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or crashes the offensive glass.</p>
         <p class="meta">
           <b>Most typical: </b>
           Shannon Evans, Kendrick Perry, Marco Spissu, Dominik Mavra, Ricky Rubio
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+2.0</span>
-                direct picks as ball handler per 100 possessions on court
+                direct ball screens as ball handler per 100 possessions on court
               </li>
               <li>
                 <span class="num pos">+1.9</span>
@@ -313,7 +313,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.4</span>
@@ -346,14 +346,14 @@
           <b>Most typical: </b>
           Ethan Happ, Willy Hernangomez, Ante Tomic, Luka Bozic, Dragan Apic
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.6</span>
-                direct picks as screener per 100 possessions on court
+                direct ball screens as screener per 100 possessions on court
               </li>
               <li>
                 <span class="num pos">+1.6</span>
@@ -370,7 +370,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.6</span>
@@ -398,15 +398,15 @@
           Slasher
         </h3>
         <p class="meta">29 players · 13 well-sampled · mean probability 0.85</p>
-        <p>An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions, but handles less and takes fewer pull-up jumpers than a primary ball handler.</p>
+        <p>An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions. He handles less and takes fewer pull-up jumpers than a primary ball handler.</p>
         <p class="meta">
           <b>Most typical: </b>
           Matteo Spagnolo, Theo Maledon, Joaquin Nazar Rodriguez Olivera, Omari Moore, Jon Axel Gudmundsson
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.4</span>
@@ -418,7 +418,7 @@
               </li>
               <li>
                 <span class="num pos">+1.0</span>
-                direct picks as ball handler per 100 possessions on court
+                direct ball screens as ball handler per 100 possessions on court
               </li>
               <li>
                 <span class="num pos">+1.0</span>
@@ -427,7 +427,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.1</span>
@@ -455,15 +455,15 @@
           Secondary Ball Handler
         </h3>
         <p class="meta">30 players · 18 well-sampled · mean probability 0.79</p>
-        <p>A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups and off-the-dribble threes and many of them contested, and often gets the ball coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.</p>
+        <p>A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups, off-the-dribble threes and contested looks, and often catches coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.</p>
         <p class="meta">
           <b>Most typical: </b>
           Kevin Punter, Chris Duarte, Justin Wright-Foreman, Darrun Hilliard, Jhivvan Jameel Jackson Melendez
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.4</span>
@@ -484,7 +484,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.8</span>
@@ -512,15 +512,15 @@
           Roll &amp; Cut Big
         </h3>
         <p class="meta">36 players · 16 well-sampled · mean probability 0.73</p>
-        <p>A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most on-ball screens and spends his off-ball time in the paint. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.</p>
+        <p>A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most ball screens and he spends his off-ball time in the paint. The name describes the role. Counts of rolls and cuts were too noisy to use as clustering inputs.</p>
         <p class="meta">
           <b>Most typical: </b>
           Kaodirichi Akobundu-Ehiogu, Martinas Geben, Danko Brankovic, Mike Tobey, Bassala Bagayoko
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.7</span>
@@ -528,7 +528,7 @@
               </li>
               <li>
                 <span class="num pos">+1.7</span>
-                direct picks as screener per 100 possessions on court
+                direct ball screens as screener per 100 possessions on court
               </li>
               <li>
                 <span class="num pos">+1.6</span>
@@ -541,7 +541,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.5</span>
@@ -569,15 +569,15 @@
           Versatile Big
         </h3>
         <p class="meta">12 players · 7 well-sampled · mean probability 0.78</p>
-        <p>A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, goes to the offensive glass and usually finishes without a dribble. The smallest group, and unlike BBall Index's versatile big it is not defined by three-point shooting.</p>
+        <p>A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, crashes the offensive glass and usually finishes without a dribble. The smallest group. Unlike BBall Index's versatile big, three-point shooting plays no part in it.</p>
         <p class="meta">
           <b>Most typical: </b>
           Pierre Pelos, Augustine Rubit, Emir Sulejmanovic, Mamadi Diakite, Beka Burjanadze
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+0.9</span>
@@ -598,7 +598,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.0</span>
@@ -610,7 +610,7 @@
               </li>
               <li>
                 <span class="num neg">-0.8</span>
-                direct picks as ball handler per 100 possessions on court
+                direct ball screens as ball handler per 100 possessions on court
               </li>
               <li>
                 <span class="num neg">-0.7</span>
@@ -623,21 +623,21 @@
     </div>
     <ul class="facts">
       <li>
-        <b>Stability: </b>
-        0.62. This is the agreement between these clusters and the ones found when the model is refitted on resampled players (1 = identical; good to about ±0.1).
+        <b>Stability. </b>
+        0.62 agreement between these clusters and the ones found when I refit the model on resampled players (1 = identical, good to about ±0.1).
       </li>
       <li>
-        <b>Membership certainty: </b>
-        a player's most likely archetype has probability 0.79 on average; 24 of 310 players are under 0.5.
+        <b>Membership certainty. </b>
+        On average P(Most Likely Archetype) = 0.79. 24 of 310 players are under 0.5.
       </li>
       <li>
-        <b>Fit: </b>
-        BIC -2847, against -2734 for the best-fitting alternative (VEV with 3 clusters), which was judged too coarse to describe playstyles.
+        <b>Fit. </b>
+        BIC -2847, against -2734 for the best-fitting alternative (VEV with 3 clusters). I passed on that alternative because its groups are too coarse to describe playstyles.
       </li>
     </ul>
   </section>
   <section>
-    <h2>Offensive components</h2>
+    <h2>Offensive Components</h2>
     <p class="lead">Each component is a weighted mix of the features. The lists show the features with the largest weights on each end.</p>
     <div class="pc-grid">
       <div class="panel pc">
@@ -645,7 +645,7 @@
           <h3>Component 1</h3>
           <span class="meta">42% of variance</span>
         </div>
-        <p class="pc-context">The main split in the league: who has the ball and who plays off it.</p>
+        <p class="pc-context">The main split in the league is who has the ball and who plays off it.</p>
         <div class="pc-ends">
           <div class="pc-end">
             <h4>
@@ -656,7 +656,7 @@
             <ul>
               <li>
                 <span class="num">-0.24</span>
-                Direct picks as ball handler per 100 possessions on court
+                Direct ball screens as ball handler per 100 possessions on court
               </li>
               <li>
                 <span class="num">-0.23</span>
@@ -677,7 +677,7 @@
               <span class="pc-sign">+</span>
               Off-ball screener and finisher
             </h4>
-            <p>Catches and shoots or finishes without a dribble, sets screens and goes to the offensive glass. Typical of bigs.</p>
+            <p>Catches and shoots or finishes without a dribble, sets screens and crashes the offensive glass. Typical of bigs.</p>
             <ul>
               <li>
                 <span class="num">+0.21</span>
@@ -704,7 +704,7 @@
           <h3>Component 2</h3>
           <span class="meta">19% of variance</span>
         </div>
-        <p class="pc-context">Among players off the ball, where they operate: outside or inside.</p>
+        <p class="pc-context">Among players off the ball, this sorts those who operate outside from those who operate inside.</p>
         <div class="pc-ends">
           <div class="pc-end">
             <h4>
@@ -763,7 +763,7 @@
           <h3>Component 3</h3>
           <span class="meta">6% of variance</span>
         </div>
-        <p class="pc-context">How a player gets his points: jump shots in volume, or occasional attacks on the rim.</p>
+        <p class="pc-context">How a player gets his points, with volume jump shooting at one end and occasional rim attacks at the other.</p>
         <div class="pc-ends">
           <div class="pc-end">
             <h4>
@@ -795,7 +795,7 @@
               <span class="pc-sign">+</span>
               Low-usage rim attacker
             </h4>
-            <p>Shoots little, and mostly layups; his drives end at the rim and he stands still off the ball.</p>
+            <p>Shoots little, and mostly layups. His drives end at the rim and he stands still off the ball.</p>
             <ul>
               <li>
                 <span class="num">+0.25</span>
@@ -822,14 +822,14 @@
           <h3>Component 4</h3>
           <span class="meta">5% of variance</span>
         </div>
-        <p class="pc-context">Players who hunt their own shot on the wing against those who organise from the top.</p>
+        <p class="pc-context">Wings who hunt their own shot against players who organise from the top of the floor.</p>
         <div class="pc-ends">
           <div class="pc-end">
             <h4>
               <span class="pc-sign">−</span>
               Organiser
             </h4>
-            <p>Stays at the top of the floor, starts possessions, runs pick-and-roll in the middle and shoots off the catch.</p>
+            <p>Stays at the top of the floor, starts possessions, runs middle pick-and-roll and shoots off the catch.</p>
             <ul>
               <li>
                 <span class="num">-0.23</span>
@@ -841,7 +841,7 @@
               </li>
               <li>
                 <span class="num">-0.16</span>
-                Share of direct picks as handler set in the middle of the floor
+                Share of direct ball screens as handler set in the middle of the floor
               </li>
               <li>
                 <span class="num">-0.15</span>
@@ -879,7 +879,7 @@
     </div>
   </section>
   <section>
-    <h2>Where each offensive archetype sits</h2>
+    <h2>Where Each Offensive Archetype Sits</h2>
     <p class="lead">Cluster centres in standard deviations of each component. Zero is the average well-sampled player.</p>
     <div class="table-wrap">
       <table class="scores">
@@ -1313,8 +1313,8 @@
     </div>
   </section>
   <section>
-    <h2>Defensive archetypes</h2>
-    <p class="lead">The numbers under "What sets it apart" are how far the archetype sits from the league average on that feature, in standard deviations.</p>
+    <h2>Defensive Archetypes</h2>
+    <p class="lead">The numbers under "What Sets It Apart" are how far the archetype sits from the league average on that feature, in standard deviations.</p>
     <div class="arch-grid">
       <div class="panel arch-card">
         <h3>
@@ -1327,18 +1327,18 @@
           <b>Most typical: </b>
           Facundo Campazzo, Brancou Badio, Trae Bell-Haynes, Theo Maledon, David Dejulius
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.6</span>
-                season direct picks as handler per 100 possessions of the men he is assigned
+                season direct ball screens as handler per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num pos">+1.5</span>
-                on-ball screens defended as the handler's defender per 100 chances
+                ball screens defended as the handler's defender per 100 chances
               </li>
               <li>
                 <span class="num pos">+1.5</span>
@@ -1351,7 +1351,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.2</span>
@@ -1363,7 +1363,7 @@
               </li>
               <li>
                 <span class="num neg">-0.7</span>
-                season direct picks as screener per 100 possessions of the men he is assigned
+                season direct ball screens as screener per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num neg">-0.6</span>
@@ -1379,15 +1379,15 @@
           Helper
         </h3>
         <p class="meta">75 players · 54 well-sampled · mean probability 0.94</p>
-        <p>A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position, and is often the defender nearest the rim when the big is drawn away.</p>
+        <p>A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position. He is often the defender nearest the rim when the big is pulled away.</p>
         <p class="meta">
           <b>Most typical: </b>
           Luka Bozic, Devin Robinson, Nico Brussino, Sergi Martinez Costa, Aleksandar Aranitovic
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+0.6</span>
@@ -1408,7 +1408,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.7</span>
@@ -1436,19 +1436,19 @@
           Chaser
         </h3>
         <p class="meta">46 players · 31 well-sampled · mean probability 0.86</p>
-        <p>A perimeter defender whose man is usually off the ball. He follows cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.</p>
+        <p>A perimeter defender whose man is usually off the ball. He chases cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.</p>
         <p class="meta">
           <b>Most typical: </b>
           Kassius Robertson, Arturs Kurucs, Yves Pons, Ziga Samar, Agustin Ubal
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+0.7</span>
-                on-ball screens defended as the handler's defender per 100 chances
+                ball screens defended as the handler's defender per 100 chances
               </li>
               <li>
                 <span class="num pos">+0.6</span>
@@ -1465,11 +1465,11 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-0.7</span>
-                season direct picks as screener per 100 possessions of the men he is assigned
+                season direct ball screens as screener per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num neg">-0.6</span>
@@ -1481,7 +1481,7 @@
               </li>
               <li>
                 <span class="num neg">-0.6</span>
-                on-ball screens defended as the screener's defender per 100 chances
+                ball screens defended as the screener's defender per 100 chances
               </li>
             </ul>
           </div>
@@ -1493,19 +1493,19 @@
           Anchor Big
         </h3>
         <p class="meta">49 players · 27 well-sampled · mean probability 0.97</p>
-        <p>The interior defender. He guards the screeners, defends the screener's side of pick-and-roll and off-ball screens, stays in the paint, helps on drives and is on the defensive glass. He stays close to his own man, who is near the basket.</p>
+        <p>The rim protector. He guards the screeners, defends the screener's side of pick-and-roll and off-ball screens, stays in the paint, helps on drives and secures the defensive glass. He stays close to his own man, who is usually near the basket.</p>
         <p class="meta">
           <b>Most typical: </b>
           Tryggvi Hlinason, Martinas Geben, Aleksander Balcerowski, Mike Tobey, Ethan Happ
         </p>
-        <h4>What sets it apart</h4>
+        <h4>What Sets It Apart</h4>
         <div class="apart-cols">
           <div class="apart-col">
-            <h5>More than average</h5>
+            <h5>More Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num pos">+1.8</span>
-                season direct picks as screener per 100 possessions of the men he is assigned
+                season direct ball screens as screener per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num pos">+1.5</span>
@@ -1513,7 +1513,7 @@
               </li>
               <li>
                 <span class="num pos">+1.5</span>
-                on-ball screens defended as the screener's defender per 100 chances
+                ball screens defended as the screener's defender per 100 chances
               </li>
               <li>
                 <span class="num pos">+1.1</span>
@@ -1522,7 +1522,7 @@
             </ul>
           </div>
           <div class="apart-col">
-            <h5>Less than average</h5>
+            <h5>Less Than Average</h5>
             <ul class="apart">
               <li>
                 <span class="num neg">-1.6</span>
@@ -1547,21 +1547,21 @@
     </div>
     <ul class="facts">
       <li>
-        <b>Stability: </b>
-        0.90. This is the agreement between these clusters and the ones found when the model is refitted on resampled players (1 = identical; good to about ±0.1).
+        <b>Stability. </b>
+        0.90 agreement between these clusters and the ones found when I refit the model on resampled players (1 = identical, good to about ±0.1).
       </li>
       <li>
-        <b>Membership certainty: </b>
-        a player's most likely archetype has probability 0.92 on average; 1 of 205 players are under 0.5.
+        <b>Membership certainty. </b>
+        On average P(Most Likely Archetype) = 0.92. 1 of 205 players are under 0.5.
       </li>
       <li>
-        <b>Fit: </b>
-        BIC -1135, against -1124 for the best-fitting alternative (VVV with 3 clusters), which was judged too coarse to describe playstyles.
+        <b>Fit. </b>
+        BIC -1135, against -1124 for the best-fitting alternative (VVV with 3 clusters). I passed on that alternative because its groups are too coarse to describe playstyles.
       </li>
     </ul>
   </section>
   <section>
-    <h2>Defensive components</h2>
+    <h2>Defensive Components</h2>
     <p class="lead">Each component is a weighted mix of the features. The lists show the features with the largest weights on each end.</p>
     <div class="pc-grid">
       <div class="panel pc">
@@ -1569,7 +1569,7 @@
           <h3>Component 1</h3>
           <span class="meta">59% of variance</span>
         </div>
-        <p class="pc-context">The main split on defense: who protects the paint and who guards the ball.</p>
+        <p class="pc-context">The main split on defense is who protects the paint and who guards the ball.</p>
         <div class="pc-ends">
           <div class="pc-end">
             <h4>
@@ -1580,7 +1580,7 @@
             <ul>
               <li>
                 <span class="num">-0.29</span>
-                Season direct picks as handler per 100 possessions of the men he is assigned
+                Season direct ball screens as handler per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num">-0.28</span>
@@ -1592,7 +1592,7 @@
               </li>
               <li>
                 <span class="num">-0.28</span>
-                On-ball screens defended as the handler's defender per 100 chances
+                Ball screens defended as the handler's defender per 100 chances
               </li>
             </ul>
           </div>
@@ -1601,7 +1601,7 @@
               <span class="pc-sign">+</span>
               Interior
             </h4>
-            <p>Stays in the paint, is the defender nearest the rim, guards the screeners and goes to the defensive glass.</p>
+            <p>Stays in the paint, is the defender nearest the rim, guards the screeners and secures the defensive glass.</p>
             <ul>
               <li>
                 <span class="num">+0.26</span>
@@ -1613,11 +1613,11 @@
               </li>
               <li>
                 <span class="num">+0.24</span>
-                Season direct picks as screener per 100 possessions of the men he is assigned
+                Season direct ball screens as screener per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num">+0.20</span>
-                On-ball screens defended as the screener's defender per 100 chances
+                Ball screens defended as the screener's defender per 100 chances
               </li>
             </ul>
           </div>
@@ -1628,7 +1628,7 @@
           <h3>Component 2</h3>
           <span class="meta">17% of variance</span>
         </div>
-        <p class="pc-context">Whether a defender's job is to sit in help off a shooter or to be directly involved in the action.</p>
+        <p class="pc-context">Whether a defender sits in help off a shooter or is directly involved in the action.</p>
         <div class="pc-ends">
           <div class="pc-end">
             <h4>
@@ -1639,7 +1639,7 @@
             <ul>
               <li>
                 <span class="num">-0.30</span>
-                Season direct picks as screener per 100 possessions of the men he is assigned
+                Season direct ball screens as screener per 100 possessions of the men he is assigned
               </li>
               <li>
                 <span class="num">-0.27</span>
@@ -1647,7 +1647,7 @@
               </li>
               <li>
                 <span class="num">-0.26</span>
-                On-ball screens defended as the screener's defender per 100 chances
+                Ball screens defended as the screener's defender per 100 chances
               </li>
               <li>
                 <span class="num">-0.26</span>
@@ -1685,7 +1685,7 @@
     </div>
   </section>
   <section>
-    <h2>Where each defensive archetype sits</h2>
+    <h2>Where Each Defensive Archetype Sits</h2>
     <p class="lead">Cluster centres in standard deviations of each component. Zero is the average well-sampled player.</p>
     <div class="table-wrap">
       <table class="scores">
@@ -1807,15 +1807,15 @@
     </div>
   </section>
   <section>
-    <h2>Limits</h2>
+    <h2>What to Keep in Mind</h2>
     <ul class="facts">
-      <li>The archetype names and the wording on this page are a reading of the numbers. The model only finds the groups.</li>
-      <li>Players lie along a continuum more than in separate clumps, so the borders between neighbouring archetypes are soft. The probabilities say how close a player is to a border.</li>
-      <li>Defensive roles rest on one or two tracked games per player, and so reflect that opponent and game plan. There is no season-long defensive data.</li>
-      <li>Probabilities are optimistic about season-long role, because noise in the tracked features is measured within games.</li>
-      <li>Several intended features were too noisy to use, including roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against the pick-and-roll. The three kinds of big are therefore told apart by their shots and where they stand, not by what they do after a screen.</li>
-      <li>Ten offensive archetypes is more than the data settles firmly: the offensive stability score above is lower than it would be for fewer, broader groups, and BBall Index's shot creator and stretch big do not appear as groups of their own.</li>
+      <li>I named the archetypes and wrote this page's wording from the numbers. The model only finds the groups.</li>
+      <li>Players lie along a continuum more than in separate clumps, so the borders between neighbouring archetypes are soft. The probabilities show how close a player sits to a border.</li>
+      <li>Defensive roles rest on one or two tracked games per player, so they reflect that opponent and that game plan. There is no season-long defensive data.</li>
+      <li>The probabilities overstate how sure we can be of a season-long role, because noise in the tracked features is measured within games.</li>
+      <li>Several features I wanted were too noisy to use, including the roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against pick-and-roll. The three kinds of big are therefore told apart by their shots and where they stand.</li>
+      <li>Ten offensive archetypes is more than the data settles firmly. The offensive stability score above is lower than it would be for fewer, broader groups, and BBall Index's shot creator and stretch big do not appear as groups of their own.</li>
     </ul>
   </section>
-  <p class="meta">Data: SkillCorner open data, Liga ACB 2025-2026. Inspired by BBall Index's offensive archetypes and defensive roles.</p>
+  <p class="meta">Data from SkillCorner open data, Liga ACB 2025-2026. Inspired by BBall Index's offensive archetypes and defensive roles.</p>
 </div>

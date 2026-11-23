@@ -1,6 +1,6 @@
 <script lang="ts">
   // The tab bar: Play viewer, a Screen Coverage menu (EDA: the "coverage" exploration tab; Model: the live model's readme),
-  // then an EDA menu (hover to open) holding Archetypes and Court Control at the top, then Rebounding and the other seven
+  // then an EDA menu (hover to open) holding Archetypes and Floor Control at the top, then Rebounding and the other seven
   // exploration tabs (one per candidate topic, components/explore/). The play viewer: filters and play list on the left (drag its edge to widen or narrow it), the
   // play's header over the court and the trace panel (the play's timeline) in the middle; on the right, the playback
   // controls beside the header, then display options and the rosters level with the court. The Screen Coverage Model
@@ -44,15 +44,15 @@
   // The exploration tabs, one per candidate topic (web/scripts/explore/<id>.R writes explore_<id>.json). Pick coverage
   // sits in the Screen Coverage menu (PICK_TOPIC); the rest sit in the EDA menu.
   const TOPICS = [
-    { id: "paint", label: "Paint touches" }, { id: "chains", label: "Pre-shot actions" }, { id: "closeouts", label: "Closeouts" },
-    { id: "crash", label: "Crashing" }, { id: "lanes", label: "Driving lanes" }, { id: "advantage", label: "Advantage" },
-    { id: "gravity", label: "Gravity" }, { id: "coverage", label: "Pick coverage" },
+    { id: "paint", label: "Paint Touches" }, { id: "chains", label: "Half-Court Actions" }, { id: "closeouts", label: "Closeouts" },
+    { id: "crash", label: "Crashing the Glass" }, { id: "lanes", label: "Driving Lanes" }, { id: "advantage", label: "Advantage Creation" },
+    { id: "gravity", label: "Gravity" }, { id: "coverage", label: "Screen Coverage" },
   ];
   const PICK_TOPIC = "x-coverage";
   // The Screen Coverage menu: the EDA tab and the model's readme.
   const SCREEN = [{ id: PICK_TOPIC, label: "EDA" }, { id: "coverage-model", label: "Model" }];
-  // The EDA menu: Archetypes and Court Control, Rebounding, then the exploration tabs other than pick coverage.
-  const EDA = [{ id: "archetypes", label: "Archetypes" }, { id: "court-control", label: "Court Control" }, { id: "rebounding", label: "Rebounding" },
+  // The EDA menu: Archetypes and Floor Control, Rebounding, then the exploration tabs other than pick coverage.
+  const EDA = [{ id: "archetypes", label: "Archetypes" }, { id: "court-control", label: "Floor Control" }, { id: "rebounding", label: "Rebounding" },
                ...TOPICS.filter((t) => `x-${t.id}` !== PICK_TOPIC).map((t) => ({ id: `x-${t.id}`, label: t.label }))];
   type Tab = string;   // "viewer", "coverage-model", "archetypes", "court-control", "rebounding" or "x-<topic>"
   const tabOfHash = (h: string): Tab => {
@@ -358,7 +358,7 @@
 </main>
 
 <main class="doc doc-framed" hidden={tab !== "court-control"}>
-  {#if opened["court-control"]}<DocFrame src="docs/court_control.html" title="Court Control" />{/if}
+  {#if opened["court-control"]}<DocFrame src="docs/court_control.html" title="Floor Control" />{/if}
 </main>
 
 <main class="doc" hidden={tab !== "rebounding"}>

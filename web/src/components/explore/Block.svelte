@@ -9,12 +9,11 @@
   import Block from "./Block.svelte";
   import DataTable from "./DataTable.svelte";
   import GravityRoom from "./GravityRoom.svelte";
-  import { format, formatter, inline, type Block as B } from "./types";
+  import { format, formatter, inline, titleCase, type Block as B } from "./types";
 
   let { block }: { block: B } = $props();
 
   const isPct = (f: string) => f === "pct" || f === "pct1";
-  const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
   // Dot charts of means (points, feet, xPts) get a range around their values; shares keep the 0-based default.
   function range(b: Extract<B, { type: "rates" }>): { min: number; max: number | null } {
     if (isPct(b.fmt)) return { min: b.min ?? 0, max: b.max };
@@ -34,7 +33,7 @@
   <ul class="x-list">{#each block.items as t, i (i)}<li>{@html inline(t)}</li>{/each}</ul>
 {:else if block.type === "takeaway" || block.type === "caveat"}
   <div class={block.type === "takeaway" ? "decision" : "x-caveat"}>
-    <b>{block.type === "takeaway" ? "Takeaway" : "Caveat"}</b>
+    <b>{block.type === "takeaway" ? "Takeaway" : "Keep in mind"}</b>
     {#if block.items.length === 1}
       <span>{@html inline(block.items[0])}</span>
     {:else}
@@ -60,7 +59,7 @@
   {#if block.rows.length}
     {@const r = range(block)}
     <figure class="x-fig">
-      <h4>{cap(block.title)}</h4>
+      <h4>{titleCase(block.title)}</h4>
       <RateDots rows={rateRows(block)} reference={block.ref} min={r.min} max={r.max} format={formatter(block.fmt)} unit={block.unit}
                 refLabel={block.refLabel} labelWidth={Math.round(block.labelWidth * 1.15)} />
       {#if block.note}<figcaption>{block.note}</figcaption>{/if}
@@ -68,16 +67,16 @@
   {/if}
 {:else if block.type === "columns"}
   <figure class="x-fig">
-    <h4>{cap(block.title)}</h4>
-    <Columns categories={block.categories} labels={block.labels} xlabel={block.xlabel} ylabel={block.ylabel} format={(v) => format(v, block.fmt)}
+    <h4>{titleCase(block.title)}</h4>
+    <Columns categories={block.categories} labels={block.labels} xlabel={titleCase(block.xlabel)} ylabel={titleCase(block.ylabel)} format={(v) => format(v, block.fmt)}
              series={block.series.map((s) => ({ name: s.name, values: s.values.map((v) => (v == null || !Number.isFinite(v) ? 0 : v)), color: s.color ?? undefined }))} />
     {#if block.note}<figcaption>{block.note}</figcaption>{/if}
   </figure>
 {:else if block.type === "scatter"}
   {@const named = block.lines.filter((l) => l.name)}
   <figure class="x-fig">
-    <h4>{cap(block.title)}</h4>
-    <Scatter points={block.points ?? []} groups={block.groups} xlabel={block.xlabel} ylabel={block.ylabel}
+    <h4>{titleCase(block.title)}</h4>
+    <Scatter points={block.points ?? []} groups={block.groups} xlabel={titleCase(block.xlabel)} ylabel={titleCase(block.ylabel)}
              xdomain={block.xdomain} ydomain={block.ydomain} radius={block.radius} opacity={block.opacity}
              xfmt={(v) => format(v, block.xfmt)} yfmt={(v) => format(v, block.yfmt)}
              lines={block.lines.map((l) => ({ points: l.points, label: l.label ?? undefined, color: l.color ?? undefined, dashed: l.dashed }))} />
@@ -88,7 +87,7 @@
   </figure>
 {:else if block.type === "court"}
   <figure class="x-fig x-court">
-    <CourtMap points={block.points} title={block.title} caption={block.caption} bw={block.bw} noun="spots" />
+    <CourtMap points={block.points} title={titleCase(block.title)} caption={block.caption} bw={block.bw} noun="spots" />
   </figure>
 {:else if block.type === "table"}
   <DataTable title={block.title} cols={block.cols} rows={block.rows} limit={block.limit} note={block.note} views={block.views ?? null} />
@@ -114,7 +113,7 @@
   .x-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 26px 32px; margin: 22px 0; align-items: start; }
   .x-cell { min-width: 0; }
   .x-fig { margin: 18px 0; min-width: 0; max-width: 760px; }
-  .x-fig h4 { margin: 0 0 8px; text-transform: none; font-size: 14.5px; color: var(--ink); }
+  .x-fig h4 { margin: 0 0 8px; text-transform: none; font-size: 14.5px; color: var(--ink); text-align: center; }
   .x-fig figcaption { margin-top: 4px; color: var(--muted); font-size: 14px; }
   .x-court { max-width: 420px; }
   .x-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; color: var(--muted); font-size: 14px; }

@@ -2749,3 +2749,24 @@ Owner asked to add the EDA's switch signals to both models and report before dec
 - The panel now reads "Review screen N of M · handler with screener screening · pick marker at X s" (X on the viewer's clock). If the card is reading another screen, a warning shows with a button that pins the case's screen again (`web/src/components/CoverageReview.svelte`).
 - Other screens in the possession are context only. Stamps and choices are about the case's screen.
 - No answers change meaning. 116 tests pass, type check clean.
+
+## 2026-11-23 — Site tabs rewritten in the owner's voice and basketball terms
+
+At the owner's request, every reading tab (Screen Coverage · EDA and Model, and all tabs under EDA) now follows the `alex-writing-style` and `basketball-language` skills, and future edits to these tabs must use both.
+
+- **Layout kept.** Bullet-led pages with no semicolons, now in first person, with the reason for each choice, numbers tied to what they mean on the floor, and a closing "What to Keep in Mind" section. Caveat boxes read "Keep in mind".
+- **Tab names.** Court Control → Floor Control (also the play viewer's toggle), Pre-shot actions → Half-Court Actions, Crashing → Crashing the Glass, Advantage → Advantage Creation, and title case for Paint Touches and Driving Lanes.
+- **One term for the on-ball action.** "Ball screen", or pick-and-roll when the roll matters. Data fields keep their names (`picks.frame`, the pick frame), and pipeline CSVs keep "pick" and are recoded on read.
+- **Titles.** Section, chart, axis and table titles are in title case, and chart titles are centred. The reading tabs opt out of the site's blanket CSS capitalisation so small words stay lowercase (`web/src/app.css`, `titleCase()` in `web/src/components/explore/types.ts`).
+- **Numbers frozen.** I rebuilt the topic JSONs from the edited R scripts and checked every numeric value against the committed files. Seven tabs reproduce exactly. Screen Coverage EDA's Reading Switches section reads the live model's cached predictions, which changed with the 2026-11-19 retrain. I kept the live (pre-retrain) values there by patching them back after the rebuild, so a plain rebuild of that tab will update them.
+- **Model page.** Wording, title case, P(...) notation and intervals as "95% CI [a, b]". No model change. Copied to `web/public/docs/` and republished to its artifact.
+- 116 tests pass, type check clean.
+
+## 2026-11-23 (later) — Screen Coverage EDA: Reading Switches refreshed to the live model
+
+At the owner's request, the Reading Switches section now shows the 2026-11-19 live model's numbers (a plain rebuild of `web/scripts/explore/build.R coverage`). Only its three switch tables and two takeaways change. Every other number on the tab is unchanged.
+
+- The model now tracks size. With a guard on the screener 28% of screens switch and the model averages 26% (17% before the retrain). With a big, 12% and 12%.
+- Switches read as switch rose from 21% to 26%. Flagging screens with P(Switch) > 20% now catches 60% of switches (was 52%) with 35% of flags right.
+- The five-signal check now adds almost nothing (log loss 0.358 → 0.356). At the same model read a cross-match and an earlier ball screen each multiply the odds of a switch by 1.5, while a guard or wing on the screener adds only 1.3.
+- I rewrote the sentences that described the old model ("barely reacts to who is in the screen", "size matters most", "give the model the players' size") and the matching bullet in What This Means for the Model. The possession's history is now the largest signal the model misses.

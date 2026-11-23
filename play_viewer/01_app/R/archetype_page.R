@@ -7,39 +7,39 @@
 # definition; a component is matched to its note by position, and its ends by the sign of the `anchor` feature.
 
 # One paragraph per archetype, shown on its card.
-ARCHETYPE_NOTES <- list("Primary Ball Handler" = "Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or goes to the offensive glass.",
-                        "Secondary Ball Handler" = "A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups and off-the-dribble threes and many of them contested, and often gets the ball coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.",
-                        "Slasher" = "An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions, but handles less and takes fewer pull-up jumpers than a primary ball handler.",
-                        "Off Screen Shooter" = "A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes; he rarely scores in the paint. He does less off the dribble than a secondary ball handler.",
-                        "Movement Shooter" = "A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group; it includes most of the shooting forwards that BBall Index would call stretch bigs.",
+ARCHETYPE_NOTES <- list("Primary Ball Handler" = "Runs the offense. He brings the ball up, handles in pick-and-roll far more than anyone else, holds the ball longest and takes most of his shots off the dribble, pull-up threes included. He rarely spots up, sets screens or crashes the offensive glass.",
+                        "Secondary Ball Handler" = "A scoring guard who creates his own shot without running the offense. He takes a high volume of shots, many of them pull-ups, off-the-dribble threes and contested looks, and often catches coming off an off-ball screen. He starts fewer possessions than a primary ball handler and seldom gets to the rim.",
+                        "Slasher" = "An on-ball guard whose first aim is the rim. He drives more than any other archetype, mostly out of pick-and-roll, and starts a fair share of possessions. He handles less and takes fewer pull-up jumpers than a primary ball handler.",
+                        "Off Screen Shooter" = "A shooter who works off screens. A large share of his shots are jumpers off movement, his drives start from off-ball screens and most of his attempts are threes. He rarely scores in the paint and does less off the dribble than a secondary ball handler.",
+                        "Movement Shooter" = "A floor spacer who shoots off the catch, often after relocating. He takes corner and above-the-break threes, including jumpers off movement, and when he puts the ball on the floor it is to attack a closeout. He seldom scores in the paint or handles in pick-and-roll. The largest group. It includes most of the shooting forwards that BBall Index would call stretch bigs.",
                         "Stationary Shooter" = "A low-usage spacer who waits in the corner. He stands still off the ball more than anyone, shoots off the catch and attacks closeouts all the way to the rim. He takes few shots and touches the ball little.",
-                        "Athletic Finisher" = "A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype: it sits near the middle of the two main components.",
-                        "Versatile Big" = "A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, goes to the offensive glass and usually finishes without a dribble. The smallest group, and unlike BBall Index's versatile big it is not defined by three-point shooting.",
+                        "Athletic Finisher" = "A wing or forward who scores going to the basket. His drives end at the rim with layups and contested finishes, and he takes few pull-ups or off-the-dribble threes. This is the least sharply defined archetype, sitting near the middle of the two main components.",
+                        "Versatile Big" = "A forward or big who does a bit of everything inside the arc. He posts up, shoots from mid-range, sets screens, crashes the offensive glass and usually finishes without a dribble. The smallest group. Unlike BBall Index's versatile big, three-point shooting plays no part in it.",
                         "Post Scorer" = "A big who scores with his back to the basket and around the rim. He has the highest share of hooks and post fadeaways, takes many layups and paint shots, and sets on-ball and off-ball screens. He does not shoot threes or play on the wing.",
-                        "Roll & Cut Big" = "A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most on-ball screens and spends his off-ball time in the paint. The name describes the role: counts of rolls and cuts were too noisy to be clustering inputs.",
+                        "Roll & Cut Big" = "A big who finishes above the rim. Dunks, lobs and tips make up an unusual share of his shots, he sets the most ball screens and he spends his off-ball time in the paint. The name describes the role. Counts of rolls and cuts were too noisy to use as clustering inputs.",
                         "Point of Attack" = "Guards the ball. He is assigned to the opposing ball handlers, spends the largest share of his time on the ball, defends the handler in pick-and-roll and picks the ball up furthest from the basket.",
-                        "Chaser" = "A perimeter defender whose man is usually off the ball. He follows cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.",
-                        "Helper" = "A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position, and is often the defender nearest the rim when the big is drawn away.",
-                        "Anchor Big" = "The interior defender. He guards the screeners, defends the screener's side of pick-and-roll and off-ball screens, stays in the paint, helps on drives and is on the defensive glass. He stays close to his own man, who is near the basket.")
+                        "Chaser" = "A perimeter defender whose man is usually off the ball. He chases cutters and shooters through off-ball screens and handoffs, stays out on the perimeter with his man and takes some turns guarding the ball.",
+                        "Helper" = "A wing or forward who defends away from the ball. He is assigned mostly to three-point shooters, plays furthest from his own man and spends the most time in help position. He is often the defender nearest the rim when the big is pulled away.",
+                        "Anchor Big" = "The rim protector. He guards the screeners, defends the screener's side of pick-and-roll and off-ball screens, stays in the paint, helps on drives and secures the defensive glass. He stays close to his own man, who is usually near the basket.")
 
 # Per side, one note per component in order: the anchor feature that fixes its sign, a line of context, and the
 # title and description of each end.
-COMPONENT_NOTES <- list(offense = list(list(anchor = "t_zero_drib_share", context = "The main split in the league: who has the ball and who plays off it.",
-                                            plus = c("Off-ball screener and finisher", "Catches and shoots or finishes without a dribble, sets screens and goes to the offensive glass. Typical of bigs."),
+COMPONENT_NOTES <- list(offense = list(list(anchor = "t_zero_drib_share", context = "The main split in the league is who has the ball and who plays off it.",
+                                            plus = c("Off-ball screener and finisher", "Catches and shoots or finishes without a dribble, sets screens and crashes the offensive glass. Typical of bigs."),
                                             minus = c("On-ball creator", "Handles in pick-and-roll, brings the ball up, dribbles a lot per touch and shoots off the dribble. Typical of point guards.")),
-                                       list(anchor = "s_corner3_share", context = "Among players off the ball, where they operate: outside or inside.",
+                                       list(anchor = "s_corner3_share", context = "Among players off the ball, this sorts those who operate outside from those who operate inside.",
                                             plus = c("Perimeter spacer", "Lives beyond the arc, especially in the corners, shoots off the catch or off movement and attacks closeouts."),
                                             minus = c("Interior scorer", "Scores in the paint with layups, floaters and post moves, and spends his off-ball time at the top of the floor as a screener.")),
-                                       list(anchor = "s_layup_share", context = "How a player gets his points: jump shots in volume, or occasional attacks on the rim.",
-                                            plus = c("Low-usage rim attacker", "Shoots little, and mostly layups; his drives end at the rim and he stands still off the ball."),
+                                       list(anchor = "s_layup_share", context = "How a player gets his points, with volume jump shooting at one end and occasional rim attacks at the other.",
+                                            plus = c("Low-usage rim attacker", "Shoots little, and mostly layups. His drives end at the rim and he stands still off the ball."),
                                             minus = c("High-volume jump-shot scorer", "Takes many shots, with pull-ups, mid-range jumpers and shots coming off off-ball screens.")),
-                                       list(anchor = "s_drv_iso_share", context = "Players who hunt their own shot on the wing against those who organise from the top.",
+                                       list(anchor = "s_drv_iso_share", context = "Wings who hunt their own shot against players who organise from the top of the floor.",
                                             plus = c("Isolation and off-screen wing scorer", "Drives from isolation, takes contested shots, gets to the rim and shoots a lot."),
-                                            minus = c("Organiser", "Stays at the top of the floor, starts possessions, runs pick-and-roll in the middle and shoots off the catch."))),
-                        defense = list(list(anchor = "d_paint_share", context = "The main split on defense: who protects the paint and who guards the ball.",
-                                            plus = c("Interior", "Stays in the paint, is the defender nearest the rim, guards the screeners and goes to the defensive glass."),
+                                            minus = c("Organiser", "Stays at the top of the floor, starts possessions, runs middle pick-and-roll and shoots off the catch."))),
+                        defense = list(list(anchor = "d_paint_share", context = "The main split on defense is who protects the paint and who guards the ball.",
+                                            plus = c("Interior", "Stays in the paint, is the defender nearest the rim, guards the screeners and secures the defensive glass."),
                                             minus = c("On-ball perimeter", "Guards the ball handlers far from the basket, defends the handler in pick-and-roll and picks the ball up high.")),
-                                       list(anchor = "d_help_share", context = "Whether a defender's job is to sit in help off a shooter or to be directly involved in the action.",
+                                       list(anchor = "d_help_share", context = "Whether a defender sits in help off a shooter or is directly involved in the action.",
                                             plus = c("Sagging helper", "Assigned to three-point shooters, plays well off his man and spends his time in help position."),
                                             minus = c("Engaged in the action", "Guards the screener or the ball, moves more and is in the middle of pick-and-roll and off-ball screens."))))
 
@@ -62,7 +62,20 @@ read_archetype_outputs <- function(root) {
   names(out) <- SIDE_FILE
   out$selection <- fread(file.path(dir, "cluster_selection.csv"))
   out$dictionary <- fread(file.path(dir, "feature_dictionary.csv"))
+  # The page says "ball screen" where the pipeline's definitions say "pick" (the CSVs keep the data's wording).
+  out$dictionary[, definition := screen_words(definition)]
+  for (s in SIDE_FILE) out[[s]]$component_loadings[, definition := screen_words(definition)]
   out
+}
+
+#' Feature definitions in the site's wording: ball screens for picks.
+screen_words <- function(x) {
+  x <- gsub("Direct picks", "Direct ball screens", x, fixed = TRUE)
+  x <- gsub("direct picks", "direct ball screens", x, fixed = TRUE)
+  x <- gsub("On-ball screens", "Ball screens", x, fixed = TRUE)
+  x <- gsub("(all picks)", "(all ball screens)", x, fixed = TRUE)
+  x <- gsub("out of picks", "out of ball screens", x, fixed = TRUE)
+  gsub("(pop rather than roll)", "(pops more than rolls)", x, fixed = TRUE)
 }
 
 #' +1 or -1 per kept component, so that the feature named in its note loads on the "plus" end.
@@ -94,27 +107,27 @@ method_steps <- function(out) {
   step <- function(title, ...) tags$li(tags$h3(title), p(...))
   # Five steps, each a heading and a paragraph with the solution's counts filled in.
   tags$ol(class = "steps",
-          step("Measure tendencies, not results",
-               sprintf("%d features describe what a player does and where he is on the floor: %d on offense and %d on defense. ",
+          step("Measure Tendencies",
+               sprintf("I described what each player does and where he is on the floor with %d features, %d on offense and %d on defense. ",
                        nrow(out$dictionary), out$dictionary[side == "offense", .N], out$dictionary[side == "defense", .N]),
-               "Season features come from the shot, drive and pick aggregates (293 games); tracked features come from the events and tracking of the ten sample games. ",
-               "Makes, points, percentages, assists, turnovers, fouls drawn, blocks, steals and rebounds collected are all left out."),
-          step("Keep only what repeats",
-               "Each feature's noise is estimated (from odd against even chances for tracked features) and every player's value is pulled toward the league average in proportion to how little he was observed. ",
-               sprintf("A feature enters the clustering only if its median reliability among well-sampled players is at least 0.7: %d offensive and %d defensive features pass.",
+               "Season features come from the shot, drive and ball-screen aggregates (293 games). Tracked features come from the events and tracking of the ten sample games. ",
+               "I left out every result (makes, points, percentages, assists, turnovers, fouls drawn, blocks, steals and rebounds collected), so the groups describe how a player plays and say nothing about how well."),
+          step("Keep Only What Repeats",
+               "I estimated each feature's noise (from odd against even chances for tracked features) and pulled every player's value toward the league average in proportion to how little he was observed. ",
+               sprintf("A feature enters the clustering only if its median reliability among well-sampled players is at least 0.7. %d offensive and %d defensive features pass.",
                        used("offense"), used("defense"))),
-          step("Reduce to principal components",
-               "The surviving features are heavily correlated, so they are combined into principal components. A component is kept only if it carries more variance than the same component of shuffled data. ",
+          step("Reduce to Principal Components",
+               "The surviving features are heavily correlated, so I combined them into principal components. A component stays only if it carries more variance than the same component of shuffled data. ",
                sprintf("That keeps %d components on offense (%.0f%% of the variance) and %d on defense (%.0f%%).", nrow(kept("offense")),
                        100 * max(kept("offense")$cumulative), nrow(kept("defense")), 100 * max(kept("defense")$cumulative))),
-          step("Fit a mixture model on the well-sampled players",
-               sprintf("Clusters are defined by the players seen enough to trust: %d on offense (25+ tracked chances and 30+ season attempts) and %d on defense (40+ tracked chances). ",
+          step("Fit a Mixture Model on the Well-Sampled Players",
+               sprintf("The clusters are defined by the players seen enough to trust, %d on offense (25+ tracked chances and 30+ season attempts) and %d on defense (40+ tracked chances). ",
                        fit("offense"), fit("defense")),
-               "Fourteen Gaussian mixture types were compared at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, on cluster size and, on offense, on how closely the clusters resemble BBall Index's offensive roles. ",
-               sprintf("The solution in use was chosen from that comparison. %s. %s.", describe("offense"), describe("defense"))),
-          step("Give every player a probability of every archetype",
+               "I compared fourteen Gaussian mixture types at 2 to 12 clusters on fit (BIC), on how well the clusters survive refitting on resampled players, on cluster size and, on offense, on how closely the clusters resemble BBall Index's offensive roles. ",
+               sprintf("I chose the solution in use from that comparison. %s. %s.", describe("offense"), describe("defense"))),
+          step("Give Every Player a Probability of Every Archetype",
                sprintf("All %d players in the season aggregates get offensive probabilities and the %d tracked players get defensive ones. ", count("offense"), count("defense")),
-               "Each player is compared with every cluster using his raw values and his own sampling noise, and features he has no data for are left out, so thinly observed players get flatter probabilities instead of confident labels."))
+               "Each player is compared with every cluster using his raw values and his own sampling noise, leaving out features he has no data for. A thinly observed player gets flatter probabilities, which honestly reflects how little I know about him."))
 }
 
 #' One component: its share of variance, basketball context, and the features that load most on each end.
@@ -152,8 +165,8 @@ archetype_card <- function(k, side_out) {
       p(class = "meta", sprintf("%d players · %d well-sampled · mean probability %.2f", nrow(m), sum(m$defines_clusters), mean(m$probability))),
       if (!is.null(ARCHETYPE_NOTES[[name]])) p(ARCHETYPE_NOTES[[name]]),
       p(class = "meta", tags$b("Most typical: "), paste(typical, collapse = ", ")),
-      tags$h4("What sets it apart"),
-      div(class = "apart-cols", side_list(hi, "More than average"), side_list(lo, "Less than average")))
+      tags$h4("What Sets It Apart"),
+      div(class = "apart-cols", side_list(hi, "More Than Average"), side_list(lo, "Less Than Average")))
 }
 
 dictionary_text <- function(feature, side_out) side_out$component_loadings$definition[match(feature, side_out$component_loadings$feature)]
@@ -186,10 +199,10 @@ solution_facts <- function(s, out) {
   best <- out$selection[side == s][which.max(bic)]
   m <- out[[s]]$membership
   tags$ul(class = "facts",
-          tags$li(tags$b("Stability: "), sprintf("%.2f. This is the agreement between these clusters and the ones found when the model is refitted on resampled players (1 = identical; good to about ±0.1).", ch$stability)),
-          tags$li(tags$b("Membership certainty: "), sprintf("a player's most likely archetype has probability %.2f on average; %d of %d players are under 0.5.",
+          tags$li(tags$b("Stability. "), sprintf("%.2f agreement between these clusters and the ones found when I refit the model on resampled players (1 = identical, good to about ±0.1).", ch$stability)),
+          tags$li(tags$b("Membership certainty. "), sprintf("On average P(Most Likely Archetype) = %.2f. %d of %d players are under 0.5.",
                                                             mean(m$probability), sum(m$probability < 0.5), nrow(m))),
-          tags$li(tags$b("Fit: "), sprintf("BIC %.0f, against %.0f for the best-fitting alternative (%s with %d clusters), which was judged too coarse to describe playstyles.",
+          tags$li(tags$b("Fit. "), sprintf("BIC %.0f, against %.0f for the best-fitting alternative (%s with %d clusters). I passed on that alternative because its groups are too coarse to describe playstyles.",
                                            ch$bic, best$bic, best$model, best$clusters)))
 }
 
@@ -200,14 +213,14 @@ side_section <- function(label, out) {
   notes <- COMPONENT_NOTES[[s]]
   signs <- component_signs(side_out$component_loadings, notes)
   clusters <- side_out$cluster_components$cluster
-  tagList(tags$section(tags$h2(paste(label, "archetypes")),
-                       p(class = "lead", "The numbers under \"What sets it apart\" are how far the archetype sits from the league average on that feature, in standard deviations."),
+  tagList(tags$section(tags$h2(paste(label, "Archetypes")),
+                       p(class = "lead", "The numbers under \"What Sets It Apart\" are how far the archetype sits from the league average on that feature, in standard deviations."),
                        div(class = "arch-grid", lapply(clusters, archetype_card, side_out = side_out)),
                        solution_facts(s, out)),
-          tags$section(tags$h2(paste(label, "components")),
+          tags$section(tags$h2(paste(label, "Components")),
                        p(class = "lead", "Each component is a weighted mix of the features. The lists show the features with the largest weights on each end."),
                        div(class = "pc-grid", lapply(seq_along(signs), function(j) component_block(j, side_out, notes, signs[j])))),
-          tags$section(tags$h2(paste("Where each", tolower(label), "archetype sits")),
+          tags$section(tags$h2(paste("Where Each", label, "Archetype Sits")),
                        p(class = "lead", "Cluster centres in standard deviations of each component. Zero is the average well-sampled player."),
                        div(class = "table-wrap", score_table(side_out, notes, signs))))
 }
@@ -216,24 +229,24 @@ side_section <- function(label, out) {
 archetype_page <- function(root) {
   out <- read_archetype_outputs(root)
   if (is.null(out)) {
-    return(div(class = "doc-inner", tags$h1("Playstyle archetypes"),
+    return(div(class = "doc-inner", tags$h1("Archetypes"),
                p(class = "lead", "The archetypes have not been built yet. Run archetypes/01_scripts/build_features.R and then archetypes/01_scripts/cluster_archetypes.R.")))
   }
-  # Introduction, method, the two sides, and the limits.
+  # Introduction, method, the two sides, and what to keep in mind.
   div(class = "doc-inner",
-      tags$h1("Playstyle archetypes"),
-      p(class = "lead", "Every player is described by how he plays, not by how well: where his shots come from, how he uses the ball and screens, where he stands, whom he guards. ",
-        "Players with similar habits are grouped into offensive and defensive archetypes, and each player gets a probability of belonging to each one."),
-      tags$section(tags$h2("How the archetypes are built"), method_steps(out)),
+      tags$h1("Archetypes"),
+      p(class = "lead", "What role does each player fill on offense and on defense? I described every player by his habits (where his shots come from, how he uses the ball and screens, where he stands, whom he guards) and left his efficiency out. ",
+        "Players with similar habits form offensive and defensive archetypes, and each player gets a probability of belonging to each one."),
+      tags$section(tags$h2("How I Built the Archetypes"), method_steps(out)),
       side_section("Offensive", out),
       side_section("Defensive", out),
-      tags$section(tags$h2("Limits"),
+      tags$section(tags$h2("What to Keep in Mind"),
                    tags$ul(class = "facts",
-                           tags$li("The archetype names and the wording on this page are a reading of the numbers. The model only finds the groups."),
-                           tags$li("Players lie along a continuum more than in separate clumps, so the borders between neighbouring archetypes are soft. The probabilities say how close a player is to a border."),
-                           tags$li("Defensive roles rest on one or two tracked games per player, and so reflect that opponent and game plan. There is no season-long defensive data."),
-                           tags$li("Probabilities are optimistic about season-long role, because noise in the tracked features is measured within games."),
-                           tags$li("Several intended features were too noisy to use, including roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against the pick-and-roll. The three kinds of big are therefore told apart by their shots and where they stand, not by what they do after a screen."),
-                           tags$li("Ten offensive archetypes is more than the data settles firmly: the offensive stability score above is lower than it would be for fewer, broader groups, and BBall Index's shot creator and stretch big do not appear as groups of their own."))),
-      p(class = "meta", "Data: SkillCorner open data, Liga ACB 2025-2026. Inspired by BBall Index's offensive archetypes and defensive roles."))
+                           tags$li("I named the archetypes and wrote this page's wording from the numbers. The model only finds the groups."),
+                           tags$li("Players lie along a continuum more than in separate clumps, so the borders between neighbouring archetypes are soft. The probabilities show how close a player sits to a border."),
+                           tags$li("Defensive roles rest on one or two tracked games per player, so they reflect that opponent and that game plan. There is no season-long defensive data."),
+                           tags$li("The probabilities overstate how sure we can be of a season-long role, because noise in the tracked features is measured within games."),
+                           tags$li("Several features I wanted were too noisy to use, including the roll or pop after a screen, cuts, post-ups, isolations and the coverage a big plays against pick-and-roll. The three kinds of big are therefore told apart by their shots and where they stand."),
+                           tags$li("Ten offensive archetypes is more than the data settles firmly. The offensive stability score above is lower than it would be for fewer, broader groups, and BBall Index's shot creator and stretch big do not appear as groups of their own."))),
+      p(class = "meta", "Data from SkillCorner open data, Liga ACB 2025-2026. Inspired by BBall Index's offensive archetypes and defensive roles."))
 }
