@@ -462,7 +462,10 @@ h1, h2, p, ul { margin: 0; padding: 0; }
 }
 .trace-card.up { transform: translateY(calc(-100% - 12px)); z-index: 5; }
 .trace-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
-.trace-card-head.next { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--line); }
+/* Several actions under the pointer: their sections side by side, titles level, a thin rule between them. */
+.trace-card:has(> .tc-card + .tc-card) { grid-auto-flow: column; grid-auto-columns: max-content; align-items: start; column-gap: 12px; }
+.tc-card { display: grid; gap: 1px; align-content: start; }
+.tc-card + .tc-card { padding-left: 12px; border-left: 1px solid var(--line); align-self: stretch; }
 .trace-card-time { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .trace-card b.made { color: var(--made); }
 .trace-card b.missed, .trace-card b.turnover { color: var(--missed); }

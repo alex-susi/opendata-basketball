@@ -176,7 +176,7 @@ export interface Card {
 export function passLines(play: Play, shot: AnnShot): Line[] {
   const from = shot.passer != null ? nameOf(play, shot.passer) : null;
   return [
-    { k: "Pass", v: from ? `From ${from}` : "None" },
+    { k: "Pass", v: from ?? "None" },   // the passer's name alone (no "From", to keep the card narrow)
     { k: "Potential Assist", v: from && (shot.assisted || shot.ao) ? "Yes" : "No" },
   ];
 }
@@ -244,7 +244,7 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
 
   const defense: Line[] = [];
   if (shot.cl) defense.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
-  if (shot.defId != null) defense.push({ k: "Closest Defender", v: nameOf(play, shot.defId), tone });
+  if (shot.defId != null) defense.push({ k: "Defender", v: nameOf(play, shot.defId), tone });   // the closest one at the release
   if (shot.defDist != null) defense.push({ k: "Distance (ft)", v: shot.defDist.toFixed(1), tone });   // to that defender
   if (shot.blocked && shot.blocker != null) defense.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
   if (shot.fouled) defense.push({ k: "Shooting Foul", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
@@ -334,7 +334,7 @@ export function cutLines(play: Play, c: AnnCut): Line[] {
   const m = play.ann?.matchups.find((x) => x.off === c.pid && x.f <= c.f && x.f1 >= c.f);
   const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
   const cut: Line[] = [
-    { k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
+    { k: "Type", v: c.kind === "basket" ? "Basket Cut" : c.kind === "pop" ? "Pick and Pop" : `Off-ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
     { k: "Got the Ball", v: catchAt ? "Yes" : "No" },
     ...(catchAt ? [{ k: "Time to Catch (s)", v: ((catchAt.f0 - c.f) / 25).toFixed(1) }] : []),
   ];

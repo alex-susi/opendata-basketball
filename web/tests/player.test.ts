@@ -178,7 +178,7 @@ describe("shot card pass lines", () => {
       const [pass, pa] = passLines(play, shot);
       expect(pass.k).toBe("Pass");
       expect(pa.k).toBe("Potential Assist");
-      if (shot.passer != null) expect(pass.v).toMatch(/^From #/); else expect(pass.v).toBe("None");
+      if (shot.passer != null) expect(pass.v).toMatch(/^#/); else expect(pass.v).toBe("None");
       const opp = shot.passer != null && (shot.assisted || shot.ao);
       expect(pa.v).toBe(opp ? "Yes" : "No");
       if (opp) yes++;

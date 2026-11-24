@@ -10,9 +10,9 @@
 import type { AnnCut, Play, PlayEvent } from "./types";
 
 /** The full name of each kind: the hover card's title and the event label. */
-export const CUT_LABEL: Record<AnnCut["kind"], string> = { basket: "Basket Cut", in: "Screen Cut In", out: "Screen Cut Out", pop: "Pick and Pop" };
-/** The timeline caption: "Cut" for every cut (its kind is on the hover card), "Pick and Pop" for a pop. */
-export const CUT_SHORT: Record<AnnCut["kind"], string> = { basket: "Cut", in: "Cut", out: "Cut", pop: "Pick and Pop" };
+export const CUT_LABEL: Record<AnnCut["kind"], string> = { basket: "Basket Cut", in: "Screen Cut In", out: "Screen Cut Out", pop: "Pop" };
+/** The timeline caption: "Cut" for every cut (its kind is on the hover card), "Pop" for a pick-and-pop. */
+export const CUT_SHORT: Record<AnnCut["kind"], string> = { basket: "Cut", in: "Cut", out: "Cut", pop: "Pop" };
 /** The tag on the court. */
 export const CUT_TAG: Record<AnnCut["kind"], string> = { basket: "Cut · basket", in: "Cut · in", out: "Cut · out", pop: "Pop" };
 

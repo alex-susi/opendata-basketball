@@ -1,6 +1,7 @@
 <script lang="ts">
   // The hover card for one or more actions on a timeline (the trace panel's, or the narrow strip shown when the
-  // trace panel is off). Actions within a few pixels of each other share the card, a section each. Fixed to the
+  // trace panel is off). Actions within a few pixels of each other share the card, a section each, side by side with
+  // their titles level (owner, 2026-11-24; a section may be taller than its neighbour). Fixed to the
   // window, so a scrolling panel never clips it; a card with details opens upward, over the court. Each section opens
   // with the action alone in bold ("Pick"), then one row per player named by his part in it (Screener, Ballhandler,
   // Driver, Defender…), then the action's details in groups, each under a subheader (lib/context.ts).
@@ -154,7 +155,8 @@
   <div class="trace-card" class:up={rises} bind:clientWidth={w}
        style:left="{clamp(x - w / 2, 4, Math.max(4, toPage(window.innerWidth) - w - 4))}px" style:top="{y + 6}px">
     {#each cards as card, n (n)}
-      <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{title(card.tick)}{#if card.tick.event.flag}<i class="event-flag">{card.tick.event.flag === "BLK" ? "Blocked" : "Steal"}</i>{/if}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
+      <div class="tc-card">
+      <span class="trace-card-head"><b class={card.tick.event.kind}>{title(card.tick)}{#if card.tick.event.flag}<i class="event-flag">{card.tick.event.flag === "BLK" ? "Blocked" : "Steal"}</i>{/if}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
       {#each card.roles as line}<span class="card-line"><span>{line.k}</span><span>{line.v}</span></span>{/each}
       {#if card.cols}
         {#each card.top as g}{@render group(g)}{/each}
@@ -166,6 +168,7 @@
       {:else}
         {#each card.lines as line}{@render row(line)}{/each}
       {/if}
+      </div>
     {/each}
   </div>
 {/if}
