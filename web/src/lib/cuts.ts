@@ -9,8 +9,10 @@
 
 import type { AnnCut, Play, PlayEvent } from "./types";
 
-/** The timeline and caption name of each kind (the trace panel and play list shorten "Screen" to "Scr"). */
+/** The full name of each kind: the hover card's title and the event label. */
 export const CUT_LABEL: Record<AnnCut["kind"], string> = { basket: "Basket Cut", in: "Screen Cut In", out: "Screen Cut Out", pop: "Pick and Pop" };
+/** The timeline caption: "Cut" for every cut (its kind is on the hover card), "Pick and Pop" for a pop. */
+export const CUT_SHORT: Record<AnnCut["kind"], string> = { basket: "Cut", in: "Cut", out: "Cut", pop: "Pick and Pop" };
 /** The tag on the court. */
 export const CUT_TAG: Record<AnnCut["kind"], string> = { basket: "Cut · basket", in: "Cut · in", out: "Cut · out", pop: "Pop" };
 
@@ -20,7 +22,7 @@ export function addCutEvents(play: Play): void {
   const cuts = (play.ann.cuts = play.ann.cuts.filter((c) => play.players.find((q) => q.id === c.pid)?.role === "off"));
   const events: PlayEvent[] = cuts.map((c) => {
     const p = play.players.find((q) => q.id === c.pid);
-    return { f: c.f, kind: "cut", label: `${CUT_LABEL[c.kind]}: ${p ? `#${p.jersey} ${p.last}` : "unknown"}`, short: CUT_LABEL[c.kind], who: p?.last ?? null };
+    return { f: c.f, kind: "cut", label: `${CUT_LABEL[c.kind]}: ${p ? `#${p.jersey} ${p.last}` : "unknown"}`, short: CUT_SHORT[c.kind], who: p?.last ?? null };
   });
   play.events = [...play.events, ...events].sort((x, y) => x.f - y.f);
 }

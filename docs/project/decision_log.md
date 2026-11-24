@@ -2808,3 +2808,13 @@ The owner chose a +1.5 s window end and a stop at a pass by the handler. Episode
 - **Availability rerun.** With the version 2 stops, counting an earlier coverage from its episode stop scores +0.0002 against the live 1 s rule (−0.0005 to +0.0009). The live rule stays. Pick-marker shifts do not depend on stops and are unchanged.
 - **Still open before Phase 5.** The primary score and the "Forecast helpful from" wording. Pass 2 due about 2026-11-26.
 - **Confirmed.** Told that the "new action" stamps came about 2 s after the pass, the owner kept the pass stop (2026-11-24).
+
+## 2026-11-24 — Viewer clean-up · Classic coverage card only, steady widths, two-column hover cards
+
+Owner's requests on the play viewer. No model or data changed.
+
+- **Coverage card.** The Panel / Classic switch and the Predict / Full review switch are gone. The card is the Classic one (each defender's bars, then Expected against Actual) and every screen waits for Reveal, which replaces the Full review toggle agreed on 2026-11-21 (`web/src/components/CoveragePanel.svelte`, `web/src/lib/coverageView.svelte.ts`). The strip helpers stay in `web/src/lib/coverage.ts` with their tests.
+- **Steady widths.** The clock line under the court keeps each number in a fixed slot, so "| Frame" no longer jumps when 9.56 s becomes 10.36 s (also the shot and game clocks in a saved video's header, `web/src/lib/draw.ts`). The Player Tracking table uses a fixed layout with each column as wide as its widest possible value (`web/src/components/TrackingTable.svelte`). The Possession and Tracking cards are a fixed 232 px, enough for the longest name and chance line in the ten games.
+- **Hover cards.** A card with three groups or more and at least 12 rows puts its groups in two columns that start and end level (`web/src/components/ActionCard.svelte`, `.tc-cols` in `web/src/app.css`). A drive's and a cut's defender moved into the Defense group.
+- **Timeline captions.** Closeouts read "Closeout" and cuts read "Cut". The hover card keeps what followed the closeout and the cut's type. A pick-and-pop still reads "Pick and Pop".
+- 116 tests pass, type check clean.

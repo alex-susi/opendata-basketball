@@ -5,7 +5,7 @@
 //   - the forecast: the live model's probability of the screen's single recorded coverage, from what had happened by
 //     the current frame (coverage_frames.json, CoveragePanel.svelte)
 //   - the recorded coverage: SkillCorner's label for the whole screen (picks.bhrDefType / scrDefType), written after
-//     the fact. Hidden until the user reveals it (Predict mode, the default) or shown throughout (Full review mode)
+//     the fact. Hidden until the user reveals it (Predict mode, the site's only mode since 2026-11-24)
 //   - the screen being read: picked by the user (pinned) or, when nothing is pinned, the earliest screen whose
 //     −2 s to +1 s window holds the frame. Earliest-first keeps one screen's read until its window ends instead of
 //     jumping to a re-screen half-way; Phase 4 replaces this provisional rule with the reviewed episode rules.
@@ -16,33 +16,16 @@
 
 import type { AnnScreen, Play } from "./types";
 
+// The site always runs in Predict mode: the Predict / Full review switch and the Panel / Classic switch left the
+// card on 2026-11-24 (owner's request), so the card is the Classic one and each screen waits for Reveal. Full review
+// stays here for the tests.
 export type CoverageMode = "predict" | "full";
-const MODE_KEY = "acb-coverage-mode";
 /** Prediction window around each pick frame, in frames (matches coverage_frames.json offsets: −2 s to +1 s). */
 export const WINDOW: [number, number] = [-50, 25];
 
-function saved<T extends string>(key: string, values: readonly T[], fallback: T): T {
-  try {
-    const v = localStorage.getItem(key) as T | null;
-    return v && values.includes(v) ? v : fallback;
-  } catch {
-    return fallback;
-  }
-}
-const savedMode = (): CoverageMode => saved(MODE_KEY, ["predict", "full"] as const, "predict");
-
-/** The card's look: the current panel, or the Classic card used until 2026-11-21 (two defender bar groups and an
- * Expected / Actual table). */
-export type CoverageLook = "panel" | "classic";
-/** The probability strip: one stacked strip of the five coverages, or one per defender side by side. */
-export type CoverageStrip = "combined" | "defenders";
-const LOOK_KEY = "acb-coverage-look", STRIP_KEY = "acb-coverage-strip";
-
 export const covView = $state({
   /** Predict: recorded coverages hidden until revealed. Full review: shown throughout. */
-  mode: savedMode(),
-  look: saved<CoverageLook>(LOOK_KEY, ["panel", "classic"], "panel"),
-  strip: saved<CoverageStrip>(STRIP_KEY, ["combined", "defenders"], "combined"),
+  mode: "predict" as CoverageMode,
   /** The pinned screen of each possession: its pick frame. */
   pinned: {} as Record<string, number>,
   /** Screens whose recorded coverage the user has revealed ("<possession>:<pick frame>"). */
@@ -57,16 +40,6 @@ export const covView = $state({
 
 export function setMode(mode: CoverageMode): void {
   covView.mode = mode;
-  try { localStorage.setItem(MODE_KEY, mode); } catch { /* not remembered */ }
-}
-
-export function setLook(look: CoverageLook): void {
-  covView.look = look;
-  try { localStorage.setItem(LOOK_KEY, look); } catch { /* not remembered */ }
-}
-export function setStrip(strip: CoverageStrip): void {
-  covView.strip = strip;
-  try { localStorage.setItem(STRIP_KEY, strip); } catch { /* not remembered */ }
 }
 
 export const screenKey =(poss: string, f: number): string => `${poss}:${f}`;

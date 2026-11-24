@@ -21,6 +21,9 @@
   //   Ball      minutes played entering the chance, and this possession's touches, dribbles and seconds on the ball
   // "The basket" is the one the offense attacks, which the defense defends. Hovering a row rings the player on the
   // court; clicking it follows him in the Player Trace tab.
+  // The columns keep their widths while the play runs (a fixed table layout): each is as wide as its header's longest
+  // word or its widest possible value, whichever is wider, measured in the table's font (WIDEST below).
+  import { appearance } from "../lib/appearance.svelte";
   import { CONTEST_COLORS, minutesAt, ownChances, regionName, titleCase } from "../lib/context";
   import { HOOP_X } from "../lib/court";
   import { accelAt, motion, spacing } from "../lib/motion";
@@ -53,6 +56,44 @@
     { key: "ballTime", head: "Time on Ball", short: "Ball Time", unit: "s", title: "Seconds with the ball this possession so far", group: "ball" },
   ];
   const shown = $derived(viewer.trackCols === "all" ? COLUMNS : COLUMNS.filter((c) => c.group === viewer.trackCols));
+
+  // ---- fixed column widths ----
+  // The widest value each column can show: [plain text, bold opponent tag] (8 is a wide digit in most fonts).
+  const REGIONS = ["left corner three", "left wing three", "middle three", "left corner two", "left wing two", "middle two",
+                   "right corner three", "right wing three", "right corner two", "right wing two", "key", "ra", "far", "backcourt"];
+  const WIDEST: Record<string, [string, string?]> = {
+    speed: ["88.8"], accel: ["−88.8"], toward: ["−88.8"], across: ["88.8"], top: ["88.8"], covered: ["8888"],
+    region: [REGIONS.map(regionName).reduce((a, b) => (a.length >= b.length ? a : b))], hoop: ["88.8"], paint: [""],
+    near: ["88.8 ", "#88"], sep: ["+88.8"], contest: ["Average"], match: ["88.8 ", "#88"], min: ["88.8"],
+    touches: ["88"], dribbles: ["88"], ballTime: ["88.8"],
+  };
+  let tableEl = $state<HTMLTableElement>();
+  let fontsReady = $state(0);
+  $effect(() => {
+    const bump = () => { fontsReady++; };
+    document.fonts?.ready.then(bump);
+    document.fonts?.addEventListener("loadingdone", bump);
+    return () => document.fonts?.removeEventListener("loadingdone", bump);
+  });
+  const canvas = typeof document !== "undefined" ? document.createElement("canvas").getContext("2d") : null;
+  const PAD = 18;   // the cells' 8 px padding each side, and 2 px to spare
+  const widths = $derived.by((): { name: number; cols: number[]; total: number } | null => {
+    void fontsReady; void appearance.viewerFont;
+    if (!tableEl || !canvas) return null;
+    const family = getComputedStyle(tableEl).fontFamily;
+    const w = (text: string, weight: number, size: number) => { canvas.font = `${weight} ${size}px ${family}`; return canvas.measureText(text).width; };
+    // The name cell: the number badge, the name in bold (the ball handler's), the ball dot and the rim shield.
+    const name = Math.ceil(24 + Math.max(w("Player", 600, 11), ...play.players.map((p) => w(p.name, 700, 12))) + 15 + 18 + PAD);
+    const cols = shown.map((c) => {
+      const [text, tag] = WIDEST[c.key] ?? ["88.8"];
+      const value = c.key === "paint" ? 9 : w(text, 400, 12) + (tag ? w(tag, 700, 12) : 0);
+      const head = viewer.trackCols === "all"
+        ? Math.max(w(c.short, 600, 11), c.unit ? w(`(${c.unit})`, 500, 11) : 0)
+        : Math.max(...c.head.split(" ").slice(0, -1).map((word) => w(word, 600, 11)), w(`${c.head.split(" ").at(-1)}${c.unit ? ` (${c.unit})` : ""}`, 600, 11));
+      return Math.ceil(Math.max(value, head) + PAD);
+    });
+    return { name, cols, total: name + cols.reduce((a, b) => a + b, 0) };
+  });
 
   const i = $derived(Math.min(live.i0, play.frames.length - 1));
   const frame = $derived(play.frames[i]);
@@ -138,7 +179,10 @@
 </script>
 
 <div class="track-scroll">
-  <table class="track-table">
+  <table class="track-table" class:fixed={!!widths} bind:this={tableEl} style:width={widths ? `max(100%, ${widths.total}px)` : null}>
+    {#if widths}
+      <colgroup><col style:width="{widths.name}px" />{#each shown as c, j (c.key)}<col style:width="{widths.cols[j]}px" />{/each}</colgroup>
+    {/if}
     <thead>
       <tr>
         <th class="name">Player</th>

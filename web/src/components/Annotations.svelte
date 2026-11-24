@@ -63,7 +63,7 @@
 {/if}
 
 {#snippet card(c: Card)}
-  <div class="ann-card">
+  <div class="ann-card fixed-w">
     <!-- The title, and for a shot the shooter at the line's right end. -->
     <span class="card-title"><b style:color={c.tone}>{c.title}{#if c.flag}<i class="event-flag">{c.flag}</i>{/if}</b>{#if c.who}<b style:color={c.tone}>{c.who}</b>{/if}</span>
     {#each c.lines as line}

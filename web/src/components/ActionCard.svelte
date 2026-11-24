@@ -22,9 +22,10 @@
   const SCREEN_ROLES: Record<string, [string, string]> = {
     pick: ["Screener", "Ballhandler"], handoff: ["Setter", "Receiver"], off_ball_screen: ["Screener", "Cutter"],
   };
-  // Rows the detail lines already carry for a foul, a turnover, a drive, a cut or a rebound (its shooter): shown with the players instead,
-  // above the card's subheaders (as the shot card's Shooter row).
-  const PLAYER_KEYS = new Set(["Fouler", "Fouled", "Lost By", "Stolen By", "Defender", "Shooter"]);
+  // Rows the detail lines already carry for a foul, a turnover or a rebound (its shooter): shown with the players
+  // instead, above the card's subheaders (as the shot card's Shooter row). A drive's or cut's defender stays in its
+  // Defense group.
+  const PLAYER_KEYS = new Set(["Fouler", "Fouled", "Lost By", "Stolen By", "Shooter"]);
   function rolesFor(tick: Tick): Line[] {
     const ev = tick.event, ann = play.ann;
     const fallback = (): Line[] => {
@@ -107,10 +108,40 @@
     // coverage may be seen (Predict mode hides a pick's until it is revealed, lib/coverageView.svelte.ts).
     return screen ? { lines: screenLines(play, screen, true) } : none;
   }
+  // A tall card (three groups or more and at least TALL rows) puts its groups in two columns, so it is shorter and wider.
+  // The groups keep their order (the left column's top to bottom, then the right's), split where the two columns come
+  // closest in height. Both columns start and end level: the spare height goes between a column's groups, or between
+  // the rows of a column that holds one group (app.css, .tc-cols).
+  const TALL = 12;
+  interface Group { head: Line | null; rows: Line[] }
+  function groupsOf(lines: Line[]): Group[] {
+    const out: Group[] = [];
+    for (const l of lines) {
+      if (l.head) out.push({ head: l, rows: [] });
+      else if (out.length) out[out.length - 1].rows.push(l);
+      else out.push({ head: null, rows: [l] });
+    }
+    return out;
+  }
+  // A group's height in rows: a subheader is about 1.5 rows with its margins.
+  const height = (gs: Group[]) => gs.reduce((s, g) => s + g.rows.length + (g.head ? 1.5 : 0), 0);
+  function columns(lines: Line[], extra: number): { top: Group[]; cols: Group[][] | null } {
+    const all = groupsOf(lines);
+    const top = all.length && !all[0].head ? [all[0]] : [];   // rows before the first subheader stay full width
+    const gs = all.slice(top.length);
+    if (gs.length < 3 || height(all) + extra < TALL) return { top, cols: null };
+    let best = 1;
+    for (let k = 2; k < gs.length; k++) {
+      if (Math.abs(height(gs.slice(0, k)) - height(gs.slice(k))) < Math.abs(height(gs.slice(0, best)) - height(gs.slice(best)))) best = k;
+    }
+    return { top, cols: [gs.slice(0, best), gs.slice(best)] };
+  }
   const cards = $derived(ticks.map((tick) => {
     const { lines } = linesFor(tick);
     const moved = lines.filter((l) => !l.head && PLAYER_KEYS.has(l.k));
-    return { tick, roles: [...rolesFor(tick), ...moved], lines: lines.filter((l) => !moved.includes(l)) };
+    const roles = [...rolesFor(tick), ...moved];
+    const rest = lines.filter((l) => !moved.includes(l));
+    return { tick, roles, lines: rest, ...columns(rest, roles.length + 1) };
   }));
   const rises = $derived(up || cards.length > 1 || cards.some((c) => c.lines.length > 0 || c.roles.length > 0));
   // The action alone: the label before its players ("Pick", "Made 2", "Shooting Foul"), without a shot type.
@@ -124,9 +155,25 @@
     {#each cards as card, n (n)}
       <span class="trace-card-head" class:next={n > 0}><b class={card.tick.event.kind}>{title(card.tick)}{#if card.tick.event.flag}<i class="event-flag">{card.tick.event.flag === "BLK" ? "Blocked" : "Steal"}</i>{/if}</b><span class="trace-card-time">{(card.tick.k / FPS).toFixed(1)} s</span></span>
       {#each card.roles as line}<span class="card-line"><span>{line.k}</span><span>{line.v}</span></span>{/each}
-      {#each card.lines as line}
-        {#if line.head}<span class="card-head">{line.k}</span>{:else}<span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>{/if}
-      {/each}
+      {#if card.cols}
+        {#each card.top as g}{@render group(g)}{/each}
+        <div class="tc-cols">
+          {#each card.cols as col, c (c)}
+            <div class="tc-col" class:one={col.length === 1}>{#each col as g}<div class="tc-group">{#if g.head}{@render row(g.head)}{/if}<div class="tc-rows">{#each g.rows as line}{@render row(line)}{/each}</div></div>{/each}</div>
+          {/each}
+        </div>
+      {:else}
+        {#each card.lines as line}{@render row(line)}{/each}
+      {/if}
     {/each}
   </div>
 {/if}
+
+{#snippet group(g: Group)}
+  {#if g.head}{@render row(g.head)}{/if}
+  {#each g.rows as line}{@render row(line)}{/each}
+{/snippet}
+
+{#snippet row(line: Line)}
+  {#if line.head}<span class="card-head">{line.k}</span>{:else}<span class="card-line"><span>{line.k}</span><span style:color={line.tone}>{line.v}</span></span>{/if}
+{/snippet}

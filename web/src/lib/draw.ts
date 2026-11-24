@@ -411,27 +411,41 @@ function drawPairLine(ctx: CanvasRenderingContext2D, L: Layout, a: Dot, b: Dot):
 // The header of a recorded video, on one line above the court: quarter, shot clock, game clock and the score at
 // the start of the possession. On the page these live outside the canvas, so a saved video would otherwise not
 // say what it shows.
+// The shot clock and game clock sit in fixed slots (two and four digits, right-aligned), so the line keeps its place
+// as they run.
 function drawHeader(ctx: CanvasRenderingContext2D, L: Layout, play: Play, c: Cursor): void {
   const homeIsOff = play.off === play.home, gap = "   ·   ";
   const home = homeIsOff ? play.colors.off : play.colors.def, away = homeIsOff ? play.colors.def : play.colors.off;
-  const parts: [string, string, number][] = [
-    [`${quarter(play.period)}  `, COLORS.paperInk, 700], [shotClockText(play.sc[c.i0]), COLORS.risk, 700],
-    [`  ${clock(play.gc[c.i0])}`, COLORS.paperInk, 700], [gap, COLORS.paperMuted, 400], [play.home, home.text, 700],
-    [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.paperInk, 700], [play.away, away.text, 700]];
-  const span = (size: number) => parts.reduce((sum, [text, , weight]) => {
+  const parts: [string, string, number, number][] = [
+    [`${quarter(play.period)}  `, COLORS.paperInk, 700, 0], [shotClockText(play.sc[c.i0]), COLORS.risk, 700, 2],
+    [`  ${clock(play.gc[c.i0])}`, COLORS.paperInk, 700, 4], [gap, COLORS.paperMuted, 400, 0], [play.home, home.text, 700, 0],
+    [`  ${play.homeScore} – ${play.awayScore}  `, COLORS.paperInk, 700, 0], [play.away, away.text, 700, 0]];
+  const span = (size: number) => parts.reduce((sum, [text, , weight, digits]) => {
     ctx.font = `${weight} ${size}px ${font()}`;
-    return sum + ctx.measureText(text).width;
+    return sum + slotWidth(ctx, text, digits);
   }, 0);
   const size = Math.max(9, Math.min(15, Math.floor((15 * (L.W - 24)) / span(15))));
   let x = L.W / 2 - span(size) / 2;
-  ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  for (const [text, color, weight] of parts) {
+  for (const [text, color, weight, digits] of parts) {
     ctx.font = `${weight} ${size}px ${font()}`;
     ctx.fillStyle = color;
-    ctx.fillText(text, x, L.top - HEADER_TOP / 2);
-    x += ctx.measureText(text).width;
+    const w = slotWidth(ctx, text, digits);
+    ctx.textAlign = digits ? "right" : "left";
+    ctx.fillText(text, digits ? x + w : x, L.top - HEADER_TOP / 2);
+    x += w;
   }
+  ctx.textAlign = "left";
+}
+
+// The width a text takes in a fixed slot of `digits` digits at the current font: as if every digit were the font's
+// widest, and never less than the text itself. With digits = 0, the text's own width.
+function slotWidth(ctx: CanvasRenderingContext2D, text: string, digits: number): number {
+  const own = ctx.measureText(text).width;
+  if (!digits) return own;
+  const wide = Math.max(...[..."0123456789"].map((d) => ctx.measureText(d).width));
+  const n = Math.max(digits, text.replace(/\D/g, "").length);
+  return Math.max(own, ctx.measureText(text.replace(/\d/g, "")).width + wide * n);
 }
 
 export const DATA_CREDIT = "Data: Liga Endesa ACB 2025/2026 via SkillCorner";
@@ -446,16 +460,21 @@ function drawCaption(ctx: CanvasRenderingContext2D, L: Layout, labels: string[],
   const x0 = Math.min(xa, xb), x1 = Math.max(xa, xb), y = (floorBottom + L.H) / 2;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
-  const left: [string, string, number][] = credit
-    ? [[DATA_CREDIT, COLORS.paperMuted, 400]]
-    : [[`${secs.toFixed(2)} s`, COLORS.paperInk, 700], ["  |  ", COLORS.paperMuted, 400], ["Frame ", COLORS.paperMuted, 400], [String(frame), COLORS.paperInk, 700]];
+  // Each number sits in a slot as wide as its widest value ("00.00 s", a six-digit frame), so the line never shifts as
+  // the clock runs (9.56 s to 10.36 s, say): the seconds end at their slot's right edge, the frame starts at its left.
+  const left: [string, string, number, number][] = credit
+    ? [[DATA_CREDIT, COLORS.paperMuted, 400, 0]]
+    : [[`${secs.toFixed(2)} s`, COLORS.paperInk, 700, 4], ["  |  ", COLORS.paperMuted, 400, 0], ["Frame ", COLORS.paperMuted, 400, 0], [String(frame), COLORS.paperInk, 700, -6]];
   let x = x0;
-  for (const [text, color, weight] of left) {
+  for (const [text, color, weight, digits] of left) {
     ctx.font = `${weight} ${credit ? 11 : 12}px ${font()}`;
     ctx.fillStyle = color;
-    ctx.fillText(text, x, y);
-    x += ctx.measureText(text).width;
+    const w = slotWidth(ctx, text, Math.abs(digits));
+    ctx.textAlign = digits > 0 ? "right" : "left";
+    ctx.fillText(text, digits > 0 ? x + w : x, y);
+    x += w;
   }
+  ctx.textAlign = "left";
   if (!labels.length) return;
   ctx.font = `700 13px ${font()}`;
   ctx.fillStyle = COLORS.paperInk;

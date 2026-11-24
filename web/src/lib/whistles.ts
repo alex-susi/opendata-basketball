@@ -1,8 +1,8 @@
 // Foul types, turnover types, what followed a closeout, and the block and steal flags, on the play's timeline events
 // (run on decode, after the cuts). The fouls' types are SkillCorner's (foulType, isTechnical, isBonus); the
-// turnovers' are pieced together at export (web/scripts/annotations.R, turnovers); a closeout's caption says what the
-// ball handler did after the catch (SkillCorner's bhrAction: shot, drive, pass, other). Each such event gets these in its
-// caption and label; a blocked shot gets the flag "BLK", a turnover with a stealer "STL". Pure, so the tests can run it.
+// turnovers' are pieced together at export (web/scripts/annotations.R, turnovers). Each such event gets these in its
+// caption and label; a closeout's caption is "Closeout" alone (what followed is on its hover card); a blocked shot gets
+// the flag "BLK", a turnover with a stealer "STL". Pure, so the tests can run it.
 
 import { nameOf } from "./context";
 import type { AnnFoul, AnnTurnover, Play } from "./types";
@@ -23,9 +23,6 @@ export function foulName(fo: AnnFoul): string {
 
 export const turnoverName = (t: AnnTurnover): string => TURNOVER_NAMES[t.kind ?? ""] ?? "Turnover";
 
-/** What the ball handler did after a closeout's catch, in Title Case ("Shot", "Drive", "Pass", "Other"), or null. */
-export const afterCloseout = (act: string | undefined): string | null => (act ? act.charAt(0).toUpperCase() + act.slice(1) : null);
-
 export function addWhistleDetails(play: Play): void {
   const ann = play.ann;
   if (!ann) return;
@@ -42,12 +39,8 @@ export function addWhistleDetails(play: Play): void {
       const name = turnoverName(t);
       return { ...ev, short: `TO · ${name}`, label: ev.label.replace(/^Turnover:/, `Turnover (${name}):`), flag: t.stealer != null ? "STL" : undefined };
     }
-    if (ev.kind === "closeout") {
-      const c = ann.closeouts.find((x) => x.f === ev.f);
-      const after = afterCloseout(c?.act);
-      if (!c || !after) return ev;
-      return { ...ev, short: `Closeout · ${after}` };
-    }
+    // The timeline says only "Closeout"; what followed the catch stays on the hover card (lib/context.ts, closeoutLines).
+    if (ev.kind === "closeout") return { ...ev, short: "Closeout" };
     if (ev.kind === "made" || ev.kind === "missed") {
       const shot = ann.shots.find((x) => x.f === ev.f);
       if (shot?.blocked) return { ...ev, flag: "BLK" };

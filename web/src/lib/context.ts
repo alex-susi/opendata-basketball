@@ -308,32 +308,28 @@ const DRIVE_CATEGORY: Record<string, string> = {
   miscellaneous: "Other",
 };
 
-/** A drive: the driver's defender (shown with the players by the hover card), then grouped details. Drive: how it was
- * created, where it went and how it ended. Defense: the blow-by and the gap to his defender at the start and end.
- * Movement: how he ran (tracking). */
+/** A drive, grouped. Drive: how it was created, where it went and how it ended. Defense: his defender, the blow-by and
+ * the gap to his defender at the start and end. Movement: how he ran (tracking). */
 export function driveLines(play: Play, d: AnnDrive): Line[] {
-  const lines: Line[] = [];
-  if (d.def != null) lines.push({ k: "Defender", v: nameOf(play, d.def) });
   const drive: Line[] = [];
   if (d.cat) drive.push({ k: "Created From", v: DRIVE_CATEGORY[d.cat] ?? titleCase(words(d.cat)) });
   if (d.dir) drive.push({ k: "Direction", v: titleCase(d.dir) });
   drive.push({ k: "Drive Length (ft)", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1) });
   if (d.end) drive.push({ k: "Ended With", v: titleCase(words(d.end)) });
-  const defense: Line[] = [{ k: "Blow-By", v: d.blowby ? "Yes" : "No" }];
+  const defense: Line[] = [];
+  if (d.def != null) defense.push({ k: "Defender", v: nameOf(play, d.def) });
+  defense.push({ k: "Blow-By", v: d.blowby ? "Yes" : "No" });
   if (d.def != null) {
     const a = gapAt(play, d.pid, d.def, d.f), b = gapAt(play, d.pid, d.def, d.f1);
     defense.push({ k: "Separation (ft)", v: `${fmtNum(a, 1)} → ${fmtNum(b, 1)}` });
   }
-  return [...lines, ...grouped("Drive", drive), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, d.pid, d.f, d.f1))];
+  return [...grouped("Drive", drive), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, d.pid, d.f, d.f1))];
 }
 
-/** A cut: his defender (shown with the players), then grouped details. Cut: its kind and whether he got the ball.
- * Defense: the coverage on a screen and the gap to his defender. Movement: how he ran. His defender is his matchup
- * when the cut starts (else the nearest opponent then). */
+/** A cut, grouped. Cut: its kind and whether he got the ball. Defense: his defender, the coverage on a screen and the
+ * gap to his defender. Movement: how he ran. His defender is his matchup when the cut starts. */
 export function cutLines(play: Play, c: AnnCut): Line[] {
-  const lines: Line[] = [];
   const m = play.ann?.matchups.find((x) => x.off === c.pid && x.f <= c.f && x.f1 >= c.f);
-  if (m) lines.push({ k: "Defender", v: nameOf(play, m.def) });
   const catchAt = play.touches.find((t) => t.pid === c.pid && t.f0 >= c.f && t.f0 <= c.f1 + 12);
   const cut: Line[] = [
     { k: "Type", v: c.kind === "basket" ? "Basket Cut" : `Off-ball Screen, ${c.kind === "in" ? "In" : "Out"}` },
@@ -341,12 +337,13 @@ export function cutLines(play: Play, c: AnnCut): Line[] {
     ...(catchAt ? [{ k: "Time to Catch (s)", v: ((catchAt.f0 - c.f) / 25).toFixed(1) }] : []),
   ];
   const defense: Line[] = [];
+  if (m) defense.push({ k: "Defender", v: nameOf(play, m.def) });
   if (c.cov && c.cov !== "none") defense.push({ k: "Coverage", v: titleCase(COVERAGE[c.cov] ?? c.cov) });
   if (m) {
     const a = gapAt(play, c.pid, m.def, c.f), b = gapAt(play, c.pid, m.def, c.f1);
     defense.push({ k: "Separation (ft)", v: `${fmtNum(a, 1)} → ${fmtNum(b, 1)}` });
   }
-  return [...lines, ...grouped("Cut", cut), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, c.pid, c.f, c.f1))];
+  return [...grouped("Cut", cut), ...grouped("Defense", defense), ...grouped("Movement", movementLines(play, c.pid, c.f, c.f1))];
 }
 
 /** A closeout, grouped. Closeout: the gap the defender closed (event fields) and what the ball handler did after the

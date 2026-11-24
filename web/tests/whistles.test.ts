@@ -47,11 +47,11 @@ describe("timeline details", () => {
     for (const { play, ev } of blocked) expect(play.ann!.shots.find((s) => s.f === ev.f)?.blocked).toBe(true);
   });
 
-  it("say what followed each closeout", () => {
+  it("label each closeout plainly on the timeline", () => {
     const cos = events.filter(({ ev }) => ev.kind === "closeout");
     expect(cos.length).toBeGreaterThan(5);
     for (const { ev } of cos) {
-      expect(ev.short).toMatch(/^Closeout · (Shot|Drive|Pass|Other)$/);
+      expect(ev.short).toBe("Closeout");
       expect(ev.label).not.toMatch(/then/);
     }
   });
