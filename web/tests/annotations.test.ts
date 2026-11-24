@@ -147,21 +147,22 @@ describe("readouts", () => {
     for (const id of [...s.paint.off, ...s.paint.def]) expect(play.players.some((p) => p.id === id)).toBe(true);
   });
 
-  it("write a shot card with shot quality first, then distance and the region in Title Case", () => {
+  it("write a shot card with shot quality first, then creation, distance and the region in Title Case", () => {
     const play = sample.find((p) => p.ann!.shots.some((s) => s.region && s.sq != null))!;
     const shot = play.ann!.shots.find((s) => s.region && s.sq != null)!;
     const card = shotCard(play, shot, { peak: true, season: null });
     expect(card.title).toMatch(/^(Made|Missed) [23]$/);   // the shooter is apart, at the line's right end
     expect(card.who).toMatch(/^#/);
-    // Groups under subheaders: quality, then location, then defense and creation.
+    // Groups under subheaders: quality and creation (the hover card's left column), then location and defense.
     const heads = card.lines.filter((l) => l.head).map((l) => l.k);
-    expect(heads.slice(0, 2)).toEqual(["Shot Quality", "Location"]);
+    expect(heads.slice(0, 4)).toEqual(["Shot Quality", "Creation", "Location", "Defense"]);
     const rows = card.lines.filter((l) => !l.head);
     expect(rows[0]).toEqual({ k: "xFG%", v: expect.stringMatching(/^\d+%$/) });
     expect(rows[1].k).toBe("xPoints");   // no percentile without the league's xPoints
-    expect(rows[2]).toEqual({ k: "Distance (ft)", v: expect.stringMatching(/^\d+\.\d$/) });   // the unit in the label
-    expect(rows[3].k).toBe("Region");
-    expect(rows[3].v).toMatch(/^[A-Z]/);
+    const at = rows.findIndex((l) => l.k === "Distance (ft)");   // Location's first row
+    expect(rows[at]).toEqual({ k: "Distance (ft)", v: expect.stringMatching(/^\d+\.\d$/) });   // the unit in the label
+    expect(rows[at + 1].k).toBe("Region");
+    expect(rows[at + 1].v).toMatch(/^[A-Z]/);
     for (const line of card.lines) expect(line.k).toMatch(/^(x[A-Z]|[A-Z])/);   // title case; xFG%, xPoints as written
     // Shooter speed sits between release time and dribbles; the potential assist has its own line after the pass.
     const keys = rows.map((l) => l.k);

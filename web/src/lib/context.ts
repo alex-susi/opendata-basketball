@@ -241,7 +241,6 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
     const line = shotSeasonLine(seasonOf(opts.season, playerOf(play, shot.pid)), shot);
     if (line) where.push(line);
   }
-  group("Location", where);
 
   const defense: Line[] = [];
   if (shot.cl) defense.push({ k: "Contest", v: `${titleCase(shot.cl)}${shot.est ? " (Est.)" : ""}`, tone });
@@ -249,7 +248,6 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
   if (shot.defDist != null) defense.push({ k: "Distance (ft)", v: shot.defDist.toFixed(1), tone });   // to that defender
   if (shot.blocked && shot.blocker != null) defense.push({ k: "Blocked By", v: nameOf(play, shot.blocker) });
   if (shot.fouled) defense.push({ k: "Shooting Foul", v: shot.ft.length ? `FT ${shot.ft.filter(Boolean).length}/${shot.ft.length}` : "Yes" });
-  group("Defense", defense);
 
   const creation: Line[] = [];
   if (shot.rt != null) creation.push({ k: "Release Time (s)", v: shot.rt.toFixed(1) });
@@ -266,7 +264,11 @@ export function shotCard(play: Play, shot: AnnShot, opts: { peak: boolean; seaso
     const peak = shotPeak(play, shot);
     if (peak != null) creation.push({ k: "Max Ball Height (ft)", v: peak.toFixed(1) });
   }
+  // Creation sits under Shot Quality, then Location and Defense, so the two-column card reads Shot Quality and
+  // Creation on the left, Location, Defense and Rebounding Roles on the right (owner, 2026-11-24).
   group("Creation", creation);
+  group("Location", where);
+  group("Defense", defense);
 
   // One line per rebounding role, with how many attackers took it (the shooter's own crash counts as a crash).
   const roles = (play.ann?.glass ?? []).filter((g) => g.f === shot.f);
@@ -315,7 +317,7 @@ export function driveLines(play: Play, d: AnnDrive): Line[] {
   if (d.cat) drive.push({ k: "Created From", v: DRIVE_CATEGORY[d.cat] ?? titleCase(words(d.cat)) });
   if (d.dir) drive.push({ k: "Direction", v: titleCase(d.dir) });
   drive.push({ k: "Drive Length (ft)", v: fmtNum(Math.hypot(d.x1 - d.x0, d.y1 - d.y0), 1) });
-  if (d.end) drive.push({ k: "Ended With", v: titleCase(words(d.end)) });
+  if (d.end) drive.push({ k: "Outcome", v: d.end === "shotNearBasket" ? "Shot" : titleCase(words(d.end)) });
   const defense: Line[] = [];
   if (d.def != null) defense.push({ k: "Defender", v: nameOf(play, d.def) });
   defense.push({ k: "Blow-By", v: d.blowby ? "Yes" : "No" });

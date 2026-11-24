@@ -108,7 +108,8 @@
     // coverage may be seen (Predict mode hides a pick's until it is revealed, lib/coverageView.svelte.ts).
     return screen ? { lines: screenLines(play, screen, true) } : none;
   }
-  // A tall card (three groups or more and at least TALL rows) puts its groups in two columns, so it is shorter and wider.
+  // A tall card (more than three groups and at least TALL rows) puts its groups in two columns, so it is shorter and
+  // wider. Cards with three groups or fewer (drives, cuts, closeouts) stay one column (owner, 2026-11-24).
   // The groups keep their order (the left column's top to bottom, then the right's), split where the two columns come
   // closest in height. Both columns start and end level: the spare height goes between a column's groups, or between
   // the rows of a column that holds one group (app.css, .tc-cols).
@@ -129,7 +130,7 @@
     const all = groupsOf(lines);
     const top = all.length && !all[0].head ? [all[0]] : [];   // rows before the first subheader stay full width
     const gs = all.slice(top.length);
-    if (gs.length < 3 || height(all) + extra < TALL) return { top, cols: null };
+    if (gs.length <= 3 || height(all) + extra < TALL) return { top, cols: null };
     let best = 1;
     for (let k = 2; k < gs.length; k++) {
       if (Math.abs(height(gs.slice(0, k)) - height(gs.slice(k))) < Math.abs(height(gs.slice(0, best)) - height(gs.slice(best)))) best = k;

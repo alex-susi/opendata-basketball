@@ -56,6 +56,10 @@
     const i = cols.indexOf(c);
     return !!c.group && (i === 0 || cols[i - 1].group !== c.group);
   };
+  // Every value each column can show, all rows and not only the ones on screen: a hidden row of zero height holds them
+  // (.dt-sizer), so each column is as wide as its widest value and sorting or "Show all" never changes a width. The
+  // sort arrow keeps its room on every header for the same reason.
+  const sizes = $derived(cols.map((c) => [...new Set(rows.map((r) => format(r[c.key], c.fmt)))]));
   function tip(c: Col, v: unknown): string | undefined {
     if (c.ref == null || typeof v !== "number" || !Number.isFinite(v)) return undefined;
     return `${c.label} ${format(v, c.fmt)}\nAll ${format(c.ref, c.fmt)}${c.low ? "\nLower is better here" : ""}`;
@@ -87,7 +91,7 @@
           {#each cols as c (c.key)}
             <th class:count={c.fmt !== "text"} class:group-start={startsGroup(c)} title={c.title ?? c.label}>
               <button type="button" class="sort" onclick={() => sortBy(c.key)}>
-                {titleCase(c.label)}{#if sortKey === c.key}<span class="arrow">{desc ? "▾" : "▴"}</span>{/if}
+                {titleCase(c.label)}<span class="arrow" class:off={sortKey !== c.key}>{sortKey === c.key && !desc ? "▴" : "▾"}</span>
               </button>
             </th>
           {/each}
@@ -101,6 +105,9 @@
             {/each}
           </tr>
         {/each}
+        <tr class="dt-sizer" aria-hidden="true">
+          {#each cols as c, j (c.key)}<td class:count={c.fmt !== "text"}><div class="sz">{#each sizes[j] ?? [] as s}<span>{s}</span>{/each}</div></td>{/each}
+        </tr>
       </tbody>
     </table>
   </div>
@@ -124,6 +131,11 @@
   .sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-transform: inherit; cursor: pointer; text-align: inherit; }
   .sort:hover { color: var(--ink); }
   .arrow { margin-left: 3px; font-size: 10px; }
+  .arrow.off { visibility: hidden; }
+  /* The sizing row: no height, no border, nothing visible; it only sets the column widths. */
+  .dt-table .dt-sizer td { height: 0; padding-top: 0; padding-bottom: 0; border: 0; background: none; line-height: 0; }
+  .dt-sizer .sz { height: 0; overflow: hidden; visibility: hidden; }
+  .dt-sizer .sz span { display: block; }
   .dt-foot { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin-top: 6px; }
   .dt-note { color: var(--muted); font-size: 14px; }
   .dt-groups th { padding-bottom: 2px; border-bottom: 0; text-align: center; font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase; }

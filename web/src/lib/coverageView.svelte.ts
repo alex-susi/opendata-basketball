@@ -5,7 +5,8 @@
 //   - the forecast: the live model's probability of the screen's single recorded coverage, from what had happened by
 //     the current frame (coverage_frames.json, CoveragePanel.svelte)
 //   - the recorded coverage: SkillCorner's label for the whole screen (picks.bhrDefType / scrDefType), written after
-//     the fact. Hidden until the user reveals it (Predict mode, the site's only mode since 2026-11-24)
+//     the fact. Shown (Full review, the site's mode since 2026-11-24; the card itself reads "TBD" until the pick
+//     frame) except during the blind play review. Predict mode (hidden until revealed) stays for the tests
 //   - the screen being read: picked by the user (pinned) or, when nothing is pinned, the earliest screen whose
 //     −2 s to +1 s window holds the frame. Earliest-first keeps one screen's read until its window ends instead of
 //     jumping to a re-screen half-way; Phase 4 replaces this provisional rule with the reviewed episode rules.
@@ -16,16 +17,16 @@
 
 import type { AnnScreen, Play } from "./types";
 
-// The site always runs in Predict mode: the Predict / Full review switch and the Panel / Classic switch left the
-// card on 2026-11-24 (owner's request), so the card is the Classic one and each screen waits for Reveal. Full review
-// stays here for the tests.
+// The site runs in Full review: the Predict / Full review switch, the Panel / Classic switch and the Reveal button left
+// the card on 2026-11-24 (owner's request). The card is the Classic one, and its Actual column reads "TBD" until the
+// pick frame (CoveragePanel.svelte). Predict mode stays here for the tests.
 export type CoverageMode = "predict" | "full";
 /** Prediction window around each pick frame, in frames (matches coverage_frames.json offsets: −2 s to +1 s). */
 export const WINDOW: [number, number] = [-50, 25];
 
 export const covView = $state({
   /** Predict: recorded coverages hidden until revealed. Full review: shown throughout. */
-  mode: "predict" as CoverageMode,
+  mode: "full" as CoverageMode,
   /** The pinned screen of each possession: its pick frame. */
   pinned: {} as Record<string, number>,
   /** Screens whose recorded coverage the user has revealed ("<possession>:<pick frame>"). */

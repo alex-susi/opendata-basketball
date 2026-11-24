@@ -199,6 +199,7 @@
           {#if cut}<li>Rarely means under {cut.q1} season attempts per 100 possessions from this zone, often means {cut.q2} or more</li>{/if}
         </ul>
         <table class="gr-table">
+          <colgroup><col /><col class="c-num" /><col class="c-bar" /><col class="c-n" /></colgroup>
           <tbody>
             {#each compare as c (c.label)}
               <tr class:on={c.tt === tend}>
@@ -244,11 +245,13 @@
   .gr-sub { color: var(--muted); font-size: 13.5px; }
   .gr-facts { margin: 0 0 12px; padding-left: 18px; font-size: 15px; }
   .gr-facts li { margin-bottom: 4px; }
-  .gr-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  /* Fixed column widths, so the bold row and changing numbers never move a column. */
+  .gr-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 14.5px; }
+  .gr-table .c-num { width: 84px; } .gr-table .c-bar { width: 35%; } .gr-table .c-n { width: 70px; }
   .gr-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
   .gr-table tr.on td { color: var(--ink); font-weight: 600; background: rgba(76, 154, 255, .08); }
   .gr-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .gr-table .bar { width: 35%; }
+
   .gr-table .bar i { display: block; height: 8px; border-radius: 2px; background: #3987e5; }
   .gr-table .n { color: var(--muted); font-size: 12.5px; text-align: right; white-space: nowrap; }
   .gr-hint { margin: 10px 0 0; color: var(--muted); font-size: 14px; }

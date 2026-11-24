@@ -4,15 +4,15 @@
   //
   // The card is the Classic one: each defender's bars (the live model's forecast for his part of the coverage, from
   // what had happened by this frame), then an Expected / Actual table with right and wrong marks. The recorded
-  // coverage (SkillCorner's label for the whole screen) stays hidden until Reveal. The Panel look (probability strips,
-  // screen picker, pause controls) and the Predict / Full review switch were taken off on 2026-11-24 at the owner's
-  // request; the strip helpers stay in lib/coverage.ts.
+  // coverage (SkillCorner's label for the whole screen) reads "TBD" until the pick frame, then shows. The Panel look
+  // (probability strips, screen picker, pause controls), the Predict / Full review switch and the Reveal button were
+  // taken off on 2026-11-24 at the owner's request; the strip helpers stay in lib/coverage.ts.
   //
   // The screen is the pinned one, or, when nothing is pinned, the earliest screen whose −2 s to +1 s window holds the
   // frame (lib/coverageView.svelte.ts). The pick frame (picks.frame) is the reference marker of the data, so the
   // status reads "Before pick marker" / "Play unfolding" around it.
   import { defenderParts, loadCoverage, PART_COLORS, partOf, readAt, screenAt, type CoverageFile, type PartRow } from "../lib/coverage";
-  import { covView, forecastVisible, rawCoverage, recordedVisible, screenKey, selectedScreen } from "../lib/coverageView.svelte";
+  import { forecastVisible, rawCoverage, recordedVisible, selectedScreen } from "../lib/coverageView.svelte";
   import type { Play } from "../lib/types";
   import { live } from "../lib/viewer.svelte";
 
@@ -24,12 +24,11 @@
   const frame = $derived(play ? play.frames[Math.min(live.i0, play.frames.length - 1)] : 0);
   const sel = $derived(selectedScreen(play, frame));
   const scored = $derived(sel && cov && play ? screenAt(cov, play.id, sel.pick.f) : null);
-  const key = $derived(sel && play ? screenKey(play.id, sel.pick.f) : "");
   const showForecast = $derived(!!(sel && play && forecastVisible(play.id, sel.pick.f)));
   const read = $derived(scored && cov && showForecast ? readAt(cov, scored, frame) : null);
   const shown = $derived(!!(sel && play && recordedVisible(play.id, sel.pick.f)));
-  // The Actual column shows once the recorded coverage is revealed.
-  const actualShown = $derived(!!(shown && read));
+  // The Actual column shows once the pick frame has passed ("TBD" before it).
+  const actualShown = $derived(!!(shown && read && read.t >= 0));
 
   // A player as the card names him: jersey number, then last name.
   const who = (id: number) => { const p = play?.players.find((q) => q.id === id); return p ? `#${p.jersey} ${p.last}` : "?"; };
@@ -43,14 +42,13 @@
     const use = r.use ?? "?", scr = COVERAGE_WORD[r.scr ?? ""] ?? r.scr ?? "?";
     return use === "switch" || scr === "switch" ? "switch" : `${use} + ${scr}`;
   });
-  // Why a screen has no forecast. Before Reveal the reason stays general, since naming ice or blitz would give the
-  // coverage away (owner's review, 2026-11-23).
+  // Why a screen has no forecast. While the recorded coverage is hidden (the blind review) the reason stays general,
+  // since naming ice or blitz would give the coverage away (owner's review, 2026-11-23).
   const FIVE = new Set(["over + show", "over + drop", "under + show", "under + drop", "switch"]);
   const noForecastWhy = $derived(!recorded ? "Tracking incomplete or a coverage outside the five the model reads"
     : FIVE.has(recorded) ? "Left out of the model for incomplete tracking around the screen"
     : `${cap([...new Set(recorded.split(" + "))].join(" + "))} is outside the five coverages the model reads`);
 
-  const reveal = () => { covView.revealed[key] = true; };
   const lead = (rows: PartRow[]) => rows.find((row) => row.top) ?? rows[0];
 </script>
 
@@ -79,14 +77,10 @@
             <span class="cov-exp" class:combined={i === 2}>{@render callName(row.exp)}</span>
             <span class="cov-pct" class:combined={i === 2}>{Math.round(row.pct)}%</span>
             <span></span>
-            <span class="cov-act" class:tbd={!actualShown} class:combined={i === 2}>{#if actualShown}{@render callName(row.act)}{:else}Hidden{/if}</span>
+            <span class="cov-act" class:tbd={!actualShown} class:combined={i === 2}>{#if actualShown}{@render callName(row.act)}{:else}TBD{/if}</span>
             <span class="cov-mark" class:right={actualShown && row.exp === row.act} class:wrong={actualShown && row.exp !== row.act} class:combined={i === 2}>{actualShown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
           {/each}
         </span>
-        {#if !actualShown}
-          <span class="cp-row cp-classic-foot"><button type="button" class="cp-btn" onclick={reveal}
-                  title="Show SkillCorner's recorded coverage for this screen">Reveal</button></span>
-        {/if}
       {:else}
         {@render status()}
       {/if}
@@ -127,14 +121,7 @@
 {/snippet}
 
 <style>
-  .cp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
   .cp-muted { color: var(--muted); }
-  .cp-btn {
-    border: 1px solid var(--line); border-radius: 5px; background: var(--raised); color: var(--ink); font: inherit;
-    font-size: 11px; padding: 1px 7px; cursor: pointer;
-  }
-  .cp-btn:hover { background: var(--hover); }
-  .cp-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
   .cp-status { display: grid; margin-top: 2px; }
   .cp-status i { font-style: normal; font-weight: 600; }
   .cp-status i.after { color: #F5B02E; }
@@ -142,6 +129,5 @@
   .cp-plus { color: var(--muted); }
   .cp-part.over { color: #3987e5; } .cp-part.under { color: #199e70; } .cp-part.switch { color: #d55181; }
   .cp-part.show { color: #c98500; } .cp-part.drop { color: #d95926; }
-  .cp-classic-foot { margin-top: 5px; justify-content: flex-end; }
   .cp-classic.cp-wide { width: auto; }
 </style>
