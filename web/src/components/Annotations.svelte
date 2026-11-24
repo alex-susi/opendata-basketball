@@ -5,9 +5,9 @@
   //   Possession Context  how the possession began, chances and offensive rebounds, passes, dribbles and touches so
   //                       far, who has had the ball, the game state, free throws.
   //   Data Quality        the chance's tracking quality index and how many players are extrapolated now.
-  //   Coverage Read       CoveragePanel.svelte, drawn here as a card while the court is at least 480 px wide (below the
-  //                       court in App.svelte otherwise): the selected screen, the live model's forecast, its time trace
-  //                       up to this moment, and the recorded coverage only once revealed.
+  //   Coverage Read       CoveragePanel.svelte, drawn here as a card while the court is at least 480 px wide (never
+  //                       below the court, owner 2026-11-24): the selected screen, each defender's forecast, Expected
+  //                       against Actual, the recorded coverage once the screen is set.
   // The court's drawing is in lib/annotate.ts; the text in lib/context.ts.
   import { chanceAt, possessionCard, type Card } from "../lib/context";
   import { selectedScreen } from "../lib/coverageView.svelte";
@@ -53,7 +53,7 @@
   <div class="ann-cards {box.backLeft ? 'on-left' : 'on-right'}" style:left="{box.left}px" style:top="{box.top}px"
        style:width="{box.w}px" style:height="{box.h}px" style:--pad="{PAD}px">
     <div class="ann-stack top" class:low={shift > 0} bind:clientHeight={topH} bind:offsetWidth={topW} style:max-height="{box.h - 2 * PAD}px">
-      {#if covOn}<CoveragePanel {play} {seq} layout="card" />{/if}
+      {#if covOn}<CoveragePanel {play} />{/if}
     </div>
     <div class="ann-stack bottom" bind:clientHeight={botH} style:--shift="{shift}px">
       {#if poss}{@render card(poss)}{/if}

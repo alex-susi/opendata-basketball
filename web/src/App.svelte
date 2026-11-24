@@ -22,7 +22,6 @@
   import Stage from "./components/Stage.svelte";
   import TracePanel from "./components/TracePanel.svelte";
   import TimelineStrip from "./components/TimelineStrip.svelte";
-  import CoveragePanel from "./components/CoveragePanel.svelte";
   import CoverageReview from "./components/CoverageReview.svelte";
   import { covView } from "./lib/coverageView.svelte";
   import type { ReviewCase } from "./lib/review.svelte";
@@ -326,10 +325,6 @@
     <div class="stage-row" style:min-height={live.annNeed ? `${Math.max(260, live.annNeed + 36)}px` : null}>
       <Stage {play} {seq} {note} onend={playNext} />
     </div>
-    <!-- A court narrower than 480 px (phones): the Screen Coverage Read sits under the court instead of over it. -->
-    {#if viewer.ann.coverage && live.box && live.box.w < 480}
-      <CoveragePanel {play} {seq} layout="panel" />
-    {/if}
     {#if viewer.showTrace}
       <TracePanel {play} {seq} />
     {:else}

@@ -1,6 +1,6 @@
 <script lang="ts">
-  // The Screen Coverage Read: drawn as a card over the backcourt on a wide court (Annotations.svelte) and below the
-  // court when the court is narrower than 480 px (App.svelte), so the read never disappears on a phone.
+  // The Screen Coverage Read: drawn as a card over the backcourt while the court is at least 480 px wide
+  // (Annotations.svelte). The copy under a narrower court was taken off on 2026-11-24 at the owner's request.
   //
   // The card is the Classic one: each defender's bars (the live model's forecast for his part of the coverage, from
   // what had happened by this frame), then an Expected / Actual table with right and wrong marks. The recorded
@@ -16,7 +16,7 @@
   import type { Play } from "../lib/types";
   import { live } from "../lib/viewer.svelte";
 
-  let { play, layout }: { play: Play | null; seq?: number[]; layout: "card" | "panel" } = $props();
+  let { play }: { play: Play | null } = $props();
 
   let cov = $state<CoverageFile | null>(null);
   $effect(() => { if (!cov) loadCoverage().then((c) => { cov = c; }); });
@@ -52,38 +52,34 @@
   const lead = (rows: PartRow[]) => rows.find((row) => row.top) ?? rows[0];
 </script>
 
-{#if play && (sel || layout === "panel")}
-  <div class="ann-card cov-card cp-classic" class:cp-wide={layout === "panel"}>
+{#if play && sel}
+  <div class="ann-card cov-card cp-classic">
     <span class="cov-title"><b>Screen Coverage Read</b>
-      {#if sel}<i class="event-flag cov-flag" class:set={sel.t >= 0} title={sel.t >= 0 ? "Seconds since the screen was set" : "Seconds until the screen is set"}>{fmtT(sel.t)}</i>{/if}</span>
-    {#if !sel}
-      <span class="cp-muted">No screen near this moment.</span>
+      <i class="event-flag cov-flag" class:set={sel.t >= 0} title={sel.t >= 0 ? "Seconds since the screen was set" : "Seconds until the screen is set"}>{fmtT(sel.t)}</i></span>
+    <span class="card-line"><span>Screener</span><span>{who(sel.pick.scr)}</span></span>
+    <span class="card-line"><span>Ballhandler</span><span>{who(sel.pick.use)}</span></span>
+    {#if read && cov && scored}
+      {@const top = read.pct.indexOf(Math.max(...read.pct))}
+      {@const dp = defenderParts(cov.calls, read.pct)}
+      {@render bars(`On the Ball · ${who(scored.bd)}`, dp.ball)}
+      {@render bars(`On the Screener · ${who(scored.sd)}`, dp.big)}
+      <!-- Expected (the model's leading option and its %) against Actual (the recorded coverage), with a mark. -->
+      <span class="cov-table">
+        <span></span><span></span><span class="cov-th">Expected</span><span></span><span class="cov-th">Actual</span>
+        {#each [{ label: who(scored.bd), exp: lead(dp.ball).label, pct: lead(dp.ball).pct, act: partOf(scored.call, "ball") },
+                { label: who(scored.sd), exp: lead(dp.big).label, pct: lead(dp.big).pct, act: partOf(scored.call, "big") },
+                { label: "Combined", exp: cov.calls[top], pct: read.pct[top], act: scored.call }] as row, i (i)}
+          <span class="cov-k" class:combined={i === 2}>{row.label}</span>
+          <span></span>
+          <span class="cov-exp" class:combined={i === 2}>{@render callName(row.exp)}</span>
+          <span class="cov-pct" class:combined={i === 2}>{Math.round(row.pct)}%</span>
+          <span></span>
+          <span class="cov-act" class:tbd={!actualShown} class:combined={i === 2}>{#if actualShown}{@render callName(row.act)}{:else}TBD{/if}</span>
+          <span class="cov-mark" class:right={actualShown && row.exp === row.act} class:wrong={actualShown && row.exp !== row.act} class:combined={i === 2}>{actualShown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
+        {/each}
+      </span>
     {:else}
-      <span class="card-line"><span>Screener</span><span>{who(sel.pick.scr)}</span></span>
-      <span class="card-line"><span>Ballhandler</span><span>{who(sel.pick.use)}</span></span>
-      {#if read && cov && scored}
-        {@const top = read.pct.indexOf(Math.max(...read.pct))}
-        {@const dp = defenderParts(cov.calls, read.pct)}
-        {@render bars(`On the Ball · ${who(scored.bd)}`, dp.ball)}
-        {@render bars(`On the Screener · ${who(scored.sd)}`, dp.big)}
-        <!-- Expected (the model's leading option and its %) against Actual (the recorded coverage), with a mark. -->
-        <span class="cov-table">
-          <span></span><span></span><span class="cov-th">Expected</span><span></span><span class="cov-th">Actual</span>
-          {#each [{ label: who(scored.bd), exp: lead(dp.ball).label, pct: lead(dp.ball).pct, act: partOf(scored.call, "ball") },
-                  { label: who(scored.sd), exp: lead(dp.big).label, pct: lead(dp.big).pct, act: partOf(scored.call, "big") },
-                  { label: "Combined", exp: cov.calls[top], pct: read.pct[top], act: scored.call }] as row, i (i)}
-            <span class="cov-k" class:combined={i === 2}>{row.label}</span>
-            <span></span>
-            <span class="cov-exp" class:combined={i === 2}>{@render callName(row.exp)}</span>
-            <span class="cov-pct" class:combined={i === 2}>{Math.round(row.pct)}%</span>
-            <span></span>
-            <span class="cov-act" class:tbd={!actualShown} class:combined={i === 2}>{#if actualShown}{@render callName(row.act)}{:else}TBD{/if}</span>
-            <span class="cov-mark" class:right={actualShown && row.exp === row.act} class:wrong={actualShown && row.exp !== row.act} class:combined={i === 2}>{actualShown ? (row.exp === row.act ? "✓" : "✗") : " "}</span>
-          {/each}
-        </span>
-      {:else}
-        {@render status()}
-      {/if}
+      {@render status()}
     {/if}
   </div>
 {/if}
@@ -121,7 +117,6 @@
 {/snippet}
 
 <style>
-  .cp-muted { color: var(--muted); }
   .cp-status { display: grid; margin-top: 2px; }
   .cp-status i { font-style: normal; font-weight: 600; }
   .cp-status i.after { color: #F5B02E; }
@@ -129,5 +124,4 @@
   .cp-plus { color: var(--muted); }
   .cp-part.over { color: #3987e5; } .cp-part.under { color: #199e70; } .cp-part.switch { color: #d55181; }
   .cp-part.show { color: #c98500; } .cp-part.drop { color: #d95926; }
-  .cp-classic.cp-wide { width: auto; }
 </style>
