@@ -1,0 +1,19 @@
+variant,score,value,minus_live,lo,hi,games_worse
+0 s,main,1.1924,0,-6e-04,7e-04,5
+0 s,flat,1.1871,2e-04,-3e-04,6e-04,6
+0 s,before_marker,1.2363,0,-8e-04,8e-04,4
+1 s (live),main,1.1924,0,0,0,0
+1 s (live),flat,1.1869,0,0,0,0
+1 s (live),before_marker,1.2363,0,0,0,0
+2 s,main,1.1924,0,-5e-04,6e-04,5
+2 s,flat,1.1869,0,-4e-04,5e-04,6
+2 s,before_marker,1.2363,0,-6e-04,8e-04,4
+3 s,main,1.1925,1e-04,-0.001,0.0014,5
+3 s,flat,1.1871,2e-04,-7e-04,0.0012,5
+3 s,before_marker,1.2363,0,-0.0013,0.0016,5
+episode stop,main,1.1926,2e-04,-5e-04,9e-04,6
+episode stop,flat,1.1871,2e-04,-4e-04,8e-04,5
+episode stop,before_marker,1.2365,2e-04,-6e-04,9e-04,5
+no earlier coverages,main,1.2215,0.0291,0.0059,0.0527,7
+no earlier coverages,flat,1.2142,0.0273,0.0054,0.0492,8
+no earlier coverages,before_marker,1.2679,0.0316,0.0073,0.0567,7

@@ -1,0 +1,9 @@
+stop_kind,before_1,N
+chance end,FALSE,26
+chance end,TRUE,13
+dead ball,FALSE,4
+dead ball,TRUE,12
+handler pass,FALSE,392
+handler pass,TRUE,149
+next screen,FALSE,19
+next screen,TRUE,40

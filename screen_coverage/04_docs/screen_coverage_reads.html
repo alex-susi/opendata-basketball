@@ -357,7 +357,7 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">Where the project stands as of 2026-11-23</p>
     </div>
     <ul class="tight">
-      <li>Work now follows the coverage product plan (owner, 2026-11-21) · Phase 2 done, the live model is frozen as a release and reproduces exactly. Phase 3's play review Pass 1 done (50 of 50) and summarised in <span class="file">docs/project/coverage_review_findings.md</span>. The blind repeat of 12 plays is due about 2026-11-26</li>
+      <li>Work now follows the coverage product plan (owner, 2026-11-21) · Phase 2 done, the live model is frozen as a release and reproduces exactly. Phase 3's play review Pass 1 done (50 of 50) and summarised in <span class="file">docs/project/coverage_review_findings.md</span>. The blind repeat of 12 plays is due about 2026-11-26. Phase 4 timing audit, episode rules and eligibility done (<span class="file">docs/project/coverage_timing_audit.md</span>). The owner set the window end at +1.5 s and a stop at the handler's pass (2026-11-24)</li>
       <li>Live model · time-aware transformer with v2 past-only inputs, and since 2026-11-19 the four screen players' guard, wing or big in its switch decision only. On the play viewer's Coverage Read card</li>
       <li>Weak spot · switch and under + show are mostly missed (26% and 17% caught). With a guard on the screener 45% of switches are caught (was 17%)</li>
       <li>Past-only rule confirmed by a test</li>
@@ -1156,7 +1156,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
         <li>Owner's plan of 2026-11-21 (<span class="file">docs/project/Screen_Coverage_Product_Model_Dashboard_Plan_20261120.html</span>), all of it part of the competition entry. It comes before the steps below</li>
         <li>Phase 2 · freeze the live model and reproduce it · done 2026-11-21</li>
         <li>Phase 3 · built 2026-11-21 (pinned screens, Predict / Full review, phone layout, review panel, 50-play sample). Pass 1 of the play review done 2026-11-23. Next · the blind repeat of 12 plays and its agreement</li>
-        <li>Phases 4–5 · timing, eligibility and a new evaluation report. The main curve and an even −1 to 0 s score are reported side by side until the owner picks the primary score after the review</li>
+        <li>Phase 4 · timing audit, episode stops and per-time eligibility · done 2026-11-24, window ends at +1.5 s and a pass by the handler stops the forecast</li>
+        <li>Phase 5 · a new evaluation report. The main curve and an even −1 to 0 s score are reported side by side until the owner picks the primary score after the review</li>
         <li>Phase 6 · three model changes tested one at a time against a matched baseline, after the owner signs off the evaluation rules</li>
         <li>Phase 7 · replay and scouting dashboard</li>
       </ul></div></li>
@@ -1339,6 +1340,8 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
               <tr><td><span class="file">34_freeze_release.R</span></td><td>Freezes the live model as a read-only release with a manifest, and checks that saved networks and a one-start retrain reproduce it</td></tr>
               <tr><td><span class="file">35_review_sample.R</span></td><td>Draws the 50-play review sample by coverage and hard-case flags without reading any prediction, and writes the viewer's review queue</td></tr>
               <tr><td><span class="file">36_review_summary.R</span></td><td>Summarises the owner's play review · moment timing, choices by sample group, each label against the blind answers, and agreement between passes</td></tr>
+              <tr><td><span class="file">37_audit_timing.R</span></td><td>Timing audit of every screen from −3 s to +3 s · closest point, approach censoring, episode stops, switch timing and per-time eligibility (rules in <span class="file">R/episode_eligibility.R</span>)</td></tr>
+              <tr><td><span class="file">38_availability_sensitivity.R</span></td><td>Refits the logistic baseline with earlier coverages counted at other delays and with every pick marker moved, to show how much each assumption matters</td></tr>
             </tbody>
           </table>
         </div>
@@ -1718,6 +1721,34 @@ h5.cm-title { margin: 6px 0 0; font-family: var(--font-display); font-size: 1rem
       <p class="sub">Every change to the models or this page, newest first</p>
     </div>
     <div class="log">
+      <div class="entry">
+        <time datetime="2026-11-24">2026-11-24</time>
+        <div>
+          <h3>Coverage product plan · Phase 4 closed, the owner's episode choices</h3>
+          <ul class="tight">
+            <li>The forecast window ends at +1.5 s and a pass by the handler stops a screen's forecast. Episode rules version 2 in <span class="file">R/episode_eligibility.R</span>, <span class="file">37_audit_timing.R</span> rerun</li>
+            <li>The pass is now the usual stop · 476 of 1,520 screens stop before +1.5 s (102 without the pass). 67% of five-coverage screens still have a forecast at +1.5 s</li>
+            <li>124,664 eligible rows over all 1,496 five-coverage screens up to +1.5 s. The old cohort stays for reproducing past results</li>
+            <li>Against Pass 1 · the review's "new action" stamps came a median 2.1 s after the pass. "Coverage still matters after a pass" was no in 16 plays and yes in 10</li>
+            <li>Live model and its numbers unchanged</li>
+          </ul>
+        </div>
+      </div>
+      <div class="entry">
+        <time datetime="2026-11-23">2026-11-23 (later)</time>
+        <div>
+          <h3>Coverage product plan · Phase 4, timing audit, episodes and eligibility</h3>
+          <ul class="tight">
+            <li><span class="file">37_audit_timing.R</span> audits all 1,520 screens from −3 s to +3 s, <span class="file">R/episode_eligibility.R</span> holds the episode and eligibility rules, <span class="file">38_availability_sensitivity.R</span> refits the logistic baseline under other availability rules. Write-up in <span class="file">docs/project/coverage_timing_audit.md</span></li>
+            <li>Closest handler-screener point · the old ±0.48 s search hit its edge in 11.8% of screens, ±1 s in 2.3%. Median unchanged at +0.24 s</li>
+            <li>Episode stops (next screen or hand-off, dead ball, chance end) · 67 screens stop before +1 s, 135 before +2 s. The handler's touch end is flagged and never stops an episode</li>
+            <li>Every five-coverage screen now has eligible forecast rows. At +1 s, 111,410 rows over 1,496 screens (old cohort 111,188 over 1,463)</li>
+            <li>An online switch alert from positions fires on 16–21% of other coverages, mostly shows. None is built</li>
+            <li>When earlier coverages count (0 to 3 s, or the episode stop) changes the baseline by under 0.001. Moving every pick marker by 0.08 s moves the main-curve score by about 0.025, more than any model change tested. Comparisons must share markers</li>
+            <li>Live model and its numbers unchanged</li>
+          </ul>
+        </div>
+      </div>
       <div class="entry">
         <time datetime="2026-11-23">2026-11-23</time>
         <div>

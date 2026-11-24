@@ -1,0 +1,8 @@
+comparison,pairs,median_diff_s,within_0.2s,cor
+screen engaged (review) − closest point ±1 s,49,-0.08,35,-0.03
+screen engaged (review) − closest point ±0.48 s,49,-0.08,36,0.22
+handler's touch ends (review) − touches table,49,0.04,47,1
+new action (review) − episode stop,50,1.7,3,0.42
+"new action (review) − episode stop, version 1 without the pass",50,0,11,0.56
+"exchange done (review) − geometry alert, both sides, 0.4 s",8,-0.44,2,0.19
+"exchange done (review) − matchups table, both sides",9,0.04,4,0.6

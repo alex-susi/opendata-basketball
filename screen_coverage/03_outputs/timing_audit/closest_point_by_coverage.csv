@@ -1,0 +1,7 @@
+group,screens,median,on_edge
+outside five,24,0.22,1
+over + drop,496,0.24,10
+over + show,502,0.2,13
+switch,218,0.24,3
+under + drop,167,0.24,8
+under + show,113,0.24,0

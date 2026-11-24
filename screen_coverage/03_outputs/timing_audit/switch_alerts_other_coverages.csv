@@ -1,0 +1,5 @@
+call,screens,mu_h_to_sd_by_3s,alert_both_0.4_by_2s,alert_hside_0.4_by_2s
+over + drop,496,38,63,112
+over + show,502,55,101,180
+under + drop,167,7,19,40
+under + show,113,8,25,40

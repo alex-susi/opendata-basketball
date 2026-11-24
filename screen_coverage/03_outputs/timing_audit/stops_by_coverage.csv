@@ -1,0 +1,8 @@
+group,screens,median_stop,stop_before_1,stop_before_1.5,stop_before_2,median_stop_v1,stop_v1_before_1.5,pass_before_1.5,touch_end_before_1,touch_end_before_1.5,touch_end_before_2,stop_at_or_before_0
+all,1520,2.2,214,476,655,4.2,102,385,179,462,688,0
+outside five,24,2.14,0,9,10,5.66,0,9,0,10,11,0
+over + drop,496,2.3,74,149,207,4,46,106,54,136,213,0
+over + show,502,1.92,82,192,255,4.4,23,172,73,192,269,0
+switch,218,2.64,20,47,74,4.94,11,36,19,46,77,0
+under + drop,167,2.12,27,56,71,3.52,15,46,24,56,75,0
+under + show,113,2.4,11,23,38,4.12,7,16,9,22,43,0

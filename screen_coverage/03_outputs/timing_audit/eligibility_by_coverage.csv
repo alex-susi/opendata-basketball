@@ -1,0 +1,6 @@
+call,screens,eligible_rows_end_1,eligible_rows_end_1.5,eligible_rows_end_2,old_cohort_rows
+over + drop,496,36284,41191,44895,36708
+over + show,502,37114,41647,44843,37772
+switch,218,16110,18478,20326,16036
+under + drop,167,12223,13833,15024,12388
+under + show,113,8307,9515,10484,8284

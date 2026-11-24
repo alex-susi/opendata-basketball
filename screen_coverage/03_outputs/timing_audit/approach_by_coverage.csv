@@ -1,0 +1,13 @@
+ft,group,screens,found,censored,never_within,median_found
+10,outside five,24,22,2,0,-0.36
+10,over + drop,496,472,18,6,-0.4
+10,over + show,502,474,19,9,-0.4
+10,switch,218,201,12,5,-0.44
+10,under + drop,167,163,2,2,-0.4
+10,under + show,113,111,0,2,-0.36
+15,outside five,24,17,7,0,-0.96
+15,over + drop,496,422,74,0,-0.84
+15,over + show,502,422,80,0,-0.84
+15,switch,218,172,43,3,-0.88
+15,under + drop,167,145,21,1,-0.8
+15,under + show,113,92,20,1,-0.76

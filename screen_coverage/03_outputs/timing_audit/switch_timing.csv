@@ -1,0 +1,13 @@
+is_switch,measure,kind,screens,by_1s,by_2s,by_3s,median_t,share_by_2s
+TRUE,alert_both_0.2s,online,218,76,104,113,0.8,0.477
+FALSE,alert_both_0.2s,online,1278,213,267,309,0.76,0.209
+TRUE,alert_both_0.4s,online,218,49,89,100,1.04,0.408
+FALSE,alert_both_0.4s,online,1278,140,208,250,0.96,0.163
+TRUE,alert_hside_0.2s,online,218,97,134,144,0.82,0.615
+FALSE,alert_hside_0.2s,online,1278,281,413,465,0.84,0.323
+TRUE,alert_hside_0.4s,online,218,70,128,140,1.02,0.587
+FALSE,alert_hside_0.4s,online,1278,214,372,427,1,0.291
+TRUE,mu_both,retrospective,218,55,116,132,1.2,0.532
+FALSE,mu_both,retrospective,1278,4,11,21,2,0.009
+TRUE,mu_h_to_sd,retrospective,218,94,152,163,0.92,0.697
+FALSE,mu_h_to_sd,retrospective,1278,63,90,108,0.8,0.07

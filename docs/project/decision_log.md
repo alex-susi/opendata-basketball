@@ -2782,3 +2782,29 @@ The owner finished Pass 1 of the play review (50 of 50) and saved it as `screen_
 - **Viewer changes.** After Reveal, a screen with no forecast names the reason (outside the five coverages, or left out for incomplete tracking). Before Reveal the reason stays general so it gives nothing away (`web/src/components/CoveragePanel.svelte`). The review question now reads "Recorded coverage matches the play" with a tooltip to judge the label only (`web/src/lib/review.svelte.ts`). The CSV column keeps its name.
 - **Pass 2 stays blind.** The findings name no Pass 2 case and the gallery uses none. `review_component_check.csv` lists each case's coverage and stays closed until Pass 2 is done.
 - Live model unchanged. 116 tests pass, type check clean.
+
+## 2026-11-23 (night) — Phase 4 timing audit, episodes and eligibility (coverage product plan)
+
+The owner asked to start Phase 4 while Pass 2 waits. Write-up in `docs/project/coverage_timing_audit.md`. No model changed.
+
+- **Scripts.** `37_audit_timing.R` (timing, stops, switch timing, eligibility), `R/episode_eligibility.R` (the rules, cached rows in `02_cache/eligibility_rows.rds`) and `38_availability_sensitivity.R` (logistic baseline refits). Horizons, experiments and export move to 39–41. All settings were fixed before any score was seen.
+- **Closest point.** The old ±0.48 s search put the minimum on its edge in 11.8% of screens. ±1 s cuts that to 2.3% with the median unchanged at +0.24 s. Diagnostics use ±1 s from now on. The term is "closest point" in new outputs. The old `contact_t` column in `13_window_anchors.R` outputs stays because the frozen review sample was drawn from it.
+- **Approach censoring.** The pair's 15 ft approach is censored in 245 of 1,520 screens (16%), 10 to 41 per game.
+- **Episode stops.** Next screen or hand-off, dead ball (clock stopped 0.2 s) or chance end. 67 screens stop before +1 s, 135 before +2 s. The handler's touch end (before +2 s in 45%) is flagged and never stops an episode. The event stops match the reviewer's "new action" within 0.2 s in only 11 of 50 plays, mostly because the reviewer counted passes. Owner's call.
+- **Switch timing.** The online geometry alert (both sides within 6 ft, held 0.2 or 0.4 s) catches 41–48% of switches by +2 s but fires on 16–21% of other coverages, mostly shows. Not usable as a switch confirmation, so none is built. The matchups table stays a retrospective diagnostic.
+- **Eligibility.** Domain −2 s to the end, inside the possession, before the stop, four players present, 7 of 9 history moments. At +1 s, 111,410 eligible rows over all 1,496 five-coverage screens (old cohort 111,188 rows over 1,463). The 33 left-out screens gain 1,242 rows. 746 old rows fall after a stop and 274 have short history. Old cohort kept for reproduction.
+- **Availability.** When earlier coverages count (0, 1, 2, 3 s or the episode stop) changes the baseline's scores by under 0.001. Dropping them costs 0.029. The live 1 s rule stays.
+- **Pick-marker shifts.** Moving every marker by ±0.08 s moves the main-curve score by about 0.025, more than any model change tested so far. A later marker scores better only because the window moves later. No shift adopted. Phase 5 comparisons must share markers and windows.
+- **Open for the owner.** Window end (+1, +1.5 or +2 s), whether a pass starts a new action, and Pass 2.
+
+## 2026-11-24 — Phase 4 closed · the owner's window end and pass stop (coverage product plan)
+
+The owner chose a +1.5 s window end and a stop at a pass by the handler. Episode rules version 2 in `screen_coverage/01_scripts/R/episode_eligibility.R` (`WINDOW_END`, `EPISODE_RULES`), version 1 kept as `EPISODE_RULES_V1` and `episode_stops(passes = FALSE)`. `37_audit_timing.R` rerun and `38_availability_sensitivity.R` rerun. Write-up updated in `docs/project/coverage_timing_audit.md`. No model changed.
+
+- **Pass stop.** The handler's first pass release after the pick marker in the possession. Self-passes (passer = receiver, known marking noise) do not count. Incomplete passes do. 1,077 of 1,520 screens have one, 96% on the frame the touch ends.
+- **Stops.** 214 screens stop before +1 s, 476 before +1.5 s, 655 before +2 s (version 1, 67, 102, 135). Median stop +2.2 s (was +4.2 s). Before +1.5 s, switches stop in 47 of 218 (22%) and over + shows in 192 of 502 (38%).
+- **Eligibility at +1.5 s.** 124,664 rows over all 1,496 five-coverage screens. 67% of screens still eligible at +1.5 s. The 33 previously left-out screens gain 1,519 rows. 2,094 old-cohort rows (239 screens) fall after a stop and 274 have short history. The old cohort stays for reproduction.
+- **Correction to the 2026-11-23 entry.** That entry said the event stops missed the reviewer's "new action" mostly because the reviewer counted passes. The reverse holds. The reviewer's "new action" came after the pass in 34 of the 38 reviewed plays with one, a median 2.1 s later, and sits within 0.2 s of the version 2 stop in only 3 of 50. The owner's own "Coverage still matters after a pass" answers support the stop (no 16, yes 10, unclear 8). The version 2 stop comes before the reviewer's "decision open until" in 10 of 48 plays (version 1, 1).
+- **Availability rerun.** With the version 2 stops, counting an earlier coverage from its episode stop scores +0.0002 against the live 1 s rule (−0.0005 to +0.0009). The live rule stays. Pick-marker shifts do not depend on stops and are unchanged.
+- **Still open before Phase 5.** The primary score and the "Forecast helpful from" wording. Pass 2 due about 2026-11-26.
+- **Confirmed.** Told that the "new action" stamps came about 2 s after the pass, the owner kept the pass stop (2026-11-24).
